@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "country": "BD",
+  "currency": "BDT",
+  "providers": [
+    {
+      "id": "bkash",
+      "name": "bKash",
+      "type": "mfs",
+      "senderIds": [],
+      "parserStatus": "planned",
+      "fixtureStatus": "missing",
+      "lastReviewed": null
+    },
+    {
+      "id": "nagad",
+      "name": "Nagad",
+      "type": "mfs",
+      "senderIds": [],
+      "parserStatus": "planned",
+      "fixtureStatus": "missing",
+      "lastReviewed": null
+    },
+    {
+      "id": "rocket",
+      "name": "Rocket",
+      "type": "mfs",
+      "senderIds": [],
+      "parserStatus": "planned",
+      "fixtureStatus": "missing",
+      "lastReviewed": null
+    }
+  ]
+}

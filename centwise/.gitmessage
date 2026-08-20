@@ -1,0 +1,16 @@
+# <type>(<scope>): <subject>
+#
+# <body>
+#
+# <footer>
+#
+# Types: feat, fix, docs, style, refactor, perf, test, chore
+# Suggested scopes: parser, sms, android, ios, ui, db, budget, subscription, build, test, docs
+# Subject: short, present tense, preferably 50 characters or less.
+#
+# Examples:
+# feat(parser): add bKash payment SMS support
+# fix(ios): handle Shortcut input in the background
+# test(parser): add Nagad debit fixtures
+# docs: update supported Bangladesh providers
+# chore(build): pin Rust and Android tool versions

@@ -1,0 +1,32 @@
+Term,Description
+Centwise,Brand name. Keep "Centwise" in Latin script.
+SMS,Technical term. Keep "SMS" in Latin script.
+OTP,Security term. Keep "OTP" in Latin script and do not expose OTP values.
+AI,Technical term. Keep "AI" in Latin script.
+App Intent,Apple integration term. Keep the technical meaning clear.
+Shortcut,Apple Shortcuts feature. Translate naturally but keep the product meaning.
+Bank,Financial institution term. Translate naturally for Bengali users.
+Mobile financial service,Bangladesh financial-service term. Use a clear Bengali translation when localizing.
+bKash,Brand name. Keep "bKash" unchanged.
+Nagad,Brand name. Keep "Nagad" unchanged.
+Rocket,Brand name. Keep "Rocket" unchanged.
+Transaction,Core finance term. Use one consistent Bengali translation throughout the app.
+Income,Finance term. Use one consistent Bengali translation throughout the app.
+Expense,Finance term. Use one consistent Bengali translation throughout the app.
+Transfer,Finance term. Use one consistent Bengali translation throughout the app.
+Refund,Finance term. Use one consistent Bengali translation throughout the app.
+Balance,Finance term. Use one consistent Bengali translation throughout the app.
+Budget,Finance term. Use one consistent Bengali translation throughout the app.
+Category,Finance term. Use one consistent Bengali translation throughout the app.
+Merchant,Finance term. Use one consistent Bengali translation throughout the app.
+Subscription,Recurring-payment term. Use one consistent Bengali translation throughout the app.
+Reminder,Notification term. Use one consistent Bengali translation throughout the app.
+BDT,Currency code. Keep "BDT" unchanged.
+৳,Bangladeshi taka symbol. Keep the symbol unchanged.
+Pro,Future product tier. Keep "Pro" unchanged if billing is added later.
+Rust,Programming language name. Keep "Rust" unchanged.
+UniFFI,Binding technology name. Keep "UniFFI" unchanged.
+on-device,Privacy term. Translate the meaning as processing on the user’s phone, not in the cloud.
+local-first,Privacy and storage term. Translate the meaning clearly; do not imply cloud sync.
+open source,Software distribution term. Translate naturally while preserving the meaning.
+F-Droid,Distribution platform name. Keep "F-Droid" unchanged.
