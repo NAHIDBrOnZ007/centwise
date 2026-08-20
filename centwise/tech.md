@@ -68,6 +68,16 @@ The Rust core does not manage platform permissions, UI, notifications, or platfo
 
 Cloud storage and cross-device synchronization are planned product capabilities, not required for local operation.
 
+## Database and Migrations
+
+- Android and iOS share the same logical transaction/account data model.
+- Android uses Room schema export and committed versioned JSON snapshots.
+- iOS uses its own migration implementation for the same logical model.
+- Safe additions may use automatic migration.
+- Renames, transformations, removals, and relationship changes require explicit migration code.
+- Every released schema version has migration tests, upgrade tests, and backup compatibility checks.
+- Destructive migration is not used for released user data.
+
 ## Architecture
 
 ```text
@@ -122,4 +132,3 @@ iOS Share Extension ─┘
 ## Product Boundaries
 
 Centwise is initially focused on Bangladesh. The core model may support future expansion, but the first supported data sources are Bangladeshi banks, cards, bKash, Nagad, Rocket, and other local MFS providers.
-

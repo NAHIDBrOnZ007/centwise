@@ -2,6 +2,9 @@
 
 This document describes the foundation that must be prepared before building product features.
 
+The canonical long-term structure is documented in
+[`docs/architecture/file-structure.md`](docs/architecture/file-structure.md).
+
 ## Repository Foundation
 
 - [ ] Git repository initialized with a clear branch strategy
@@ -136,6 +139,52 @@ features and must not be copied from PennyWise.
 - [ ] Review schema changes in pull requests
 - [ ] Add migration tests for every released schema change
 - [ ] Never use destructive migration for released user data
+
+### Cross-platform database migration policy
+
+Android and iOS must use the same logical data model, but their migration files
+are platform-specific because Room and the iOS database layer have different
+tooling.
+
+```text
+core/domain-model/             shared transaction/account concepts
+apps/android/app/schemas/      generated Room JSON snapshots
+apps/android/app/migrations/   Android manual migrations when required
+apps/ios/Centwise/Data/        iOS migration implementation
+docs/architecture/data-model.md shared table/field contract
+```
+
+Use automatic migration when the change is mechanically safe:
+
+- Add a table
+- Add a nullable column
+- Add a column with a valid default
+- Add a non-unique index
+
+Use an explicit manual migration when the change affects existing data:
+
+- Rename a table or column
+- Split one field into multiple fields
+- Merge fields
+- Change a stored value format
+- Change an enum or transaction type
+- Add or change foreign keys
+- Remove data
+
+Every released schema change must have:
+
+- [ ] An incremented database version
+- [ ] Generated Android Room schema JSON
+- [ ] Android migration test from the previous version
+- [ ] Matching iOS migration step
+- [ ] Fresh-install test
+- [ ] Upgrade test with representative old data
+- [ ] Backup/restore compatibility check
+- [ ] Rollback or recovery decision
+
+The numbered JSON files are not manually designed feature files. They are
+generated records of the Android schema at each version, similar to PennyWise.
+Centwise should generate and commit them only after the real database exists.
 
 ### Other configured resources
 
