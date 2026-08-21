@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centwise iOS UI Interactive Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-emerald: #00A86B;
+            --bkash-pink: #E2136E;
+            --nagad-orange: #F7941D;
+            --rocket-purple: #8C3494;
+            --income-green: #22C55E;
+            --expense-red: #EF4444;
+            --transfer-blue: #3B82F6;
+            
+            /* Dark Mode Defaults */
+            --bg-body: #080A0E;
+            --phone-bg: #0D1117;
+            --phone-surface: #161F28;
+            --phone-surface-secondary: #1F2A37;
+            --phone-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #FFFFFF;
+            --text-secondary: #94A3B8;
+            --accent-current: var(--primary-emerald);
+        }
+
+        body.theme-light {
+            --phone-bg: #F8FAFC;
+            --phone-surface: #FFFFFF;
+            --phone-surface-secondary: #F1F5F9;
+            --phone-border: rgba(0, 0, 0, 0.06);
+            --text-primary: #0F172A;
+            --text-secondary: #64748B;
+        }
+
+        body.theme-amoled {
+            --phone-bg: #000000;
+            --phone-surface: #0E0E0E;
+            --phone-surface-secondary: #181818;
+            --phone-border: rgba(255, 255, 255, 0.06);
+            --text-primary: #FFFFFF;
+            --text-secondary: #888888;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #FFFFFF;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Top Control Bar */
+        .preview-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            padding: 10px 20px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-label {
+            font-size: 13px;
+            color: #94A3B8;
+            font-weight: 500;
+        }
+
+        .btn-toggle {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-toggle.active {
+            background: var(--accent-current);
+            color: #fff;
+        }
+
+        .color-dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s;
+        }
+        .color-dot:hover { transform: scale(1.15); }
+        .color-dot.active { border-color: #fff; transform: scale(1.15); }
+
+        /* Phone Frame */
+        .phone-frame {
+            width: 390px;
+            height: 844px;
+            background: var(--phone-bg);
+            border-radius: 52px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 0 12px #2A2E39, 0 0 0 14px #1A1D24;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: background 0.3s;
+        }
+
+        /* Dynamic Island */
+        .dynamic-island {
+            position: absolute;
+            top: 11px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 32px;
+            background: #000;
+            border-radius: 20px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+        }
+
+        .camera-lens {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #0c1829;
+            margin-left: auto;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            height: 48px;
+            padding: 14px 28px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            z-index: 90;
+        }
+
+        /* Phone Screen Viewport */
+        .screen-viewport {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 12px 18px 90px;
+            position: relative;
+            scrollbar-width: none;
+        }
+        .screen-viewport::-webkit-scrollbar { display: none; }
+
+        /* Bottom Tab Bar */
+        .tab-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: var(--phone-surface);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--phone-border);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 18px;
+            z-index: 80;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 600;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .tab-item.active {
+            color: var(--accent-current);
+        }
+
+        .tab-item svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+        }
+
+        /* Floating (+) Button */
+        .fab-add {
+            position: absolute;
+            bottom: 92px;
+            right: 18px;
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: var(--accent-current);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 25px rgba(0, 168, 107, 0.4);
+            cursor: pointer;
+            z-index: 70;
+            transition: transform 0.2s;
+            border: none;
+        }
+        .fab-add:hover { transform: scale(1.08); }
+
+        /* Typography & Cards */
+        .glass-card {
+            background: var(--phone-surface);
+            border: 1px solid var(--phone-border);
+            border-radius: 20px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .hero-amount {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .amount-pos { color: var(--income-green); }
+        .amount-neg { color: var(--expense-red); }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .pill-green {
+            background: rgba(34, 197, 94, 0.12);
+            color: var(--income-green);
+        }
+        .pill-red {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--expense-red);
+        }
+
+        /* Horizontal Carousel */
+        .carousel-scroll {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            margin: 0 -18px 16px -18px;
+            padding: 4px 18px;
+            scrollbar-width: none;
+        }
+        .carousel-scroll::-webkit-scrollbar { display: none; }
+
+        .wallet-card {
+            min-width: 140px;
+            background: var(--phone-surface);
+            border: 1px solid var(--phone-border);
+            border-radius: 16px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 110px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .wallet-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        /* Transaction Item */
+        .tx-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--phone-border);
+            cursor: pointer;
+        }
+        .tx-row:last-child { border-bottom: none; }
+
+        .tx-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .tx-info { flex: 1; min-width: 0; }
+        .tx-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tx-sub {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .tx-amount {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        /* Progress Bar */
+        .prog-bar-bg {
+            height: 8px;
+            background: var(--phone-surface-secondary);
+            border-radius: 999px;
+            overflow: hidden;
+            margin: 8px 0 4px;
+        }
+        .prog-bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.3s;
+        }
+
+        /* Bottom Sheet Modal */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 150;
+            display: none;
+            align-items: flex-end;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .bottom-sheet {
+            background: var(--phone-surface);
+            border-radius: 28px 28px 0 0;
+            width: 100%;
+            max-height: 80%;
+            padding: 20px;
+            overflow-y: auto;
+            border-top: 1px solid var(--phone-border);
+            animation: slideUp 0.25s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .sheet-handle {
+            width: 36px;
+            height: 4px;
+            background: var(--phone-border);
+            border-radius: 999px;
+            margin: 0 auto 16px;
+        }
+
+        /* View Switching */
+        .tab-view { display: none; }
+        .tab-view.active { display: block; animation: fadeIn 0.2s ease-in; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body class="theme-dark">
+
+    <!-- Top Control Bar for Testing -->
+    <div class="preview-controls">
+        <div class="control-group">
+            <span class="control-label">Theme:</span>
+            <button class="btn-toggle active" onclick="setTheme('theme-dark', this)">Dark</button>
+            <button class="btn-toggle" onclick="setTheme('theme-light', this)">Light</button>
+            <button class="btn-toggle" onclick="setTheme('theme-amoled', this)">AMOLED</button>
+        </div>
+        <div style="width: 1px; height: 18px; background: rgba(255,255,255,0.15)"></div>
+        <div class="control-group">
+            <span class="control-label">Accent:</span>
+            <div class="color-dot active" style="background: #00A86B;" onclick="setAccent('#00A86B', this)" title="Emerald"></div>
+            <div class="color-dot" style="background: #E2136E;" onclick="setAccent('#E2136E', this)" title="bKash Pink"></div>
+            <div class="color-dot" style="background: #F7941D;" onclick="setAccent('#F7941D', this)" title="Nagad Orange"></div>
+            <div class="color-dot" style="background: #8C3494;" onclick="setAccent('#8C3494', this)" title="Rocket Violet"></div>
+        </div>
+    </div>
+
+    <!-- iPhone Mockup Frame -->
+    <div class="phone-frame">
+        <!-- Dynamic Island -->
+        <div class="dynamic-island">
+            <div style="font-size: 10px; color: #22C55E; font-weight: bold;">৳</div>
+            <div class="camera-lens"></div>
+        </div>
+
+        <!-- iOS Status Bar -->
+        <div class="status-bar">
+            <span>9:41</span>
+            <div style="display: flex; gap: 6px; align-items: center;">
+                <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><path d="M1 9h2V5H1v4zm4 0h2V3H5v6zm4 0h2V1H9v8zm4 0h2V0h-2v9z"/></svg>
+                <span>5G</span>
+                <svg width="20" height="10" viewBox="0 0 20 10" fill="currentColor"><rect x="1" y="1" width="16" height="8" rx="2" stroke="currentColor" fill="none"/><rect x="3" y="3" width="11" height="4" rx="1"/></svg>
+            </div>
+        </div>
+
+        <!-- Phone Screen Viewport -->
+        <div class="screen-viewport">
+            
+            <!-- 1. HOME TAB -->
+            <div id="view-home" class="tab-view active">
+                <!-- Greeting Card -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <div>
+                        <div style="font-size: 13px; color: var(--text-secondary);">Good afternoon,</div>
+                        <div style="font-size: 20px; font-weight: 800; color: var(--text-primary);">Tanvir Ahmed 🇧🇩</div>
+                    </div>
+                    <div class="pill pill-green">
+                        ↑ ৳62.8K Net
+                    </div>
+                </div>
+
+                <!-- Monthly Spending Hero Card -->
+                <div class="glass-card">
+                    <div style="font-size: 12px; color: var(--text-secondary); text-align: center;">Total Spending this Month</div>
+                    <div class="hero-amount" style="text-align: center; margin: 4px 0 12px;">৳ 14,250.00</div>
+                    <div style="height: 1px; background: var(--phone-border); margin-bottom: 12px;"></div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">Monthly Income</div>
+                            <div style="font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 700; color: var(--income-green);">+৳ 85,000</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 11px; color: var(--text-secondary);">Net Balance</div>
+                            <div style="font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 700; color: var(--text-primary);">৳ 70,750</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Accounts & Wallets Carousel -->
+                <div class="section-title">
+                    <span>Wallets & Accounts</span>
+                    <span style="font-size: 12px; color: var(--accent-current); cursor: pointer;" onclick="switchTab('accounts')">See All</span>
+                </div>
+                <div class="carousel-scroll">
+                    <!-- bKash -->
+                    <div class="wallet-card" onclick="openDetail('bKash Personal', '৳ 14,250.00', 'MFS Wallet • 7821', 'Payment Tk 850 to Foodpanda', '#E2136E')">
+                        <div style="display: flex; justify-content: space-between;">
+                            <div class="wallet-badge" style="background: #E2136E;">৳</div>
+                            <span style="font-size: 10px; color: var(--text-secondary);">••7821</span>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">bKash Wallet</div>
+                            <div style="font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 700; color: var(--text-primary);">৳ 14,250</div>
+                        </div>
+                    </div>
+                    <!-- BRAC Bank -->
+                    <div class="wallet-card" onclick="openDetail('BRAC Bank Salary', '৳ 98,400.00', 'Bank Account • 4190', 'Tech Corp Salary Credit', '#053E94')">
+                        <div style="display: flex; justify-content: space-between;">
+                            <div class="wallet-badge" style="background: #053E94;">🏛️</div>
+                            <span style="font-size: 10px; color: var(--text-secondary);">••4190</span>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">BRAC Bank</div>
+                            <div style="font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 700; color: var(--text-primary);">৳ 98,400</div>
+                        </div>
+                    </div>
+                    <!-- City Bank AMEX -->
+                    <div class="wallet-card" onclick="openDetail('City Bank Amex', '৳ 187,200 Avail', 'Credit Card • 1008', 'Unimart Dhaka Grocery', '#D91B24')">
+                        <div style="display: flex; justify-content: space-between;">
+                            <div class="wallet-badge" style="background: #D91B24;">💳</div>
+                            <span style="font-size: 10px; color: var(--text-secondary);">••1008</span>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">City AMEX</div>
+                            <div style="font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 700; color: var(--text-primary);">৳ 12.8K used</div>
+                        </div>
+                    </div>
+                    <!-- Nagad -->
+                    <div class="wallet-card">
+                        <div style="display: flex; justify-content: space-between;">
+                            <div class="wallet-badge" style="background: #F7941D;">৳</div>
+                            <span style="font-size: 10px; color: var(--text-secondary);">••9042</span>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-secondary);">Nagad Wallet</div>
+                            <div style="font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 700; color: var(--text-primary);">৳ 5,320</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monthly Budgets Carousel -->
+                <div class="section-title">
+                    <span>Monthly Budgets</span>
+                    <span style="font-size: 12px; color: var(--accent-current); cursor: pointer;" onclick="switchTab('analytics')">Insights</span>
+                </div>
+                <div class="carousel-scroll">
+                    <div class="wallet-card" style="min-width: 155px;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span>🍔</span>
+                            <span style="font-size: 12px; font-weight: 600;">Food & Dining</span>
+                        </div>
+                        <div class="prog-bar-bg">
+                            <div class="prog-bar-fill" style="width: 76%; background: #F97316;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-secondary);">
+                            <span>৳ 11.4K</span>
+                            <span>of ৳ 15K</span>
+                        </div>
+                    </div>
+                    <div class="wallet-card" style="min-width: 155px;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span>🚗</span>
+                            <span style="font-size: 12px; font-weight: 600;">Transport</span>
+                        </div>
+                        <div class="prog-bar-bg">
+                            <div class="prog-bar-fill" style="width: 52%; background: #06B6D4;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-secondary);">
+                            <span>৳ 4.2K</span>
+                            <span>of ৳ 8K</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Transactions List -->
+                <div class="section-title">
+                    <span>Recent Transactions</span>
+                    <span style="font-size: 12px; color: var(--accent-current); cursor: pointer;" onclick="switchTab('transactions')">See All</span>
+                </div>
+                <div class="glass-card" style="padding: 6px 14px;">
+                    <!-- Row 1: Foodpanda -->
+                    <div class="tx-row" onclick="openDetail('Foodpanda - Sultans Dine', '-৳ 850.00', 'bKash Personal • Today, 1:45 PM', 'Payment Tk 850.00 to Foodpanda Bangladesh successful. Fee Tk 0.00. Balance Tk 14,250.00. TrxID 9K8L7M6N on 22/08/2026', '#E2136E')">
+                        <div class="tx-icon" style="background: rgba(249, 115, 22, 0.15); color: #F97316;">🍔</div>
+                        <div class="tx-info">
+                            <div class="tx-title">Foodpanda - Sultans Dine</div>
+                            <div class="tx-sub">bKash • Today, 1:45 PM</div>
+                        </div>
+                        <div class="tx-amount amount-neg">-৳ 850.00</div>
+                    </div>
+                    <!-- Row 2: Pathao -->
+                    <div class="tx-row" onclick="openDetail('Pathao Ride Gulshan', '-৳ 280.00', 'Nagad Wallet • Today, 10:20 AM', 'You paid Tk 280.00 to Pathao Rides. TxnID: NAG984128. Current Balance: Tk 5,320.00', '#F7941D')">
+                        <div class="tx-icon" style="background: rgba(6, 182, 212, 0.15); color: #06B6D4;">🚗</div>
+                        <div class="tx-info">
+                            <div class="tx-title">Pathao Ride - Gulshan 2</div>
+                            <div class="tx-sub">Nagad • Today, 10:20 AM</div>
+                        </div>
+                        <div class="tx-amount amount-neg">-৳ 280.00</div>
+                    </div>
+                    <!-- Row 3: Salary -->
+                    <div class="tx-row" onclick="openDetail('Tech Corp Salary', '+৳ 85,000.00', 'BRAC Bank • Yesterday', 'Your A/C *4190 credited by BDT 85,000.00 on 20-AUG-26 by TECH CORP SALARY. Total Balance BDT 98,400.00', '#053E94')">
+                        <div class="tx-icon" style="background: rgba(34, 197, 94, 0.15); color: #22C55E;">💰</div>
+                        <div class="tx-info">
+                            <div class="tx-title">Salary Credit - Tech Corp</div>
+                            <div class="tx-sub">BRAC Bank • Yesterday</div>
+                        </div>
+                        <div class="tx-amount amount-pos">+৳ 85,000.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. TRANSACTIONS TAB -->
+            <div id="view-transactions" class="tab-view">
+                <div style="font-size: 22px; font-weight: 800; margin-bottom: 12px;">Transactions</div>
+                
+                <!-- Search Bar -->
+                <div class="glass-card" style="padding: 10px 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <span>🔍</span>
+                    <input type="text" placeholder="Search merchant, ID, amount..." style="background: transparent; border: none; outline: none; color: var(--text-primary); font-size: 14px; width: 100%;">
+                </div>
+
+                <!-- Filter Chips -->
+                <div class="carousel-scroll" style="margin-bottom: 12px;">
+                    <div class="pill" style="background: var(--accent-current); color: #fff; cursor: pointer;">All</div>
+                    <div class="pill" style="background: var(--phone-surface-secondary); color: var(--text-primary); cursor: pointer;">💸 Expenses</div>
+                    <div class="pill" style="background: var(--phone-surface-secondary); color: var(--text-primary); cursor: pointer;">💰 Income</div>
+                    <div class="pill" style="background: rgba(226,19,110,0.15); color: #E2136E; cursor: pointer;">bKash</div>
+                    <div class="pill" style="background: rgba(247,148,29,0.15); color: #F7941D; cursor: pointer;">Nagad</div>
+                </div>
+
+                <!-- Group: Today -->
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 600;">TODAY</div>
+                <div class="glass-card" style="padding: 6px 14px; margin-bottom: 16px;">
+                    <div class="tx-row" onclick="openDetail('Foodpanda - Sultans Dine', '-৳ 850.00', 'bKash Personal', 'Payment Tk 850.00 to Foodpanda', '#E2136E')">
+                        <div class="tx-icon" style="background: rgba(249, 115, 22, 0.15); color: #F97316;">🍔</div>
+                        <div class="tx-info"><div class="tx-title">Foodpanda - Sultans Dine</div><div class="tx-sub">bKash • 1:45 PM</div></div>
+                        <div class="tx-amount amount-neg">-৳ 850.00</div>
+                    </div>
+                    <div class="tx-row" onclick="openDetail('Pathao Ride', '-৳ 280.00', 'Nagad Wallet', 'Payment Tk 280.00 to Pathao', '#F7941D')">
+                        <div class="tx-icon" style="background: rgba(6, 182, 212, 0.15); color: #06B6D4;">🚗</div>
+                        <div class="tx-info"><div class="tx-title">Pathao Ride - Gulshan 2</div><div class="tx-sub">Nagad • 10:20 AM</div></div>
+                        <div class="tx-amount amount-neg">-৳ 280.00</div>
+                    </div>
+                </div>
+
+                <!-- Group: Yesterday -->
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 600;">YESTERDAY</div>
+                <div class="glass-card" style="padding: 6px 14px;">
+                    <div class="tx-row" onclick="openDetail('Unimart Grocery', '-৳ 3,450.00', 'City Bank Amex', 'Card ending 1008 used at Unimart', '#D91B24')">
+                        <div class="tx-icon" style="background: rgba(236, 72, 153, 0.15); color: #EC4899;">🛍️</div>
+                        <div class="tx-info"><div class="tx-title">Unimart Gulshan Grocery</div><div class="tx-sub">City Amex • 7:15 PM</div></div>
+                        <div class="tx-amount amount-neg">-৳ 3,450.00</div>
+                    </div>
+                    <div class="tx-row" onclick="openDetail('Tech Corp Salary', '+৳ 85,000.00', 'BRAC Bank', 'A/C 4190 credited with salary', '#053E94')">
+                        <div class="tx-icon" style="background: rgba(34, 197, 94, 0.15); color: #22C55E;">💰</div>
+                        <div class="tx-info"><div class="tx-title">Tech Corp Salary Credit</div><div class="tx-sub">BRAC Bank • 10:00 AM</div></div>
+                        <div class="tx-amount amount-pos">+৳ 85,000.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. ANALYTICS TAB -->
+            <div id="view-analytics" class="tab-view">
+                <div style="font-size: 22px; font-weight: 800; margin-bottom: 12px;">Analytics & Insights</div>
+
+                <!-- Cashflow Bar -->
+                <div class="glass-card">
+                    <div style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">Cash Flow Balance</div>
+                    <div style="display: flex; gap: 4px; height: 12px; margin-bottom: 10px;">
+                        <div style="width: 82%; background: var(--income-green); border-radius: 999px;"></div>
+                        <div style="width: 18%; background: var(--expense-red); border-radius: 999px;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                        <span style="color: var(--income-green);">● Inflow: ৳ 85,000</span>
+                        <span style="color: var(--expense-red);">● Outflow: ৳ 14,250</span>
+                    </div>
+                </div>
+
+                <!-- Category Breakdown -->
+                <div class="section-title">Spending by Category</div>
+                <div class="glass-card">
+                    <div style="margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600;">
+                            <span>🍔 Food & Dining</span>
+                            <span>৳ 11,450 (62%)</span>
+                        </div>
+                        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width: 62%; background: #F97316;"></div></div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600;">
+                            <span>🚗 Transport</span>
+                            <span>৳ 4,200 (23%)</span>
+                        </div>
+                        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width: 23%; background: #06B6D4;"></div></div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600;">
+                            <span>🛍️ Shopping</span>
+                            <span>৳ 2,150 (15%)</span>
+                        </div>
+                        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width: 15%; background: #EC4899;"></div></div>
+                    </div>
+                </div>
+
+                <!-- Top Merchants Leaderboard -->
+                <div class="section-title">Top Bangladesh Merchants</div>
+                <div class="glass-card" style="padding: 6px 14px;">
+                    <div class="tx-row">
+                        <div style="font-weight: 800; width: 20px; color: var(--text-secondary);">1</div>
+                        <div class="tx-info"><div class="tx-title">Foodpanda Bangladesh</div><div class="tx-sub">8 orders</div></div>
+                        <div class="tx-amount">৳ 6,850</div>
+                    </div>
+                    <div class="tx-row">
+                        <div style="font-weight: 800; width: 20px; color: var(--text-secondary);">2</div>
+                        <div class="tx-info"><div class="tx-title">Unimart Supermarket</div><div class="tx-sub">2 visits</div></div>
+                        <div class="tx-amount">৳ 3,450</div>
+                    </div>
+                    <div class="tx-row">
+                        <div style="font-weight: 800; width: 20px; color: var(--text-secondary);">3</div>
+                        <div class="tx-info"><div class="tx-title">Pathao Rides</div><div class="tx-sub">12 rides</div></div>
+                        <div class="tx-amount">৳ 2,420</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. WALLETS TAB -->
+            <div id="view-accounts" class="tab-view">
+                <div style="font-size: 22px; font-weight: 800; margin-bottom: 12px;">Wallets & Accounts</div>
+                
+                <div class="glass-card">
+                    <div style="font-size: 12px; color: var(--text-secondary);">Total Net Balance</div>
+                    <div class="hero-amount" style="margin: 4px 0 8px;">৳ 117,970.00</div>
+                    <div style="font-size: 11px; color: var(--income-green);">🔒 100% Stored On-Device</div>
+                </div>
+
+                <div class="section-title">
+                    <span>Connected Money Sources</span>
+                    <span style="font-size: 12px; color: var(--accent-current); cursor: pointer;">+ Add New</span>
+                </div>
+
+                <div class="glass-card" style="padding: 6px 14px;">
+                    <div class="tx-row">
+                        <div class="wallet-badge" style="background: #E2136E; width: 38px; height: 38px;">৳</div>
+                        <div class="tx-info"><div class="tx-title">bKash Personal</div><div class="tx-sub">MFS Wallet • 7821</div></div>
+                        <div class="tx-amount">৳ 14,250.00</div>
+                    </div>
+                    <div class="tx-row">
+                        <div class="wallet-badge" style="background: #053E94; width: 38px; height: 38px;">🏛️</div>
+                        <div class="tx-info"><div class="tx-title">BRAC Bank Salary</div><div class="tx-sub">Savings A/C • 4190</div></div>
+                        <div class="tx-amount">৳ 98,400.00</div>
+                    </div>
+                    <div class="tx-row">
+                        <div class="wallet-badge" style="background: #F7941D; width: 38px; height: 38px;">৳</div>
+                        <div class="tx-info"><div class="tx-title">Nagad Wallet</div><div class="tx-sub">MFS Wallet • 9042</div></div>
+                        <div class="tx-amount">৳ 5,320.00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. SETTINGS TAB -->
+            <div id="view-settings" class="tab-view">
+                <div style="font-size: 22px; font-weight: 800; margin-bottom: 12px;">Settings</div>
+
+                <div class="section-title">Automations</div>
+                <div class="glass-card" style="cursor: pointer;" onclick="openShortcutGuide()">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="font-size: 24px;">⚡</div>
+                        <div>
+                            <div style="font-weight: 700; font-size: 14px;">Apple Shortcuts Setup</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">Configure silent background SMS tracking</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title">Security & Privacy</div>
+                <div class="glass-card" style="padding: 12px 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span>Face ID / Biometric Lock</span>
+                        <input type="checkbox" checked style="accent-color: var(--accent-current);">
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>On-Device Only Processing</span>
+                        <span style="color: var(--income-green); font-size: 12px; font-weight: 700;">Active 🛡️</span>
+                    </div>
+                </div>
+
+                <div class="section-title">Data Management</div>
+                <div class="glass-card" style="padding: 12px 16px;">
+                    <div style="cursor: pointer; color: var(--accent-current); font-weight: 600; margin-bottom: 12px;" onclick="alert('CSV of 128 transactions exported!')">
+                        📤 Export Transactions as CSV
+                    </div>
+                    <div style="cursor: pointer; color: var(--accent-current); font-weight: 600;" onclick="alert('Offline encrypted backup created!')">
+                        💾 Backup Local Database
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Floating Action Button -->
+        <button class="fab-add" onclick="openAddModal()">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </button>
+
+        <!-- Bottom Tab Bar -->
+        <div class="tab-bar">
+            <div class="tab-item active" onclick="switchTab('home')">
+                <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span>Home</span>
+            </div>
+            <div class="tab-item" onclick="switchTab('transactions')">
+                <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+                <span>Transactions</span>
+            </div>
+            <div class="tab-item" onclick="switchTab('analytics')">
+                <svg viewBox="0 0 24 24"><path d="M11 2v20c-5.07-.5-9-4.79-9-10s3.93-9.5 9-10zm2.03 0v8.99H22c-.47-4.74-4.24-8.52-8.97-8.99zm0 11.01V22c4.74-.47 8.5-4.25 8.97-8.99h-8.97z"/></svg>
+                <span>Analytics</span>
+            </div>
+            <div class="tab-item" onclick="switchTab('accounts')">
+                <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+                <span>Wallets</span>
+            </div>
+            <div class="tab-item" onclick="switchTab('settings')">
+                <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                <span>Settings</span>
+            </div>
+        </div>
+
+        <!-- Detail Sheet Modal -->
+        <div id="detailModal" class="modal-overlay" onclick="closeModal(event)">
+            <div class="bottom-sheet">
+                <div class="sheet-handle"></div>
+                <div style="text-align: center; margin-bottom: 16px;">
+                    <div id="modalIcon" style="width: 54px; height: 54px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 8px;">🍔</div>
+                    <div id="modalTitle" style="font-size: 18px; font-weight: 700;">Foodpanda Bangladesh</div>
+                    <div id="modalAmount" class="hero-amount" style="font-size: 24px; color: var(--expense-red);">-৳ 850.00</div>
+                </div>
+
+                <div class="glass-card">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;">
+                        <span style="color: var(--text-secondary);">Account</span>
+                        <span id="modalAccount" style="font-weight: 600;">bKash Personal</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                        <span style="color: var(--text-secondary);">Status</span>
+                        <span style="color: var(--income-green); font-weight: 600;">● Auto-Parsed from SMS</span>
+                    </div>
+                </div>
+
+                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 600;">RAW SMS MESSAGE</div>
+                <div id="modalSms" class="glass-card" style="font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--text-secondary); background: var(--phone-surface-secondary);">
+                    Payment Tk 850.00 to Foodpanda Bangladesh successful. Fee Tk 0.00. Balance Tk 14,250.00. TrxID 9K8L7M6N on 22/08/2026 13:45
+                </div>
+
+                <button class="btn-toggle active" style="width: 100%; padding: 12px; border-radius: 14px;" onclick="closeModalDirect()">Done</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function setTheme(themeName, btn) {
+            document.body.className = themeName;
+            document.querySelectorAll('.control-group .btn-toggle').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function setAccent(color, dot) {
+            document.documentElement.style.setProperty('--accent-current', color);
+            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+            dot.classList.add('active');
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
+            
+            const view = document.getElementById('view-' + tabId);
+            if (view) view.classList.add('active');
+
+            const tabMap = { 'home': 0, 'transactions': 1, 'analytics': 2, 'accounts': 3, 'settings': 4 };
+            const index = tabMap[tabId];
+            if (index !== undefined) {
+                document.querySelectorAll('.tab-item')[index].classList.add('active');
+            }
+        }
+
+        function openDetail(title, amount, account, sms, color) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalAmount').innerText = amount;
+            document.getElementById('modalAccount').innerText = account;
+            document.getElementById('modalSms').innerText = sms;
+            document.getElementById('modalIcon').style.background = color + '25';
+            document.getElementById('modalIcon').style.color = color;
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function closeModal(e) {
+            if (e.target.id === 'detailModal') {
+                document.getElementById('detailModal').classList.remove('active');
+            }
+        }
+
+        function closeModalDirect() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        function openShortcutGuide() {
+            alert("iOS Apple Shortcuts Message Automation Guide:\n\n1. Open Apple Shortcuts on iPhone\n2. Automation -> Message contains 'Tk, bKash, Nagad'\n3. Set Action: Centwise -> Parse SMS\n4. Toggle 'Run Immediately' ON!");
+        }
+
+        function openAddModal() {
+            alert("Add Transaction:\n\nIn the native app, this opens the Swift AddEditTransaction sheet with currency pad and category selector.");
+        }
+    </script>
+</body>
+</html>
