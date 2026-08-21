@@ -9,7 +9,7 @@ public struct SettingsScreen: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                // Section 1: Personalization (Screenshot 3)
+                // Section 1: Personalization (Matching Screenshot ios ui 1.jpeg)
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Personalization")
                         .font(.system(size: 14, weight: .semibold))
@@ -18,16 +18,16 @@ public struct SettingsScreen: View {
 
                     VStack(spacing: 0) {
                         settingsRow(
-                            iconText: "🎨",
-                            iconColor: Color.orange,
+                            systemImage: "paintbrush.fill",
+                            iconColor: .orange,
                             title: "Appearance",
                             subtitle: "Theme, accent color, dark mode",
                             showDivider: true
                         )
 
                         settingsRow(
-                            iconText: "৳",
-                            iconColor: Color(red: 0.20, green: 0.78, blue: 0.35),
+                            systemImage: "coloncurrencysign.circle.fill",
+                            iconColor: .green,
                             title: "Currency",
                             subtitle: "Default currency for totals and new entries",
                             showDivider: false
@@ -39,7 +39,7 @@ public struct SettingsScreen: View {
                     )
                 }
 
-                // Section 2: Data Management (Screenshot 3)
+                // Section 2: Data Management (Matching Screenshot ios ui 1.jpeg)
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Data Management")
                         .font(.system(size: 14, weight: .semibold))
@@ -48,7 +48,7 @@ public struct SettingsScreen: View {
 
                     VStack(spacing: 0) {
                         settingsRow(
-                            iconText: "⊞",
+                            systemImage: "square.grid.2x2.fill",
                             iconColor: Color(red: 0.69, green: 0.32, blue: 0.87),
                             title: "Categories",
                             subtitle: "Manage expense and income categories",
@@ -56,15 +56,15 @@ public struct SettingsScreen: View {
                         )
 
                         settingsRow(
-                            iconText: "◔",
-                            iconColor: Color(red: 0.20, green: 0.78, blue: 0.35),
+                            systemImage: "chart.pie.fill",
+                            iconColor: .green,
                             title: "Budgets",
                             subtitle: "Set spending limits by category",
                             showDivider: true
                         )
 
                         settingsRow(
-                            iconText: "🏛️",
+                            systemImage: "building.columns.fill",
                             iconColor: Color(red: 0.0, green: 0.48, blue: 1.0),
                             title: "Accounts",
                             subtitle: "Manage bank accounts and cards",
@@ -72,7 +72,7 @@ public struct SettingsScreen: View {
                         )
 
                         settingsRow(
-                            iconText: "⇄",
+                            systemImage: "arrow.triangle.2.circlepath",
                             iconColor: Color(red: 0.35, green: 0.34, blue: 0.84),
                             title: "Subscriptions",
                             subtitle: "Track recurring payments",
@@ -80,7 +80,7 @@ public struct SettingsScreen: View {
                         )
 
                         settingsRow(
-                            iconText: "✨",
+                            systemImage: "sparkles",
                             iconColor: Color(red: 1.0, green: 0.18, blue: 0.33),
                             title: "Smart Rules",
                             subtitle: "Auto-categorize transactions",
@@ -103,7 +103,7 @@ public struct SettingsScreen: View {
 
     @ViewBuilder
     private func settingsRow(
-        iconText: String,
+        systemImage: String,
         iconColor: Color,
         title: String,
         subtitle: String,
@@ -111,15 +111,11 @@ public struct SettingsScreen: View {
     ) -> some View {
         VStack(spacing: 0) {
             HStack(spacing: 14) {
-                // Colorful Icon Badge
-                RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(iconColor)
-                    .frame(width: 32, height: 32)
-                    .overlay(
-                        Text(iconText)
-                            .font(.system(size: 15))
-                            .foregroundColor(.white)
-                    )
+                // Exact Bare SF Symbol without background box (Screenshot ios ui 1.jpeg)
+                Image(systemName: systemImage)
+                    .font(.system(size: 22))
+                    .foregroundColor(iconColor)
+                    .frame(width: 28, height: 28)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
@@ -139,11 +135,11 @@ public struct SettingsScreen: View {
                     .foregroundColor(Color(white: 0.75))
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.vertical, 13)
 
             if showDivider {
                 Divider()
-                    .padding(.leading, 62)
+                    .padding(.leading, 58)
             }
         }
     }
