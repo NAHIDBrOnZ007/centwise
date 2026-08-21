@@ -3,88 +3,85 @@ import SwiftUI
 public struct SpendingSummaryCard: View {
     public let monthlyExpense: Double
     public let monthlyIncome: Double
-    public let monthlyNet: Double
+    public let monthlySaved: Double
 
-    @ObservedObject private var themeManager = ThemeManager.shared
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.isAmoledActive) private var isAmoled
 
     public init(
-        monthlyExpense: Double,
-        monthlyIncome: Double,
-        monthlyNet: Double
+        monthlyExpense: Double = 0.0,
+        monthlyIncome: Double = 0.0,
+        monthlySaved: Double = 0.0
     ) {
         self.monthlyExpense = monthlyExpense
         self.monthlyIncome = monthlyIncome
-        self.monthlyNet = monthlyNet
+        self.monthlySaved = monthlySaved
     }
 
     public var body: some View {
-        VStack(spacing: CentwiseSpacing.md) {
-            // Top: Total Expense Hero
-            VStack(spacing: CentwiseSpacing.xs) {
-                Text("Total Spending this Month")
-                    .font(CentwiseTypography.subheadline)
+        VStack(alignment: .leading, spacing: 14) {
+            // Label & Hero Amount
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Spent this month")
+                    .font(.system(size: 13, weight: .regular))
                     .foregroundColor(.secondary)
 
                 Text(CurrencyFormatter.shared.formatBDT(monthlyExpense, showSign: false))
-                    .font(CentwiseTypography.amountHero)
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.top, CentwiseSpacing.xs)
 
+            // Subtle Divider
             Divider()
-                .background(CentwiseColors.border(for: colorScheme))
 
-            // Bottom: Income & Net Balance Breakdown
-            HStack(spacing: CentwiseSpacing.lg) {
-                // Income Column
-                HStack(spacing: CentwiseSpacing.sm) {
-                    Circle()
-                        .fill(CentwiseColors.incomeGreen.opacity(0.15))
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            Image(systemName: "arrow.down.left")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundColor(CentwiseColors.incomeGreen)
-                        )
+            // 3-Column Stats Breakdown with Vertical Stripes
+            HStack(alignment: .top, spacing: 12) {
+                // 1. Income Column
+                statColumn(
+                    amount: monthlyIncome,
+                    label: "Income",
+                    stripeColor: Color(red: 0.20, green: 0.78, blue: 0.35) // Green
+                )
 
-                    VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
-                        Text("Income")
-                            .font(CentwiseTypography.caption1)
-                            .foregroundColor(.secondary)
-                        Text(CurrencyFormatter.shared.formatBDT(monthlyIncome, showSign: false, compact: true))
-                            .font(CentwiseTypography.amountSmall)
-                            .foregroundColor(.primary)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                // 2. Expenses Column
+                statColumn(
+                    amount: monthlyExpense,
+                    label: "Expenses",
+                    stripeColor: Color(red: 1.0, green: 0.23, blue: 0.19) // Red
+                )
 
-                // Net Balance Column
-                HStack(spacing: CentwiseSpacing.sm) {
-                    Circle()
-                        .fill(themeManager.accentColor.opacity(0.15))
-                        .frame(width: 36, height: 36)
-                        .overlay(
-                            Image(systemName: "wallet.pass.fill")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundColor(themeManager.accentColor)
-                        )
-
-                    VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
-                        Text("Net Balance")
-                            .font(CentwiseTypography.caption1)
-                            .foregroundColor(.secondary)
-                        Text(CurrencyFormatter.shared.formatBDT(monthlyNet, showSign: false, compact: true))
-                            .font(CentwiseTypography.amountSmall)
-                            .foregroundColor(monthlyNet >= 0 ? CentwiseColors.incomeGreen : CentwiseColors.expenseRed)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+                // 3. Saved / Net Column
+                statColumn(
+                    amount: monthlySaved,
+                    label: "Saved",
+                    stripeColor: Color(red: 0.19, green: 0.69, blue: 0.78) // Teal
+                )
             }
         }
-        .padding(CentwiseSpacing.md)
-        .glassCard(cornerRadius: CentwiseSpacing.radiusLg)
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(colorScheme == .dark ? Color(red: 0.11, green: 0.11, blue: 0.12) : Color(red: 0.97, green: 0.98, blue: 0.98))
+        )
+    }
+
+    @ViewBuilder
+    private func statColumn(amount: Double, label: String, stripeColor: Color) -> some View {
+        HStack(alignment: .center, spacing: 6) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(stripeColor)
+                .frame(width: 3.5, height: 28)
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(CurrencyFormatter.shared.formatBDT(amount, showSign: false, compact: true))
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
+                    .foregroundColor(.primary)
+
+                Text(label)
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundColor(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

@@ -3,47 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Centwise iOS UI Interactive Preview</title>
+    <title>PennyWise / Centwise iOS - 100% Exact UI & Icons</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-emerald: #00A86B;
-            --bkash-pink: #E2136E;
-            --nagad-orange: #F7941D;
-            --rocket-purple: #8C3494;
-            --income-green: #22C55E;
-            --expense-red: #EF4444;
-            --transfer-blue: #3B82F6;
-            
-            /* Dark Mode Defaults */
-            --bg-body: #080A0E;
-            --phone-bg: #0D1117;
-            --phone-surface: #161F28;
-            --phone-surface-secondary: #1F2A37;
-            --phone-border: rgba(255, 255, 255, 0.08);
-            --text-primary: #FFFFFF;
-            --text-secondary: #94A3B8;
-            --accent-current: var(--primary-emerald);
+            /* Exact iOS System Colors (PennyWise Light Theme) */
+            --bg-canvas: #E8EAEF;
+            --phone-bg: #FFFFFF;
+            --card-bg: #F8F9FA;
+            --card-border: rgba(0, 0, 0, 0.04);
+            --text-title: #000000;
+            --text-body: #1C1C1E;
+            --text-muted: #8E8E93;
+            --accent-mauve: #B55D75;
+            --accent-blue: #007AFF;
+            --income-green: #34C759;
+            --expense-red: #FF3B30;
+            --saved-teal: #30B0C7;
+            --tab-bar-bg: rgba(255, 255, 255, 0.88);
+            --tab-active-pill: rgba(181, 93, 117, 0.14);
+            --tab-active-color: #B55D75;
+            --search-bg: #EFEFF4;
         }
 
-        body.theme-light {
-            --phone-bg: #F8FAFC;
-            --phone-surface: #FFFFFF;
-            --phone-surface-secondary: #F1F5F9;
-            --phone-border: rgba(0, 0, 0, 0.06);
-            --text-primary: #0F172A;
-            --text-secondary: #64748B;
-        }
-
-        body.theme-amoled {
+        body.theme-dark {
+            --bg-canvas: #0A0A0C;
             --phone-bg: #000000;
-            --phone-surface: #0E0E0E;
-            --phone-surface-secondary: #181818;
-            --phone-border: rgba(255, 255, 255, 0.06);
-            --text-primary: #FFFFFF;
-            --text-secondary: #888888;
+            --card-bg: #1C1C1E;
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-title: #FFFFFF;
+            --text-body: #F2F2F7;
+            --text-muted: #8E8E93;
+            --tab-bar-bg: rgba(28, 28, 30, 0.88);
+            --tab-active-pill: rgba(255, 255, 255, 0.15);
+            --tab-active-color: #FFFFFF;
+            --search-bg: #1C1C1E;
         }
 
         * {
@@ -55,82 +51,66 @@
         }
 
         body {
-            background-color: var(--bg-body);
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: #FFFFFF;
+            background-color: var(--bg-canvas);
+            font-family: -apple-system, BlinkMacSystemFont, 'Plus Jakarta Sans', "SF Pro Text", sans-serif;
+            color: var(--text-body);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            transition: background 0.3s;
         }
 
-        /* Top Control Bar */
-        .preview-controls {
+        /* Top Controls */
+        .controls-panel {
             display: flex;
             align-items: center;
-            gap: 16px;
-            margin-bottom: 24px;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(12px);
-            padding: 10px 20px;
+            gap: 12px;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.06);
+            padding: 6px 14px;
             border-radius: 999px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+        }
+        body.theme-dark .controls-panel {
+            background: rgba(255, 255, 255, 0.12);
         }
 
-        .control-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .control-label {
-            font-size: 13px;
-            color: #94A3B8;
-            font-weight: 500;
-        }
-
-        .btn-toggle {
-            background: rgba(255, 255, 255, 0.08);
-            color: #fff;
+        .btn-theme {
+            background: transparent;
             border: none;
             padding: 6px 14px;
             border-radius: 999px;
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
+            color: var(--text-muted);
             transition: all 0.2s;
         }
-
-        .btn-toggle.active {
-            background: var(--accent-current);
-            color: #fff;
+        .btn-theme.active {
+            background: #FFFFFF;
+            color: #000000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        body.theme-dark .btn-theme.active {
+            background: #2C2C2E;
+            color: #FFFFFF;
         }
 
-        .color-dot {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: transform 0.2s;
-        }
-        .color-dot:hover { transform: scale(1.15); }
-        .color-dot.active { border-color: #fff; transform: scale(1.15); }
-
-        /* Phone Frame */
+        /* iPhone 16 Pro Mockup Frame */
         .phone-frame {
-            width: 390px;
-            height: 844px;
+            width: 393px;
+            height: 852px;
             background: var(--phone-bg);
-            border-radius: 52px;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 0 12px #2A2E39, 0 0 0 14px #1A1D24;
+            border-radius: 54px;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.22), 0 0 0 12px #26282E, 0 0 0 14px #18191D;
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.08);
             transition: background 0.3s;
         }
 
@@ -140,797 +120,727 @@
             top: 11px;
             left: 50%;
             transform: translateX(-50%);
-            width: 120px;
-            height: 32px;
-            background: #000;
+            width: 124px;
+            height: 33px;
+            background: #000000;
             border-radius: 20px;
             z-index: 100;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 12px;
+            justify-content: flex-end;
+            padding-right: 12px;
         }
-
         .camera-lens {
-            width: 10px;
-            height: 10px;
+            width: 11px;
+            height: 11px;
             border-radius: 50%;
-            background: #0c1829;
-            margin-left: auto;
+            background: #0d1a2d;
+            box-shadow: inset 0 0 2px #0055ff;
         }
 
-        /* Status Bar */
+        /* iOS Status Bar (Screenshot match: 1:22, signal, wifi, 58% battery) */
         .status-bar {
             height: 48px;
             padding: 14px 28px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 700;
-            color: var(--text-primary);
+            color: var(--text-title);
             z-index: 90;
         }
 
-        /* Phone Screen Viewport */
-        .screen-viewport {
+        .status-icons {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Viewport */
+        .viewport {
             flex: 1;
             overflow-y: auto;
             overflow-x: hidden;
-            padding: 12px 18px 90px;
-            position: relative;
+            padding: 4px 18px 100px;
             scrollbar-width: none;
         }
-        .screen-viewport::-webkit-scrollbar { display: none; }
+        .viewport::-webkit-scrollbar { display: none; }
 
-        /* Bottom Tab Bar */
-        .tab-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
-            background: var(--phone-surface);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid var(--phone-border);
+        /* Navigation Header */
+        .nav-header {
             display: flex;
-            justify-content: space-around;
+            justify-content: space-between;
             align-items: center;
-            padding-bottom: 18px;
-            z-index: 80;
+            margin-bottom: 14px;
+            padding-top: 2px;
+        }
+        .nav-title {
+            font-size: 34px;
+            font-weight: 800;
+            color: var(--text-title);
+            letter-spacing: -0.8px;
         }
 
-        .tab-item {
+        /* Action Pill Bar (Screenshot 1: +, ⇅, 📤) */
+        .action-pill-group {
+            display: inline-flex;
+            align-items: center;
+            background: var(--card-bg);
+            border-radius: 999px;
+            padding: 6px 14px;
+            gap: 16px;
+            color: var(--accent-mauve);
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        /* Floating Pill Bottom Tab Bar (Screenshots 1, 2, 3) */
+        .tab-bar-container {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            z-index: 80;
+            display: flex;
+            justify-content: center;
+        }
+
+        .floating-tab-bar {
+            background: var(--tab-bar-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            border-radius: 999px;
+            padding: 5px;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+        body.theme-dark .floating-tab-bar {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .tab-btn {
+            flex: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
-            color: var(--text-secondary);
+            justify-content: center;
+            padding: 8px 4px 6px;
+            border-radius: 999px;
+            color: var(--text-title);
             cursor: pointer;
+            transition: all 0.2s;
             font-size: 10px;
             font-weight: 600;
-            transition: all 0.2s;
-            flex: 1;
+            gap: 3px;
         }
 
-        .tab-item.active {
-            color: var(--accent-current);
+        .tab-btn.active {
+            background: var(--tab-active-pill);
+            color: var(--tab-active-color);
         }
 
-        .tab-item svg {
+        .tab-btn svg {
             width: 22px;
             height: 22px;
             fill: currentColor;
         }
 
-        /* Floating (+) Button */
+        /* Floating Blue (+) Button (Screenshot 2) */
         .fab-add {
             position: absolute;
-            bottom: 92px;
-            right: 18px;
-            width: 54px;
-            height: 54px;
+            bottom: 94px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
-            background: var(--accent-current);
-            color: #fff;
+            background: #007AFF;
+            color: #FFFFFF;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 10px 25px rgba(0, 168, 107, 0.4);
+            font-size: 28px;
+            font-weight: 300;
+            box-shadow: 0 8px 20px rgba(0, 122, 255, 0.35);
             cursor: pointer;
             z-index: 70;
-            transition: transform 0.2s;
             border: none;
+            transition: transform 0.15s;
         }
-        .fab-add:hover { transform: scale(1.08); }
+        .fab-add:active { transform: scale(0.92); }
 
-        /* Typography & Cards */
-        .glass-card {
-            background: var(--phone-surface);
-            border: 1px solid var(--phone-border);
+        /* Card Component */
+        .card {
+            background: var(--card-bg);
             border-radius: 20px;
             padding: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            transition: background 0.3s, border 0.3s;
+            margin-bottom: 14px;
         }
 
-        .hero-amount {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 30px;
+        /* Greeting Card (Screenshot 2) */
+        .greeting-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .avatar-container {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: #B55D75;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .avatar-img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+        .user-title {
+            font-size: 17px;
             font-weight: 700;
-            color: var(--text-primary);
-            letter-spacing: -0.5px;
+            color: var(--text-title);
+        }
+        .user-sub {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 1px;
         }
 
-        .amount-pos { color: var(--income-green); }
-        .amount-neg { color: var(--expense-red); }
+        /* Spending 3-Column Card (Screenshot 2) */
+        .spending-card {
+            padding: 18px 18px 14px;
+        }
+        .spending-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        .spending-hero-amount {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text-title);
+            letter-spacing: -0.5px;
+            margin-bottom: 14px;
+        }
+        .spending-divider {
+            height: 1px;
+            background: rgba(0, 0, 0, 0.05);
+            margin-bottom: 14px;
+        }
+        body.theme-dark .spending-divider {
+            background: rgba(255, 255, 255, 0.08);
+        }
 
-        .pill {
+        .spending-stats-grid {
+            display: flex;
+            justify-content: space-between;
+        }
+        .stat-col {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            flex: 1;
+        }
+        .stat-stripe {
+            width: 3px;
+            height: 28px;
+            border-radius: 2px;
+        }
+        .stat-stripe-green { background: #34C759; }
+        .stat-stripe-red { background: #FF3B30; }
+        .stat-stripe-teal { background: #30B0C7; }
+
+        .stat-amount {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-title);
+        }
+        .stat-name {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+
+        /* Empty State (Screenshots 1 & 2) */
+        .empty-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 20px;
+            text-align: center;
+        }
+        .empty-icon {
+            width: 64px;
+            height: 64px;
+            color: #C7C7CC;
+            margin-bottom: 16px;
+        }
+        .empty-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-title);
+            margin-bottom: 6px;
+        }
+        .empty-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            max-width: 260px;
+            line-height: 1.4;
+            margin-bottom: 24px;
+        }
+
+        .btn-add-primary {
+            background: #B55D75;
+            color: #FFFFFF;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 999px;
+            font-size: 15px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(181, 93, 117, 0.25);
+        }
+
+        /* Search & Filter Bar (Screenshot 1) */
+        .search-capsule {
+            background: var(--search-bg);
+            border-radius: 12px;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-bottom: 12px;
+        }
+        .search-capsule input {
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 15px;
+            color: var(--text-title);
+            width: 100%;
+        }
+
+        .filter-row {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            scrollbar-width: none;
+        }
+        .filter-row::-webkit-scrollbar { display: none; }
+
+        .filter-pill {
+            background: var(--search-bg);
+            color: var(--text-title);
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 500;
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            padding: 4px 10px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 600;
-        }
-
-        .pill-green {
-            background: rgba(34, 197, 94, 0.12);
-            color: var(--income-green);
-        }
-        .pill-red {
-            background: rgba(239, 68, 68, 0.12);
-            color: var(--expense-red);
-        }
-
-        /* Horizontal Carousel */
-        .carousel-scroll {
-            display: flex;
-            gap: 12px;
-            overflow-x: auto;
-            margin: 0 -18px 16px -18px;
-            padding: 4px 18px;
-            scrollbar-width: none;
-        }
-        .carousel-scroll::-webkit-scrollbar { display: none; }
-
-        .wallet-card {
-            min-width: 140px;
-            background: var(--phone-surface);
-            border: 1px solid var(--phone-border);
-            border-radius: 16px;
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 110px;
-            flex-shrink: 0;
+            white-space: nowrap;
             cursor: pointer;
         }
+        .filter-pill.active-mauve {
+            background: #B55D75;
+            color: #FFFFFF;
+        }
 
-        .wallet-badge {
+        /* Settings Grouped List (Screenshot 3) */
+        .settings-section-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin: 18px 6px 8px;
+        }
+
+        .settings-group {
+            background: var(--card-bg);
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        .settings-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            gap: 14px;
+            cursor: pointer;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+        }
+        body.theme-dark .settings-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .settings-row:last-child { border-bottom: none; }
+
+        /* Exact SF Symbol SVG Icons in Settings */
+        .settings-icon-box {
             width: 32px;
             height: 32px;
-            border-radius: 50%;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
-            font-weight: bold;
             color: #fff;
-        }
-
-        /* Transaction Item */
-        .tx-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--phone-border);
-            cursor: pointer;
-        }
-        .tx-row:last-child { border-bottom: none; }
-
-        .tx-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
             flex-shrink: 0;
         }
 
-        .tx-info { flex: 1; min-width: 0; }
-        .tx-title {
+        .settings-content { flex: 1; }
+        .settings-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-title);
+        }
+        .settings-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 1px;
+        }
+        .settings-chevron {
+            color: #C7C7CC;
             font-size: 14px;
             font-weight: 600;
-            color: var(--text-primary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .tx-sub {
-            font-size: 11px;
-            color: var(--text-secondary);
-            margin-top: 2px;
         }
 
-        .tx-amount {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 14px;
-            font-weight: 700;
-            text-align: right;
-        }
-
-        /* Progress Bar */
-        .prog-bar-bg {
-            height: 8px;
-            background: var(--phone-surface-secondary);
-            border-radius: 999px;
-            overflow: hidden;
-            margin: 8px 0 4px;
-        }
-        .prog-bar-fill {
-            height: 100%;
-            border-radius: 999px;
-            transition: width 0.3s;
-        }
-
-        /* Bottom Sheet Modal */
-        .modal-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
-            z-index: 150;
-            display: none;
-            align-items: flex-end;
-        }
-        .modal-overlay.active { display: flex; }
-
-        .bottom-sheet {
-            background: var(--phone-surface);
-            border-radius: 28px 28px 0 0;
-            width: 100%;
-            max-height: 80%;
-            padding: 20px;
-            overflow-y: auto;
-            border-top: 1px solid var(--phone-border);
-            animation: slideUp 0.25s ease-out;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-
-        .sheet-handle {
-            width: 36px;
-            height: 4px;
-            background: var(--phone-border);
-            border-radius: 999px;
-            margin: 0 auto 16px;
-        }
-
-        /* View Switching */
+        /* Views Switching */
         .tab-view { display: none; }
-        .tab-view.active { display: block; animation: fadeIn 0.2s ease-in; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .section-title {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .tab-view.active { display: block; animation: fadeView 0.15s ease-out; }
+        @keyframes fadeView {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 </head>
-<body class="theme-dark">
+<body>
 
-    <!-- Top Control Bar for Testing -->
-    <div class="preview-controls">
-        <div class="control-group">
-            <span class="control-label">Theme:</span>
-            <button class="btn-toggle active" onclick="setTheme('theme-dark', this)">Dark</button>
-            <button class="btn-toggle" onclick="setTheme('theme-light', this)">Light</button>
-            <button class="btn-toggle" onclick="setTheme('theme-amoled', this)">AMOLED</button>
-        </div>
-        <div style="width: 1px; height: 18px; background: rgba(255,255,255,0.15)"></div>
-        <div class="control-group">
-            <span class="control-label">Accent:</span>
-            <div class="color-dot active" style="background: #00A86B;" onclick="setAccent('#00A86B', this)" title="Emerald"></div>
-            <div class="color-dot" style="background: #E2136E;" onclick="setAccent('#E2136E', this)" title="bKash Pink"></div>
-            <div class="color-dot" style="background: #F7941D;" onclick="setAccent('#F7941D', this)" title="Nagad Orange"></div>
-            <div class="color-dot" style="background: #8C3494;" onclick="setAccent('#8C3494', this)" title="Rocket Violet"></div>
-        </div>
+    <!-- Controls to test Light/Dark Themes -->
+    <div class="controls-panel">
+        <span style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Theme:</span>
+        <button class="btn-theme active" onclick="setMode('light', this)">Light</button>
+        <button class="btn-theme" onclick="setMode('dark', this)">Dark</button>
     </div>
 
-    <!-- iPhone Mockup Frame -->
+    <!-- Phone Mockup Frame -->
     <div class="phone-frame">
         <!-- Dynamic Island -->
         <div class="dynamic-island">
-            <div style="font-size: 10px; color: #22C55E; font-weight: bold;">৳</div>
             <div class="camera-lens"></div>
         </div>
 
-        <!-- iOS Status Bar -->
+        <!-- iOS Status Bar (Screenshot match: 1:22, signal, wifi, 58% battery) -->
         <div class="status-bar">
-            <span>9:41</span>
-            <div style="display: flex; gap: 6px; align-items: center;">
-                <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><path d="M1 9h2V5H1v4zm4 0h2V3H5v6zm4 0h2V1H9v8zm4 0h2V0h-2v9z"/></svg>
-                <span>5G</span>
-                <svg width="20" height="10" viewBox="0 0 20 10" fill="currentColor"><rect x="1" y="1" width="16" height="8" rx="2" stroke="currentColor" fill="none"/><rect x="3" y="3" width="11" height="4" rx="1"/></svg>
+            <span>1:22 📍</span>
+            <div class="status-icons">
+                <svg width="15" height="10" viewBox="0 0 15 10" fill="currentColor"><path d="M1 9h2V6H1v3zm4 0h2V4H5v5zm4 0h2V2H9v7zm4 0h2V0h-2v9z"/></svg>
+                <svg width="15" height="10" viewBox="0 0 16 12" fill="currentColor"><path d="M8 3c2.7 0 5.2 1.1 7 2.9l-1.4 1.4C12.3 5.9 10.3 5 8 5s-4.3.9-5.6 2.3L1 5.9C2.8 4.1 5.3 3 8 3zm0 4c1.7 0 3.2.7 4.2 1.8L8 13 3.8 8.8C4.8 7.7 6.3 7 8 7z"/></svg>
+                <div style="background: #34C759; color: #000; border-radius: 4px; padding: 1px 4px; font-size: 10px; font-weight: 800;">58</div>
             </div>
         </div>
 
-        <!-- Phone Screen Viewport -->
-        <div class="screen-viewport">
-            
-            <!-- 1. HOME TAB -->
+        <!-- Main Viewport -->
+        <div class="viewport">
+
+            <!-- 1. HOME VIEW -->
             <div id="view-home" class="tab-view active">
-                <!-- Greeting Card -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div class="nav-header">
+                    <h1 class="nav-title">Centwise</h1>
+                </div>
+
+                <!-- User Greeting Card with cartoon avatar_1.png -->
+                <div class="card greeting-card">
+                    <div class="avatar-container">
+                        <img src="avatar_1.png" alt="Avatar" class="avatar-img">
+                    </div>
                     <div>
-                        <div style="font-size: 13px; color: var(--text-secondary);">Good afternoon,</div>
-                        <div style="font-size: 20px; font-weight: 800; color: var(--text-primary);">Tanvir Ahmed 🇧🇩</div>
-                    </div>
-                    <div class="pill pill-green">
-                        ↑ ৳62.8K Net
+                        <div class="user-title">User</div>
+                        <div class="user-sub">Good night</div>
                     </div>
                 </div>
 
-                <!-- Monthly Spending Hero Card -->
-                <div class="glass-card">
-                    <div style="font-size: 12px; color: var(--text-secondary); text-align: center;">Total Spending this Month</div>
-                    <div class="hero-amount" style="text-align: center; margin: 4px 0 12px;">৳ 14,250.00</div>
-                    <div style="height: 1px; background: var(--phone-border); margin-bottom: 12px;"></div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <div>
-                            <div style="font-size: 11px; color: var(--text-secondary);">Monthly Income</div>
-                            <div style="font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 700; color: var(--income-green);">+৳ 85,000</div>
+                <!-- Spent this Month Card (Exact 3-Column Design) -->
+                <div class="card spending-card">
+                    <div class="spending-label">Spent this month</div>
+                    <div class="spending-hero-amount">৳ 0</div>
+                    <div class="spending-divider"></div>
+                    <div class="spending-stats-grid">
+                        <div class="stat-col">
+                            <div class="stat-stripe stat-stripe-green"></div>
+                            <div>
+                                <div class="stat-amount">৳ 0</div>
+                                <div class="stat-name">Income</div>
+                            </div>
                         </div>
-                        <div style="text-align: right;">
-                            <div style="font-size: 11px; color: var(--text-secondary);">Net Balance</div>
-                            <div style="font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 700; color: var(--text-primary);">৳ 70,750</div>
+                        <div class="stat-col">
+                            <div class="stat-stripe stat-stripe-red"></div>
+                            <div>
+                                <div class="stat-amount">৳ 0</div>
+                                <div class="stat-name">Expenses</div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Accounts & Wallets Carousel -->
-                <div class="section-title">
-                    <span>Wallets & Accounts</span>
-                    <span style="font-size: 12px; color: var(--accent-current); cursor: pointer;" onclick="switchTab('accounts')">See All</span>
-                </div>
-                <div class="carousel-scroll">
-                    <!-- bKash -->
-                    <div class="wallet-card" onclick="openDetail('bKash Personal', '৳ 14,250.00', 'MFS Wallet • 7821', 'Payment Tk 850 to Foodpanda', '#E2136E')">
-                        <div style="display: flex; justify-content: space-between;">
-                            <div class="wallet-badge" style="background: #E2136E;">৳</div>
-                            <span style="font-size: 10px; color: var(--text-secondary);">••7821</span>
-                        </div>
-                        <div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">bKash Wallet</div>
-                            <div style="font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 700; color: var(--text-primary);">৳ 14,250</div>
-                        </div>
-                    </div>
-                    <!-- BRAC Bank -->
-                    <div class="wallet-card" onclick="openDetail('BRAC Bank Salary', '৳ 98,400.00', 'Bank Account • 4190', 'Tech Corp Salary Credit', '#053E94')">
-                        <div style="display: flex; justify-content: space-between;">
-                            <div class="wallet-badge" style="background: #053E94;">🏛️</div>
-                            <span style="font-size: 10px; color: var(--text-secondary);">••4190</span>
-                        </div>
-                        <div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">BRAC Bank</div>
-                            <div style="font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 700; color: var(--text-primary);">৳ 98,400</div>
-                        </div>
-                    </div>
-                    <!-- City Bank AMEX -->
-                    <div class="wallet-card" onclick="openDetail('City Bank Amex', '৳ 187,200 Avail', 'Credit Card • 1008', 'Unimart Dhaka Grocery', '#D91B24')">
-                        <div style="display: flex; justify-content: space-between;">
-                            <div class="wallet-badge" style="background: #D91B24;">💳</div>
-                            <span style="font-size: 10px; color: var(--text-secondary);">••1008</span>
-                        </div>
-                        <div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">City AMEX</div>
-                            <div style="font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 700; color: var(--text-primary);">৳ 12.8K used</div>
-                        </div>
-                    </div>
-                    <!-- Nagad -->
-                    <div class="wallet-card">
-                        <div style="display: flex; justify-content: space-between;">
-                            <div class="wallet-badge" style="background: #F7941D;">৳</div>
-                            <span style="font-size: 10px; color: var(--text-secondary);">••9042</span>
-                        </div>
-                        <div>
-                            <div style="font-size: 12px; color: var(--text-secondary);">Nagad Wallet</div>
-                            <div style="font-family: 'JetBrains Mono'; font-size: 14px; font-weight: 700; color: var(--text-primary);">৳ 5,320</div>
+                        <div class="stat-col">
+                            <div class="stat-stripe stat-stripe-teal"></div>
+                            <div>
+                                <div class="stat-amount">৳ 0</div>
+                                <div class="stat-name">Saved</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Monthly Budgets Carousel -->
-                <div class="section-title">
-                    <span>Monthly Budgets</span>
-                    <span style="font-size: 12px; color: var(--accent-current); cursor: pointer;" onclick="switchTab('analytics')">Insights</span>
-                </div>
-                <div class="carousel-scroll">
-                    <div class="wallet-card" style="min-width: 155px;">
-                        <div style="display: flex; align-items: center; gap: 6px;">
-                            <span>🍔</span>
-                            <span style="font-size: 12px; font-weight: 600;">Food & Dining</span>
-                        </div>
-                        <div class="prog-bar-bg">
-                            <div class="prog-bar-fill" style="width: 76%; background: #F97316;"></div>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-secondary);">
-                            <span>৳ 11.4K</span>
-                            <span>of ৳ 15K</span>
-                        </div>
-                    </div>
-                    <div class="wallet-card" style="min-width: 155px;">
-                        <div style="display: flex; align-items: center; gap: 6px;">
-                            <span>🚗</span>
-                            <span style="font-size: 12px; font-weight: 600;">Transport</span>
-                        </div>
-                        <div class="prog-bar-bg">
-                            <div class="prog-bar-fill" style="width: 52%; background: #06B6D4;"></div>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-secondary);">
-                            <span>৳ 4.2K</span>
-                            <span>of ৳ 8K</span>
-                        </div>
-                    </div>
+                <!-- Recent Transactions Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin: 24px 0 12px;">
+                    <h3 style="font-size: 18px; font-weight: 700; color: var(--text-title);">Recent Transactions</h3>
+                    <span style="font-size: 14px; color: #B55D75; font-weight: 600; cursor: pointer;" onclick="switchTab('transactions')">See All</span>
                 </div>
 
-                <!-- Recent Transactions List -->
-                <div class="section-title">
-                    <span>Recent Transactions</span>
-                    <span style="font-size: 12px; color: var(--accent-current); cursor: pointer;" onclick="switchTab('transactions')">See All</span>
-                </div>
-                <div class="glass-card" style="padding: 6px 14px;">
-                    <!-- Row 1: Foodpanda -->
-                    <div class="tx-row" onclick="openDetail('Foodpanda - Sultans Dine', '-৳ 850.00', 'bKash Personal • Today, 1:45 PM', 'Payment Tk 850.00 to Foodpanda Bangladesh successful. Fee Tk 0.00. Balance Tk 14,250.00. TrxID 9K8L7M6N on 22/08/2026', '#E2136E')">
-                        <div class="tx-icon" style="background: rgba(249, 115, 22, 0.15); color: #F97316;">🍔</div>
-                        <div class="tx-info">
-                            <div class="tx-title">Foodpanda - Sultans Dine</div>
-                            <div class="tx-sub">bKash • Today, 1:45 PM</div>
-                        </div>
-                        <div class="tx-amount amount-neg">-৳ 850.00</div>
-                    </div>
-                    <!-- Row 2: Pathao -->
-                    <div class="tx-row" onclick="openDetail('Pathao Ride Gulshan', '-৳ 280.00', 'Nagad Wallet • Today, 10:20 AM', 'You paid Tk 280.00 to Pathao Rides. TxnID: NAG984128. Current Balance: Tk 5,320.00', '#F7941D')">
-                        <div class="tx-icon" style="background: rgba(6, 182, 212, 0.15); color: #06B6D4;">🚗</div>
-                        <div class="tx-info">
-                            <div class="tx-title">Pathao Ride - Gulshan 2</div>
-                            <div class="tx-sub">Nagad • Today, 10:20 AM</div>
-                        </div>
-                        <div class="tx-amount amount-neg">-৳ 280.00</div>
-                    </div>
-                    <!-- Row 3: Salary -->
-                    <div class="tx-row" onclick="openDetail('Tech Corp Salary', '+৳ 85,000.00', 'BRAC Bank • Yesterday', 'Your A/C *4190 credited by BDT 85,000.00 on 20-AUG-26 by TECH CORP SALARY. Total Balance BDT 98,400.00', '#053E94')">
-                        <div class="tx-icon" style="background: rgba(34, 197, 94, 0.15); color: #22C55E;">💰</div>
-                        <div class="tx-info">
-                            <div class="tx-title">Salary Credit - Tech Corp</div>
-                            <div class="tx-sub">BRAC Bank • Yesterday</div>
-                        </div>
-                        <div class="tx-amount amount-pos">+৳ 85,000.00</div>
-                    </div>
+                <!-- Empty State (Screenshot 2) -->
+                <div class="empty-container">
+                    <!-- Exact Apple SF Symbol "tray" outline -->
+                    <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+                        <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                    </svg>
+                    <div class="empty-title">No transactions yet</div>
+                    <div class="empty-desc">Tap + to add your first transaction</div>
                 </div>
             </div>
 
-            <!-- 2. TRANSACTIONS TAB -->
+            <!-- 2. TRANSACTIONS VIEW (Screenshot 1) -->
             <div id="view-transactions" class="tab-view">
-                <div style="font-size: 22px; font-weight: 800; margin-bottom: 12px;">Transactions</div>
-                
-                <!-- Search Bar -->
-                <div class="glass-card" style="padding: 10px 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                    <span>🔍</span>
-                    <input type="text" placeholder="Search merchant, ID, amount..." style="background: transparent; border: none; outline: none; color: var(--text-primary); font-size: 14px; width: 100%;">
-                </div>
-
-                <!-- Filter Chips -->
-                <div class="carousel-scroll" style="margin-bottom: 12px;">
-                    <div class="pill" style="background: var(--accent-current); color: #fff; cursor: pointer;">All</div>
-                    <div class="pill" style="background: var(--phone-surface-secondary); color: var(--text-primary); cursor: pointer;">💸 Expenses</div>
-                    <div class="pill" style="background: var(--phone-surface-secondary); color: var(--text-primary); cursor: pointer;">💰 Income</div>
-                    <div class="pill" style="background: rgba(226,19,110,0.15); color: #E2136E; cursor: pointer;">bKash</div>
-                    <div class="pill" style="background: rgba(247,148,29,0.15); color: #F7941D; cursor: pointer;">Nagad</div>
-                </div>
-
-                <!-- Group: Today -->
-                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 600;">TODAY</div>
-                <div class="glass-card" style="padding: 6px 14px; margin-bottom: 16px;">
-                    <div class="tx-row" onclick="openDetail('Foodpanda - Sultans Dine', '-৳ 850.00', 'bKash Personal', 'Payment Tk 850.00 to Foodpanda', '#E2136E')">
-                        <div class="tx-icon" style="background: rgba(249, 115, 22, 0.15); color: #F97316;">🍔</div>
-                        <div class="tx-info"><div class="tx-title">Foodpanda - Sultans Dine</div><div class="tx-sub">bKash • 1:45 PM</div></div>
-                        <div class="tx-amount amount-neg">-৳ 850.00</div>
-                    </div>
-                    <div class="tx-row" onclick="openDetail('Pathao Ride', '-৳ 280.00', 'Nagad Wallet', 'Payment Tk 280.00 to Pathao', '#F7941D')">
-                        <div class="tx-icon" style="background: rgba(6, 182, 212, 0.15); color: #06B6D4;">🚗</div>
-                        <div class="tx-info"><div class="tx-title">Pathao Ride - Gulshan 2</div><div class="tx-sub">Nagad • 10:20 AM</div></div>
-                        <div class="tx-amount amount-neg">-৳ 280.00</div>
+                <div class="nav-header">
+                    <h1 class="nav-title">Transactions</h1>
+                    <div class="action-pill-group">
+                        <!-- Plus icon -->
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        <!-- Sort ⇅ icon -->
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 3v18M7 3l-4 4M7 3l4 4M17 21V3M17 21l-4-4M17 21l4-4"/></svg>
+                        <!-- Share 📤 icon -->
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                     </div>
                 </div>
 
-                <!-- Group: Yesterday -->
-                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 600;">YESTERDAY</div>
-                <div class="glass-card" style="padding: 6px 14px;">
-                    <div class="tx-row" onclick="openDetail('Unimart Grocery', '-৳ 3,450.00', 'City Bank Amex', 'Card ending 1008 used at Unimart', '#D91B24')">
-                        <div class="tx-icon" style="background: rgba(236, 72, 153, 0.15); color: #EC4899;">🛍️</div>
-                        <div class="tx-info"><div class="tx-title">Unimart Gulshan Grocery</div><div class="tx-sub">City Amex • 7:15 PM</div></div>
-                        <div class="tx-amount amount-neg">-৳ 3,450.00</div>
+                <!-- Search Bar Capsule (Screenshot 1) -->
+                <div class="search-capsule">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" placeholder="Search transactions">
+                </div>
+
+                <!-- Filter Pills (Screenshot 1) -->
+                <div class="filter-row">
+                    <div class="filter-pill active-mauve">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                        <span>All Time</span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </div>
-                    <div class="tx-row" onclick="openDetail('Tech Corp Salary', '+৳ 85,000.00', 'BRAC Bank', 'A/C 4190 credited with salary', '#053E94')">
-                        <div class="tx-icon" style="background: rgba(34, 197, 94, 0.15); color: #22C55E;">💰</div>
-                        <div class="tx-info"><div class="tx-title">Tech Corp Salary Credit</div><div class="tx-sub">BRAC Bank • 10:00 AM</div></div>
-                        <div class="tx-amount amount-pos">+৳ 85,000.00</div>
+                    <div class="filter-pill">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                        <span>Type</span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
                     </div>
+                    <div class="filter-pill">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></svg>
+                        <span>Category</span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </div>
+                </div>
+
+                <!-- Empty State (Screenshot 1) -->
+                <div class="empty-container" style="padding-top: 50px;">
+                    <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+                        <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>
+                    </svg>
+                    <div class="empty-title">No Transactions Yet</div>
+                    <div class="empty-desc">Add your first transaction to start tracking your finances.</div>
+                    <button class="btn-add-primary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                        <span>Add Transaction</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- 3. ANALYTICS TAB -->
+            <!-- 3. ANALYTICS VIEW -->
             <div id="view-analytics" class="tab-view">
-                <div style="font-size: 22px; font-weight: 800; margin-bottom: 12px;">Analytics & Insights</div>
-
-                <!-- Cashflow Bar -->
-                <div class="glass-card">
-                    <div style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">Cash Flow Balance</div>
-                    <div style="display: flex; gap: 4px; height: 12px; margin-bottom: 10px;">
-                        <div style="width: 82%; background: var(--income-green); border-radius: 999px;"></div>
-                        <div style="width: 18%; background: var(--expense-red); border-radius: 999px;"></div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 11px;">
-                        <span style="color: var(--income-green);">● Inflow: ৳ 85,000</span>
-                        <span style="color: var(--expense-red);">● Outflow: ৳ 14,250</span>
-                    </div>
+                <div class="nav-header">
+                    <h1 class="nav-title">Analytics</h1>
                 </div>
 
-                <!-- Category Breakdown -->
-                <div class="section-title">Spending by Category</div>
-                <div class="glass-card">
-                    <div style="margin-bottom: 12px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600;">
-                            <span>🍔 Food & Dining</span>
-                            <span>৳ 11,450 (62%)</span>
-                        </div>
-                        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width: 62%; background: #F97316;"></div></div>
+                <div class="card">
+                    <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">Monthly Cashflow</div>
+                    <div style="display: flex; gap: 4px; height: 12px; margin-bottom: 12px;">
+                        <div style="width: 85%; background: #34C759; border-radius: 999px;"></div>
+                        <div style="width: 15%; background: #FF3B30; border-radius: 999px;"></div>
                     </div>
-                    <div style="margin-bottom: 12px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600;">
-                            <span>🚗 Transport</span>
-                            <span>৳ 4,200 (23%)</span>
-                        </div>
-                        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width: 23%; background: #06B6D4;"></div></div>
-                    </div>
-                    <div>
-                        <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600;">
-                            <span>🛍️ Shopping</span>
-                            <span>৳ 2,150 (15%)</span>
-                        </div>
-                        <div class="prog-bar-bg"><div class="prog-bar-fill" style="width: 15%; background: #EC4899;"></div></div>
-                    </div>
-                </div>
-
-                <!-- Top Merchants Leaderboard -->
-                <div class="section-title">Top Bangladesh Merchants</div>
-                <div class="glass-card" style="padding: 6px 14px;">
-                    <div class="tx-row">
-                        <div style="font-weight: 800; width: 20px; color: var(--text-secondary);">1</div>
-                        <div class="tx-info"><div class="tx-title">Foodpanda Bangladesh</div><div class="tx-sub">8 orders</div></div>
-                        <div class="tx-amount">৳ 6,850</div>
-                    </div>
-                    <div class="tx-row">
-                        <div style="font-weight: 800; width: 20px; color: var(--text-secondary);">2</div>
-                        <div class="tx-info"><div class="tx-title">Unimart Supermarket</div><div class="tx-sub">2 visits</div></div>
-                        <div class="tx-amount">৳ 3,450</div>
-                    </div>
-                    <div class="tx-row">
-                        <div style="font-weight: 800; width: 20px; color: var(--text-secondary);">3</div>
-                        <div class="tx-info"><div class="tx-title">Pathao Rides</div><div class="tx-sub">12 rides</div></div>
-                        <div class="tx-amount">৳ 2,420</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600;">
+                        <span style="color: #34C759;">Inflow: ৳ 85,000</span>
+                        <span style="color: #FF3B30;">Outflow: ৳ 14,250</span>
                     </div>
                 </div>
             </div>
 
-            <!-- 4. WALLETS TAB -->
-            <div id="view-accounts" class="tab-view">
-                <div style="font-size: 22px; font-weight: 800; margin-bottom: 12px;">Wallets & Accounts</div>
-                
-                <div class="glass-card">
-                    <div style="font-size: 12px; color: var(--text-secondary);">Total Net Balance</div>
-                    <div class="hero-amount" style="margin: 4px 0 8px;">৳ 117,970.00</div>
-                    <div style="font-size: 11px; color: var(--income-green);">🔒 100% Stored On-Device</div>
-                </div>
-
-                <div class="section-title">
-                    <span>Connected Money Sources</span>
-                    <span style="font-size: 12px; color: var(--accent-current); cursor: pointer;">+ Add New</span>
-                </div>
-
-                <div class="glass-card" style="padding: 6px 14px;">
-                    <div class="tx-row">
-                        <div class="wallet-badge" style="background: #E2136E; width: 38px; height: 38px;">৳</div>
-                        <div class="tx-info"><div class="tx-title">bKash Personal</div><div class="tx-sub">MFS Wallet • 7821</div></div>
-                        <div class="tx-amount">৳ 14,250.00</div>
-                    </div>
-                    <div class="tx-row">
-                        <div class="wallet-badge" style="background: #053E94; width: 38px; height: 38px;">🏛️</div>
-                        <div class="tx-info"><div class="tx-title">BRAC Bank Salary</div><div class="tx-sub">Savings A/C • 4190</div></div>
-                        <div class="tx-amount">৳ 98,400.00</div>
-                    </div>
-                    <div class="tx-row">
-                        <div class="wallet-badge" style="background: #F7941D; width: 38px; height: 38px;">৳</div>
-                        <div class="tx-info"><div class="tx-title">Nagad Wallet</div><div class="tx-sub">MFS Wallet • 9042</div></div>
-                        <div class="tx-amount">৳ 5,320.00</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 5. SETTINGS TAB -->
+            <!-- 4. SETTINGS VIEW (Screenshot 3) -->
             <div id="view-settings" class="tab-view">
-                <div style="font-size: 22px; font-weight: 800; margin-bottom: 12px;">Settings</div>
+                <div class="nav-header">
+                    <h1 class="nav-title">Settings</h1>
+                </div>
 
-                <div class="section-title">Automations</div>
-                <div class="glass-card" style="cursor: pointer;" onclick="openShortcutGuide()">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        <div style="font-size: 24px;">⚡</div>
-                        <div>
-                            <div style="font-weight: 700; font-size: 14px;">Apple Shortcuts Setup</div>
-                            <div style="font-size: 11px; color: var(--text-secondary);">Configure silent background SMS tracking</div>
+                <!-- Personalization Section (Screenshot 3) -->
+                <div class="settings-section-header">Personalization</div>
+                <div class="settings-group">
+                    <!-- Appearance: paintbrush.fill (Orange) -->
+                    <div class="settings-row">
+                        <div class="settings-icon-box" style="background: #FF9500;">
+                            <!-- Paintbrush SVG -->
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.5 2.5a2.121 2.121 0 013 3L12 16l-4 1 1-4 9.5-10.5z"/><path d="M18 14v4.5A2.5 2.5 0 0115.5 21h-7A2.5 2.5 0 016 18.5v-13A2.5 2.5 0 018.5 3H13"/></svg>
                         </div>
+                        <div class="settings-content">
+                            <div class="settings-title">Appearance</div>
+                            <div class="settings-sub">Theme, accent color, dark mode</div>
+                        </div>
+                        <div class="settings-chevron">›</div>
+                    </div>
+                    <!-- Currency: coloncurrencysign.circle.fill (Green) -->
+                    <div class="settings-row">
+                        <div class="settings-icon-box" style="background: #34C759;">
+                            <!-- Currency coin symbol (¢ / ৳) -->
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="2" x2="12" y2="22"/><path d="M16 8a4 4 0 0 0-8 0v8a4 4 0 0 0 8 0"/></svg>
+                        </div>
+                        <div class="settings-content">
+                            <div class="settings-title">Currency</div>
+                            <div class="settings-sub">Default currency for totals and new entries</div>
+                        </div>
+                        <div class="settings-chevron">›</div>
                     </div>
                 </div>
 
-                <div class="section-title">Security & Privacy</div>
-                <div class="glass-card" style="padding: 12px 16px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <span>Face ID / Biometric Lock</span>
-                        <input type="checkbox" checked style="accent-color: var(--accent-current);">
+                <!-- Data Management Section (Screenshot 3) -->
+                <div class="settings-section-header">Data Management</div>
+                <div class="settings-group">
+                    <!-- Categories: square.grid.2x2.fill (Purple) -->
+                    <div class="settings-row">
+                        <div class="settings-icon-box" style="background: #AF52DE;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/><rect x="13" y="13" width="8" height="8" rx="2"/></svg>
+                        </div>
+                        <div class="settings-content">
+                            <div class="settings-title">Categories</div>
+                            <div class="settings-sub">Manage expense and income categories</div>
+                        </div>
+                        <div class="settings-chevron">›</div>
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>On-Device Only Processing</span>
-                        <span style="color: var(--income-green); font-size: 12px; font-weight: 700;">Active 🛡️</span>
+                    <!-- Budgets: chart.pie.fill (Green) -->
+                    <div class="settings-row">
+                        <div class="settings-icon-box" style="background: #34C759;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2v10l8.66 5A10 10 0 1012 2z"/><path d="M14 2.1a10 10 0 017.9 7.9H14V2.1z"/></svg>
+                        </div>
+                        <div class="settings-content">
+                            <div class="settings-title">Budgets</div>
+                            <div class="settings-sub">Set spending limits by category</div>
+                        </div>
+                        <div class="settings-chevron">›</div>
                     </div>
-                </div>
-
-                <div class="section-title">Data Management</div>
-                <div class="glass-card" style="padding: 12px 16px;">
-                    <div style="cursor: pointer; color: var(--accent-current); font-weight: 600; margin-bottom: 12px;" onclick="alert('CSV of 128 transactions exported!')">
-                        📤 Export Transactions as CSV
+                    <!-- Accounts: building.columns.fill (Blue) -->
+                    <div class="settings-row">
+                        <div class="settings-icon-box" style="background: #007AFF;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7v2h20V7L12 2zM4 11v8h3v-8H4zm6 0v8h4v-8h-4zm7 0v8h3v-8h-3zM2 21h20v2H2v-2z"/></svg>
+                        </div>
+                        <div class="settings-content">
+                            <div class="settings-title">Accounts</div>
+                            <div class="settings-sub">Manage bank accounts and cards</div>
+                        </div>
+                        <div class="settings-chevron">›</div>
                     </div>
-                    <div style="cursor: pointer; color: var(--accent-current); font-weight: 600;" onclick="alert('Offline encrypted backup created!')">
-                        💾 Backup Local Database
+                    <!-- Subscriptions: arrow.triangle.2.circlepath (Indigo) -->
+                    <div class="settings-row">
+                        <div class="settings-icon-box" style="background: #5856D6;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+                        </div>
+                        <div class="settings-content">
+                            <div class="settings-title">Subscriptions</div>
+                            <div class="settings-sub">Track recurring payments</div>
+                        </div>
+                        <div class="settings-chevron">›</div>
+                    </div>
+                    <!-- Smart Rules: sparkles (Pink) -->
+                    <div class="settings-row">
+                        <div class="settings-icon-box" style="background: #FF2D55;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z"/></svg>
+                        </div>
+                        <div class="settings-content">
+                            <div class="settings-title">Smart Rules</div>
+                            <div class="settings-sub">Auto-categorize transactions</div>
+                        </div>
+                        <div class="settings-chevron">›</div>
                     </div>
                 </div>
             </div>
 
         </div>
 
-        <!-- Floating Action Button -->
-        <button class="fab-add" onclick="openAddModal()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-        </button>
+        <!-- Floating Blue Add Button (+) (Screenshot 2) -->
+        <button class="fab-add" onclick="switchTab('transactions')">+</button>
 
-        <!-- Bottom Tab Bar -->
-        <div class="tab-bar">
-            <div class="tab-item active" onclick="switchTab('home')">
-                <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-                <span>Home</span>
-            </div>
-            <div class="tab-item" onclick="switchTab('transactions')">
-                <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
-                <span>Transactions</span>
-            </div>
-            <div class="tab-item" onclick="switchTab('analytics')">
-                <svg viewBox="0 0 24 24"><path d="M11 2v20c-5.07-.5-9-4.79-9-10s3.93-9.5 9-10zm2.03 0v8.99H22c-.47-4.74-4.24-8.52-8.97-8.99zm0 11.01V22c4.74-.47 8.5-4.25 8.97-8.99h-8.97z"/></svg>
-                <span>Analytics</span>
-            </div>
-            <div class="tab-item" onclick="switchTab('accounts')">
-                <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
-                <span>Wallets</span>
-            </div>
-            <div class="tab-item" onclick="switchTab('settings')">
-                <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-                <span>Settings</span>
-            </div>
-        </div>
-
-        <!-- Detail Sheet Modal -->
-        <div id="detailModal" class="modal-overlay" onclick="closeModal(event)">
-            <div class="bottom-sheet">
-                <div class="sheet-handle"></div>
-                <div style="text-align: center; margin-bottom: 16px;">
-                    <div id="modalIcon" style="width: 54px; height: 54px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 8px;">🍔</div>
-                    <div id="modalTitle" style="font-size: 18px; font-weight: 700;">Foodpanda Bangladesh</div>
-                    <div id="modalAmount" class="hero-amount" style="font-size: 24px; color: var(--expense-red);">-৳ 850.00</div>
+        <!-- Floating Pill Bottom Tab Bar (Screenshots 1, 2, 3) -->
+        <div class="tab-bar-container">
+            <div class="floating-tab-bar">
+                <div class="tab-btn active" onclick="switchTab('home')">
+                    <!-- Home icon: house.fill -->
+                    <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                    <span>Home</span>
                 </div>
-
-                <div class="glass-card">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px;">
-                        <span style="color: var(--text-secondary);">Account</span>
-                        <span id="modalAccount" style="font-weight: 600;">bKash Personal</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 13px;">
-                        <span style="color: var(--text-secondary);">Status</span>
-                        <span style="color: var(--income-green); font-weight: 600;">● Auto-Parsed from SMS</span>
-                    </div>
+                <div class="tab-btn" onclick="switchTab('transactions')">
+                    <!-- Transactions icon: list.bullet -->
+                    <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+                    <span>Transactions</span>
                 </div>
-
-                <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 600;">RAW SMS MESSAGE</div>
-                <div id="modalSms" class="glass-card" style="font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--text-secondary); background: var(--phone-surface-secondary);">
-                    Payment Tk 850.00 to Foodpanda Bangladesh successful. Fee Tk 0.00. Balance Tk 14,250.00. TrxID 9K8L7M6N on 22/08/2026 13:45
+                <div class="tab-btn" onclick="switchTab('analytics')">
+                    <!-- Analytics icon: chart.bar.fill -->
+                    <svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+                    <span>Analytics</span>
                 </div>
-
-                <button class="btn-toggle active" style="width: 100%; padding: 12px; border-radius: 14px;" onclick="closeModalDirect()">Done</button>
+                <div class="tab-btn" onclick="switchTab('settings')">
+                    <!-- Settings icon: gearshape.fill -->
+                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                    <span>Settings</span>
+                </div>
             </div>
         </div>
 
     </div>
 
     <script>
-        function setTheme(themeName, btn) {
-            document.body.className = themeName;
-            document.querySelectorAll('.control-group .btn-toggle').forEach(b => b.classList.remove('active'));
+        function setMode(mode, btn) {
+            document.body.className = mode === 'dark' ? 'theme-dark' : '';
+            document.querySelectorAll('.btn-theme').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-        }
-
-        function setAccent(color, dot) {
-            document.documentElement.style.setProperty('--accent-current', color);
-            document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
-            dot.classList.add('active');
         }
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.tab-item').forEach(i => i.classList.remove('active'));
-            
-            const view = document.getElementById('view-' + tabId);
-            if (view) view.classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
-            const tabMap = { 'home': 0, 'transactions': 1, 'analytics': 2, 'accounts': 3, 'settings': 4 };
+            const targetView = document.getElementById('view-' + tabId);
+            if (targetView) targetView.classList.add('active');
+
+            const tabMap = { 'home': 0, 'transactions': 1, 'analytics': 2, 'settings': 3 };
             const index = tabMap[tabId];
             if (index !== undefined) {
-                document.querySelectorAll('.tab-item')[index].classList.add('active');
+                document.querySelectorAll('.tab-btn')[index].classList.add('active');
             }
-        }
-
-        function openDetail(title, amount, account, sms, color) {
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalAmount').innerText = amount;
-            document.getElementById('modalAccount').innerText = account;
-            document.getElementById('modalSms').innerText = sms;
-            document.getElementById('modalIcon').style.background = color + '25';
-            document.getElementById('modalIcon').style.color = color;
-            document.getElementById('detailModal').classList.add('active');
-        }
-
-        function closeModal(e) {
-            if (e.target.id === 'detailModal') {
-                document.getElementById('detailModal').classList.remove('active');
-            }
-        }
-
-        function closeModalDirect() {
-            document.getElementById('detailModal').classList.remove('active');
-        }
-
-        function openShortcutGuide() {
-            alert("iOS Apple Shortcuts Message Automation Guide:\n\n1. Open Apple Shortcuts on iPhone\n2. Automation -> Message contains 'Tk, bKash, Nagad'\n3. Set Action: Centwise -> Parse SMS\n4. Toggle 'Run Immediately' ON!");
-        }
-
-        function openAddModal() {
-            alert("Add Transaction:\n\nIn the native app, this opens the Swift AddEditTransaction sheet with currency pad and category selector.");
         }
     </script>
 </body>

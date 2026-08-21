@@ -4,15 +4,13 @@ public enum AppTab: String, CaseIterable {
     case home = "Home"
     case transactions = "Transactions"
     case analytics = "Analytics"
-    case accounts = "Wallets"
     case settings = "Settings"
 
     public var icon: String {
         switch self {
         case .home: return "house.fill"
         case .transactions: return "list.bullet"
-        case .analytics: return "chart.pie.fill"
-        case .accounts: return "creditcard.fill"
+        case .analytics: return "chart.bar.fill"
         case .settings: return "gearshape.fill"
         }
     }
@@ -20,102 +18,95 @@ public enum AppTab: String, CaseIterable {
 
 public struct MainTabView: View {
     @State private var selectedTab: AppTab = .home
-    @ObservedObject private var themeManager = ThemeManager.shared
-    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = true
-    @AppStorage("enableBiometricLock") private var enableBiometricLock: Bool = false
-    @State private var isLocked: Bool = false
     @Environment(\.colorScheme) private var colorScheme
+    @ObservedObject private var themeManager = ThemeManager.shared
 
     public init() {}
 
-    private var isAmoled: Bool {
-        themeManager.isAmoledActive
-    }
-
     public var body: some View {
-        if hasCompletedOnboarding {
-            ZStack {
-                if isAmoled {
-                    CentwiseColors.amoledBackground.ignoresSafeArea()
-                }
-
-                TabView(selection: $selectedTab) {
+        ZStack(alignment: .bottom) {
+            // Main Tab Viewport
+            Group {
+                switch selectedTab {
+                case .home:
                     NavigationStack {
-                        HomeScreen(
-                            onSeeAllTransactions: { selectedTab = .transactions },
-                            onSeeAllAccounts: { selectedTab = .accounts },
-                            onSeeAllBudgets: { selectedTab = .analytics }
-                        )
-                        .navigationTitle("Centwise")
+                        HomeScreen(onSeeAllTransactions: { selectedTab = .transactions })
                     }
-                    .tabItem {
-                        Label(AppTab.home.rawValue, systemImage: AppTab.home.icon)
-                    }
-                    .tag(AppTab.home)
-
+                case .transactions:
                     NavigationStack {
                         TransactionListView()
                     }
-                    .tabItem {
-                        Label(AppTab.transactions.rawValue, systemImage: AppTab.transactions.icon)
-                    }
-                    .tag(AppTab.transactions)
-
+                case .analytics:
                     NavigationStack {
                         AnalyticsScreen()
                     }
-                    .tabItem {
-                        Label(AppTab.analytics.rawValue, systemImage: AppTab.analytics.icon)
-                    }
-                    .tag(AppTab.analytics)
-
-                    NavigationStack {
-                        AccountListScreen()
-                    }
-                    .tabItem {
-                        Label(AppTab.accounts.rawValue, systemImage: AppTab.accounts.icon)
-                    }
-                    .tag(AppTab.accounts)
-
+                case .settings:
                     NavigationStack {
                         SettingsScreen()
                     }
-                    .tabItem {
-                        Label(AppTab.settings.rawValue, systemImage: AppTab.settings.icon)
-                    }
-                    .tag(AppTab.settings)
                 }
-                .tint(themeManager.accentColor)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                if isLocked {
-                    LockScreenView {
-                        withAnimation {
-                            isLocked = false
-                        }
-                    }
-                }
-            }
-            .environment(\.isAmoledActive, isAmoled)
-            .preferredColorScheme(themeManager.colorScheme)
-            .onAppear {
-                if enableBiometricLock {
-                    isLocked = true
-                }
-            }
-        } else {
-            OnboardingScreen {
-                hasCompletedOnboarding = true
-            }
-            .preferredColorScheme(themeManager.colorScheme)
+            // Floating Pill Tab Bar (Exact from Screenshots 1, 2, 3)
+            floatingTabBar
+                .padding(.horizontal, 20)
+                .padding(.bottom, 16)
         }
+        .ignoresSafeArea(.keyboard)
     }
-}
 
-#Preview("Main App Flow") {
-    MainTabView()
-}
+    private var floatingTabBar: some View {
+        HStack(spacing: 4) {
+            ForEach(AppTab.allCases, id: \.self) { tab in
+                tabButton(tab)
+            }
+        }
+        .padding(6)
+        .background(
+            Capsule()
+                .fill(colorScheme == .dark ? Color(white: 0.12).opacity(0.85) : Color.white.opacity(0.88))
+                .background(
+                    Capsule()
+                        .fill(.ultraThinMaterial)
+                )
+                .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.4 : 0.08), radius: 20, x: 0, y: 8)
+                .overlay(
+                    Capsule()
+                        .stroke(colorScheme == .dark ? Color.white.opacity(0.08) : Color.black.opacity(0.04), lineWidth: 1)
+                )
+        )
+    }
 
-#Preview("Dark Mode") {
-    MainTabView()
-        .preferredColorScheme(.dark)
+    @ViewBuilder
+    private func tabButton(_ tab: AppTab) -> some View {
+        let isSelected = selectedTab == tab
+
+        Button(action: {
+            themeManager.triggerHapticFeedback(.light)
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                selectedTab = tab
+            }
+        }) {
+            VStack(spacing: 3) {
+                Image(systemName: tab.icon)
+                    .font(.system(size: 18, weight: .semibold))
+
+                Text(tab.rawValue)
+                    .font(.system(size: 10, weight: .semibold))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .background(
+                Capsule()
+                    .fill(isSelected ? Color(red: 0.71, green: 0.36, blue: 0.46).opacity(0.12) : Color.clear)
+            )
+            .foregroundColor(
+                isSelected
+                    ? Color(red: 0.71, green: 0.36, blue: 0.46) // Mauve / Theme Accent
+                    : (colorScheme == .dark ? Color(white: 0.6) : Color(white: 0.3))
+            )
+        }
+        .buttonStyle(.plain)
+    }
 }

@@ -1,61 +1,44 @@
 import SwiftUI
 
 public struct GreetingCard: View {
-    public var userName: String = "Siam"
-    public var netCashflow: Double = 62890.0
+    public var userName: String = "User"
+    public var greeting: String = "Good night"
 
-    @ObservedObject private var themeManager = ThemeManager.shared
     @Environment(\.colorScheme) private var colorScheme
 
-    public init(userName: String = "Siam", netCashflow: Double = 62890.0) {
+    public init(userName: String = "User", greeting: String = "Good night") {
         self.userName = userName
-        self.netCashflow = netCashflow
-    }
-
-    private var greetingTime: String {
-        let hour = Calendar.current.component(.hour, from: Date())
-        if hour < 12 {
-            return "Good morning,"
-        } else if hour < 17 {
-            return "Good afternoon,"
-        } else {
-            return "Good evening,"
-        }
+        self.greeting = greeting
     }
 
     public var body: some View {
-        HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
-                Text(greetingTime)
-                    .font(CentwiseTypography.subheadline)
-                    .foregroundColor(.secondary)
+        HStack(spacing: 14) {
+            // Circular Avatar with Mauve Accent
+            Circle()
+                .fill(Color(red: 0.71, green: 0.36, blue: 0.46)) // #B55D75
+                .frame(width: 46, height: 46)
+                .overlay(
+                    Image(systemName: "person.crop.circle.fill")
+                        .font(.system(size: 26))
+                        .foregroundColor(.white)
+                )
+
+            VStack(alignment: .leading, spacing: 2) {
                 Text(userName)
-                    .font(CentwiseTypography.title2)
+                    .font(.system(size: 17, weight: .bold))
                     .foregroundColor(.primary)
+
+                Text(greeting)
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundColor(.secondary)
             }
 
             Spacer()
-
-            // Net Cashflow Pill
-            VStack(alignment: .trailing, spacing: CentwiseSpacing.xxs) {
-                Text("This Month Net")
-                    .font(CentwiseTypography.caption2)
-                    .foregroundColor(.secondary)
-                HStack(spacing: CentwiseSpacing.xs) {
-                    Image(systemName: netCashflow >= 0 ? "arrow.up.right" : "arrow.down.right")
-                        .font(.system(size: 11, weight: .bold))
-                    Text(CurrencyFormatter.shared.formatBDT(netCashflow, showSign: false, compact: true))
-                        .font(CentwiseTypography.amountSmall)
-                }
-                .foregroundColor(netCashflow >= 0 ? CentwiseColors.incomeGreen : CentwiseColors.expenseRed)
-                .padding(.horizontal, CentwiseSpacing.sm)
-                .padding(.vertical, CentwiseSpacing.xs)
-                .background(
-                    (netCashflow >= 0 ? CentwiseColors.incomeGreen : CentwiseColors.expenseRed).opacity(0.12)
-                )
-                .cornerRadius(CentwiseSpacing.radiusFull)
-            }
         }
-        .padding(.vertical, CentwiseSpacing.xs)
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(colorScheme == .dark ? Color(red: 0.11, green: 0.11, blue: 0.12) : Color(red: 0.97, green: 0.98, blue: 0.98))
+        )
     }
 }

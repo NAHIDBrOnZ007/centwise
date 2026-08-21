@@ -3,131 +3,148 @@ import SwiftUI
 public struct SettingsScreen: View {
     @ObservedObject private var themeManager = ThemeManager.shared
     @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.isAmoledActive) private var isAmoled
-
-    @AppStorage("enableBiometricLock") private var enableBiometricLock: Bool = false
-    @AppStorage("enableBengaliDigits") private var enableBengaliDigits: Bool = false
-    @State private var showExportSuccess = false
 
     public init() {}
 
     public var body: some View {
-        Form {
-            // Automation & iOS Tracking
-            Section(header: Text("Tracking & Automations")) {
-                NavigationLink(destination: ShortcutsGuideScreen()) {
-                    HStack(spacing: CentwiseSpacing.sm) {
-                        Image(systemName: "bolt.badge.automatic.fill")
-                            .foregroundColor(themeManager.accentColor)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Apple Shortcuts Setup")
-                                .font(CentwiseTypography.bodyMedium)
-                            Text("Background SMS parsing guide")
-                                .font(CentwiseTypography.caption2)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-            }
-
-            // Theme & Customization
-            Section(header: Text("Appearance")) {
-                Picker("Theme", selection: $themeManager.themeMode) {
-                    ForEach(ThemeMode.allCases) { mode in
-                        Text(mode.rawValue).tag(mode)
-                    }
-                }
-
-                Picker("Accent Color", selection: $themeManager.accentChoice) {
-                    ForEach(AccentChoice.allCases) { choice in
-                        HStack {
-                            Circle().fill(choice.color).frame(width: 12, height: 12)
-                            Text(choice.rawValue)
-                        }
-                        .tag(choice)
-                    }
-                }
-
-                Toggle("Haptic Feedback", isOn: $themeManager.enableHaptics)
-            }
-
-            // Security & Privacy
-            Section(header: Text("Security & Privacy")) {
-                Toggle("Face ID / Biometric Lock", isOn: $enableBiometricLock)
-
-                HStack {
-                    Image(systemName: "shield.lefthalf.filled")
-                        .foregroundColor(CentwiseColors.incomeGreen)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("On-Device Processing")
-                            .font(CentwiseTypography.bodyMedium)
-                        Text("SMS messages never leave your iPhone")
-                            .font(CentwiseTypography.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                }
-            }
-
-            // Data & Export
-            Section(header: Text("Data & Backups")) {
-                Button(action: {
-                    themeManager.triggerHapticFeedback(.success)
-                    showExportSuccess = true
-                }) {
-                    HStack {
-                        Image(systemName: "square.and.arrow.up")
-                            .foregroundColor(themeManager.accentColor)
-                        Text("Export Transactions (CSV)")
-                            .foregroundColor(.primary)
-                    }
-                }
-
-                Button(action: {
-                    themeManager.triggerHapticFeedback(.success)
-                }) {
-                    HStack {
-                        Image(systemName: "arrow.down.doc.fill")
-                            .foregroundColor(themeManager.accentColor)
-                        Text("Backup Local Database")
-                            .foregroundColor(.primary)
-                    }
-                }
-            }
-
-            // Localization
-            Section(header: Text("Region & Currency")) {
-                HStack {
-                    Text("Currency")
-                    Spacer()
-                    Text("৳ BDT (Taka)")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                // Section 1: Personalization (Screenshot 3)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Personalization")
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.secondary)
+                        .padding(.leading, 6)
+
+                    VStack(spacing: 0) {
+                        settingsRow(
+                            iconText: "🎨",
+                            iconColor: Color.orange,
+                            title: "Appearance",
+                            subtitle: "Theme, accent color, dark mode",
+                            showDivider: true
+                        )
+
+                        settingsRow(
+                            iconText: "৳",
+                            iconColor: Color(red: 0.20, green: 0.78, blue: 0.35),
+                            title: "Currency",
+                            subtitle: "Default currency for totals and new entries",
+                            showDivider: false
+                        )
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(colorScheme == .dark ? Color(red: 0.11, green: 0.11, blue: 0.12) : Color(red: 0.97, green: 0.98, blue: 0.98))
+                    )
                 }
 
-                Toggle("Bengali Numerals (০-৯)", isOn: $enableBengaliDigits)
-            }
-
-            // About
-            Section(header: Text("About")) {
-                HStack {
-                    Text("Version")
-                    Spacer()
-                    Text("1.0.0 (Build 1)")
+                // Section 2: Data Management (Screenshot 3)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Data Management")
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.secondary)
-                }
+                        .padding(.leading, 6)
 
-                HStack {
-                    Text("Designed for")
-                    Spacer()
-                    Text("Bangladesh 🇧🇩")
-                        .foregroundColor(.secondary)
+                    VStack(spacing: 0) {
+                        settingsRow(
+                            iconText: "⊞",
+                            iconColor: Color(red: 0.69, green: 0.32, blue: 0.87),
+                            title: "Categories",
+                            subtitle: "Manage expense and income categories",
+                            showDivider: true
+                        )
+
+                        settingsRow(
+                            iconText: "◔",
+                            iconColor: Color(red: 0.20, green: 0.78, blue: 0.35),
+                            title: "Budgets",
+                            subtitle: "Set spending limits by category",
+                            showDivider: true
+                        )
+
+                        settingsRow(
+                            iconText: "🏛️",
+                            iconColor: Color(red: 0.0, green: 0.48, blue: 1.0),
+                            title: "Accounts",
+                            subtitle: "Manage bank accounts and cards",
+                            showDivider: true
+                        )
+
+                        settingsRow(
+                            iconText: "⇄",
+                            iconColor: Color(red: 0.35, green: 0.34, blue: 0.84),
+                            title: "Subscriptions",
+                            subtitle: "Track recurring payments",
+                            showDivider: true
+                        )
+
+                        settingsRow(
+                            iconText: "✨",
+                            iconColor: Color(red: 1.0, green: 0.18, blue: 0.33),
+                            title: "Smart Rules",
+                            subtitle: "Auto-categorize transactions",
+                            showDivider: false
+                        )
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(colorScheme == .dark ? Color(red: 0.11, green: 0.11, blue: 0.12) : Color(red: 0.97, green: 0.98, blue: 0.98))
+                    )
                 }
             }
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+            .padding(.bottom, 100)
         }
+        .background(colorScheme == .dark ? Color.black : Color.white)
         .navigationTitle("Settings")
-        .alert("CSV Export Ready", isPresented: $showExportSuccess) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Your transaction history has been exported successfully.")
+    }
+
+    @ViewBuilder
+    private func settingsRow(
+        iconText: String,
+        iconColor: Color,
+        title: String,
+        subtitle: String,
+        showDivider: Bool
+    ) -> some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 14) {
+                // Colorful Icon Badge
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(iconColor)
+                    .frame(width: 32, height: 32)
+                    .overlay(
+                        Text(iconText)
+                            .font(.system(size: 15))
+                            .foregroundColor(.white)
+                    )
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.primary)
+
+                    Text(subtitle)
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(Color(white: 0.75))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+
+            if showDivider {
+                Divider()
+                    .padding(.leading, 62)
+            }
         }
     }
 }
