@@ -13,54 +13,85 @@ centwise/
 ├── apps/
 │   ├── android/
 │   │   ├── app/
-│   │   │   ├── src/main/java/com/centwise/
-│   │   │   │   ├── core/
-│   │   │   │   │   ├── design/
-│   │   │   │   │   ├── navigation/
-│   │   │   │   │   ├── di/
-│   │   │   │   │   └── common/
-│   │   │   │   ├── data/
-│   │   │   │   │   ├── database/
-│   │   │   │   │   ├── repositories/
-│   │   │   │   │   ├── backup/
-│   │   │   │   │   └── migrations/
-│   │   │   │   ├── platform/
-│   │   │   │   │   ├── sms/
-│   │   │   │   │   ├── notifications/
-│   │   │   │   │   ├── permissions/
-│   │   │   │   │   └── widgets/
-│   │   │   │   └── features/
-│   │   │   │       ├── onboarding/
-│   │   │   │       ├── home/
-│   │   │   │       ├── transactions/
-│   │   │   │       ├── accounts/
-│   │   │   │       ├── categories/
-│   │   │   │       ├── budgets/
-│   │   │   │       ├── subscriptions/
-│   │   │   │       ├── analytics/
-│   │   │   │       └── settings/
+│   │   │   ├── src/main/
+│   │   │   │   ├── AndroidManifest.xml
+│   │   │   │   ├── kotlin/com/centwise/
+│   │   │   │   │   ├── core/
+│   │   │   │   │   │   ├── design/
+│   │   │   │   │   │   │   ├── theme/
+│   │   │   │   │   │   │   ├── components/
+│   │   │   │   │   │   │   ├── glass/
+│   │   │   │   │   │   │   └── formatters/
+│   │   │   │   │   │   ├── navigation/
+│   │   │   │   │   │   ├── ffi/
+│   │   │   │   │   │   ├── di/
+│   │   │   │   │   │   └── common/
+│   │   │   │   │   ├── data/
+│   │   │   │   │   │   ├── database/
+│   │   │   │   │   │   ├── repositories/
+│   │   │   │   │   │   ├── fakes/
+│   │   │   │   │   │   ├── backup/
+│   │   │   │   │   │   └── migrations/
+│   │   │   │   │   ├── platform/
+│   │   │   │   │   │   ├── sms/
+│   │   │   │   │   │   ├── notifications/
+│   │   │   │   │   │   ├── permissions/
+│   │   │   │   │   │   └── widgets/
+│   │   │   │   │   └── features/
+│   │   │   │   │       ├── onboarding/
+│   │   │   │   │       ├── home/
+│   │   │   │   │       ├── transactions/
+│   │   │   │   │       ├── accounts/
+│   │   │   │   │       ├── categories/
+│   │   │   │   │       ├── budgets/
+│   │   │   │   │       ├── subscriptions/
+│   │   │   │   │       ├── analytics/
+│   │   │   │   │       └── settings/
+│   │   │   │   └── res/
+│   │   │   │       ├── drawable/
+│   │   │   │       ├── mipmap-anydpi-v26/
+│   │   │   │       ├── mipmap-*/
+│   │   │   │       └── values/
 │   │   │   ├── src/test/
 │   │   │   ├── src/androidTest/
 │   │   │   └── schemas/
 │   │   ├── build.gradle.kts
 │   │   ├── settings.gradle.kts
+│   │   ├── gradle.properties
+│   │   ├── gradlew
+│   │   ├── gradlew.bat
 │   │   └── gradle/
+│   │       └── libs.versions.toml
 │   │
 │   └── ios/
 │       ├── Centwise/
+│       │   ├── App/
+│       │   │   ├── CentwiseApp.swift
+│       │   │   └── Info.plist
+│       │   ├── Assets.xcassets/
+│       │   │   ├── AppIcon.appiconset/
+│       │   │   ├── AppLogo.imageset/
+│       │   │   └── AccentColor.colorset/
 │       │   ├── Core/
 │       │   │   ├── Design/
+│       │   │   │   ├── Theme/
+│       │   │   │   ├── Components/
+│       │   │   │   ├── Glass/
+│       │   │   │   └── Formatters/
 │       │   │   ├── Navigation/
+│       │   │   ├── FFI/
 │       │   │   └── Common/
 │       │   ├── Data/
 │       │   │   ├── Database/
 │       │   │   ├── Repositories/
+│       │   │   ├── Fakes/
 │       │   │   ├── Backup/
 │       │   │   └── Migrations/
 │       │   ├── Platform/
 │       │   │   ├── Permissions/
 │       │   │   ├── Notifications/
-│       │   │   └── Storage/
+│       │   │   ├── Storage/
+│       │   │   └── AppGroup/
 │       │   └── Features/
 │       │       ├── Onboarding/
 │       │       ├── Home/
@@ -92,6 +123,11 @@ centwise/
 │   │   └── src/
 │   └── uniffi.toml
 │
+├── assets/
+│   ├── logo.jpeg
+│   ├── banner.png
+│   └── screenshots/
+│
 ├── fixtures/
 │   ├── sms/
 │   │   ├── bkash/
@@ -108,17 +144,26 @@ centwise/
 │   └── supported-providers.json
 │
 ├── crowdin/
+│   └── glossary.csv
+├── crowdin.yml
 ├── fastlane/
+│   ├── Fastfile
+│   ├── Appfile
+│   └── metadata/
+│       ├── android/
+│       └── ios/
 ├── scripts/
 ├── .github/
 │   ├── workflows/
 │   ├── ISSUE_TEMPLATE/
 │   └── pull_request_template.md
+├── .gitignore
 ├── .gitmessage
 ├── README.md
 ├── setup.md
 ├── tech.md
 ├── features.md
+├── ios_shortcut.md
 ├── PRIVACY.md
 ├── SECURITY.md
 ├── CONTRIBUTING.md

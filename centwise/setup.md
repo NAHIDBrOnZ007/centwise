@@ -37,6 +37,7 @@ of each file; its contents, IDs, secrets, and schemas must not be copied.
 | `core/Cargo.toml` | Rust workspace and core crate definition | Yes, when Rust core is scaffolded |
 | `core/uniffi.toml` | Rust-to-Kotlin/Swift binding configuration | Yes, with Centwise names |
 | `docs/supported-providers.json` | Bangladesh provider source of truth | Created with initial safe structure |
+| `assets/` | Brand logos, README banners, and screenshots | Yes |
 | `android/schemas/*.json` | Room database version snapshots | Generated after the Android database exists |
 | `.gitmessage` | Consistent commit messages | Created |
 | `crowdin/glossary.csv` | Consistent English/Bengali terminology | Created |
@@ -48,6 +49,7 @@ of each file; its contents, IDs, secrets, and schemas must not be copied.
 | `.github/workflows/release.yml` | Manual release workflow | Later, after signing and store setup |
 | `scripts/verify.sh` | Local verification command matching CI | After CI checks are defined |
 | `README.md` | Project overview and developer setup | Yes |
+| `ios_shortcut.md` | iOS Shortcut message automation setup guide | Created |
 | `PRIVACY.md` | SMS, local storage, and Shortcut privacy explanation | Yes, before testing with real users |
 | `SECURITY.md` | Security reporting and data-handling rules | Yes |
 | `LICENSE` | Centwise source-code license | Requires an explicit license decision |
@@ -103,12 +105,14 @@ with scopes such as `parser`, `sms`, `android`, `ios`, `ui`, `db`, and `build`.
 
 ```text
 centwise/
-├── core/                 Rust shared parser and domain core
-├── android/              Kotlin Android application
-├── ios/                  SwiftUI iOS application
-├── shared-fixtures/      Anonymized cross-platform SMS fixtures
-├── docs/                 Product and technical documentation
+├── apps/
+│   ├── android/          Kotlin + Jetpack Compose Android application
+│   └── ios/              Swift + SwiftUI iOS application
+├── core/                 Rust shared parser, domain, and UniFFI core
+├── fixtures/             Anonymized cross-platform SMS fixtures
+├── docs/                 Product, architecture, and technical documentation
 ├── crowdin/              Localization resources
+├── fastlane/             Release and deployment automation
 ├── scripts/              Build and maintenance scripts
 └── .github/workflows/    Continuous integration and release workflows
 ```
