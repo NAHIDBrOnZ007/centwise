@@ -47,7 +47,7 @@ Keep these boundaries intact:
 ```text
 apps/android       Native Android UI and Android platform integrations
 apps/ios           Native iOS UI, App Intents, and Share Extension
-core               Rust domain, normalization, parser, category, and FFI code
+core               Rust domain, database, normalization, parser, category, and FFI code
 fixtures           Anonymized shared SMS parser fixtures
 docs               Architecture, provider, feature, and decision records
 crowdin            Localization resources
@@ -162,6 +162,7 @@ Rust owns deterministic shared logic:
 - OTP/promotional/non-transaction filtering
 - Categorization rules
 - Shared domain models and validation
+- The shared SQLite database: schema, migrations, writes, and screen queries
 
 Rust must not own:
 
@@ -170,7 +171,8 @@ Rust must not own:
 - Notifications
 - Platform lifecycle
 - App navigation
-- Platform database files
+- Platform storage locations or permissions; the platform passes the database
+  path to the Rust core
 - Store or account credentials
 
 Keep the FFI surface small, typed, synchronous where possible, and stable.
@@ -191,11 +193,13 @@ Prefer value objects and explicit result types over unstructured JSON strings.
 
 ## Database and Migration Rules
 
-- Android Room schema JSON files are generated and committed.
-- iOS uses matching logical fields and platform migration steps.
-- Automatic migrations are for safe additions only.
-- Renames, transformations, enum changes, relationship changes, and removals
-  require explicit migration code.
+- The Rust core owns the schema, migrations, and all writes for the single
+  shared SQLite database used by both platforms.
+- ViewModels contain no money arithmetic, date logic, or filtering; those are
+  Rust query functions.
+- A schema snapshot is committed for every released database version and
+  reviewed in pull requests.
+- Migrations are explicit Rust code run by the versioned migration runner.
 - Never use destructive migration for released user data.
 - Every schema change requires a migration test, upgrade test, fresh-install
   test, and backup compatibility review.

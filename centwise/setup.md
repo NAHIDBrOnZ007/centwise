@@ -38,7 +38,7 @@ of each file; its contents, IDs, secrets, and schemas must not be copied.
 | `core/uniffi.toml` | Rust-to-Kotlin/Swift binding configuration | Yes, with Centwise names |
 | `docs/supported-providers.json` | Bangladesh provider source of truth | Created with initial safe structure |
 | `assets/` | Brand logos, README banners, and screenshots | Yes |
-| `android/schemas/*.json` | Room database version snapshots | Generated after the Android database exists |
+| `core/centwise-db/` | Rust-owned shared database, migrations, and schema snapshots | Yes, when Rust core is scaffolded |
 | `.gitmessage` | Consistent commit messages | Created |
 | `crowdin/glossary.csv` | Consistent English/Bengali terminology | Created |
 | `crowdin.yml` | Crowdin localization workflow | Later, after the Crowdin project exists |
@@ -54,9 +54,9 @@ of each file; its contents, IDs, secrets, and schemas must not be copied.
 | `SECURITY.md` | Security reporting and data-handling rules | Yes |
 | `LICENSE` | Centwise source-code license | Requires an explicit license decision |
 
-The numbered Room JSON files are generated outputs. We should not manually
-create fake versions now; the first schema is generated from Centwise’s actual
-database and every later schema is committed when the database changes.
+The numbered schema snapshots are generated outputs. We should not manually
+create fake versions now; the first snapshot is generated from Centwise’s actual
+database and every later snapshot is committed when the database changes.
 
 Fastlane also remains configuration-only until Centwise has its own Android
 application ID, iOS bundle identifier, signing setup, and store accounts. Never
@@ -130,65 +130,45 @@ must be the single source of truth for provider lists.
 - [ ] Provider registration validation
 - [ ] Generated support documentation
 
-### Database schema JSON files
+### Database schema snapshots
 
-The many numbered JSON files seen in PennyWise under `app/schemas` are Room
-database schema snapshots. Each number is a database version used to review and
-test migrations. They are generated and committed; they are not separate
-features and must not be copied from PennyWise.
+Centwise uses one shared SQLite database owned by the Rust core. Instead of
+Room's generated JSON, each released database version gets a committed schema
+snapshot under `core/centwise-db/schemas/` so schema changes are reviewable in
+pull requests, similar to how PennyWise reviews Room schema JSON.
 
-- [ ] Enable Room schema export
-- [ ] Store schemas under `android/schemas`
-- [ ] Commit every generated schema version
+- [ ] Commit a schema snapshot for every released database version
 - [ ] Review schema changes in pull requests
-- [ ] Add migration tests for every released schema change
+- [ ] Add Rust migration tests for every released schema change
 - [ ] Never use destructive migration for released user data
 
-### Cross-platform database migration policy
+### Database migration policy
 
-Android and iOS must use the same logical data model, but their migration files
-are platform-specific because Room and the iOS database layer have different
-tooling.
+The Rust core owns the database schema and migrations for both platforms.
+Migrations are written once in `centwise-db` and run through a versioned
+migration runner, so Android and iOS can never drift apart.
 
 ```text
-core/domain-model/             shared transaction/account concepts
-apps/android/app/schemas/      generated Room JSON snapshots
-apps/android/app/migrations/   Android manual migrations when required
-apps/ios/Centwise/Data/        iOS migration implementation
-docs/architecture/data-model.md shared table/field contract
+core/centwise-db/src/migrations/   Rust migration code, single source of truth
+core/centwise-db/schemas/          committed schema snapshot per released version
+core/centwise-db/tests/            migration and upgrade tests with fixture databases
+docs/architecture/data-model.md    shared table/field contract
 ```
-
-Use automatic migration when the change is mechanically safe:
-
-- Add a table
-- Add a nullable column
-- Add a column with a valid default
-- Add a non-unique index
-
-Use an explicit manual migration when the change affects existing data:
-
-- Rename a table or column
-- Split one field into multiple fields
-- Merge fields
-- Change a stored value format
-- Change an enum or transaction type
-- Add or change foreign keys
-- Remove data
 
 Every released schema change must have:
 
 - [ ] An incremented database version
-- [ ] Generated Android Room schema JSON
-- [ ] Android migration test from the previous version
-- [ ] Matching iOS migration step
+- [ ] A committed schema snapshot for review
+- [ ] A Rust migration test from the previous released version
+- [ ] A fixture database with representative old data for upgrade tests
 - [ ] Fresh-install test
 - [ ] Upgrade test with representative old data
 - [ ] Backup/restore compatibility check
 - [ ] Rollback or recovery decision
 
-The numbered JSON files are not manually designed feature files. They are
-generated records of the Android schema at each version, similar to PennyWise.
-Centwise should generate and commit them only after the real database exists.
+Schema snapshots are generated records of the database at each version. They
+are committed only after the real database change exists, never hand-written
+in advance.
 
 ### Other configured resources
 
@@ -207,6 +187,8 @@ Centwise should generate and commit them only after the real database exists.
 
 - [ ] Cargo workspace created
 - [ ] Rust core crate created
+- [ ] `centwise-db` crate created with schema and versioned migration runner
+- [ ] Data-change notification callback defined for reactive native layers
 - [ ] Public typed API defined for SMS parsing
 - [ ] Transaction model defined
 - [ ] Bangladesh currency and number normalization defined
@@ -226,8 +208,8 @@ Centwise should generate and commit them only after the real database exists.
 - [ ] SMS `BroadcastReceiver` connected to the Rust core
 - [ ] Historical SMS scan connected to the Rust core
 - [ ] Optional notification listener boundary defined
-- [ ] Android local database created
-- [ ] Database migrations configured
+- [ ] Android repository layer connected to the Rust database through FFI
+- [ ] Data-change notifications wired to reactive UI state
 - [ ] Android notifications configured
 - [ ] Biometric lock configured
 - [ ] Android app signing configuration kept outside Git
@@ -242,8 +224,9 @@ Centwise should generate and commit them only after the real database exists.
 - [ ] App Intent accepts SMS text and calls the Rust core
 - [ ] iOS Message Automation onboarding guide created
 - [ ] Share Extension target created
-- [ ] iOS local database created
-- [ ] iOS database migration strategy defined
+- [ ] Database file placed in the App Group container so the app, App Intents, and Share Extension share one Rust database
+- [ ] iOS repository layer connected to the Rust database through FFI
+- [ ] Data-change notifications wired to reactive UI state
 - [ ] Face ID/Touch ID lock configured
 - [ ] iOS signing and provisioning kept outside Git
 

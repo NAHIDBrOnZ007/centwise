@@ -11,7 +11,7 @@ Centwise is a Bangladesh-focused personal finance app for automatically tracking
 - Material 3
 - Native Android SMS receiver
 - Optional Android notification listener for supported bank and MFS apps
-- Android local database
+- Opens the shared Rust database from Android-app storage
 - Android notifications
 - Android biometric lock
 - Android home-screen widgets
@@ -23,7 +23,7 @@ Centwise is a Bangladesh-focused personal finance app for automatically tracking
 - Apple Shortcuts integration
 - Swift `AppIntent` for importing SMS text from a Message Automation
 - iOS Share Extension for manually sharing an SMS to Centwise
-- iOS local database
+- Opens the shared Rust database from the App Group container
 - iOS biometric lock
 - iOS widgets
 
@@ -45,6 +45,7 @@ Rust handles:
 - OTP, promotional, and non-transaction SMS filtering
 - Transaction validation
 - Shared transaction models
+- Shared SQLite database schema, migrations, and screen-shaped queries
 
 The Rust core does not manage platform permissions, UI, notifications, or platform lifecycle events.
 
@@ -53,14 +54,16 @@ The Rust core does not manage platform permissions, UI, notifications, or platfo
 - Rust library compiled for Android and iOS
 - UniFFI-generated Kotlin and Swift bindings
 - Small, typed, synchronous core APIs
+- Data-change notifications through a UniFFI callback interface so native StateFlow and Combine layers can re-query
 - Platform-specific adapters around the Rust core
 - Rust unit, fixture, and fuzz testing for parser correctness
 
 ## Storage
 
 - Local-first storage for the first release
-- Android local database for Android app data
-- iOS local database for iOS app data
+- One shared SQLite database owned by the Rust core, used by Android and iOS
+- Each platform opens the database by path from a platform-appropriate location (App Group container on iOS so the app, App Intents, and Share Extension share one file)
+- WAL mode with a busy timeout for multi-process access
 - No required account or server for local operation
 - Local backup and restore
 - CSV export
@@ -70,20 +73,20 @@ Cloud storage and cross-device synchronization are planned product capabilities,
 
 ## Database and Migrations
 
-- Android and iOS share the same logical transaction/account data model.
-- Android uses Room schema export and committed versioned JSON snapshots.
-- iOS uses its own migration implementation for the same logical model.
-- Safe additions may use automatic migration.
-- Renames, transformations, removals, and relationship changes require explicit migration code.
-- Every released schema version has migration tests, upgrade tests, and backup compatibility checks.
+- The Rust core owns the database schema and migrations in the `centwise-db` crate.
+- Android and iOS use the same SQLite database through the same Rust code, so cross-platform backup and restore are correct by construction.
+- Migrations run through a `user_version`-based migration runner in Rust and are written once.
+- A reviewed schema snapshot is committed for each released database version so schema changes are reviewable in pull requests.
+- Every released schema version has Rust migration tests, upgrade tests from representative old databases, and backup compatibility checks.
 - Destructive migration is not used for released user data.
+- All writes go through Rust functions so balances stay transactional and data-change notifications fire for reactive UI updates.
 
 ## Architecture
 
 ```text
 Android SMS Receiver ─┐
 Android Notification ─┤
-                      ├── Rust Centwise Core ── Platform Database
+                      ├── Rust Centwise Core ── Shared SQLite Database
 iOS App Intent ───────┤
 iOS Share Extension ─┘
                               │
@@ -94,6 +97,7 @@ iOS Share Extension ─┘
 
 - Native platform UI
 - MVVM-style presentation structure
+- Native ViewModels stay thin: money arithmetic, date logic, and filtering live in Rust query functions, not ViewModels
 - Repository-based data access
 - Unidirectional state flow
 - Background processing for historical SMS scanning and maintenance tasks
