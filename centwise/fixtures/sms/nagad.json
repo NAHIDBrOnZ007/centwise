@@ -1,0 +1,42 @@
+{
+  "provider": "nagad",
+  "source": "user-collected format samples, anonymized",
+  "messages": [
+    {
+      "kind": "cash-in",
+      "senderHint": "Nagad",
+      "body": "Tk 4,000.00 Cash In successful from 017XXXXXXXX. Fee Tk 0.00. Balance Tk 9,200.00. TrxID 5T6U7V8W9X",
+      "expected": { "type": "income", "amountMinor": 400000, "feeMinor": 0, "balanceAfterMinor": 920000, "reference": "5T6U7V8W9X", "party": "017XXXXXXXX" }
+    },
+    {
+      "kind": "cash-out",
+      "senderHint": "Nagad",
+      "body": "Tk 1,500.00 Cash Out successful to 018XXXXXXXX. Fee Tk 19.50. Balance Tk 7,680.50. TrxID 6U7V8W9X0Y",
+      "expected": { "type": "expense", "amountMinor": 150000, "feeMinor": 1950, "balanceAfterMinor": 768050, "reference": "6U7V8W9X0Y", "party": "018XXXXXXXX" }
+    },
+    {
+      "kind": "send-money-out",
+      "senderHint": "Nagad",
+      "body": "Send Money Tk 2,000.00 to 019XXXXXXXX successful. Fee Tk 5.00. Balance Tk 5,675.50. TrxID 7V8W9X0Y1Z",
+      "expected": { "type": "expense", "amountMinor": 200000, "feeMinor": 500, "balanceAfterMinor": 567550, "reference": "7V8W9X0Y1Z", "party": "019XXXXXXXX" }
+    },
+    {
+      "kind": "send-money-in",
+      "senderHint": "Nagad",
+      "body": "You have received Tk 2,000.00 from 017XXXXXXXX. Fee Tk 0.00. Balance Tk 7,675.50. TrxID 7V8W9X0Y1Z",
+      "expected": { "type": "income", "amountMinor": 200000, "feeMinor": 0, "balanceAfterMinor": 767550, "reference": "7V8W9X0Y1Z", "party": "017XXXXXXXX" }
+    },
+    {
+      "kind": "payment-merchant",
+      "senderHint": "Nagad",
+      "body": "Payment of Tk 1,200.00 to Merchant successful. Fee Tk 0.00. Balance Tk 6,475.50. TrxID 8W9X0Y1Z2A",
+      "expected": { "type": "expense", "amountMinor": 120000, "feeMinor": 0, "balanceAfterMinor": 647550, "reference": "8W9X0Y1Z2A", "party": "Merchant" }
+    },
+    {
+      "kind": "mobile-recharge",
+      "senderHint": "Nagad",
+      "body": "Mobile Recharge of Tk 50.00 to 017XXXXXXXX successful. Fee Tk 0.00. Balance Tk 6,425.50. TrxID 9X0Y1Z2A3B",
+      "expected": { "type": "expense", "amountMinor": 5000, "feeMinor": 0, "balanceAfterMinor": 642550, "reference": "9X0Y1Z2A3B", "party": "017XXXXXXXX", "category": "recharge" }
+    }
+  ]
+}

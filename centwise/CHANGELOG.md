@@ -14,10 +14,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); project is pre-1
 - `docs/STATUS.md` — progress tracker (done / next / later / known gaps)
 - `.gitignore` — Rust target, Android/iOS build output, signing keys, secrets
 - This `CHANGELOG.md`
+- Root `README.md` — project overview, architecture, dev commands, doc index
+- `PRIVACY.md` — full SMS privacy policy (required before real-user testing)
+- `docs/ui/icon-map.md` — SF Symbols ↔ Material Symbols mapping table
+- `docs/supported-providers.json` — expanded to all 13 providers
+  (3 MFS + 10 banks)
+- `fixtures/sms/` — anonymized SMS fixture files (bKash 13 messages incl.
+  merchant/recharge/order-independence/rejection cases, Nagad 6, Rocket 5,
+  banks-generic 5) with expected parser results
+- `docs/architecture/parser-design.md` — generic field-hunting parser
+  design: no template matching, merchant dictionary, safety rules
 
 ### Added — Rust Core (`core/`, machine-verified)
 - Cargo workspace with `centwise-domain`, `centwise-db`, `centwise-ffi`,
   `uniffi-bindgen`
+- `centwise-normalization` crate: Bengali ↔ ASCII digit conversion,
+  whole-SMS text normalization, integer-minor amount parsing (lakh/western
+  grouping, Tk/৳/BDT prefixes, float-free, strict rejection of invalid
+  tokens), and amount-candidate scanning — 15 unit tests green
 - Domain models: money as i64 minor units (poisha), dates as epoch millis,
   default category seed
 - Database: rusqlite (bundled SQLite) in WAL mode with busy timeout and
@@ -27,6 +41,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); project is pre-1
   `ChangeListener` callback (the reactive seam for StateFlow/Combine)
 - Screen queries: `home_dashboard` (period totals + recent list with joins),
   transaction insert/delete with atomic account-balance updates
+- Analytics queries: `category_breakdown` (period expenses grouped by
+  category, biggest first), `top_merchants` (grouped by title),
+  `spending_by_month` (calendar-month buckets with clock-independent
+  anchored windows); account/budget/subscription list + insert queries with
+  live budget progress — 7 more tests (30 total green)
 - UniFFI surface: `CentwiseCore.open(path)`, insert account/transaction,
   delete, balance, `home_dashboard`, `add_listener`
 - Tests: 8/8 passing (migrations idempotent, atomic balances, notification

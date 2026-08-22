@@ -1,0 +1,37 @@
+{
+  "provider": "rocket",
+  "source": "user-collected format samples, anonymized",
+  "notes": "Rocket omits 'Tk' on Balance and Fee; account line uses A/C with the wallet number",
+  "messages": [
+    {
+      "kind": "cash-in",
+      "senderHint": "DBBL / Rocket",
+      "body": "Cash In Tk 3,000.00 successful. A/C 017XXXXXXXXX. Fee 0.00. Balance 8,500.00. TrxID 123456789012",
+      "expected": { "type": "income", "amountMinor": 300000, "feeMinor": 0, "balanceAfterMinor": 850000, "reference": "123456789012", "accountHint": "017XXXXXXXXX" }
+    },
+    {
+      "kind": "cash-out",
+      "senderHint": "DBBL / Rocket",
+      "body": "Cash Out Tk 1,000.00 successful. Fee Tk 18.00. Balance 7,482.00. TrxID 234567890123",
+      "expected": { "type": "expense", "amountMinor": 100000, "feeMinor": 1800, "balanceAfterMinor": 748200, "reference": "234567890123" }
+    },
+    {
+      "kind": "send-money",
+      "senderHint": "DBBL / Rocket",
+      "body": "Send Money Tk 2,500.00 to 018XXXXXXXXX successful. Fee Tk 5.00. Balance 4,977.00. TrxID 345678901234",
+      "expected": { "type": "expense", "amountMinor": 250000, "feeMinor": 500, "balanceAfterMinor": 497700, "reference": "345678901234", "party": "018XXXXXXXXX" }
+    },
+    {
+      "kind": "received-money",
+      "senderHint": "DBBL / Rocket",
+      "body": "You have received Tk 2,500.00. Balance 7,477.00. TrxID 345678901234",
+      "expected": { "type": "income", "amountMinor": 250000, "balanceAfterMinor": 747700, "reference": "345678901234", "party": null }
+    },
+    {
+      "kind": "mobile-recharge",
+      "senderHint": "DBBL / Rocket",
+      "body": "Mobile Recharge Tk 200.00 successful. Fee 0.00. Balance 7,277.00. TrxID 456789012345",
+      "expected": { "type": "expense", "amountMinor": 20000, "feeMinor": 0, "balanceAfterMinor": 727700, "reference": "456789012345", "category": "recharge" }
+    }
+  ]
+}

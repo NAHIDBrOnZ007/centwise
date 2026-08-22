@@ -1,0 +1,36 @@
+{
+  "provider": "banks-generic",
+  "appliesTo": [
+    "sonali-bank", "islami-bank", "dbbl", "brac-bank", "city-bank",
+    "ebl", "pubali-bank", "ucb", "prime-bank", "agrani-bank"
+  ],
+  "source": "user-collected format samples, anonymized",
+  "notes": "Traditional banks share these formats; provider is resolved from the sender ID / trailing [Bank Name]. Per-bank variations to be added as real samples arrive.",
+  "messages": [
+    {
+      "kind": "credit-deposit",
+      "body": "Dear Customer, Your A/C XXXX1234 has been credited with Tk 5,000.00 on 22/08/2026. Available Balance: Tk 25,450.00. [Bank Name]",
+      "expected": { "type": "income", "amountMinor": 500000, "balanceAfterMinor": 2545000, "accountLast4": "1234", "date": "22/08/2026" }
+    },
+    {
+      "kind": "debit-withdrawal-payment",
+      "body": "Dear Customer, Your A/C XXXX1234 has been debited with Tk 2,000.00 on 22/08/2026. Available Balance: Tk 23,450.00. [Bank Name]",
+      "expected": { "type": "expense", "amountMinor": 200000, "balanceAfterMinor": 2345000, "accountLast4": "1234", "date": "22/08/2026" }
+    },
+    {
+      "kind": "atm-withdrawal",
+      "body": "ATM Cash Withdrawal of Tk 5,000.00 from A/C XXXX1234 on 22/08/2026 15:30. Available Balance: Tk 18,450.00. [Bank Name]",
+      "expected": { "type": "expense", "amountMinor": 500000, "balanceAfterMinor": 1845000, "accountLast4": "1234", "category": "cash-withdrawal", "date": "22/08/2026 15:30" }
+    },
+    {
+      "kind": "loan-emi",
+      "body": "EMI of Tk 8,500.00 has been deducted from your A/C XXXX1234 on 22/08/2026. Available Balance: Tk 12,300.00. [Bank Name]",
+      "expected": { "type": "expense", "amountMinor": 850000, "balanceAfterMinor": 1230000, "accountLast4": "1234", "category": "bills", "date": "22/08/2026" }
+    },
+    {
+      "kind": "cashback-interest",
+      "body": "Cashback/Interest of Tk 150.00 credited to your A/C XXXX1234 on 22/08/2026. Available Balance: Tk 12,450.00. [Bank Name]",
+      "expected": { "type": "income", "amountMinor": 15000, "balanceAfterMinor": 1245000, "accountLast4": "1234", "date": "22/08/2026" }
+    }
+  ]
+}

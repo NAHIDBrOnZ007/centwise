@@ -9,8 +9,8 @@
       "type": "mfs",
       "senderIds": [],
       "parserStatus": "planned",
-      "fixtureStatus": "missing",
-      "lastReviewed": null
+      "fixtureStatus": "collected",
+      "lastReviewed": "2026-08-22"
     },
     {
       "id": "nagad",
@@ -18,8 +18,8 @@
       "type": "mfs",
       "senderIds": [],
       "parserStatus": "planned",
-      "fixtureStatus": "missing",
-      "lastReviewed": null
+      "fixtureStatus": "collected",
+      "lastReviewed": "2026-08-22"
     },
     {
       "id": "rocket",
@@ -27,8 +27,98 @@
       "type": "mfs",
       "senderIds": [],
       "parserStatus": "planned",
-      "fixtureStatus": "missing",
-      "lastReviewed": null
+      "fixtureStatus": "collected",
+      "lastReviewed": "2026-08-22"
+    },
+    {
+      "id": "sonali-bank",
+      "name": "Sonali Bank",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "planned",
+      "fixtureStatus": "generic-formats",
+      "lastReviewed": "2026-08-22"
+    },
+    {
+      "id": "islami-bank",
+      "name": "Islami Bank Bangladesh",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "planned",
+      "fixtureStatus": "generic-formats",
+      "lastReviewed": "2026-08-22"
+    },
+    {
+      "id": "dbbl",
+      "name": "Dutch-Bangla Bank",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "planned",
+      "fixtureStatus": "generic-formats",
+      "lastReviewed": "2026-08-22"
+    },
+    {
+      "id": "brac-bank",
+      "name": "BRAC Bank",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "planned",
+      "fixtureStatus": "generic-formats",
+      "lastReviewed": "2026-08-22"
+    },
+    {
+      "id": "city-bank",
+      "name": "The City Bank",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "planned",
+      "fixtureStatus": "generic-formats",
+      "lastReviewed": "2026-08-22"
+    },
+    {
+      "id": "ebl",
+      "name": "Eastern Bank",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "planned",
+      "fixtureStatus": "generic-formats",
+      "lastReviewed": "2026-08-22"
+    },
+    {
+      "id": "pubali-bank",
+      "name": "Pubali Bank",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "planned",
+      "fixtureStatus": "generic-formats",
+      "lastReviewed": "2026-08-22"
+    },
+    {
+      "id": "ucb",
+      "name": "United Commercial Bank",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "planned",
+      "fixtureStatus": "generic-formats",
+      "lastReviewed": "2026-08-22"
+    },
+    {
+      "id": "prime-bank",
+      "name": "Prime Bank",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "planned",
+      "fixtureStatus": "generic-formats",
+      "lastReviewed": "2026-08-22"
+    },
+    {
+      "id": "agrani-bank",
+      "name": "Agrani Bank",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "planned",
+      "fixtureStatus": "generic-formats",
+      "lastReviewed": "2026-08-22"
     }
   ]
 }

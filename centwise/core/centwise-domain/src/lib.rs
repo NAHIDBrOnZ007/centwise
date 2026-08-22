@@ -130,6 +130,92 @@ pub struct HomeDashboard {
     pub recent_transactions: Vec<TransactionSummary>,
 }
 
+/// Analytics: spending grouped by category for a period (expenses only).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CategorySpendSummary {
+    pub category_id: String,
+    pub category_name: String,
+    pub category_icon: String,
+    pub category_color_hex: String,
+    pub total_minor: i64,
+    pub transaction_count: i64,
+}
+
+/// Analytics: spending grouped by transaction title (merchant/counterparty).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MerchantSpendSummary {
+    pub merchant: String,
+    pub total_minor: i64,
+    pub transaction_count: i64,
+}
+
+/// Analytics: total expenses for one calendar month.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct MonthlySpend {
+    pub year: i32,
+    pub month: u32, // 1..=12
+    pub total_expense_minor: i64,
+}
+
+/// Account row for lists.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AccountSummary {
+    pub id: String,
+    pub name: String,
+    pub provider: String,
+    pub last_four: Option<String>,
+    pub balance_minor: i64,
+    pub archived: bool,
+}
+
+/// Budget with live spending progress within its period.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BudgetWithProgress {
+    pub id: String,
+    pub category_id: String,
+    pub category_name: String,
+    pub category_icon: String,
+    pub category_color_hex: String,
+    pub limit_minor: i64,
+    pub period: String,
+    pub start_epoch_ms: i64,
+    pub end_epoch_ms: i64,
+    pub spent_minor: i64,
+}
+
+/// Subscription row for lists.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SubscriptionSummary {
+    pub id: String,
+    pub name: String,
+    pub amount_minor: i64,
+    pub billing_cycle: String,
+    pub next_due_epoch_ms: i64,
+    pub is_active: bool,
+}
+
+/// Budget period for inserts.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NewBudget {
+    pub id: String,
+    pub category_id: String,
+    pub limit_minor: i64,
+    pub period: String,
+    pub start_epoch_ms: i64,
+    pub end_epoch_ms: i64,
+}
+
+/// Subscription to insert.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NewSubscription {
+    pub id: String,
+    pub name: String,
+    pub amount_minor: i64,
+    pub billing_cycle: String,
+    pub next_due_epoch_ms: i64,
+    pub is_active: bool,
+}
+
 /// Default category seed shared by fresh installs.
 pub fn default_categories() -> Vec<Category> {
     vec![

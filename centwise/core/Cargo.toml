@@ -3,6 +3,7 @@ resolver = "2"
 members = [
     "centwise-domain",
     "centwise-db",
+    "centwise-normalization",
     "centwise-ffi",
     "uniffi-bindgen",
 ]

@@ -1,0 +1,84 @@
+{
+  "provider": "bkash",
+  "source": "user-collected format samples, anonymized",
+  "messages": [
+    {
+      "kind": "cash-in-agent",
+      "senderHint": "bKash",
+      "body": "Cash In Tk 5,000.00 from 017XXXXXXXX successful. Fee Tk 0.00. Balance Tk 12,450.00. TrxID 8H9J2K3L4M at 22/08/2026 14:25",
+      "expected": { "type": "income", "amountMinor": 500000, "feeMinor": 0, "balanceAfterMinor": 1245000, "reference": "8H9J2K3L4M", "party": "017XXXXXXXX", "date": "22/08/2026 14:25" }
+    },
+    {
+      "kind": "cash-out-agent",
+      "senderHint": "bKash",
+      "body": "Cash Out Tk 2,000.00 to 017XXXXXXXX successful. Fee Tk 37.00. Balance Tk 10,413.00. TrxID 9K8L7M6N5P at 22/08/2026 15:10",
+      "expected": { "type": "expense", "amountMinor": 200000, "feeMinor": 3700, "balanceAfterMinor": 1041300, "reference": "9K8L7M6N5P", "party": "017XXXXXXXX", "date": "22/08/2026 15:10" }
+    },
+    {
+      "kind": "send-money-out",
+      "senderHint": "bKash",
+      "body": "Send Money Tk 1,500.00 to 018XXXXXXXX successful. Fee Tk 5.00. Balance Tk 8,908.00. TrxID AB12CD34EF at 22/08/2026 16:05",
+      "expected": { "type": "expense", "amountMinor": 150000, "feeMinor": 500, "balanceAfterMinor": 890800, "reference": "AB12CD34EF", "party": "018XXXXXXXX", "date": "22/08/2026 16:05" }
+    },
+    {
+      "kind": "send-money-in",
+      "senderHint": "bKash",
+      "body": "You have received Tk 1,500.00 from 017XXXXXXXX. Fee Tk 0.00. Balance Tk 10,408.00. TrxID AB12CD34EF at 22/08/2026 16:05",
+      "expected": { "type": "income", "amountMinor": 150000, "feeMinor": 0, "balanceAfterMinor": 1040800, "reference": "AB12CD34EF", "party": "017XXXXXXXX", "date": "22/08/2026 16:05" }
+    },
+    {
+      "kind": "payment-merchant",
+      "senderHint": "bKash",
+      "body": "Payment Tk 850.00 to Merchant Name successful. Fee Tk 0.00. Balance Tk 7,558.00. TrxID XY98ZW76VU at 22/08/2026 17:20",
+      "expected": { "type": "expense", "amountMinor": 85000, "feeMinor": 0, "balanceAfterMinor": 755800, "reference": "XY98ZW76VU", "party": "Merchant Name", "date": "22/08/2026 17:20" }
+    },
+    {
+      "kind": "mobile-recharge",
+      "senderHint": "bKash",
+      "body": "Mobile Recharge Tk 100.00 to 017XXXXXXXX successful. Fee Tk 0.00. Balance Tk 7,458.00. TrxID QR45ST67UV at 22/08/2026 18:00",
+      "expected": { "type": "expense", "amountMinor": 10000, "feeMinor": 0, "balanceAfterMinor": 745800, "reference": "QR45ST67UV", "party": "017XXXXXXXX", "category": "recharge", "date": "22/08/2026 18:00" }
+    },
+    {
+      "kind": "payment-merchant-foodpanda",
+      "senderHint": "bKash",
+      "body": "Payment Tk 1,250.00 to Foodpanda successful. Fee Tk 0.00. Balance Tk 6,208.00. TrxID FG56HI78JK at 22/08/2026 19:40",
+      "expected": { "type": "expense", "amountMinor": 125000, "feeMinor": 0, "balanceAfterMinor": 620800, "reference": "FG56HI78JK", "party": "Foodpanda", "merchant": "Foodpanda", "category": "food", "date": "22/08/2026 19:40" }
+    },
+    {
+      "kind": "payment-merchant-pathao",
+      "senderHint": "bKash",
+      "body": "Payment Tk 60.00 to Pathao successful. Fee Tk 0.00. Balance Tk 6,148.00. TrxID LM90NO12PQ at 22/08/2026 20:05",
+      "expected": { "type": "expense", "amountMinor": 6000, "feeMinor": 0, "balanceAfterMinor": 614800, "reference": "LM90NO12PQ", "party": "Pathao", "merchant": "Pathao", "category": "transport", "date": "22/08/2026 20:05" }
+    },
+    {
+      "kind": "recharge-operator-named",
+      "senderHint": "bKash",
+      "body": "Mobile Recharge Tk 200.00 to Airtel 017XXXXXXXX successful. Fee Tk 0.00. Balance Tk 5,948.00. TrxID RS34TU56VW at 22/08/2026 20:30",
+      "expected": { "type": "expense", "amountMinor": 20000, "feeMinor": 0, "balanceAfterMinor": 594800, "reference": "RS34TU56VW", "party": "Airtel 017XXXXXXXX", "merchant": "Airtel", "category": "recharge", "date": "22/08/2026 20:30" }
+    },
+    {
+      "kind": "fields-reordered-order-independence",
+      "senderHint": "bKash",
+      "body": "TrxID ZY87XW65VU at 22/08/2026 21:00. Balance Tk 5,098.00. Fee Tk 0.00. Payment Tk 850.00 to Foodpanda successful.",
+      "expected": { "type": "expense", "amountMinor": 85000, "feeMinor": 0, "balanceAfterMinor": 509800, "reference": "ZY87XW65VU", "party": "Foodpanda", "merchant": "Foodpanda", "category": "food", "date": "22/08/2026 21:00" }
+    },
+    {
+      "kind": "no-amount-rejected",
+      "senderHint": "bKash",
+      "body": "Your bKash app update is available. Download now for new features. TrxID not applicable.",
+      "expected": { "isTransaction": false }
+    },
+    {
+      "kind": "otp-rejected",
+      "senderHint": "bKash",
+      "body": "Your OTP is 847291. Do not share it with anyone. Tk 0.00.",
+      "expected": { "isTransaction": false }
+    },
+    {
+      "kind": "add-money",
+      "senderHint": "bKash",
+      "body": "Add Money Tk 3,000.00 successful. Fee Tk 0.00. Balance Tk 10,458.00. TrxID MN23OP45QR at 22/08/2026 19:15",
+      "expected": { "type": "income", "amountMinor": 300000, "feeMinor": 0, "balanceAfterMinor": 1045800, "reference": "MN23OP45QR", "party": null, "date": "22/08/2026 19:15" }
+    }
+  ]
+}
