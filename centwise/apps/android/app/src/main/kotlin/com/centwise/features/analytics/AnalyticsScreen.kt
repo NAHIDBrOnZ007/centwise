@@ -30,6 +30,7 @@ fun AnalyticsScreen(
     val totalIncome by viewModel.totalIncome.collectAsState()
     val totalExpense by viewModel.totalExpense.collectAsState()
     val categoryBreakdown by viewModel.categoryBreakdown.collectAsState()
+    val transactions by com.centwise.data.fakes.FakeTransactionRepository.shared.transactions.collectAsState()
 
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
@@ -115,6 +116,36 @@ fun AnalyticsScreen(
             }
         }
 
+        // Period Summary Hero
+        item {
+            AnalyticsSummaryCard(
+                spent = totalExpense,
+                income = totalIncome,
+                transactionCount = transactions.size,
+                topCategoryName = categoryBreakdown.entries.maxByOrNull { it.value }?.key
+            )
+        }
+
+        // Category Pie Chart
+        item {
+            CategoryPieChart(
+                slices = categoryBreakdown.entries.toList().mapIndexed { index, entry ->
+                    CategorySlice(
+                        name = entry.key,
+                        value = entry.value,
+                        color = com.centwise.data.models.CategoryOption.defaults
+                            .firstOrNull { it.name.equals(entry.key, ignoreCase = true) }?.color
+                            ?: CategorySliceColors.palette[index % CategorySliceColors.palette.size]
+                    )
+                }
+            )
+        }
+
+        // Spending Trends (last 6 months)
+        item {
+            SpendingTrendsChart(points = monthlyTrendPoints(transactions))
+        }
+
         // Category Breakdown Header
         item {
             Text(
@@ -155,4 +186,43 @@ fun AnalyticsScreen(
 @Composable
 fun AnalyticsScreenPreview() {
     AnalyticsScreen()
+}
+
+private object CategorySliceColors {
+    val palette = listOf(
+        androidx.compose.ui.graphics.Color(0xFFF97316),
+        androidx.compose.ui.graphics.Color(0xFF06B6D4),
+        androidx.compose.ui.graphics.Color(0xFFEC4899),
+        androidx.compose.ui.graphics.Color(0xFFEAB308),
+        androidx.compose.ui.graphics.Color(0xFF8B5CF6),
+        androidx.compose.ui.graphics.Color(0xFF10B981),
+        androidx.compose.ui.graphics.Color(0xFF007AFF),
+        androidx.compose.ui.graphics.Color(0xFFEF4444)
+    )
+}
+
+private fun monthlyTrendPoints(
+    transactions: List<com.centwise.data.models.TransactionItem>
+): List<TrendPoint> {
+    val monthLabels = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+    val now = java.util.Calendar.getInstance()
+
+    return (5 downTo 0).map { monthsBack ->
+        val monthDate = (now.clone() as java.util.Calendar).apply {
+            add(java.util.Calendar.MONTH, -monthsBack)
+        }
+
+        val total = transactions
+            .filter { transaction ->
+                if (transaction.type != com.centwise.data.models.TransactionType.EXPENSE) return@filter false
+                val txCalendar = java.util.Calendar.getInstance().apply {
+                    timeInMillis = transaction.timestamp
+                }
+                txCalendar.get(java.util.Calendar.MONTH) == monthDate.get(java.util.Calendar.MONTH) &&
+                        txCalendar.get(java.util.Calendar.YEAR) == monthDate.get(java.util.Calendar.YEAR)
+            }
+            .sumOf { it.amount }
+
+        TrendPoint(label = monthLabels[monthDate.get(java.util.Calendar.MONTH)], value = total)
+    }
 }

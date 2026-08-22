@@ -46,6 +46,30 @@ class FakeTransactionRepository private constructor() {
         _transactions.value = _transactions.value.filter { it.id != id }
     }
 
+    fun addAccount(account: AccountItem) {
+        _accounts.value = _accounts.value + account
+    }
+
+    fun addBudget(budget: BudgetItem) {
+        _budgets.value = _budgets.value + budget
+    }
+
+    fun updateBudget(budget: BudgetItem) {
+        _budgets.value = _budgets.value.map { if (it.id == budget.id) budget else it }
+    }
+
+    fun deleteBudget(id: String) {
+        _budgets.value = _budgets.value.filter { it.id != id }
+    }
+
+    fun addSubscription(subscription: SubscriptionItem) {
+        _subscriptions.value = _subscriptions.value + subscription
+    }
+
+    fun deleteSubscription(id: String) {
+        _subscriptions.value = _subscriptions.value.filter { it.id != id }
+    }
+
     companion object {
         val shared = FakeTransactionRepository()
     }

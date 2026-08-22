@@ -11,8 +11,14 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +40,8 @@ fun SettingsScreen(
     onAccountsClick: () -> Unit = {},
     onSubscriptionsClick: () -> Unit = {},
     onSmartRulesClick: () -> Unit = {},
+    onFAQClick: () -> Unit = {},
+    onAboutClick: () -> Unit = {},
     isDark: Boolean = isSystemInDarkTheme()
 ) {
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground
@@ -160,6 +168,104 @@ fun SettingsScreen(
                 }
             }
         }
+
+        // Section 3: Support & About
+        item {
+            Column {
+                Text(
+                    text = "Support & About",
+                    style = CentwiseTypography.Headline.copy(fontSize = 14.sp),
+                    color = textSecondary,
+                    modifier = Modifier.padding(start = 6.dp, bottom = 8.dp)
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
+                        .background(cardBg)
+                ) {
+                    AppLockRow(isDark = isDark)
+
+                    SettingsRow(
+                        icon = Icons.Default.HelpOutline,
+                        iconColor = Color(0xFF007AFF),
+                        title = "FAQ",
+                        subtitle = "Common questions and answers",
+                        onClick = onFAQClick,
+                        showDivider = true,
+                        isDark = isDark
+                    )
+                    SettingsRow(
+                        icon = Icons.Default.Info,
+                        iconColor = Color(0xFF8E8E93),
+                        title = "About Centwise",
+                        subtitle = "Version, privacy, and credits",
+                        onClick = onAboutClick,
+                        showDivider = false,
+                        isDark = isDark
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AppLockRow(isDark: Boolean) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var lockEnabled by remember { mutableStateOf(AppLockManager.isLockEnabled) }
+
+    val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
+    val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
+    val accent = AccentOptions.byName(AppearancePrefs.accentName).color
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 13.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = if (lockEnabled) Icons.Default.Lock else Icons.Default.LockOpen,
+                contentDescription = "App Lock",
+                tint = Color(0xFF34C759),
+                modifier = Modifier.size(24.dp)
+            )
+
+            Spacer(modifier = Modifier.width(14.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "App Lock",
+                    style = CentwiseTypography.Headline.copy(fontSize = 15.sp),
+                    color = textPrimary
+                )
+                Spacer(modifier = Modifier.height(1.dp))
+                Text(
+                    text = AppLockManager.lockTypeLabel(context),
+                    style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
+                    color = textSecondary,
+                    maxLines = 1
+                )
+            }
+
+            Switch(
+                checked = lockEnabled,
+                onCheckedChange = { enabled ->
+                    lockEnabled = enabled
+                    AppLockManager.setLockEnabled(context, enabled)
+                },
+                colors = SwitchDefaults.colors(checkedTrackColor = accent)
+            )
+        }
+
+        HorizontalDivider(
+            modifier = Modifier.padding(start = 54.dp),
+            color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000),
+            thickness = 1.dp
+        )
     }
 }
 
