@@ -1,0 +1,58 @@
+/* Centwise - English source strings */
+
+/* Tabs */
+"tab.home" = "Home";
+"tab.transactions" = "Transactions";
+"tab.analytics" = "Analytics";
+"tab.settings" = "Settings";
+
+/* Common */
+"common.add" = "Add";
+"common.cancel" = "Cancel";
+"common.save" = "Save";
+"common.delete" = "Delete";
+"common.edit" = "Edit";
+"common.back" = "Back";
+"common.done" = "Done";
+"common.continue" = "Continue";
+"common.skip" = "Skip";
+
+/* Onboarding */
+"onboarding.step1.title" = "Track from SMS";
+"onboarding.step1.body" = "Centwise reads bank and MFS messages from bKash, Nagad, Rocket, and Bangladeshi banks, then creates transactions automatically.";
+"onboarding.step2.title" = "Private by design";
+"onboarding.step2.body" = "Everything stays on your phone. No account needed, no cloud, no upload. Your money data is yours alone.";
+"onboarding.step3.title" = "Budgets and insights";
+"onboarding.step3.body" = "Set category budgets, watch spending trends, and get warned before you go over. Both Bangla and English supported.";
+"onboarding.getStarted" = "Get Started";
+
+/* Home */
+"home.greeting" = "Good day";
+"home.monthlyExpense" = "Monthly Expense";
+"home.monthlyIncome" = "Monthly Income";
+"home.recentTransactions" = "Recent Transactions";
+"home.seeAll" = "See All";
+
+/* Settings */
+"settings.personalization" = "Personalization";
+"settings.dataManagement" = "Data Management";
+"settings.supportAbout" = "Support & About";
+"settings.appearance" = "Appearance";
+"settings.currency" = "Currency";
+"settings.categories" = "Categories";
+"settings.budgets" = "Budgets";
+"settings.accounts" = "Accounts";
+"settings.subscriptions" = "Subscriptions";
+"settings.smartRules" = "Smart Rules";
+"settings.faq" = "FAQ";
+"settings.about" = "About Centwise";
+"settings.appLock" = "App Lock";
+"settings.exportCsv" = "Export CSV";
+
+/* Lock */
+"lock.title" = "Centwise is locked";
+"lock.subtitle" = "Unlock to view your finances";
+"lock.unlock" = "Unlock";
+
+/* Notifications */
+"notification.newTransaction.title" = "New transaction tracked";

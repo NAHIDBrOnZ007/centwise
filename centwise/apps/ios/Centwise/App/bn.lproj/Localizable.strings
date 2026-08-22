@@ -1,0 +1,58 @@
+/* Centwise - বাংলা অনুবাদ */
+
+/* Tabs */
+"tab.home" = "হোম";
+"tab.transactions" = "লেনদেন";
+"tab.analytics" = "বিশ্লেষণ";
+"tab.settings" = "সেটিংস";
+
+/* Common */
+"common.add" = "যোগ করুন";
+"common.cancel" = "বাতিল";
+"common.save" = "সংরক্ষণ";
+"common.delete" = "মুছুন";
+"common.edit" = "সম্পাদনা";
+"common.back" = "পিছনে";
+"common.done" = "সম্পন্ন";
+"common.continue" = "পরবর্তী";
+"common.skip" = "এড়িয়ে যান";
+
+/* Onboarding */
+"onboarding.step1.title" = "এসএমএস থেকে ট্র্যাক করুন";
+"onboarding.step1.body" = "Centwise বিকাশ, নগদ, রকেট এবং বাংলাদেশের ব্যাংকগুলোর এসএমএস পড়ে স্বয়ংক্রিয়ভাবে লেনদেন তৈরি করে।";
+"onboarding.step2.title" = "গোপনীয়তা নিশ্চিত";
+"onboarding.step2.body" = "সবকিছু আপনার ফোনেই থাকে। কোনো অ্যাকাউন্ট লাগবে না, ক্লাউড নেই, আপলোড নেই। আপনার টাকার তথ্য শুধু আপনার।";
+"onboarding.step3.title" = "বাজেট ও বিশ্লেষণ";
+"onboarding.step3.body" = "ক্যাটাগরি বাজেট নির্ধারণ করুন, খরচের প্রবণতা দেখুন এবং সীমা ছাড়ানোর আগেই সতর্কতা পান। বাংলা ও ইংরেজি দুটোই আছে।";
+"onboarding.getStarted" = "শুরু করুন";
+
+/* Home */
+"home.greeting" = "শুভকামনা";
+"home.monthlyExpense" = "মাসিক খরচ";
+"home.monthlyIncome" = "মাসিক আয়";
+"home.recentTransactions" = "সাম্প্রতিক লেনদেন";
+"home.seeAll" = "সব দেখুন";
+
+/* Settings */
+"settings.personalization" = "ব্যক্তিগতকরণ";
+"settings.dataManagement" = "ডেটা ব্যবস্থাপনা";
+"settings.supportAbout" = "সহায়তা ও তথ্য";
+"settings.appearance" = "চেহারা";
+"settings.currency" = "মুদ্রা";
+"settings.categories" = "ক্যাটাগরি";
+"settings.budgets" = "বাজেট";
+"settings.accounts" = "অ্যাকাউন্ট";
+"settings.subscriptions" = "সাবস্ক্রিপশন";
+"settings.smartRules" = "স্মার্ট রুল";
+"settings.faq" = "সাধারণ প্রশ্ন";
+"settings.about" = "Centwise সম্পর্কে";
+"settings.appLock" = "অ্যাপ লক";
+"settings.exportCsv" = "CSV এক্সপোর্ট";
+
+/* Lock */
+"lock.title" = "Centwise লক করা আছে";
+"lock.subtitle" = "আপনার আর্থিক তথ্য দেখতে আনলক করুন";
+"lock.unlock" = "আনলক";
+
+/* Notifications */
+"notification.newTransaction.title" = "নতুন লেনদেন ট্র্যাক হয়েছে";

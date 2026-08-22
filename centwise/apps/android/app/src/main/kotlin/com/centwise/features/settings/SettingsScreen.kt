@@ -44,6 +44,7 @@ fun SettingsScreen(
     onAboutClick: () -> Unit = {},
     isDark: Boolean = isSystemInDarkTheme()
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
@@ -148,11 +149,22 @@ fun SettingsScreen(
                         isDark = isDark
                     )
                     SettingsRow(
-                        icon = Icons.Default.Autorenew,
+                        icon = Icons.Default.Subscriptions,
                         iconColor = Color(0xFF5856D6),
                         title = "Subscriptions",
                         subtitle = "Track recurring payments",
                         onClick = onSubscriptionsClick,
+                        showDivider = true,
+                        isDark = isDark
+                    )
+                    SettingsRow(
+                        icon = Icons.Default.Share,
+                        iconColor = Color(0xFF007AFF),
+                        title = "Export CSV",
+                        subtitle = "Share all transactions as a spreadsheet",
+                        onClick = {
+                            com.centwise.features.transactions.CsvExporter.shareExport(context)
+                        },
                         showDivider = true,
                         isDark = isDark
                     )

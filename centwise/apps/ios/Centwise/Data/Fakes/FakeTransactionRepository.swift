@@ -45,6 +45,7 @@ public final class FakeTransactionRepository: TransactionRepositoryProtocol, Obs
 
     public func addTransaction(_ transaction: CentwiseTransaction) {
         transactions.insert(transaction, at: 0)
+        CentwiseNotifications.notifyNewTransaction(transaction)
     }
 
     public func updateTransaction(_ transaction: CentwiseTransaction) {

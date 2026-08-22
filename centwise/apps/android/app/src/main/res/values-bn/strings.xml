@@ -1,0 +1,62 @@
+<resources>
+    <string name="app_name">Centwise</string>
+
+    <!-- Tabs -->
+    <string name="tab_home">হোম</string>
+    <string name="tab_transactions">লেনদেন</string>
+    <string name="tab_analytics">বিশ্লেষণ</string>
+    <string name="tab_settings">সেটিংস</string>
+
+    <!-- Common -->
+    <string name="common_add">যোগ করুন</string>
+    <string name="common_cancel">বাতিল</string>
+    <string name="common_save">সংরক্ষণ</string>
+    <string name="common_delete">মুছুন</string>
+    <string name="common_edit">সম্পাদনা</string>
+    <string name="common_back">পিছনে</string>
+    <string name="common_done">সম্পন্ন</string>
+    <string name="common_continue">পরবর্তী</string>
+    <string name="common_skip">এড়িয়ে যান</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_step1_title">এসএমএস থেকে ট্র্যাক করুন</string>
+    <string name="onboarding_step1_body">Centwise বিকাশ, নগদ, রকেট এবং বাংলাদেশের ব্যাংকগুলোর এসএমএস পড়ে স্বয়ংক্রিয়ভাবে লেনদেন তৈরি করে।</string>
+    <string name="onboarding_step2_title">গোপনীয়তা নিশ্চিত</string>
+    <string name="onboarding_step2_body">সবকিছু আপনার ফোনেই থাকে। কোনো অ্যাকাউন্ট লাগবে না, ক্লাউড নেই, আপলোড নেই। আপনার টাকার তথ্য শুধু আপনার।</string>
+    <string name="onboarding_step3_title">বাজেট ও বিশ্লেষণ</string>
+    <string name="onboarding_step3_body">ক্যাটাগরি বাজেট নির্ধারণ করুন, খরচের প্রবণতা দেখুন এবং সীমা ছাড়ানোর আগেই সতর্কতা পান। বাংলা ও ইংরেজি দুটোই আছে।</string>
+    <string name="onboarding_get_started">শুরু করুন</string>
+
+    <!-- Home -->
+    <string name="home_greeting">শুভকামনা</string>
+    <string name="home_monthly_expense">মাসিক খরচ</string>
+    <string name="home_monthly_income">মাসিক আয়</string>
+    <string name="home_recent_transactions">সাম্প্রতিক লেনদেন</string>
+    <string name="home_see_all">সব দেখুন</string>
+
+    <!-- Settings -->
+    <string name="settings_personalization">ব্যক্তিগতকরণ</string>
+    <string name="settings_data_management">ডেটা ব্যবস্থাপনা</string>
+    <string name="settings_support_about">সহায়তা ও তথ্য</string>
+    <string name="settings_appearance">চেহারা</string>
+    <string name="settings_currency">মুদ্রা</string>
+    <string name="settings_categories">ক্যাটাগরি</string>
+    <string name="settings_budgets">বাজেট</string>
+    <string name="settings_accounts">অ্যাকাউন্ট</string>
+    <string name="settings_subscriptions">সাবস্ক্রিপশন</string>
+    <string name="settings_smart_rules">স্মার্ট রুল</string>
+    <string name="settings_faq">সাধারণ প্রশ্ন</string>
+    <string name="settings_about">Centwise সম্পর্কে</string>
+    <string name="settings_app_lock">অ্যাপ লক</string>
+    <string name="settings_export_csv">CSV এক্সপোর্ট</string>
+
+    <!-- Lock -->
+    <string name="lock_title">Centwise লক করা আছে</string>
+    <string name="lock_subtitle">আপনার আর্থিক তথ্য দেখতে আনলক করুন</string>
+    <string name="lock_unlock">আনলক</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_transactions">লেনদেন</string>
+    <string name="notification_channel_transactions_description">এসএমএস থেকে নতুন ট্র্যাক করা লেনদেন</string>
+    <string name="notification_new_transaction_title">নতুন লেনদেন ট্র্যাক হয়েছে</string>
+</resources>

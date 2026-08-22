@@ -1,3 +1,62 @@
 <resources>
     <string name="app_name">Centwise</string>
+
+    <!-- Tabs -->
+    <string name="tab_home">Home</string>
+    <string name="tab_transactions">Transactions</string>
+    <string name="tab_analytics">Analytics</string>
+    <string name="tab_settings">Settings</string>
+
+    <!-- Common -->
+    <string name="common_add">Add</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_save">Save</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_edit">Edit</string>
+    <string name="common_back">Back</string>
+    <string name="common_done">Done</string>
+    <string name="common_continue">Continue</string>
+    <string name="common_skip">Skip</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_step1_title">Track from SMS</string>
+    <string name="onboarding_step1_body">Centwise reads bank and MFS messages from bKash, Nagad, Rocket, and Bangladeshi banks, then creates transactions automatically.</string>
+    <string name="onboarding_step2_title">Private by design</string>
+    <string name="onboarding_step2_body">Everything stays on your phone. No account needed, no cloud, no upload. Your money data is yours alone.</string>
+    <string name="onboarding_step3_title">Budgets and insights</string>
+    <string name="onboarding_step3_body">Set category budgets, watch spending trends, and get warned before you go over. Both Bangla and English supported.</string>
+    <string name="onboarding_get_started">Get Started</string>
+
+    <!-- Home -->
+    <string name="home_greeting">Good day</string>
+    <string name="home_monthly_expense">Monthly Expense</string>
+    <string name="home_monthly_income">Monthly Income</string>
+    <string name="home_recent_transactions">Recent Transactions</string>
+    <string name="home_see_all">See All</string>
+
+    <!-- Settings -->
+    <string name="settings_personalization">Personalization</string>
+    <string name="settings_data_management">Data Management</string>
+    <string name="settings_support_about">Support &amp; About</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_currency">Currency</string>
+    <string name="settings_categories">Categories</string>
+    <string name="settings_budgets">Budgets</string>
+    <string name="settings_accounts">Accounts</string>
+    <string name="settings_subscriptions">Subscriptions</string>
+    <string name="settings_smart_rules">Smart Rules</string>
+    <string name="settings_faq">FAQ</string>
+    <string name="settings_about">About Centwise</string>
+    <string name="settings_app_lock">App Lock</string>
+    <string name="settings_export_csv">Export CSV</string>
+
+    <!-- Lock -->
+    <string name="lock_title">Centwise is locked</string>
+    <string name="lock_subtitle">Unlock to view your finances</string>
+    <string name="lock_unlock">Unlock</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_transactions">Transactions</string>
+    <string name="notification_channel_transactions_description">New tracked transactions from SMS</string>
+    <string name="notification_new_transaction_title">New transaction tracked</string>
 </resources>

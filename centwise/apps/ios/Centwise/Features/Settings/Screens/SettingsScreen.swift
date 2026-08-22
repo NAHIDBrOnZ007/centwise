@@ -3,6 +3,8 @@ import SwiftUI
 public struct SettingsScreen: View {
     @ObservedObject private var themeManager = ThemeManager.shared
     @ObservedObject private var appLockManager = AppLockManager.shared
+    @ObservedObject private var repository = FakeTransactionRepository.shared
+    @State private var showExportSheet = false
     @Environment(\.colorScheme) private var colorScheme
 
     public init() {}
@@ -78,6 +80,16 @@ public struct SettingsScreen: View {
                     }
 
                     navigationRow(
+                        systemImage: "square.and.arrow.up",
+                        iconColor: CentwiseColors.transferBlue,
+                        title: "Export CSV",
+                        subtitle: "Share all transactions as a spreadsheet",
+                        showDivider: true,
+                        action: { showExportSheet = true },
+                        destination: { EmptyView() }
+                    )
+
+                    navigationRow(
                         systemImage: "sparkles",
                         iconColor: Color(red: 1.0, green: 0.18, blue: 0.33),
                         title: "Smart Rules",
@@ -120,6 +132,9 @@ public struct SettingsScreen: View {
         }
         .background(CentwiseColors.background(for: colorScheme, isAmoled: themeManager.isAmoledActive).ignoresSafeArea())
         .navigationTitle("Settings")
+        .sheet(isPresented: $showExportSheet) {
+            CsvExportSheet(transactions: repository.transactions)
+        }
     }
 
     // MARK: - Building Blocks
@@ -151,15 +166,25 @@ public struct SettingsScreen: View {
         title: String,
         subtitle: String,
         showDivider: Bool,
+        action: (() -> Void)? = nil,
         @ViewBuilder destination: () -> Destination
     ) -> some View {
         VStack(spacing: 0) {
-            NavigationLink {
-                destination()
-            } label: {
-                rowLabel(systemImage: systemImage, iconColor: iconColor, title: title, subtitle: subtitle)
+            if let action = action {
+                Button {
+                    action()
+                } label: {
+                    rowLabel(systemImage: systemImage, iconColor: iconColor, title: title, subtitle: subtitle)
+                }
+                .buttonStyle(.plain)
+            } else {
+                NavigationLink {
+                    destination()
+                } label: {
+                    rowLabel(systemImage: systemImage, iconColor: iconColor, title: title, subtitle: subtitle)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
 
             if showDivider {
                 Divider().padding(.leading, 58)
