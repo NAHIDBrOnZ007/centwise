@@ -2,6 +2,7 @@ import SwiftUI
 
 public struct AnalyticsScreen: View {
     @StateObject private var viewModel = AnalyticsViewModel()
+    @ObservedObject private var repository = FakeTransactionRepository.shared
     @ObservedObject private var themeManager = ThemeManager.shared
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.isAmoledActive) private var isAmoled
@@ -21,15 +22,32 @@ public struct AnalyticsScreen: View {
                 .padding(.horizontal, CentwiseSpacing.md)
                 .padding(.top, CentwiseSpacing.xs)
 
-                // 2. Cash Flow Comparison Hero Card
+                // 2. Period Summary Hero
+                AnalyticsSummaryCard(
+                    spent: viewModel.totalExpense,
+                    income: viewModel.totalIncome,
+                    transactionCount: transactionCount,
+                    topCategoryName: viewModel.categoryBreakdown.first?.category.name
+                )
+                .padding(.horizontal, CentwiseSpacing.md)
+
+                // 3. Cash Flow Comparison Hero Card
                 cashFlowComparisonCard
                     .padding(.horizontal, CentwiseSpacing.md)
 
-                // 3. Category Spending Breakdown
+                // 4. Category Pie Chart
+                CategoryPieChart(slices: pieSlices)
+                    .padding(.horizontal, CentwiseSpacing.md)
+
+                // 5. Spending Trends (last 6 months)
+                SpendingTrendsChart(points: monthlyTrendPoints)
+                    .padding(.horizontal, CentwiseSpacing.md)
+
+                // 6. Category Spending Breakdown
                 categoryBreakdownSection
                     .padding(.horizontal, CentwiseSpacing.md)
 
-                // 4. Top Spending Merchants (Foodpanda, Pathao, Unimart, etc.)
+                // 7. Top Spending Merchants (Foodpanda, Pathao, Unimart, etc.)
                 topMerchantsSection
                     .padding(.horizontal, CentwiseSpacing.md)
             }
@@ -39,6 +57,45 @@ public struct AnalyticsScreen: View {
         .navigationTitle("Analytics & Trends")
         .onAppear {
             viewModel.recalculateAnalytics()
+        }
+    }
+
+    // MARK: - Derived Data
+
+    private var transactionCount: Int {
+        repository.transactions.count
+    }
+
+    private var pieSlices: [CategorySlice] {
+        viewModel.categoryBreakdown.prefix(6).map { item in
+            CategorySlice(
+                id: item.category.id,
+                name: item.category.name,
+                value: item.totalAmount,
+                color: item.category.color
+            )
+        }
+    }
+
+    private var monthlyTrendPoints: [TrendPoint] {
+        let calendar = Calendar.current
+        let now = Date()
+
+        return (0..<6).reversed().compactMap { monthsBack in
+            guard let monthDate = calendar.date(byAdding: .month, value: -monthsBack, to: now) else {
+                return nil
+            }
+
+            let total = repository.transactions
+                .filter { transaction in
+                    transaction.type == .expense &&
+                    calendar.isDate(transaction.date, equalTo: monthDate, toGranularity: .month)
+                }
+                .reduce(0) { $0 + $1.amount }
+
+            let formatter = DateFormatter()
+            formatter.dateFormat = "MMM"
+            return TrendPoint(label: formatter.string(from: monthDate), value: total)
         }
     }
 

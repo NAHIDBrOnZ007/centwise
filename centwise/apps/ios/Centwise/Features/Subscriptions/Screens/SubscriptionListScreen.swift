@@ -6,6 +6,8 @@ public struct SubscriptionListScreen: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.isAmoledActive) private var isAmoled
 
+    @State private var showAddSubscription = false
+
     public init() {}
 
     public var body: some View {
@@ -36,10 +38,21 @@ public struct SubscriptionListScreen: View {
 
                 // Subscriptions List
                 VStack(alignment: .leading, spacing: CentwiseSpacing.sm) {
-                    Text("Your Subscriptions")
-                        .font(CentwiseTypography.headline)
-                        .foregroundColor(.primary)
-                        .padding(.horizontal, CentwiseSpacing.md)
+                    HStack {
+                        Text("Your Subscriptions")
+                            .font(CentwiseTypography.headline)
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Button {
+                            themeManager.triggerHapticFeedback(.light)
+                            showAddSubscription = true
+                        } label: {
+                            Label("Add", systemImage: "plus")
+                                .font(CentwiseTypography.bodyMedium)
+                        }
+                        .foregroundColor(themeManager.accentColor)
+                    }
+                    .padding(.horizontal, CentwiseSpacing.md)
 
                     CentwiseCard {
                         ForEach(Array(repository.subscriptions.enumerated()), id: \.element.id) { idx, sub in
@@ -89,5 +102,12 @@ public struct SubscriptionListScreen: View {
         }
         .background(CentwiseColors.background(for: colorScheme, isAmoled: isAmoled).ignoresSafeArea())
         .navigationTitle("Subscriptions")
+        .sheet(isPresented: $showAddSubscription) {
+            NavigationStack {
+                AddEditSubscriptionScreen { subscription in
+                    repository.addSubscription(subscription)
+                }
+            }
+        }
     }
 }

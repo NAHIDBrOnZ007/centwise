@@ -57,41 +57,47 @@ public struct AccountListScreen: View {
 
                     CentwiseCard {
                         ForEach(Array(viewModel.accounts.enumerated()), id: \.element.id) { index, account in
-                            HStack(spacing: CentwiseSpacing.mdSm) {
-                                Circle()
-                                    .fill(account.provider.brandColor.opacity(0.15))
-                                    .frame(width: 44, height: 44)
-                                    .overlay(
-                                        Image(systemName: account.provider.icon)
-                                            .font(.system(size: 18, weight: .bold))
-                                            .foregroundColor(account.provider.brandColor)
-                                    )
+                            NavigationLink {
+                                AccountDetailScreen(accountId: account.id)
+                            } label: {
+                                HStack(spacing: CentwiseSpacing.mdSm) {
+                                    Circle()
+                                        .fill(account.provider.brandColor.opacity(0.15))
+                                        .frame(width: 44, height: 44)
+                                        .overlay(
+                                            Image(systemName: account.provider.icon)
+                                                .font(.system(size: 18, weight: .bold))
+                                                .foregroundColor(account.provider.brandColor)
+                                        )
 
-                                VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
-                                    Text(account.name)
-                                        .font(CentwiseTypography.bodyMedium)
-                                        .foregroundColor(.primary)
+                                    VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
+                                        Text(account.name)
+                                            .font(CentwiseTypography.bodyMedium)
+                                            .foregroundColor(.primary)
 
-                                    HStack(spacing: 4) {
-                                        Text(account.type.rawValue)
-                                            .font(CentwiseTypography.caption2)
-                                            .foregroundColor(.secondary)
-
-                                        if let lastFour = account.lastFourDigits {
-                                            Text("• Ending in \(lastFour)")
+                                        HStack(spacing: 4) {
+                                            Text(account.type.rawValue)
                                                 .font(CentwiseTypography.caption2)
                                                 .foregroundColor(.secondary)
+
+                                            if let lastFour = account.lastFourDigits {
+                                                Text("• Ending in \(lastFour)")
+                                                    .font(CentwiseTypography.caption2)
+                                                    .foregroundColor(.secondary)
+                                            }
                                         }
                                     }
+
+                                    Spacer()
+
+                                    Text(CurrencyFormatter.shared.formatBDT(account.currentBalance, compact: true))
+                                        .font(CentwiseTypography.amountMedium)
+                                        .foregroundColor(.primary)
                                 }
-
-                                Spacer()
-
-                                Text(CurrencyFormatter.shared.formatBDT(account.currentBalance, compact: true))
-                                    .font(CentwiseTypography.amountMedium)
-                                    .foregroundColor(.primary)
+                                .padding(.vertical, CentwiseSpacing.xs)
+                                .contentShape(Rectangle())
                             }
-                            .padding(.vertical, CentwiseSpacing.xs)
+                            .buttonStyle(.plain)
 
                             if index < viewModel.accounts.count - 1 {
                                 Divider()

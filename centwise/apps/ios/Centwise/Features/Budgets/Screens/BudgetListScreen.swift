@@ -6,6 +6,8 @@ public struct BudgetListScreen: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.isAmoledActive) private var isAmoled
 
+    @State private var showAddBudget = false
+
     public init() {}
 
     public var body: some View {
@@ -62,49 +64,66 @@ public struct BudgetListScreen: View {
 
                 // Category Budgets List
                 VStack(alignment: .leading, spacing: CentwiseSpacing.sm) {
-                    Text("Category Budgets")
-                        .font(CentwiseTypography.headline)
-                        .foregroundColor(.primary)
-                        .padding(.horizontal, CentwiseSpacing.md)
+                    HStack {
+                        Text("Category Budgets")
+                            .font(CentwiseTypography.headline)
+                            .foregroundColor(.primary)
+                        Spacer()
+                        Button {
+                            themeManager.triggerHapticFeedback(.light)
+                            showAddBudget = true
+                        } label: {
+                            Label("Add", systemImage: "plus")
+                                .font(CentwiseTypography.bodyMedium)
+                        }
+                        .foregroundColor(themeManager.accentColor)
+                    }
+                    .padding(.horizontal, CentwiseSpacing.md)
 
                     ForEach(repository.budgets) { budget in
-                        CentwiseCard {
-                            VStack(spacing: CentwiseSpacing.sm) {
-                                HStack {
-                                    Circle()
-                                        .fill((Color(hex: budget.categoryColorHex) ?? themeManager.accentColor).opacity(0.15))
-                                        .frame(width: 36, height: 36)
-                                        .overlay(
-                                            Image(systemName: budget.categoryIcon)
-                                                .foregroundColor(Color(hex: budget.categoryColorHex) ?? themeManager.accentColor)
-                                                .font(.system(size: 15, weight: .semibold))
-                                        )
+                        NavigationLink {
+                            BudgetDetailScreen(budgetId: budget.id)
+                        } label: {
+                            CentwiseCard {
+                                VStack(spacing: CentwiseSpacing.sm) {
+                                    HStack {
+                                        Circle()
+                                            .fill((Color(hex: budget.categoryColorHex) ?? themeManager.accentColor).opacity(0.15))
+                                            .frame(width: 36, height: 36)
+                                            .overlay(
+                                                Image(systemName: budget.categoryIcon)
+                                                    .foregroundColor(Color(hex: budget.categoryColorHex) ?? themeManager.accentColor)
+                                                    .font(.system(size: 15, weight: .semibold))
+                                            )
 
-                                    Text(budget.categoryName)
-                                        .font(CentwiseTypography.bodyMedium)
-                                        .foregroundColor(.primary)
+                                        Text(budget.categoryName)
+                                            .font(CentwiseTypography.bodyMedium)
+                                            .foregroundColor(.primary)
 
-                                    Spacer()
+                                        Spacer()
 
-                                    Text(CurrencyFormatter.shared.formatBDT(budget.currentSpent) + " / " + CurrencyFormatter.shared.formatBDT(budget.budgetLimit, compact: true))
-                                        .font(CentwiseTypography.amountSmall)
-                                        .foregroundColor(.primary)
-                                }
-
-                                GeometryReader { geo in
-                                    ZStack(alignment: .leading) {
-                                        Capsule()
-                                            .fill(CentwiseColors.surfaceSecondary(for: colorScheme))
-                                            .frame(height: 8)
-
-                                        Capsule()
-                                            .fill(budget.isOverBudget ? CentwiseColors.expenseRed : (Color(hex: budget.categoryColorHex) ?? themeManager.accentColor))
-                                            .frame(width: geo.size.width * CGFloat(budget.percentage), height: 8)
+                                        Text(CurrencyFormatter.shared.formatBDT(budget.currentSpent) + " / " + CurrencyFormatter.shared.formatBDT(budget.budgetLimit, compact: true))
+                                            .font(CentwiseTypography.amountSmall)
+                                            .foregroundColor(.primary)
                                     }
+
+                                    GeometryReader { geo in
+                                        ZStack(alignment: .leading) {
+                                            Capsule()
+                                                .fill(CentwiseColors.surfaceSecondary(for: colorScheme))
+                                                .frame(height: 8)
+
+                                            Capsule()
+                                                .fill(budget.isOverBudget ? CentwiseColors.expenseRed : (Color(hex: budget.categoryColorHex) ?? themeManager.accentColor))
+                                                .frame(width: geo.size.width * CGFloat(budget.percentage), height: 8)
+                                        }
+                                    }
+                                    .frame(height: 8)
                                 }
-                                .frame(height: 8)
                             }
+                            .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
                         .padding(.horizontal, CentwiseSpacing.md)
                     }
                 }
@@ -113,5 +132,12 @@ public struct BudgetListScreen: View {
         }
         .background(CentwiseColors.background(for: colorScheme, isAmoled: isAmoled).ignoresSafeArea())
         .navigationTitle("Budgets")
+        .sheet(isPresented: $showAddBudget) {
+            NavigationStack {
+                AddEditBudgetScreen { budget in
+                    repository.addBudget(budget)
+                }
+            }
+        }
     }
 }

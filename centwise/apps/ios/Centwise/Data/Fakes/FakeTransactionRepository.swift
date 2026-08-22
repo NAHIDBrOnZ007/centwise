@@ -60,4 +60,32 @@ public final class FakeTransactionRepository: TransactionRepositoryProtocol, Obs
     public func addAccount(_ account: FinancialAccount) {
         accounts.append(account)
     }
+
+    public func addBudget(_ budget: CategoryBudget) {
+        budgets.append(budget)
+    }
+
+    public func updateBudget(_ budget: CategoryBudget) {
+        if let index = budgets.firstIndex(where: { $0.id == budget.id }) {
+            budgets[index] = budget
+        }
+    }
+
+    public func deleteBudget(id: String) {
+        budgets.removeAll { $0.id == id }
+    }
+
+    public func addSubscription(_ subscription: RecurringSubscription) {
+        subscriptions.append(subscription)
+    }
+
+    public func updateSubscription(_ subscription: RecurringSubscription) {
+        if let index = subscriptions.firstIndex(where: { $0.id == subscription.id }) {
+            subscriptions[index] = subscription
+        }
+    }
+
+    public func deleteSubscription(id: String) {
+        subscriptions.removeAll { $0.id == id }
+    }
 }
