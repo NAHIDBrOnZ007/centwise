@@ -120,8 +120,11 @@ centwise/
 │   │   ├── schemas/
 │   │   └── tests/
 │   ├── centwise-ffi/
-│   │   └── src/
-│   └── uniffi.toml
+│   │   ├── src/
+│   │   ├── build.rs
+│   │   └── uniffi.toml
+│   └── uniffi-bindgen/
+│       └── src/
 │
 ├── assets/
 │   ├── logo.jpeg

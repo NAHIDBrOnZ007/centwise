@@ -1,0 +1,41 @@
+# === Rust ===
+core/target/
+*.dll
+*.so
+*.dylib
+*.a
+
+# === Android ===
+apps/android/**/build/
+apps/android/.gradle/
+apps/android/local.properties
+apps/android/.idea/
+apps/android/**/*.iml
+apps/android/.kotlin/
+
+# === iOS / Xcode ===
+apps/ios/**/xcuserdata/
+apps/ios/**/*.xcuserstate
+apps/ios/**/DerivedData/
+apps/ios/.DS_Store
+.DS_Store
+
+# === Windows ===
+Thumbs.db
+Desktop.ini
+desktop.ini
+
+# === macOS ===
+*.swp
+
+# === Secrets and local environment (never commit) ===
+.env
+*.jks
+*.keystore
+*.p8
+*.p12
+ExportOptions.plist
+
+# === Temporary files ===
+*.log
+*.tmp

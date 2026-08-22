@@ -1,0 +1,18 @@
+[package]
+name = "centwise-ffi"
+description = "UniFFI surface exposing the Centwise core to Kotlin and Swift"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "centwise_ffi"
+
+[dependencies]
+centwise-domain = { workspace = true }
+centwise-db = { workspace = true }
+uniffi = { workspace = true }
+
+[build-dependencies]
+uniffi = { workspace = true, features = ["build"] }

@@ -1,0 +1,7 @@
+[bindings.kotlin]
+package = "com.centwise.core"
+generate_immutable_records = true
+
+[bindings.swift]
+module_name = "CentwiseCore"
+generate_immutable_records = true

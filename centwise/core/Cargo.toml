@@ -1,0 +1,23 @@
+[workspace]
+resolver = "2"
+members = [
+    "centwise-domain",
+    "centwise-db",
+    "centwise-ffi",
+    "uniffi-bindgen",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Proprietary"
+
+[workspace.dependencies]
+centwise-domain = { path = "centwise-domain" }
+centwise-db = { path = "centwise-db" }
+rusqlite = { version = "0.32", features = ["bundled", "hooks"] }
+uniffi = "0.28.3"
+
+[profile.release]
+lto = true
+strip = true
