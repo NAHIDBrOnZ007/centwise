@@ -4,6 +4,8 @@ members = [
     "centwise-domain",
     "centwise-db",
     "centwise-normalization",
+    "centwise-categorization",
+    "centwise-parser",
     "centwise-ffi",
     "uniffi-bindgen",
 ]

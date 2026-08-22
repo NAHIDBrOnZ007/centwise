@@ -64,8 +64,29 @@ public struct OnboardingScreen: View {
 
                 // Action Button
                 VStack(spacing: CentwiseSpacing.sm) {
+                    if currentPage == 1 {
+                        Button(action: {
+                            if let url = URL(string: "shortcuts://create-automation"), UIApplication.shared.canOpenURL(url) {
+                                UIApplication.shared.open(url)
+                            } else if let url = URL(string: "shortcuts://") {
+                                UIApplication.shared.open(url)
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: "bolt.fill")
+                                Text("Set Up Automation in Shortcuts")
+                                    .fontWeight(.semibold)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                            .background(themeManager.accentColor)
+                            .foregroundColor(.white)
+                            .cornerRadius(14)
+                        }
+                    }
+
                     if currentPage < 2 {
-                        CentwiseButton("Continue", variant: .primary, isFullWidth: true) {
+                        CentwiseButton(currentPage == 1 ? "Next Step" : "Continue", variant: currentPage == 1 ? .secondary : .primary, isFullWidth: true) {
                             withAnimation {
                                 currentPage += 1
                             }

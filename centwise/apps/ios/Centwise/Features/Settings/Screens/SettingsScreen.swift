@@ -94,9 +94,19 @@ public struct SettingsScreen: View {
                         iconColor: Color(red: 1.0, green: 0.18, blue: 0.33),
                         title: "Smart Rules",
                         subtitle: "Auto-categorize transactions",
-                        showDivider: false
+                        showDivider: true
                     ) {
                         RulesScreen()
+                    }
+
+                    navigationRow(
+                        systemImage: "tray.full.fill",
+                        iconColor: CentwiseColors.transferBlue,
+                        title: "Review Queue",
+                        subtitle: "Review unclassified SMS messages",
+                        showDivider: false
+                    ) {
+                        ReviewQueueView()
                     }
                 }
 

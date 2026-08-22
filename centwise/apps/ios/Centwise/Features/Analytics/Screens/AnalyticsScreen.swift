@@ -51,7 +51,7 @@ public struct AnalyticsScreen: View {
                 topMerchantsSection
                     .padding(.horizontal, CentwiseSpacing.md)
             }
-            .padding(.bottom, 80)
+            .padding(.bottom, 120)
         }
         .background(CentwiseColors.background(for: colorScheme, isAmoled: isAmoled).ignoresSafeArea())
         .navigationTitle("Analytics & Trends")

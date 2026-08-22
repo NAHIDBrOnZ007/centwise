@@ -24,6 +24,28 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); project is pre-1
   banks-generic 5) with expected parser results
 - `docs/architecture/parser-design.md` — generic field-hunting parser
   design: no template matching, merchant dictionary, safety rules
+- `apps/ios/project.yml` — XcodeGen project definition for automated Xcode project generation
+- `.github/workflows/test.yml` — automated CI for Rust core tests, Android debug build, and iOS XcodeGen verification
+
+### Added — Real-Time SMS Ingestion & Feature Enhancements
+- **Phase 1: Rust SMS Parser Core (`centwise-parser` & `centwise-categorization`)**:
+  - Generic field-hunting parser engine (`core/centwise-parser`) supporting amount, fee, balance after, TrxID, merchant, and timestamp extraction.
+  - Merchant categorization engine (`core/centwise-categorization`) with Bangladeshi merchant keyword dictionary and category fallbacks.
+  - Complete fixture test suite testing all 29 messages across bKash, Nagad, Rocket, and Banks.
+  - UniFFI bridge exposing `parse_sms_message` to Swift and Kotlin.
+- **Phase 2: Android Real-Time Ingestion Pipeline**:
+  - `SmsBroadcastReceiver` with multi-part concatenation and `goAsync()` coroutines.
+  - `SmsTransactionProcessor` with TrxID deduplication, field extraction, repository storage, and local notifications.
+  - `HistoricalSmsScanner` for onboarding inbox scanning and historical transaction import.
+- **Phase 3: Smart Rules Engine & Review Queue Screen (Android)**:
+  - `SmartRulesRepository` with user-defined keyword auto-categorization rules.
+  - Reactive `RulesScreen` with add/edit/delete/toggle support.
+  - `ReviewQueueScreen` & `ReviewQueueRepository` displaying monospace raw SMS cards with quick convert-to-transaction modal and dismiss actions.
+- **Phase 4: iOS Apple Shortcuts Automation & App Intents**:
+  - `ParseTransactionIntent` (`AppIntent`) and `CentwiseShortcuts` (`AppShortcutsProvider`) enabling zero-click background SMS tracking via iOS Shortcuts message automations.
+  - `ReviewQueueView` & `ReviewQueueRepository` on iOS matching Android experience.
+  - `SmartRulesRepository` on iOS with reactive category matching.
+  - `SmsTransactionProcessor` on iOS with TrxID deduplication and local notifications.
 
 ### Added — Rust Core (`core/`, machine-verified)
 - Cargo workspace with `centwise-domain`, `centwise-db`, `centwise-ffi`,

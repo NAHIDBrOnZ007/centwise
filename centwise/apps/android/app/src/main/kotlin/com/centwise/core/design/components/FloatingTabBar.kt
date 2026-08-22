@@ -45,8 +45,9 @@ fun FloatingTabBar(
     isDark: Boolean = isSystemInDarkTheme()
 ) {
     val barBg = if (isDark) CentwiseColors.DarkTabBarBg else CentwiseColors.LightTabBarBg
-    val activePillBg = if (isDark) CentwiseColors.DarkTabActivePill else CentwiseColors.LightTabActivePill
-    val activeColor = CentwiseColors.AccentMauve
+    val accent = com.centwise.features.settings.AccentOptions.byName(com.centwise.features.settings.AppearancePrefs.accentName).color
+    val activeColor = accent
+    val activePillBg = if (isDark) accent.copy(alpha = 0.20f) else accent.copy(alpha = 0.12f)
     val inactiveColor = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
 
     Box(

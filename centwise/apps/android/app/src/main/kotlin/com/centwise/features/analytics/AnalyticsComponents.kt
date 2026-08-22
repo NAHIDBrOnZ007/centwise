@@ -21,9 +21,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.centwise.core.design.formatters.CurrencyFormatter
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
@@ -352,30 +354,48 @@ fun SpendingTrendsChart(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp),
+                    .height(130.dp),
                 verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 points.forEach { point ->
+                    val ratio = if (maxValue > 0) (point.value / maxValue).toFloat().coerceIn(0f, 1f) else 0f
                     Column(
                         modifier = Modifier.weight(1f),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
-                            CurrencyFormatter.formatBDT(point.value, compact = true),
-                            style = CentwiseTypography.Caption,
-                            color = textSecondary,
+                            text = if (point.value > 0) CurrencyFormatter.formatBDT(point.value, compact = true) else "-",
+                            style = CentwiseTypography.Caption.copy(fontSize = 10.sp),
+                            color = if (point.value > 0) textPrimary else textSecondary.copy(alpha = 0.5f),
                             maxLines = 1
                         )
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height((90 * min(point.value / maxValue, 1.0) * barScale).dp.coerceAtLeast(4.dp))
-                                .clip(RoundedCornerShape(6.dp))
-                                .background(accent.copy(alpha = 0.85f))
+                                .height(90.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isDark) Color(0x14FFFFFF) else Color(0x0A000000)),
+                            contentAlignment = Alignment.BottomCenter
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .fillMaxHeight((ratio * barScale).coerceAtLeast(0.04f))
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(
+                                        if (ratio > 0.01f) accent else Color.Transparent
+                                    )
+                            )
+                        }
+                        Text(
+                            text = point.label,
+                            style = CentwiseTypography.Caption.copy(fontSize = 11.sp, fontWeight = FontWeight.Medium),
+                            color = textSecondary,
+                            maxLines = 1,
+                            textAlign = TextAlign.Center
                         )
-                        Text(point.label, style = CentwiseTypography.Caption, color = textSecondary, maxLines = 1)
                     }
                 }
             }

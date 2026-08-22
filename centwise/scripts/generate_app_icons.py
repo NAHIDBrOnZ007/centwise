@@ -1,8 +1,10 @@
 import os
-from PIL import Image
+from PIL import Image, ImageDraw
 
 def generate_icons():
-    source_logo = "centwise/centwise logo.jpeg"
+    source_logo = "centwise logo.jpeg"
+    if not os.path.exists(source_logo):
+        source_logo = os.path.join("centwise", "centwise logo.jpeg")
     if not os.path.exists(source_logo):
         print(f"Error: {source_logo} not found")
         return
@@ -10,7 +12,9 @@ def generate_icons():
     img = Image.open(source_logo).convert("RGBA")
 
     # 1. iOS AppIcon sizes
-    ios_icon_dir = "centwise/apps/ios/Centwise/Assets.xcassets/AppIcon.appiconset"
+    ios_icon_dir = "apps/ios/Centwise/Assets.xcassets/AppIcon.appiconset"
+    if not os.path.exists(ios_icon_dir):
+        ios_icon_dir = os.path.join("centwise", ios_icon_dir)
     os.makedirs(ios_icon_dir, exist_ok=True)
 
     ios_sizes = [
@@ -33,47 +37,47 @@ def generate_icons():
         resized = img.resize(size, Image.Resampling.LANCZOS)
         out_path = os.path.join(ios_icon_dir, filename)
         resized.save(out_path, "PNG")
-        print(f"Generated iOS AppIcon: {out_path} ({size[0]}x{size[1]})")
 
-    # 2. iOS AppLogo
-    logo_dir = "centwise/apps/ios/Centwise/Assets.xcassets/AppLogo.imageset"
-    os.makedirs(logo_dir, exist_ok=True)
-    img.resize((180, 180), Image.Resampling.LANCZOS).save(os.path.join(logo_dir, "icon_180x180.png"), "PNG")
-    print(f"Generated AppLogo in {logo_dir}")
+    # 2. Android Mipmap Icons & Adaptive Foreground
+    android_res = "apps/android/app/src/main/res"
+    if not os.path.exists(android_res):
+        android_res = os.path.join("centwise", android_res)
 
-    # 3. Avatar Mascot for GreetingCard
-    avatar_dir = "centwise/apps/ios/Centwise/Assets.xcassets/avatar_1.imageset"
-    os.makedirs(avatar_dir, exist_ok=True)
-    img.resize((128, 128), Image.Resampling.LANCZOS).save(os.path.join(avatar_dir, "avatar_1.png"), "PNG")
-    print(f"Generated Avatar in {avatar_dir}")
-
-    # 4. Preview Logo
-    preview_dir = "centwise/preview"
-    os.makedirs(preview_dir, exist_ok=True)
-    img.resize((128, 128), Image.Resampling.LANCZOS).save(os.path.join(preview_dir, "centwise_logo.png"), "PNG")
-    img.resize((128, 128), Image.Resampling.LANCZOS).save(os.path.join(preview_dir, "avatar_1.png"), "PNG")
-    print(f"Generated Preview Logos in {preview_dir}")
-
-    # 5. Android Mipmap Icons
-    android_res = "centwise/apps/android/app/src/main/res"
-    android_sizes = [
-        ("mipmap-mdpi", (48, 48)),
-        ("mipmap-hdpi", (72, 72)),
-        ("mipmap-xhdpi", (96, 96)),
-        ("mipmap-xxhdpi", (144, 144)),
-        ("mipmap-xxxhdpi", (192, 192)),
+    android_densities = [
+        ("mipmap-mdpi", (48, 48), (108, 108), (72, 72)),
+        ("mipmap-hdpi", (72, 72), (162, 162), (108, 108)),
+        ("mipmap-xhdpi", (96, 96), (216, 216), (144, 144)),
+        ("mipmap-xxhdpi", (144, 144), (324, 324), (216, 216)),
+        ("mipmap-xxxhdpi", (192, 192), (432, 432), (288, 288)),
     ]
 
-    for folder, size in android_sizes:
+    for folder, legacy_size, fg_canvas_size, fg_logo_size in android_densities:
         target_dir = os.path.join(android_res, folder)
         os.makedirs(target_dir, exist_ok=True)
-        out_file = os.path.join(target_dir, "ic_launcher.png")
-        img.resize(size, Image.Resampling.LANCZOS).save(out_file, "PNG")
-        # Round icon as well
-        img.resize(size, Image.Resampling.LANCZOS).save(os.path.join(target_dir, "ic_launcher_round.png"), "PNG")
-        print(f"Generated Android Icon: {out_file} ({size[0]}x{size[1]})")
 
-    print("\nAll icon sizes successfully generated from centwise logo.jpeg!")
+        # Standard legacy icon
+        legacy_icon = img.resize(legacy_size, Image.Resampling.LANCZOS)
+        legacy_icon.save(os.path.join(target_dir, "ic_launcher.png"), "PNG")
+
+        # Round legacy icon
+        mask = Image.new("L", legacy_size, 0)
+        draw = ImageDraw.Draw(mask)
+        draw.ellipse((0, 0, legacy_size[0], legacy_size[1]), fill=255)
+        round_icon = Image.new("RGBA", legacy_size, (0, 0, 0, 0))
+        round_icon.paste(legacy_icon, (0, 0), mask=mask)
+        round_icon.save(os.path.join(target_dir, "ic_launcher_round.png"), "PNG")
+
+        # Adaptive icon foreground (108dp canvas with centered ~72dp mascot)
+        fg_canvas = Image.new("RGBA", fg_canvas_size, (0, 0, 0, 0))
+        fg_logo = img.resize(fg_logo_size, Image.Resampling.LANCZOS)
+        offset_x = (fg_canvas_size[0] - fg_logo_size[0]) // 2
+        offset_y = (fg_canvas_size[1] - fg_logo_size[1]) // 2
+        fg_canvas.paste(fg_logo, (offset_x, offset_y))
+        fg_canvas.save(os.path.join(target_dir, "ic_launcher_foreground.png"), "PNG")
+
+        print(f"Generated Android icons in {folder}")
+
+    print("\nAll icon sizes and adaptive foregrounds successfully generated!")
 
 if __name__ == "__main__":
     generate_icons()

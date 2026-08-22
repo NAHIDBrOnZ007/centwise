@@ -111,8 +111,7 @@ fun AddEditBudgetSheet(
                                 id = editingBudget?.id ?: java.util.UUID.randomUUID().toString(),
                                 categoryName = selectedCategoryName,
                                 allocatedAmount = limit,
-                                spentAmount = spent,
-                                progress = if (limit > 0) (spent / limit).toFloat() else 0f
+                                spentAmount = spent
                             )
                         )
                     },

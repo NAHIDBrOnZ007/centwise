@@ -12,6 +12,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,21 +31,15 @@ import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.data.models.SmartRule
+import com.centwise.data.repository.SmartRulesRepository
 
 @Composable
 fun RulesScreen(
     onBackClick: () -> Unit = {},
     isDark: Boolean = isSystemInDarkTheme()
 ) {
-    var rules by remember {
-        mutableStateOf(
-            listOf(
-                SmartRule(name = "Foodpanda is Food", keyword = "Foodpanda", categoryName = "Food & Dining"),
-                SmartRule(name = "Pathao is Transport", keyword = "Pathao", categoryName = "Transport"),
-                SmartRule(name = "Daraz is Shopping", keyword = "Daraz", categoryName = "Shopping", isEnabled = false)
-            )
-        )
-    }
+    val repository = SmartRulesRepository.shared
+    val rules by repository.rules.collectAsState()
     var showAddSheet by remember { mutableStateOf(false) }
     var editingRule by remember { mutableStateOf<SmartRule?>(null) }
 
@@ -158,9 +154,7 @@ fun RulesScreen(
                             Switch(
                                 checked = rule.isEnabled,
                                 onCheckedChange = { enabled ->
-                                    rules = rules.map {
-                                        if (it.id == rule.id) it.copy(isEnabled = enabled) else it
-                                    }
+                                    repository.toggleRule(rule.id, enabled)
                                 },
                                 colors = SwitchDefaults.colors(checkedTrackColor = accent)
                             )
@@ -179,7 +173,7 @@ fun RulesScreen(
                                 color = if (rule.transactionType == com.centwise.data.models.TransactionType.INCOME)
                                     CentwiseColors.IncomeGreen else CentwiseColors.ExpenseRed
                             )
-                            IconButton(onClick = { editingRule = rule }) {
+                            IconButton(onClick = { repository.deleteRule(rule.id) }) {
                                 Icon(
                                     imageVector = Icons.Default.Delete,
                                     contentDescription = "Delete",
@@ -197,7 +191,7 @@ fun RulesScreen(
         AddEditRuleSheet(
             onDismiss = { showAddSheet = false },
             onSave = { rule ->
-                rules = listOf(rule) + rules
+                repository.addRule(rule)
                 showAddSheet = false
             }
         )
@@ -208,11 +202,11 @@ fun RulesScreen(
             editingRule = rule,
             onDismiss = { editingRule = null },
             onSave = { updated ->
-                rules = rules.map { if (it.id == updated.id) updated else it }
+                repository.updateRule(updated)
                 editingRule = null
             },
             onDelete = {
-                rules = rules.filter { it.id != rule.id }
+                repository.deleteRule(rule.id)
                 editingRule = null
             }
         )

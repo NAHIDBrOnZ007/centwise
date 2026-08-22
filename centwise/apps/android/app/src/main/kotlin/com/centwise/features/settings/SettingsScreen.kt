@@ -15,6 +15,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,11 +41,13 @@ fun SettingsScreen(
     onAccountsClick: () -> Unit = {},
     onSubscriptionsClick: () -> Unit = {},
     onSmartRulesClick: () -> Unit = {},
+    onReviewQueueClick: () -> Unit = {},
     onFAQClick: () -> Unit = {},
     onAboutClick: () -> Unit = {},
     isDark: Boolean = isSystemInDarkTheme()
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
+    val reviewQueueItems by com.centwise.data.repository.ReviewQueueRepository.shared.items.collectAsState()
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
@@ -174,6 +177,15 @@ fun SettingsScreen(
                         title = "Smart Rules",
                         subtitle = "Auto-categorize transactions",
                         onClick = onSmartRulesClick,
+                        showDivider = true,
+                        isDark = isDark
+                    )
+                    SettingsRow(
+                        icon = Icons.Default.MarkEmailRead,
+                        iconColor = Color(0xFF007AFF),
+                        title = "Review Queue",
+                        subtitle = if (reviewQueueItems.isNotEmpty()) "${reviewQueueItems.size} pending SMS messages" else "Review unclassified SMS messages",
+                        onClick = onReviewQueueClick,
                         showDivider = false,
                         isDark = isDark
                     )

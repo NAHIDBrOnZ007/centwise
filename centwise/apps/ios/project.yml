@@ -1,0 +1,47 @@
+# XcodeGen project specification for the Centwise iOS app.
+#
+# There is no .xcodeproj committed to Git on purpose. Generate it with:
+#   brew install xcodegen   (one time)
+#   cd apps/ios && xcodegen generate
+#   open Centwise.xcodeproj
+#
+# CI (GitHub Actions macOS runner) runs the same command before building.
+name: Centwise
+options:
+  bundleIdPrefix: com.centwise
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_USER_SCRIPT_SANDBOXING: "NO"
+targets:
+  Centwise:
+    type: application
+    platform: iOS
+    sources:
+      - path: Centwise
+        excludes:
+          - "App/Info.plist"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.centwise.ios
+        INFOPLIST_FILE: Centwise/App/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        TARGETED_DEVICE_FAMILY: "1"
+        SWIFT_EMIT_LOC_STRINGS: "YES"
+schemes:
+  Centwise:
+    build:
+      targets:
+        Centwise: all
+    run:
+      config: Debug
+    test:
+      config: Debug

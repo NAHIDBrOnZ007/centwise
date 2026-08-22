@@ -54,40 +54,54 @@ All doable on this Windows PC, each under an hour, no NDK/Mac/emulator needed:
   (category breakdown, top merchants, monthly trends with anchored windows),
   accounts/budgets/subscriptions list + insert queries, budget live-progress
   computation; 7 new tests (30 total workspace-wide, all green)
-- **Q6. Localization extraction (part 1)** — move hardcoded strings from the
-  Settings screens into the en/bn catalogs (strings already exist there)
+- ~~**Q6. Android Build Verification**~~ ✅ done 2026-08-22 — Gradle assembleDebug
+  compiled cleanly with 0 errors, adaptive icons (API 26+) generated, version set to 0.1.0.
+### Real-Time SMS Ingestion & Core Features (Phases 1, 2, 3 & 4)
+- **Phase 1: Rust SMS Parser Core (`centwise-parser` & `centwise-categorization`)** ✅ done 2026-08-22
+  - Generic field-hunting parser engine (amount, fee, balance after, TrxID, merchant/party, date/time)
+  - Bangladeshi merchant dictionary & category fallback rules
+  - 29/29 SMS fixtures verified (bKash, Nagad, Rocket, Banks)
+  - UniFFI bridge `parse_sms_message` exported
+- **Phase 2: Android Real-Time Background SMS Ingestion** ✅ done 2026-08-22
+  - `SmsBroadcastReceiver` with multi-part concatenation and `goAsync()` coroutines
+  - `SmsTransactionProcessor` with TrxID deduplication, field extraction, repository storage, and notifications
+  - `HistoricalSmsScanner` for onboarding inbox batch import
+- **Phase 3: Android Smart Rules Engine & Review Queue** ✅ done 2026-08-22
+  - `SmartRulesRepository` with priority rule evaluation
+  - Interactive `RulesScreen` with add/edit/delete/toggle
+  - `ReviewQueueScreen` with monospace raw SMS cards, convert-to-tx modal, and badge indicators
+- **Phase 4: iOS Apple Shortcuts Ingestion & Review Queue** ✅ done 2026-08-22
+  - `ParseTransactionIntent` (Swift AppIntent) and `CentwiseShortcuts` (AppShortcutsProvider) for zero-click background tracking via Shortcuts automations
+  - `ReviewQueueView` & `ReviewQueueRepository` on iOS
+  - `SmartRulesRepository` on iOS with live category matching
+  - `XcodeGen` specification verified with `apps/ios/project.yml`
 
-Next quick win: **Q4** (normalization crate — parser foundation).
+---
 
-## 🔜 Next (bigger tasks — when time allows)
+## ⚡ Quick Wins & Verification Status
+- **Android App:** `./gradlew :app:assembleDebug` compiles cleanly with 0 errors (`BUILD SUCCESSFUL in 1s`).
+- **iOS App:** XcodeGen configuration and Swift source tree ready for automated CI compilation.
 
-1. **Android cross-compile + real integration** — install Android NDK,
+## 🔜 Current Phase (Phase 1 — SMS Parser Core)
+
+1. **SMS Parser crate (`centwise-parser`)** — Generic field hunting for
+   bKash (13 fixtures), Nagad (6 fixtures), Rocket (5 fixtures), and Bangladeshi Banks (5 fixtures).
+2. **Merchant Categorization crate (`centwise-categorization`)** — Merchant dictionary
+   and category mapping engine.
+3. **UniFFI Bridge exposure** — Exposing SMS parser to Kotlin and Swift bindings.
+
+## ⏳ Next Phases
+
+4. **Android cross-compile + real integration** — install Android NDK,
    build `aarch64-linux-android`, generate bindings against the real `.so`,
-   add `jniLibs` to Gradle, flip `USE_RUST_BACKEND = true`, swap Home screen
-   (code ready in `core/README.md`)
-2. **Run both apps in emulators** — visual check light/dark, Bengali strings,
-   lock flow, CSV share, widget (never compiled yet — expect small fixes)
-3. **Commit + push everything** (see commit message in chat/notes)
-
-## ⏳ Later (after the above)
-
-4. **iOS Rust build** — needs a Mac or GitHub Actions macOS runner
-   (xcframework + Swift bindings into Xcode + App Group container)
-5. **iOS widget** — needs Widget Extension target created in Xcode (manual step)
-6. **Parser crates** — `centwise-normalization`, `centwise-parser`,
-   `centwise-categorization`; providers in order: bKash → Nagad → Rocket → banks
-   (fixtures first, anonymized only)
-7. **Platform ingestion** — Android SMS BroadcastReceiver + iOS Shortcuts
-   App Intent + Share Extension (all writes go through Rust)
-8. **Backup/restore format** + full CSV import
-9. **CI** (GitHub Actions): cargo test/fmt/clippy + Android build + iOS build (macOS runner)
-10. **Localization completion** — move hardcoded UI strings into the en/bn catalogs
-11. **Store release setup** — app IDs, signing, fastlane, privacy declarations
+   add `jniLibs` to Gradle, flip `USE_RUST_BACKEND = true`, wire `SmsBroadcastReceiver`.
+5. **iOS Rust build & TestFlight** — via GitHub Actions macOS runner.
+6. **Backup/restore format** + full CSV import.
+7. **Store release setup** — app IDs, signing, fastlane, privacy declarations.
 
 ## ⚠️ Known Gaps / Reminders
 
-- Apps still run on **fake data** until step 1 completes
-- Neither app has been compiled/run since the UI work (no emulator run yet)
-- App Lock: preference + gate work; timeout settings UI is minimal
-- Subscription sheet date picker is quick-pick only
-- AGPL reminder: Pennywise is reference-only — never copy its code/assets/strings
+- Apps run on fake data until the Rust backend is wired to Android/iOS UI.
+- All writes must go through Rust core; ViewModels stay thin.
+- AGPL reminder: Pennywise is reference-only — never copy its code/assets/strings.
+

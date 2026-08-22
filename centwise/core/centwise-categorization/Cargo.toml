@@ -1,0 +1,10 @@
+[package]
+name = "centwise-categorization"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+centwise-domain = { workspace = true }
+
+[dev-dependencies]

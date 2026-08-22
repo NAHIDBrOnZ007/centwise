@@ -19,6 +19,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 import com.centwise.core.design.components.CentwiseTab
 import com.centwise.core.design.components.FloatingTabBar
 import com.centwise.core.design.theme.CentwiseColors
@@ -58,6 +59,7 @@ sealed class SubScreen {
     data object Subscriptions : SubScreen()
     data object FAQ : SubScreen()
     data object About : SubScreen()
+    data object ReviewQueue : SubScreen()
     data class AccountDetail(val account: AccountItem) : SubScreen()
     data class BudgetDetail(val budget: BudgetItem) : SubScreen()
 }
@@ -70,6 +72,25 @@ class MainActivity : FragmentActivity() {
             CentwiseApp()
         }
     }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 1001) {
+            val anySmsGranted = permissions.indices.any { i ->
+                (permissions[i] == android.Manifest.permission.RECEIVE_SMS || permissions[i] == android.Manifest.permission.READ_SMS) &&
+                        grantResults.getOrNull(i) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            }
+            if (anySmsGranted) {
+                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                    com.centwise.core.scanner.HistoricalSmsScanner.scanInbox(applicationContext)
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -79,7 +100,7 @@ fun CentwiseApp(
     val context = LocalContext.current
     val activity = context as? FragmentActivity
 
-    // Load persisted appearance + lock preferences once
+    // Load persisted appearance + lock preferences & request runtime permissions once
     LaunchedEffect(Unit) {
         AppearancePrefs.load(context)
         AppLockManager.load(context)
@@ -87,6 +108,24 @@ fun CentwiseApp(
         AppLockManager.lockNow()
         // Register notification channels
         com.centwise.core.notifications.CentwiseNotifications.ensureChannels(context)
+
+        // Request SMS & Notification runtime permissions
+        val permissionsToRequest = mutableListOf<String>()
+        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.RECEIVE_SMS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(android.Manifest.permission.RECEIVE_SMS)
+        }
+        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_SMS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(android.Manifest.permission.READ_SMS)
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionsToRequest.add(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        if (permissionsToRequest.isNotEmpty() && activity != null) {
+            androidx.core.app.ActivityCompat.requestPermissions(activity, permissionsToRequest.toTypedArray(), 1001)
+        }
     }
 
     // Lock/unlock on background/foreground transitions
@@ -250,6 +289,10 @@ fun CentwiseApp(
                             onBackClick = { subScreen = null },
                             isDark = effectiveDark
                         )
+                        is SubScreen.ReviewQueue -> com.centwise.features.transactions.ReviewQueueScreen(
+                            onBackClick = { subScreen = null },
+                            isDark = effectiveDark
+                        )
                     }
                 }
             }
@@ -285,6 +328,7 @@ fun CentwiseApp(
                                 onAccountsClick = { subScreen = SubScreen.Accounts },
                                 onSubscriptionsClick = { subScreen = SubScreen.Subscriptions },
                                 onSmartRulesClick = { subScreen = SubScreen.Rules },
+                                onReviewQueueClick = { subScreen = SubScreen.ReviewQueue },
                                 onFAQClick = { subScreen = SubScreen.FAQ },
                                 onAboutClick = { subScreen = SubScreen.About },
                                 isDark = effectiveDark

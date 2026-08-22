@@ -291,8 +291,7 @@ fun BudgetDetailScreenPreview() {
         budget = BudgetItem(
             categoryName = "Food & Dining",
             allocatedAmount = 12000.0,
-            spentAmount = 8450.0,
-            progress = 0.7f
+            spentAmount = 8450.0
         )
     )
 }
