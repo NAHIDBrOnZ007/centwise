@@ -1,5 +1,6 @@
 import Foundation
 import LocalAuthentication
+import SwiftUI
 import UIKit
 
 public final class AppLockManager: ObservableObject {

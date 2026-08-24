@@ -2,9 +2,13 @@ import SwiftUI
 
 public struct SettingsScreen: View {
     @ObservedObject private var themeManager = ThemeManager.shared
+    @ObservedObject private var profileManager = ProfileManager.shared
     @ObservedObject private var appLockManager = AppLockManager.shared
     @ObservedObject private var repository = FakeTransactionRepository.shared
     @State private var showExportSheet = false
+    @State private var showAvatarPicker = false
+    @State private var tempName = ""
+    @State private var tempAvatar = ""
     @Environment(\.colorScheme) private var colorScheme
 
     public init() {}
@@ -12,9 +16,22 @@ public struct SettingsScreen: View {
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: CentwiseSpacing.mdLg) {
-                sectionHeader("Personalization")
+                // Profile Header Card
+                profileHeaderCard
+
+                sectionHeader("Automation & Personalization")
 
                 sectionCard {
+                    navigationRow(
+                        systemImage: "bolt.badge.automatic.fill",
+                        iconColor: CentwiseColors.bKashPink,
+                        title: "Shortcuts & SMS Auto-Tracking",
+                        subtitle: "3-step setup guide and live parser tester",
+                        showDivider: true
+                    ) {
+                        ShortcutsGuideScreen()
+                    }
+
                     navigationRow(
                         systemImage: "paintbrush.fill",
                         iconColor: .orange,
@@ -145,9 +162,74 @@ public struct SettingsScreen: View {
         .sheet(isPresented: $showExportSheet) {
             CsvExportSheet(transactions: repository.transactions)
         }
+        .sheet(isPresented: $showAvatarPicker) {
+            NavigationStack {
+                AvatarPickerView(
+                    selectedAvatar: $tempAvatar,
+                    userName: $tempName,
+                    onSave: {
+                        profileManager.setProfile(name: tempName, avatar: tempAvatar)
+                    }
+                )
+                .navigationTitle("Edit Profile")
+                .navigationBarTitleDisplayMode(.inline)
+            }
+        }
     }
 
     // MARK: - Building Blocks
+
+    private var profileHeaderCard: some View {
+        Button(action: {
+            tempName = profileManager.userName
+            tempAvatar = profileManager.userAvatar
+            showAvatarPicker = true
+        }) {
+            HStack(spacing: 16) {
+                ZStack {
+                    Circle()
+                        .fill(themeManager.accentColor.opacity(0.18))
+                        .frame(width: 60, height: 60)
+
+                    Image(profileManager.userAvatar)
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 48, height: 48)
+                        .clipShape(Circle())
+                }
+                .overlay(
+                    Circle()
+                        .stroke(themeManager.accentColor.opacity(0.4), lineWidth: 2)
+                )
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(profileManager.userName)
+                        .font(CentwiseTypography.title3)
+                        .foregroundColor(.primary)
+
+                    Text("Tap to change avatar & name")
+                        .font(CentwiseTypography.caption1)
+                        .foregroundColor(themeManager.accentColor)
+                }
+
+                Spacer()
+
+                Image(systemName: "pencil.circle.fill")
+                    .font(.system(size: 24))
+                    .foregroundColor(themeManager.accentColor.opacity(0.7))
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(CentwiseColors.surface(for: colorScheme, isAmoled: themeManager.isAmoledActive))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(CentwiseColors.border(for: colorScheme), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
 
     private func sectionHeader(_ title: String) -> some View {
         Text(title)

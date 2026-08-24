@@ -31,7 +31,7 @@ public enum CentwiseColors {
     public static let lightBackground = Color(red: 0.96, green: 0.97, blue: 0.98) // #F5F7FA
     public static let lightSurface = Color(white: 1.0)
     public static let lightSurfaceSecondary = Color(red: 0.93, green: 0.94, blue: 0.96)
-    public static let lightBorder = Color(black: 0.0, opacity: 0.06)
+    public static let lightBorder = Color(white: 0.0, opacity: 0.06)
 
     public static let amoledBackground = Color.black
     public static let amoledSurface = Color(red: 0.07, green: 0.07, blue: 0.07)

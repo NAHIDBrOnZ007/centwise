@@ -170,7 +170,7 @@ public struct ShortcutsGuideScreen: View {
 
                 Button(action: {
                     if let tx = SmsTransactionProcessor.shared.processIncomingSms(body: sampleSmsText) {
-                        testResult = "✅ Tracked: \(tx.title) (৳\(Int(tx.amount))) in \(tx.category)"
+                        testResult = "✅ Tracked: \(tx.title) (৳\(Int(tx.amount))) in \(tx.category.name)"
                     } else {
                         testResult = "ℹ️ Message filtered / queued to Review Queue"
                     }

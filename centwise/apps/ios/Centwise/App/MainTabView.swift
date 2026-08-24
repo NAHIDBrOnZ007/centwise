@@ -20,12 +20,22 @@ public struct MainTabView: View {
     @State private var selectedTab: AppTab = .home
     @Environment(\.colorScheme) private var colorScheme
     @ObservedObject private var themeManager = ThemeManager.shared
+    @ObservedObject private var profileManager = ProfileManager.shared
 
     public init() {}
 
     public var body: some View {
         ZStack(alignment: .bottom) {
-            // Main Tab Viewport
+            if !profileManager.hasCompletedOnboarding {
+                OnboardingScreen {
+                    withAnimation {
+                        profileManager.hasCompletedOnboarding = true
+                    }
+                }
+                .transition(.opacity)
+                .zIndex(2)
+            } else {
+                // Main Tab Viewport
             Group {
                 switch selectedTab {
                 case .home:
@@ -52,6 +62,7 @@ public struct MainTabView: View {
             floatingTabBar
                 .padding(.horizontal, 20)
                 .padding(.bottom, 16)
+            }
         }
         .ignoresSafeArea(.keyboard)
     }

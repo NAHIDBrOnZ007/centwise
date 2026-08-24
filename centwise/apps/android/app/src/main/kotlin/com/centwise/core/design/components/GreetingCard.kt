@@ -23,12 +23,16 @@ import java.util.Calendar
 
 @Composable
 fun GreetingCard(
-    userName: String = "User",
+    userName: String? = null,
     greeting: String? = null,
-    avatarResId: Int = R.drawable.avatar_1,
+    avatarResId: Int? = null,
     modifier: Modifier = Modifier,
     isDark: Boolean = isSystemInDarkTheme()
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val currentUserName = userName ?: com.centwise.core.profile.UserPrefs.getUserName(context)
+    val currentAvatarResId = avatarResId ?: com.centwise.core.profile.UserPrefs.getUserAvatarResId(context)
+
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
@@ -57,7 +61,7 @@ fun GreetingCard(
             contentAlignment = Alignment.Center
         ) {
             Image(
-                painter = painterResource(id = avatarResId),
+                painter = painterResource(id = currentAvatarResId),
                 contentDescription = "User Avatar",
                 modifier = Modifier.size(32.dp),
                 contentScale = ContentScale.Fit
@@ -68,7 +72,7 @@ fun GreetingCard(
 
         Column {
             Text(
-                text = userName,
+                text = currentUserName,
                 style = CentwiseTypography.Headline,
                 color = textPrimary
             )

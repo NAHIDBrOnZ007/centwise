@@ -32,6 +32,22 @@ import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.centwise.core.profile.UserPrefs
+
 @Composable
 fun SettingsScreen(
     onAppearanceClick: () -> Unit = {},
@@ -48,10 +64,116 @@ fun SettingsScreen(
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val reviewQueueItems by com.centwise.data.repository.ReviewQueueRepository.shared.items.collectAsState()
+    val accent = AccentOptions.byName(AppearancePrefs.accentName).color
+
+    var currentUserName by remember { mutableStateOf(UserPrefs.getUserName(context)) }
+    var currentUserAvatar by remember { mutableStateOf(UserPrefs.getUserAvatar(context)) }
+    var showEditProfileDialog by remember { mutableStateOf(false) }
+
+    var editNameInput by remember { mutableStateOf(currentUserName) }
+    var editAvatarSelected by remember { mutableStateOf(currentUserAvatar) }
+
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
+
+    if (showEditProfileDialog) {
+        AlertDialog(
+            onDismissRequest = { showEditProfileDialog = false },
+            title = { Text("Edit Profile", color = textPrimary) },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Box(
+                        modifier = Modifier
+                            .size(70.dp)
+                            .clip(CircleShape)
+                            .background(accent.copy(alpha = 0.15f))
+                            .border(2.5.dp, accent, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = UserPrefs.getAvatarResId(editAvatarSelected)),
+                            contentDescription = "Selected Avatar",
+                            modifier = Modifier.size(52.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    OutlinedTextField(
+                        value = editNameInput,
+                        onValueChange = { editNameInput = it },
+                        label = { Text("Name") },
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = accent,
+                            focusedTextColor = textPrimary,
+                            unfocusedTextColor = textPrimary
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text("Pick an Avatar", style = CentwiseTypography.Caption, color = textSecondary)
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(44.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(110.dp),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        items(UserPrefs.AVAILABLE_AVATARS) { avatarName ->
+                            val isSelected = editAvatarSelected == avatarName
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(CircleShape)
+                                    .background(if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
+                                    .then(if (isSelected) Modifier.border(2.dp, accent, CircleShape) else Modifier)
+                                    .clickable { editAvatarSelected = avatarName },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Image(
+                                    painter = painterResource(id = UserPrefs.getAvatarResId(avatarName)),
+                                    contentDescription = avatarName,
+                                    modifier = Modifier.size(34.dp),
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val finalName = if (editNameInput.trim().isEmpty()) "User" else editNameInput.trim()
+                        UserPrefs.setUserName(context, finalName)
+                        UserPrefs.setUserAvatar(context, editAvatarSelected)
+                        currentUserName = finalName
+                        currentUserAvatar = editAvatarSelected
+                        showEditProfileDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = accent)
+                ) {
+                    Text("Save")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditProfileDialog = false }) {
+                    Text("Cancel", color = textSecondary)
+                }
+            },
+            containerColor = cardBg
+        )
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -68,6 +190,62 @@ fun SettingsScreen(
                 style = CentwiseTypography.LargeTitle,
                 color = textPrimary
             )
+        }
+
+        // Profile Header Card
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
+                    .background(cardBg)
+                    .clickable {
+                        editNameInput = currentUserName
+                        editAvatarSelected = currentUserAvatar
+                        showEditProfileDialog = true
+                    }
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(54.dp)
+                        .clip(CircleShape)
+                        .background(accent.copy(alpha = 0.15f))
+                        .border(2.dp, accent.copy(alpha = 0.4f), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = UserPrefs.getAvatarResId(currentUserAvatar)),
+                        contentDescription = "User Avatar",
+                        modifier = Modifier.size(40.dp),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(14.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = currentUserName,
+                        style = CentwiseTypography.Headline,
+                        color = textPrimary
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Tap to change avatar & name",
+                        style = CentwiseTypography.Caption,
+                        color = accent
+                    )
+                }
+
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit Profile",
+                    tint = textSecondary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
 
         // Section 1: Personalization (Matching Screenshot ios ui 1.jpeg)

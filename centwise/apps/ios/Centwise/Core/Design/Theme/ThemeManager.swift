@@ -52,10 +52,37 @@ public final class ThemeManager: ObservableObject {
         accentChoice.color
     }
 
-    public func triggerHapticFeedback(_ type: UIImpactFeedbackGenerator.FeedbackStyle = .medium) {
+    public enum HapticType {
+        case light
+        case medium
+        case heavy
+        case soft
+        case rigid
+        case success
+        case warning
+        case error
+    }
+
+    public func triggerHapticFeedback(_ type: HapticType = .medium) {
         guard enableHaptics else { return }
-        let generator = UIImpactFeedbackGenerator(style: type)
-        generator.impactOccurred()
+        switch type {
+        case .light:
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        case .medium:
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        case .heavy:
+            UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+        case .soft:
+            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        case .rigid:
+            UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
+        case .success:
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+        case .warning:
+            UINotificationFeedbackGenerator().notificationOccurred(.warning)
+        case .error:
+            UINotificationFeedbackGenerator().notificationOccurred(.error)
+        }
     }
 }
 

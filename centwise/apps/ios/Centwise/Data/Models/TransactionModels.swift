@@ -111,6 +111,7 @@ public struct TransactionCategory: Identifiable, Hashable, Codable {
     }
 
     public static let food = TransactionCategory(id: "food", name: "Food & Dining", icon: "fork.knife", colorHex: "#F97316")
+    public static let groceries = TransactionCategory(id: "groceries", name: "Groceries", icon: "cart.fill", colorHex: "#22C55E")
     public static let transport = TransactionCategory(id: "transport", name: "Transport & Rides", icon: "car.fill", colorHex: "#06B6D4")
     public static let shopping = TransactionCategory(id: "shopping", name: "Shopping", icon: "bag.fill", colorHex: "#EC4899")
     public static let bills = TransactionCategory(id: "bills", name: "Bills & Utilities", icon: "bolt.fill", colorHex: "#EAB308")
@@ -123,7 +124,7 @@ public struct TransactionCategory: Identifiable, Hashable, Codable {
     public static let other = TransactionCategory(id: "other", name: "Other", icon: "square.grid.2x2.fill", colorHex: "#64748B")
 
     public static let defaultCategories: [TransactionCategory] = [
-        .food, .transport, .shopping, .bills, .recharge, .salary, .transfer, .health, .entertainment, .education, .other
+        .food, .groceries, .transport, .shopping, .bills, .recharge, .salary, .transfer, .health, .entertainment, .education, .other
     ]
 }
 

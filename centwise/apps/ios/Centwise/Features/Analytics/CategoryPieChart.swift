@@ -65,8 +65,8 @@ public struct CategoryPieChart: View {
 
                     var path = Path()
                     path.move(to: point(center: center, radius: radius, angle: startAngle))
-                    path.addArc(center: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: false)
-                    path.addArc(center: center, radius: innerRadius, angle: endAngle, startAngle: startAngle, clockwise: true)
+                    path.addArc(center: center, radius: radius, startAngle: Angle(radians: startAngle), endAngle: Angle(radians: endAngle), clockwise: false)
+                    path.addArc(center: center, radius: innerRadius, startAngle: Angle(radians: endAngle), endAngle: Angle(radians: startAngle), clockwise: true)
                     path.closeSubpath()
 
                     context.fill(path, with: .color(slice.color))

@@ -75,10 +75,14 @@ public final class SmsTransactionProcessor {
             amount: amount,
             type: type,
             category: category,
-            account: matchedAccount,
             date: date,
+            accountId: matchedAccount.id,
+            accountName: matchedAccount.name,
+            provider: matchedAccount.provider,
+            rawSmsBody: trimmed,
+            transactionReference: reference,
             notes: reference != nil ? "TrxID: \(reference!)" : nil,
-            rawSms: trimmed
+            isAutoTracked: true
         )
 
         if let ref = reference {
@@ -130,7 +134,8 @@ public final class SmsTransactionProcessor {
         for match in results {
             if match.numberOfRanges > 1 {
                 let val = nsString.substring(with: match.range(at: 1)).trimmingCharacters(in: .whitespaces)
-                if !val.caseInsensitiveCompare("not").rawValue.isZero && !val.caseInsensitiveCompare("na").rawValue.isZero {
+                let lowerVal = val.lowercased()
+                if lowerVal != "not" && lowerVal != "na" {
                     return val
                 }
             }
@@ -274,6 +279,6 @@ public final class SmsTransactionProcessor {
             return .bills
         }
 
-        return isIncome ? .salary : .general
+        return isIncome ? .salary : .other
     }
 }

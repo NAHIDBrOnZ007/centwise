@@ -39,16 +39,19 @@ public struct ReviewQueueView: View {
         }
         .sheet(item: $itemToConvert) { item in
             NavigationStack {
+                let defaultAccount = FakeTransactionRepository.shared.accounts.first
+                    ?? FinancialAccount(name: item.sender, provider: .bkash, type: .mfs, currentBalance: 0.0)
                 AddEditTransactionView(
                     transactionToEdit: CentwiseTransaction(
                         title: item.candidateParty ?? "\(item.sender) Transaction",
                         amount: item.candidateAmount ?? 0.0,
                         type: item.candidateType ?? .expense,
-                        category: .general,
-                        account: FakeTransactionRepository.shared.accounts.first
-                            ?? FinancialAccount(name: item.sender, provider: .bkash, type: .mfs, currentBalance: 0.0),
+                        category: .other,
                         date: item.timestamp,
-                        rawSms: item.rawSms
+                        accountId: defaultAccount.id,
+                        accountName: defaultAccount.name,
+                        provider: defaultAccount.provider,
+                        rawSmsBody: item.rawSms
                     ),
                     onSave: {
                         repository.dismissItem(id: item.id)

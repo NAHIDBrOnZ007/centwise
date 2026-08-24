@@ -10,6 +10,7 @@ public enum CentwiseTypography {
     public static let bodyMedium = Font.system(size: 15, weight: .medium, design: .default)
     public static let subheadline = Font.system(size: 14, weight: .regular, design: .default)
     public static let footnote = Font.system(size: 13, weight: .regular, design: .default)
+    public static let caption = Font.system(size: 12, weight: .medium, design: .default)
     public static let caption1 = Font.system(size: 12, weight: .medium, design: .default)
     public static let caption2 = Font.system(size: 11, weight: .regular, design: .default)
 

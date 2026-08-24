@@ -5,6 +5,7 @@ public struct HomeScreen: View {
 
     @StateObject private var viewModel = HomeViewModel()
     @ObservedObject private var themeManager = ThemeManager.shared
+    @ObservedObject private var profileManager = ProfileManager.shared
     @Environment(\.colorScheme) private var colorScheme
     @State private var showAddTransaction = false
 
@@ -17,7 +18,50 @@ public struct HomeScreen: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     // 1. User Greeting Card
-                    GreetingCard(userName: "User", greeting: "Good night")
+                    GreetingCard()
+
+                    // Quick Shortcuts Setup Banner
+                    if !profileManager.shortcutsSetupDismissed {
+                        CentwiseCard {
+                            VStack(alignment: .leading, spacing: 10) {
+                                HStack {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "bolt.badge.automatic.fill")
+                                            .foregroundColor(themeManager.accentColor)
+                                        Text("Set Up SMS Auto-Tracking")
+                                            .font(CentwiseTypography.headline)
+                                            .foregroundColor(.primary)
+                                    }
+                                    Spacer()
+                                    Button(action: {
+                                        profileManager.shortcutsSetupDismissed = true
+                                    }) {
+                                        Image(systemName: "xmark")
+                                            .font(.system(size: 12, weight: .bold))
+                                            .foregroundColor(.secondary)
+                                            .padding(4)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+
+                                Text("Centwise can auto-log your bKash, Nagad, Rocket, and bank transactions silently in the background via Apple Shortcuts.")
+                                    .font(CentwiseTypography.footnote)
+                                    .foregroundColor(.secondary)
+
+                                NavigationLink(destination: ShortcutsGuideScreen()) {
+                                    HStack {
+                                        Text("View 3-Step Setup & Test Parser")
+                                            .font(CentwiseTypography.caption1)
+                                            .fontWeight(.semibold)
+                                        Image(systemName: "arrow.right")
+                                            .font(.system(size: 12, weight: .semibold))
+                                    }
+                                    .foregroundColor(themeManager.accentColor)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
 
                     // 2. Spent this month Card
                     SpendingSummaryCard(
@@ -76,7 +120,7 @@ public struct HomeScreen: View {
             .padding(.trailing, 20)
             .padding(.bottom, 90)
         }
-        .navigationTitle("PennyWise")
+        .navigationTitle("Centwise")
         .sheet(isPresented: $showAddTransaction) {
             AddEditTransactionView {
                 viewModel.loadHome()
