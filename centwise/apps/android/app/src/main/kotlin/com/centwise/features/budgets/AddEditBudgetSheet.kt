@@ -1,16 +1,30 @@
 package com.centwise.features.budgets
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.data.models.BudgetItem
@@ -30,7 +44,11 @@ fun AddEditBudgetSheet(
         mutableStateOf(editingBudget?.categoryName ?: CategoryOption.defaults.first().name)
     }
     var limitText by remember {
-        mutableStateOf(editingBudget?.allocatedAmount?.let { "%.0f".format(it) } ?: "")
+        mutableStateOf(
+            editingBudget?.allocatedAmount?.let {
+                if (it % 1.0 == 0.0) it.toLong().toString() else it.toString()
+            } ?: ""
+        )
     }
 
     val accent = AccentOptions.byName(AppearancePrefs.accentName).color
@@ -38,19 +56,24 @@ fun AddEditBudgetSheet(
     val sheetBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
+    val fieldBg = if (isDark) Color(0x1FFFFFFF) else Color(0x0A000000)
 
     val isValid = limitText.toDoubleOrNull() != null && limitText.toDoubleOrNull()!! > 0
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = sheetBg
+        sheetState = sheetState,
+        containerColor = sheetBg,
+        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
-                .padding(bottom = 32.dp),
+                .padding(bottom = 36.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
@@ -59,68 +82,135 @@ fun AddEditBudgetSheet(
                 color = textPrimary
             )
 
-            Text("Category", style = CentwiseTypography.Headline, color = textPrimary)
+            // 1. Hero Limit Input Box
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(fieldBg)
+                    .padding(vertical = 16.dp, horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "MONTHLY LIMIT (BDT)",
+                    style = CentwiseTypography.Caption,
+                    color = textSecondary,
+                    fontWeight = FontWeight.SemiBold,
+                    letterSpacing = 1.sp
+                )
+                Spacer(modifier = Modifier.height(6.dp))
 
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    Text(
+                        text = "৳ ",
+                        style = CentwiseTypography.LargeTitle.copy(fontSize = 32.sp),
+                        color = accent,
+                        fontWeight = FontWeight.Bold
+                    )
+                    BasicTextField(
+                        value = limitText,
+                        onValueChange = { limitText = it },
+                        textStyle = CentwiseTypography.LargeTitle.copy(
+                            fontSize = 32.sp,
+                            color = textPrimary,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Start
+                        ),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        cursorBrush = SolidColor(accent),
+                        decorationBox = { innerTextField ->
+                            if (limitText.isEmpty()) {
+                                Text(
+                                    text = "0.00",
+                                    style = CentwiseTypography.LargeTitle.copy(
+                                        fontSize = 32.sp,
+                                        color = textSecondary.copy(alpha = 0.4f),
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                )
+                            }
+                            innerTextField()
+                        }
+                    )
+                }
+            }
+
+            // 2. Category Selector Chips
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                CategoryOption.defaults.chunked(2).forEach { rowCategories ->
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        rowCategories.forEach { category ->
-                            FilterChip(
-                                selected = category.name == selectedCategoryName,
-                                onClick = { selectedCategoryName = category.name },
-                                label = { Text(category.name, style = CentwiseTypography.Caption) },
-                                modifier = Modifier.weight(1f)
+                Text(text = "Target Category", style = CentwiseTypography.Headline.copy(fontSize = 13.sp), color = textSecondary)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CategoryOption.defaults.forEach { cat ->
+                        val isSelected = selectedCategoryName == cat.name
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = if (isSelected) accent else fieldBg,
+                            modifier = Modifier.clickable { selectedCategoryName = cat.name }
+                        ) {
+                            Text(
+                                text = cat.name,
+                                style = CentwiseTypography.Subheadline,
+                                color = if (isSelected) Color.White else textPrimary,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
                             )
                         }
-                        if (rowCategories.size == 1) Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
 
-            OutlinedTextField(
-                value = limitText,
-                onValueChange = { limitText = it },
-                label = { Text("Monthly limit (৳)") },
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                modifier = Modifier.fillMaxWidth()
-            )
-
             Text(
-                "Spending in this category is tracked against the limit automatically.",
+                "Spending in this category will be tracked against this limit automatically in real-time.",
                 style = CentwiseTypography.Caption,
                 color = textSecondary
             )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                OutlinedButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Cancel")
-                }
-                Button(
-                    onClick = {
-                        val limit = limitText.toDoubleOrNull() ?: return@Button
-                        val spent = editingBudget?.spentAmount ?: 0.0
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // 3. Save Button
+            Button(
+                onClick = {
+                    val limit = limitText.toDoubleOrNull() ?: 0.0
+                    if (limit > 0) {
                         onSave(
-                            BudgetItem(
-                                id = editingBudget?.id ?: java.util.UUID.randomUUID().toString(),
+                            editingBudget?.copy(
+                                categoryName = selectedCategoryName,
+                                allocatedAmount = limit
+                            ) ?: BudgetItem(
                                 categoryName = selectedCategoryName,
                                 allocatedAmount = limit,
-                                spentAmount = spent
+                                spentAmount = 0.0
                             )
                         )
-                    },
-                    enabled = isValid,
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(containerColor = accent)
-                ) {
-                    Text("Save")
-                }
+                        onDismiss()
+                    }
+                },
+                enabled = isValid,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = accent,
+                    contentColor = Color.White,
+                    disabledContainerColor = fieldBg
+                )
+            ) {
+                Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (editingBudget == null) "Set Budget" else "Update Budget",
+                    style = CentwiseTypography.Headline,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }

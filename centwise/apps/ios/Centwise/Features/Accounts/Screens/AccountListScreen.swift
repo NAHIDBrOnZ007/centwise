@@ -46,12 +46,6 @@ public struct AccountListScreen: View {
                             .font(CentwiseTypography.headline)
                             .foregroundColor(.primary)
                         Spacer()
-                        Button("+ Add") {
-                            themeManager.triggerHapticFeedback(.light)
-                            showAddAccount = true
-                        }
-                        .font(CentwiseTypography.bodyMedium)
-                        .foregroundColor(themeManager.accentColor)
                     }
                     .padding(.horizontal, CentwiseSpacing.md)
 
@@ -110,7 +104,20 @@ public struct AccountListScreen: View {
             .padding(.bottom, 80)
         }
         .background(CentwiseColors.background(for: colorScheme, isAmoled: isAmoled).ignoresSafeArea())
-        .navigationTitle("Accounts & Wallets")
+        .navigationTitle("Accounts")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    themeManager.triggerHapticFeedback(.light)
+                    showAddAccount = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(themeManager.accentColor)
+                }
+            }
+        }
         .sheet(isPresented: $showAddAccount) {
             AddEditAccountScreen()
         }

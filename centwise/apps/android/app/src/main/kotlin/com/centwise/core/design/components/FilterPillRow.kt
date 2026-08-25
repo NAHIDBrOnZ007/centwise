@@ -82,8 +82,9 @@ fun FilterCapsulePill(
     modifier: Modifier = Modifier,
     isDark: Boolean = isSystemInDarkTheme()
 ) {
+    val accent = com.centwise.features.settings.AccentOptions.byName(com.centwise.features.settings.AppearancePrefs.accentName).color
     val bg = if (isActive) {
-        CentwiseColors.AccentMauve
+        accent
     } else {
         if (isDark) CentwiseColors.DarkSearchBg else CentwiseColors.LightSearchBg
     }

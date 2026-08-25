@@ -43,14 +43,6 @@ public struct SubscriptionListScreen: View {
                             .font(CentwiseTypography.headline)
                             .foregroundColor(.primary)
                         Spacer()
-                        Button {
-                            themeManager.triggerHapticFeedback(.light)
-                            showAddSubscription = true
-                        } label: {
-                            Label("Add", systemImage: "plus")
-                                .font(CentwiseTypography.bodyMedium)
-                        }
-                        .foregroundColor(themeManager.accentColor)
                     }
                     .padding(.horizontal, CentwiseSpacing.md)
 
@@ -102,10 +94,23 @@ public struct SubscriptionListScreen: View {
         }
         .background(CentwiseColors.background(for: colorScheme, isAmoled: isAmoled).ignoresSafeArea())
         .navigationTitle("Subscriptions")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    themeManager.triggerHapticFeedback(.light)
+                    showAddSubscription = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(themeManager.accentColor)
+                }
+            }
+        }
         .sheet(isPresented: $showAddSubscription) {
             NavigationStack {
-                AddEditSubscriptionScreen { subscription in
-                    repository.addSubscription(subscription)
+                AddEditSubscriptionScreen { sub in
+                    repository.addSubscription(sub)
                 }
             }
         }

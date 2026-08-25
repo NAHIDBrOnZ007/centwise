@@ -27,12 +27,15 @@ import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.data.models.TransactionItem
+import com.centwise.features.settings.AccentOptions
+import com.centwise.features.settings.AppearancePrefs
 import com.centwise.features.transactions.TransactionDetailSheet
 
 @Composable
 fun HomeScreen(
     onSeeAllClick: () -> Unit = {},
     onAddClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
     viewModel: HomeViewModel = viewModel(),
     isDark: Boolean = isSystemInDarkTheme()
 ) {
@@ -45,6 +48,8 @@ fun HomeScreen(
 
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
+
+    val accent = AccentOptions.byName(AppearancePrefs.accentName).color
 
     Box(
         modifier = Modifier
@@ -67,9 +72,12 @@ fun HomeScreen(
                 )
             }
 
-            // 1. User Greeting Card (with Avatar & Dynamic Greeting)
+            // 1. User Greeting Card (with Live User Name, Avatar & Dynamic Greeting)
             item {
-                GreetingCard(userName = "User", isDark = isDark)
+                GreetingCard(
+                    onProfileClick = onProfileClick,
+                    isDark = isDark
+                )
             }
 
             // 2. Spent this Month 3-Column Card
@@ -91,13 +99,13 @@ fun HomeScreen(
                 ) {
                     Text(
                         text = "Recent Transactions",
-                        style = CentwiseTypography.Title2,
+                        style = CentwiseTypography.Headline,
                         color = textPrimary
                     )
                     Text(
-                        text = "See All",
-                        style = CentwiseTypography.Headline,
-                        color = CentwiseColors.AccentMauve,
+                        text = "See all",
+                        style = CentwiseTypography.Subheadline,
+                        color = accent,
                         modifier = Modifier.clickable { onSeeAllClick() }
                     )
                 }

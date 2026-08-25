@@ -69,14 +69,6 @@ public struct BudgetListScreen: View {
                             .font(CentwiseTypography.headline)
                             .foregroundColor(.primary)
                         Spacer()
-                        Button {
-                            themeManager.triggerHapticFeedback(.light)
-                            showAddBudget = true
-                        } label: {
-                            Label("Add", systemImage: "plus")
-                                .font(CentwiseTypography.bodyMedium)
-                        }
-                        .foregroundColor(themeManager.accentColor)
                     }
                     .padding(.horizontal, CentwiseSpacing.md)
 
@@ -132,6 +124,19 @@ public struct BudgetListScreen: View {
         }
         .background(CentwiseColors.background(for: colorScheme, isAmoled: isAmoled).ignoresSafeArea())
         .navigationTitle("Budgets")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    themeManager.triggerHapticFeedback(.light)
+                    showAddBudget = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(themeManager.accentColor)
+                }
+            }
+        }
         .sheet(isPresented: $showAddBudget) {
             NavigationStack {
                 AddEditBudgetScreen { budget in

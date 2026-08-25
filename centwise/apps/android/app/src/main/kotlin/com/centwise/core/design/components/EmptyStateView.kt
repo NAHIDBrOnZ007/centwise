@@ -65,12 +65,14 @@ fun EmptyStateView(
             textAlign = TextAlign.Center
         )
 
+        val accent = com.centwise.features.settings.AccentOptions.byName(com.centwise.features.settings.AppearancePrefs.accentName).color
+
         if (buttonText != null && onButtonClick != null) {
             Spacer(modifier = Modifier.height(24.dp))
             Row(
                 modifier = Modifier
                     .clip(CircleShape)
-                    .background(CentwiseColors.AccentMauve)
+                    .background(accent)
                     .clickable { onButtonClick() }
                     .padding(horizontal = 24.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,

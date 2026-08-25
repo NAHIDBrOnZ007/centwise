@@ -206,10 +206,10 @@ fun CategoryPieChart(
                 ) {
                     Canvas(modifier = Modifier.fillMaxSize()) {
                         var startAngle = -90f
-                        val inset = Stroke(width = 2f).width
-                        val arcSize = Size(size.width - inset, size.height - inset)
-                        val topLeft = Offset(inset / 2, inset / 2)
-                        val thickness = size.minDimension * 0.34f
+                        val thickness = size.minDimension * 0.26f
+                        val diameter = size.minDimension - thickness
+                        val arcSize = Size(diameter, diameter)
+                        val topLeft = Offset((size.width - diameter) / 2f, (size.height - diameter) / 2f)
 
                         sorted.forEach { slice ->
                             val sweep = (slice.value / total * 360.0).toFloat() * sweepScale

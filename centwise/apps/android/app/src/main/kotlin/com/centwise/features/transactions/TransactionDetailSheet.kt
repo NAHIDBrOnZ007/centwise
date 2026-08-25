@@ -41,8 +41,11 @@ fun TransactionDetailSheet(
     val amountColor = if (isIncome) CentwiseColors.IncomeGreen else CentwiseColors.ExpenseRed
     val amountPrefix = if (isIncome) "+ " else "- "
 
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        sheetState = sheetState,
         containerColor = bg,
         dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {

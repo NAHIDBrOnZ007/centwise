@@ -28,6 +28,7 @@ fun ActionPillGroup(
     isDark: Boolean = isSystemInDarkTheme()
 ) {
     val pillBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
+    val accent = com.centwise.features.settings.AccentOptions.byName(com.centwise.features.settings.AppearancePrefs.accentName).color
 
     Row(
         modifier = modifier
@@ -40,7 +41,7 @@ fun ActionPillGroup(
         Icon(
             imageVector = Icons.Default.Add,
             contentDescription = "Add",
-            tint = CentwiseColors.AccentMauve,
+            tint = accent,
             modifier = Modifier
                 .size(18.dp)
                 .clickable { onAddClick() }
@@ -48,7 +49,7 @@ fun ActionPillGroup(
         Icon(
             imageVector = Icons.Default.SwapVert,
             contentDescription = "Sort",
-            tint = CentwiseColors.AccentMauve,
+            tint = accent,
             modifier = Modifier
                 .size(18.dp)
                 .clickable { onSortClick() }
@@ -56,7 +57,7 @@ fun ActionPillGroup(
         Icon(
             imageVector = Icons.Default.Share,
             contentDescription = "Export",
-            tint = CentwiseColors.AccentMauve,
+            tint = accent,
             modifier = Modifier
                 .size(18.dp)
                 .clickable { onExportClick() }

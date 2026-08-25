@@ -2,23 +2,32 @@ package com.centwise.core.design.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.centwise.R
+import androidx.compose.ui.unit.sp
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
+import com.centwise.core.profile.UserPrefs
+import com.centwise.features.settings.AccentOptions
+import com.centwise.features.settings.AppearancePrefs
 import java.util.Calendar
 
 @Composable
@@ -26,12 +35,14 @@ fun GreetingCard(
     userName: String? = null,
     greeting: String? = null,
     avatarResId: Int? = null,
+    onProfileClick: () -> Unit = {},
     modifier: Modifier = Modifier,
     isDark: Boolean = isSystemInDarkTheme()
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    val currentUserName = userName ?: com.centwise.core.profile.UserPrefs.getUserName(context)
-    val currentAvatarResId = avatarResId ?: com.centwise.core.profile.UserPrefs.getUserAvatarResId(context)
+    val currentUserName = userName?.takeIf { it.isNotBlank() } ?: UserPrefs.getUserName(context)
+    val currentAvatarResId = avatarResId ?: UserPrefs.getUserAvatarResId(context)
+    val accent = AccentOptions.byName(AppearancePrefs.accentName).color
 
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
@@ -49,39 +60,66 @@ fun GreetingCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
             .background(cardBg)
+            .clickable { onProfileClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // User Avatar Circle
+        // User Avatar Circle with Accent Ring & Edit indicator
         Box(
             modifier = Modifier
-                .size(44.dp)
+                .size(48.dp)
                 .clip(CircleShape)
-                .background(CentwiseColors.AccentMauve),
+                .background(accent.copy(alpha = 0.15f)),
             contentAlignment = Alignment.Center
         ) {
             Image(
                 painter = painterResource(id = currentAvatarResId),
                 contentDescription = "User Avatar",
-                modifier = Modifier.size(32.dp),
+                modifier = Modifier.size(36.dp),
                 contentScale = ContentScale.Fit
             )
         }
 
         Spacer(modifier = Modifier.width(14.dp))
 
-        Column {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = currentUserName,
-                style = CentwiseTypography.Headline,
-                color = textPrimary
+                style = CentwiseTypography.Headline.copy(fontSize = 17.sp, fontWeight = FontWeight.Bold),
+                color = textPrimary,
+                maxLines = 1
             )
-            Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = displayGreeting,
                 style = CentwiseTypography.Subheadline,
                 color = textSecondary
             )
+        }
+
+        // Small Edit Profile button/icon pill
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(10.dp))
+                .background(if (isDark) Color(0x1AFFFFFF) else Color(0x0A000000))
+                .padding(horizontal = 8.dp, vertical = 6.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit Profile",
+                    tint = accent,
+                    modifier = Modifier.size(14.dp)
+                )
+                Text(
+                    text = "Edit",
+                    style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
+                    color = accent
+                )
+            }
         }
     }
 }
@@ -89,5 +127,8 @@ fun GreetingCard(
 @Preview(showBackground = true)
 @Composable
 fun GreetingCardPreview() {
-    GreetingCard()
+    GreetingCard(
+        userName = "User",
+        greeting = "Good morning"
+    )
 }

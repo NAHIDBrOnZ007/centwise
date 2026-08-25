@@ -305,6 +305,7 @@ fun CentwiseApp(
                             HomeScreen(
                                 onSeeAllClick = { currentTab = CentwiseTab.TRANSACTIONS },
                                 onAddClick = { showAddSheet = true },
+                                onProfileClick = { currentTab = CentwiseTab.SETTINGS },
                                 viewModel = homeViewModel,
                                 isDark = effectiveDark
                             )
