@@ -59,6 +59,7 @@
 		B15E995DC8875B81F279B1E3 /* AccountListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D64D805B14E6F6378E79F39A /* AccountListScreen.swift */; };
 		B7318A8D1E2FC814C8C53FAA /* CentwiseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C19A91F83E483A915F8399 /* CentwiseButton.swift */; };
 		B9D38C9A5D196E6AB0CD7B72 /* SpendingSummaryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A935E180607CD6E648378147 /* SpendingSummaryCard.swift */; };
+		E1A2B3C4D5E6F7A8B9C0D1E2 /* TransactionTotalsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E6F7A8B9C0D1E2 /* TransactionTotalsCard.swift */; };
 		BA542459F4005191800236A8 /* TransactionDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB53EE9466ECDDC26FFB1D82 /* TransactionDetailSheet.swift */; };
 		BA6DC973E36C47023B40E9C1 /* SpendingTrendsChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E37DBBCA499D82B4A177E4E /* SpendingTrendsChart.swift */; };
 		BCF93E10F265C6678AEAE350 /* CurrencyPickerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 738FDB1740E2A56A4FCC880C /* CurrencyPickerScreen.swift */; };
@@ -125,6 +126,7 @@
 		A730993CAD45A79658799002 /* AnalyticsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsScreen.swift; sourceTree = "<group>"; };
 		A79E2F1D3C534A52CD7D2E4C /* CategoryBreakdownList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryBreakdownList.swift; sourceTree = "<group>"; };
 		A935E180607CD6E648378147 /* SpendingSummaryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpendingSummaryCard.swift; sourceTree = "<group>"; };
+		F1A2B3C4D5E6F7A8B9C0D1E2 /* TransactionTotalsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionTotalsCard.swift; sourceTree = "<group>"; };
 		A981D0174E481CF067570CED /* AccountDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailScreen.swift; sourceTree = "<group>"; };
 		B5A708C91A895F43184F73ED /* BudgetCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetCarousel.swift; sourceTree = "<group>"; };
 		B5D63DB9BDDF6474771ACF81 /* CentwiseTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CentwiseTypography.swift; sourceTree = "<group>"; };
@@ -421,6 +423,7 @@
 				BED4228F2BD7264D1154DD6D /* GreetingCard.swift */,
 				4C41D95E4FE1C5F4910D69EF /* LockScreenView.swift */,
 				A935E180607CD6E648378147 /* SpendingSummaryCard.swift */,
+				F1A2B3C4D5E6F7A8B9C0D1E2 /* TransactionTotalsCard.swift */,
 				279F60E744E5FC4CAB2745C9 /* StatPill.swift */,
 				BB53EE9466ECDDC26FFB1D82 /* TransactionDetailSheet.swift */,
 				F1E0F6C6D0965BD2C89108DD /* TransactionRow.swift */,
@@ -675,6 +678,7 @@
 				18C30157516EC25212768C12 /* SmartRulesRepository.swift in Sources */,
 				EFD21F318535F1EEE1C15A49 /* SmsTransactionProcessor.swift in Sources */,
 				B9D38C9A5D196E6AB0CD7B72 /* SpendingSummaryCard.swift in Sources */,
+				E1A2B3C4D5E6F7A8B9C0D1E2 /* TransactionTotalsCard.swift in Sources */,
 				BA6DC973E36C47023B40E9C1 /* SpendingTrendsChart.swift in Sources */,
 				6447E30BAFF17CA45088B786 /* StatPill.swift in Sources */,
 				7708874FFFD0B31F630B6A88 /* SubscriptionListScreen.swift in Sources */,

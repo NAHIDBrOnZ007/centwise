@@ -10,70 +10,74 @@ public struct CategoryBreakdownList: View {
     }
 
     public var body: some View {
-        CentwiseCard {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.md) {
-                Text("Categories")
-                    .font(CentwiseTypography.headline)
-                    .foregroundColor(.primary)
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Categories")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(.primary)
 
-                if items.isEmpty {
-                    Text("No categories to show")
-                        .font(CentwiseTypography.subheadline)
-                        .foregroundColor(.secondary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, CentwiseSpacing.md)
-                } else {
-                    ForEach(items) { item in
+            if items.isEmpty {
+                Text("No categories to show")
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 20)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                         categoryRow(item)
+
+                        if index < items.count - 1 {
+                            Divider()
+                                .padding(.leading, 32)
+                        }
                     }
                 }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 6)
+                .background(colorScheme == .dark ? Color(white: 0.12) : Color.white)
+                .cornerRadius(18)
+                .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.2 : 0.04), radius: 6, x: 0, y: 2)
             }
         }
     }
 
     private func categoryRow(_ item: CategorySpendSummary) -> some View {
-        VStack(alignment: .leading, spacing: CentwiseSpacing.xs) {
-            HStack(spacing: CentwiseSpacing.mdSm) {
-                Circle()
-                    .fill(item.category.color.opacity(0.15))
-                    .frame(width: 34, height: 34)
-                    .overlay(
-                        Image(systemName: item.category.icon)
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(item.category.color)
-                    )
+        HStack(spacing: 12) {
+            // Category Color Dot
+            Circle()
+                .fill(item.category.color)
+                .frame(width: 10, height: 10)
 
+            // Category Name & Tx Count
+            VStack(alignment: .leading, spacing: 2) {
                 Text(item.category.name)
-                    .font(CentwiseTypography.bodyMedium)
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
-
-                Spacer()
-
-                Text(CurrencyFormatter.shared.formatBDT(item.totalAmount, compact: true))
-                    .font(CentwiseTypography.amountSmall)
+                    .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(.primary)
 
-                Text(String(format: "%.0f%%", item.percentage * 100))
-                    .font(CentwiseTypography.caption1)
+                Text("\(FakeTransactionRepository.shared.transactions.filter { $0.category.id == item.category.id }.count) transactions")
+                    .font(.system(size: 12))
                     .foregroundColor(.secondary)
-                    .frame(width: 38, alignment: .trailing)
-                    .monospacedDigit()
             }
 
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(CentwiseColors.surfaceSecondary(for: colorScheme))
-                        .frame(height: 5)
+            Spacer()
 
-                    Capsule()
-                        .fill(item.category.color)
-                        .frame(width: geo.size.width * CGFloat(min(item.percentage, 1.0)), height: 5)
-                }
+            // Amount & Percentage
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(CurrencyFormatter.shared.formatBDT(item.totalAmount, showSign: false))
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundColor(.primary)
+
+                Text(String(format: "%.1f%%", item.percentage * 100))
+                    .font(.system(size: 12))
+                    .foregroundColor(.secondary)
             }
-            .frame(height: 5)
+
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(Color(white: 0.7))
+                .padding(.leading, 4)
         }
-        .padding(.vertical, CentwiseSpacing.xxs)
+        .padding(.vertical, 10)
     }
 }
+

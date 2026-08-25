@@ -4,9 +4,6 @@ public struct AccountCarousel: View {
     public let accounts: [FinancialAccount]
     public var onSelectAccount: ((FinancialAccount) -> Void)? = nil
 
-    @ObservedObject private var themeManager = ThemeManager.shared
-    @Environment(\.colorScheme) private var colorScheme
-
     public init(
         accounts: [FinancialAccount],
         onSelectAccount: ((FinancialAccount) -> Void)? = nil
@@ -17,75 +14,105 @@ public struct AccountCarousel: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: CentwiseSpacing.sm) {
-            HStack {
-                Text("Accounts & Wallets")
-                    .font(CentwiseTypography.headline)
-                    .foregroundColor(.primary)
-                Spacer()
-                Text("\(accounts.count) Active")
-                    .font(CentwiseTypography.caption1)
-                    .foregroundColor(.secondary)
-            }
+            Text("Accounts")
+                .font(CentwiseTypography.headline)
+                .foregroundColor(.primary)
 
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: CentwiseSpacing.mdSm) {
+                HStack(spacing: CentwiseSpacing.md) {
                     ForEach(accounts) { account in
-                        accountCard(account)
+                        AccountCarouselCard(account: account, onSelect: {
+                            onSelectAccount?(account)
+                        })
                     }
                 }
-                .padding(.vertical, CentwiseSpacing.xs)
+                .padding(.vertical, 2)
             }
         }
     }
+}
 
-    @ViewBuilder
-    private func accountCard(_ account: FinancialAccount) -> some View {
+private struct AccountCarouselCard: View {
+    let account: FinancialAccount
+    var onSelect: (() -> Void)? = nil
+    @State private var isAmountHidden = true
+    @Environment(\.colorScheme) private var colorScheme
+    @ObservedObject private var themeManager = ThemeManager.shared
+
+    private var accountTypeIcon: String {
+        switch account.type {
+        case .card: return "creditcard.fill"
+        case .mfs: return "iphone.gen3"
+        case .bank: return "building.columns.fill"
+        case .cash: return "banknote.fill"
+        }
+    }
+
+    private var accountTypeLabel: String {
+        switch account.type {
+        case .card: return "Credit"
+        case .mfs: return "Savings"
+        case .bank: return "Bank"
+        case .cash: return "Cash"
+        }
+    }
+
+    var body: some View {
         Button(action: {
-            themeManager.triggerHapticFeedback(.light)
-            onSelectAccount?(account)
+            onSelect?()
         }) {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.sm) {
-                // Top: Provider Icon & Badge
-                HStack {
-                    Circle()
-                        .fill(account.provider.brandColor.opacity(0.15))
-                        .frame(width: 32, height: 32)
-                        .overlay(
-                            Image(systemName: account.provider.icon)
-                                .font(.system(size: 13, weight: .bold))
-                                .foregroundColor(account.provider.brandColor)
-                        )
+            VStack(alignment: .leading, spacing: CentwiseSpacing.xs) {
+                HStack(spacing: CentwiseSpacing.xs) {
+                    Image(systemName: accountTypeIcon)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
 
-                    Spacer()
-
-                    if let lastFour = account.lastFourDigits {
-                        Text("••\(lastFour)")
-                            .font(CentwiseTypography.caption2)
-                            .foregroundColor(.secondary)
-                            .padding(.horizontal, CentwiseSpacing.xs)
-                            .padding(.vertical, 2)
-                            .background(CentwiseColors.surfaceSecondary(for: colorScheme))
-                            .cornerRadius(CentwiseSpacing.radiusSm)
-                    }
+                    Text(accountTypeLabel)
+                        .font(CentwiseTypography.caption2)
+                        .foregroundColor(.secondary)
                 }
 
-                Spacer(minLength: 4)
+                Text(account.name)
+                    .font(CentwiseTypography.footnote)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
 
-                // Bottom: Name & Balance
-                VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
-                    Text(account.name)
-                        .font(CentwiseTypography.footnote)
+                if let lastFour = account.lastFourDigits, !lastFour.isEmpty {
+                    Text("••\(lastFour)")
+                        .font(CentwiseTypography.caption2)
                         .foregroundColor(.secondary)
+                }
+
+                Spacer(minLength: 8)
+
+                HStack(spacing: 6) {
+                    Text(isAmountHidden
+                        ? "••••••"
+                        : CurrencyFormatter.shared.formatBDT(account.currentBalance, showSign: false, compact: true))
+                        .font(CentwiseTypography.amountSmall)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
                         .lineLimit(1)
 
-                    Text(CurrencyFormatter.shared.formatBDT(account.currentBalance, showSign: false, compact: true))
-                        .font(CentwiseTypography.amountMedium)
-                        .foregroundColor(.primary)
+                    Button {
+                        themeManager.triggerHapticFeedback(.light)
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            isAmountHidden.toggle()
+                        }
+                    } label: {
+                        Image(systemName: isAmountHidden ? "eye.slash.fill" : "eye.fill")
+                            .font(.system(size: 11))
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(.plain)
                 }
             }
-            .frame(width: 148, height: 112)
-            .padding(CentwiseSpacing.mdSm)
-            .glassCard(cornerRadius: CentwiseSpacing.radiusMd)
+            .padding(CentwiseSpacing.md)
+            .frame(width: 156, height: 130)
+            .background(colorScheme == .dark ? Color(white: 0.12) : Color(white: 0.96))
+            .cornerRadius(16)
+            .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.2 : 0.04), radius: 6, x: 0, y: 2)
         }
         .buttonStyle(.plain)
     }

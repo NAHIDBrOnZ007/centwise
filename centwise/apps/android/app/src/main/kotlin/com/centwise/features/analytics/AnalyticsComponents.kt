@@ -37,8 +37,6 @@ import kotlin.math.min
 data class CategorySlice(val name: String, val value: Double, val color: Color)
 data class TrendPoint(val label: String, val value: Double)
 
-// MARK: - Summary Card
-
 @Composable
 fun AnalyticsSummaryCard(
     spent: Double,
@@ -48,14 +46,13 @@ fun AnalyticsSummaryCard(
     periodDays: Int = 30,
     isDark: Boolean = isSystemInDarkTheme()
 ) {
-    val accent = AccentOptions.byName(AppearancePrefs.accentName).color
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
     val dividerColor = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000)
 
+    val net = income - spent
     val dailyAverage = spent / maxOf(periodDays, 1)
-    val savingsRate = if (income > 0) maxOf((income - spent) / income, 0.0) else 0.0
 
     Column(
         modifier = Modifier
@@ -63,24 +60,22 @@ fun AnalyticsSummaryCard(
             .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
             .background(cardBg)
             .padding(18.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Text("SPENT THIS PERIOD", style = CentwiseTypography.Caption, color = textSecondary)
+        // Spent this period + big amount
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                "SPENT THIS PERIOD",
+                style = CentwiseTypography.Caption,
+                fontWeight = FontWeight.Bold,
+                color = textSecondary,
+                fontSize = 11.sp
+            )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Bottom
-        ) {
             Text(
                 text = CurrencyFormatter.formatBDT(spent),
-                style = CentwiseTypography.HeroAmount,
-                color = textPrimary,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = "${(savingsRate * 100).toInt()}% saved",
-                style = CentwiseTypography.Caption,
-                color = if (income >= spent) CentwiseColors.IncomeGreen else CentwiseColors.ExpenseRed
+                style = CentwiseTypography.HeroAmount.copy(fontSize = 32.sp),
+                color = textPrimary
             )
         }
 
@@ -91,31 +86,49 @@ fun AnalyticsSummaryCard(
                 .background(dividerColor)
         )
 
-        Row(modifier = Modifier.fillMaxWidth()) {
-            SummaryStat(
-                title = "TRANSACTIONS",
-                value = "$transactionCount",
-                modifier = Modifier.weight(1f),
-                textPrimary = textPrimary,
-                textSecondary = textSecondary,
-                accent = accent
-            )
-            SummaryStat(
-                title = "DAILY AVG",
-                value = CurrencyFormatter.formatBDT(dailyAverage, compact = true),
-                modifier = Modifier.weight(1f),
-                textPrimary = textPrimary,
-                textSecondary = textSecondary,
-                accent = accent
-            )
-            SummaryStat(
-                title = "TOP CATEGORY",
-                value = topCategoryName ?: "—",
-                modifier = Modifier.weight(1.2f),
-                textPrimary = textPrimary,
-                textSecondary = textSecondary,
-                accent = accent
-            )
+        // 3 Columns: Income, Expenses, Net
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("INCOME", style = CentwiseTypography.Caption, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = textSecondary)
+                Text(CurrencyFormatter.formatBDT(income, compact = true), style = CentwiseTypography.Headline, fontWeight = FontWeight.Bold, color = CentwiseColors.IncomeGreen, fontSize = 15.sp)
+            }
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("EXPENSES", style = CentwiseTypography.Caption, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = textSecondary)
+                Text(CurrencyFormatter.formatBDT(spent, compact = true), style = CentwiseTypography.Headline, fontWeight = FontWeight.Bold, color = CentwiseColors.ExpenseRed, fontSize = 15.sp)
+            }
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("NET", style = CentwiseTypography.Caption, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = textSecondary)
+                Text("${if (net >= 0) "+" else ""}${CurrencyFormatter.formatBDT(net, compact = true)}", style = CentwiseTypography.Headline, fontWeight = FontWeight.Bold, color = if (net >= 0) CentwiseColors.IncomeGreen else CentwiseColors.ExpenseRed, fontSize = 15.sp)
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(dividerColor)
+        )
+
+        // 3 Columns: Transactions, Daily Avg, Top Category
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("TRANSACTIONS", style = CentwiseTypography.Caption, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = textSecondary)
+                Text("$transactionCount", style = CentwiseTypography.Headline, fontWeight = FontWeight.SemiBold, color = textPrimary, fontSize = 14.sp)
+            }
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("DAILY AVG", style = CentwiseTypography.Caption, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = textSecondary)
+                Text(CurrencyFormatter.formatBDT(dailyAverage, compact = true), style = CentwiseTypography.Headline, fontWeight = FontWeight.SemiBold, color = textPrimary, fontSize = 14.sp)
+            }
+            Column(modifier = Modifier.weight(1.1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text("TOP CATEGORY", style = CentwiseTypography.Caption, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = textSecondary)
+                Text(topCategoryName ?: "Others", style = CentwiseTypography.Headline, fontWeight = FontWeight.SemiBold, color = textPrimary, fontSize = 14.sp, maxLines = 1)
+            }
         }
     }
 }

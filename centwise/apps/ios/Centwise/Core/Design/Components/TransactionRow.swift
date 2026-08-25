@@ -2,17 +2,29 @@ import SwiftUI
 
 public struct TransactionRow: View {
     public let transaction: CentwiseTransaction
+    public var showChevron: Bool = true
+    public var showMenu: Bool = false
     public var onTap: (() -> Void)? = nil
+    public var onEdit: (() -> Void)? = nil
+    public var onDelete: (() -> Void)? = nil
 
     @ObservedObject private var themeManager = ThemeManager.shared
     @Environment(\.colorScheme) private var colorScheme
 
     public init(
         transaction: CentwiseTransaction,
-        onTap: (() -> Void)? = nil
+        showChevron: Bool = true,
+        showMenu: Bool = false,
+        onTap: (() -> Void)? = nil,
+        onEdit: (() -> Void)? = nil,
+        onDelete: (() -> Void)? = nil
     ) {
         self.transaction = transaction
+        self.showChevron = showChevron
+        self.showMenu = showMenu
         self.onTap = onTap
+        self.onEdit = onEdit
+        self.onDelete = onDelete
     }
 
     public var body: some View {
@@ -20,65 +32,78 @@ public struct TransactionRow: View {
             themeManager.triggerHapticFeedback(.light)
             onTap?()
         }) {
-            HStack(spacing: CentwiseSpacing.mdSm) {
-                // Category / Provider Icon
-                Circle()
-                    .fill(transaction.category.color.opacity(0.15))
-                    .frame(width: 42, height: 42)
+            HStack(spacing: 12) {
+                // Category Icon with Rounded Square
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(colorScheme == .dark ? Color(white: 0.18) : Color(white: 0.92))
+                    .frame(width: 44, height: 44)
                     .overlay(
                         Image(systemName: transaction.category.icon)
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(transaction.category.color)
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundColor(colorScheme == .dark ? .white : Color(white: 0.35))
                     )
 
                 // Title & Subtitle
-                VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
+                VStack(alignment: .leading, spacing: 3) {
                     Text(transaction.title)
-                        .font(CentwiseTypography.bodyMedium)
+                        .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.primary)
                         .lineLimit(1)
 
-                    HStack(spacing: CentwiseSpacing.xs) {
-                        // Account Badge
-                        Text(transaction.accountName)
-                            .font(CentwiseTypography.caption2)
+                    HStack(spacing: 4) {
+                        Text(transaction.category.name)
+                            .font(.system(size: 13))
                             .foregroundColor(.secondary)
+                            .lineLimit(1)
 
-                        Text("•")
-                            .font(CentwiseTypography.caption2)
+                        Text(transaction.date.formatted(date: .abbreviated, time: .omitted))
+                            .font(.system(size: 13))
                             .foregroundColor(.secondary)
-
-                        Text(DateFormatterHelper.shared.formatRelativeOrDate(transaction.date))
-                            .font(CentwiseTypography.caption2)
-                            .foregroundColor(.secondary)
+                            .lineLimit(1)
                     }
+                    .lineLimit(1)
                 }
 
                 Spacer()
 
                 // Amount
-                VStack(alignment: .trailing, spacing: CentwiseSpacing.xxs) {
-                    AmountText(
-                        amount: transaction.amount,
-                        type: transaction.type,
-                        font: CentwiseTypography.amountMedium,
-                        showSign: true
-                    )
+                Text(formatSignedAmount())
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundColor(transaction.type == .income ? CentwiseColors.incomeGreen : CentwiseColors.expenseRed)
 
-                    if transaction.isAutoTracked {
-                        HStack(spacing: 2) {
-                            Image(systemName: "bolt.fill")
-                                .font(.system(size: 9))
-                            Text("SMS")
-                                .font(CentwiseTypography.caption2)
+                if showChevron {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(Color(white: 0.7))
+                        .padding(.leading, 2)
+                } else if showMenu {
+                    Menu {
+                        if let onTap {
+                            Button("View Details", action: onTap)
                         }
-                        .foregroundColor(themeManager.accentColor)
+                        if let onEdit {
+                            Button("Edit", action: onEdit)
+                        }
+                        if let onDelete {
+                            Button("Delete", role: .destructive, action: onDelete)
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .font(.system(size: 18))
+                            .foregroundColor(.secondary)
                     }
+                    .buttonStyle(.plain)
                 }
             }
-            .padding(.vertical, CentwiseSpacing.xs)
+            .padding(.vertical, 6)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
+
+    private func formatSignedAmount() -> String {
+        let prefix = transaction.type == .expense ? "-" : "+"
+        return "\(prefix)\(CurrencyFormatter.shared.formatBDT(transaction.amount, showSign: false))"
+    }
 }
+

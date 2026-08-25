@@ -32,6 +32,8 @@ import com.centwise.data.models.TransactionType
 fun TransactionRow(
     transaction: TransactionItem,
     onClick: () -> Unit = {},
+    showBackground: Boolean = false,
+    showChevron: Boolean = true,
     modifier: Modifier = Modifier,
     isDark: Boolean = isSystemInDarkTheme()
 ) {
@@ -51,27 +53,36 @@ fun TransactionRow(
     }
     val providerColor = CentwiseColors.providerColor(transaction.paymentMethod)
 
-    Row(
-        modifier = modifier
+    val rowModifier = if (showBackground) {
+        modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusMedium))
+            .clip(RoundedCornerShape(16.dp))
             .background(cardBg)
             .clickable { onClick() }
-            .padding(14.dp),
+            .padding(14.dp)
+    } else {
+        modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 8.dp)
+    }
+
+    Row(
+        modifier = rowModifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Icon Badge
+        // Icon Badge (Rounded square style)
         Box(
             modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(providerColor.copy(alpha = 0.15f)),
+                .size(42.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(if (isDark) Color(0xFF2C2C2E) else Color(0xFFEBEBEB)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = typeIcon,
                 contentDescription = null,
-                tint = providerColor,
+                tint = if (isDark) Color.White else Color(0xFF555555),
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -91,12 +102,15 @@ fun TransactionRow(
                 Text(
                     text = transaction.category,
                     style = CentwiseTypography.Caption,
-                    color = textSecondary
+                    color = textSecondary,
+                    maxLines = 1
                 )
+                val dateFormat = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.US)
                 Text(
-                    text = " • ${transaction.paymentMethod}",
+                    text = " • ${dateFormat.format(transaction.date)}",
                     style = CentwiseTypography.Caption,
-                    color = providerColor
+                    color = textSecondary,
+                    maxLines = 1
                 )
             }
         }
@@ -105,8 +119,19 @@ fun TransactionRow(
         Text(
             text = "$amountPrefix${CurrencyFormatter.formatBDT(transaction.amount, showSign = false)}",
             style = CentwiseTypography.AmountMedium,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
             color = amountColor
         )
+
+        if (showChevron) {
+            Spacer(modifier = Modifier.width(6.dp))
+            Icon(
+                imageVector = androidx.compose.material.icons.Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = textSecondary.copy(alpha = 0.5f),
+                modifier = Modifier.size(16.dp)
+            )
+        }
     }
 }
 

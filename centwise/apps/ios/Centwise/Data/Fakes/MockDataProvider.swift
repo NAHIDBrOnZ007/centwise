@@ -110,95 +110,160 @@ public final class MockDataProvider {
         )
     ]
 
-    public var transactions: [CentwiseTransaction] = [
-        CentwiseTransaction(
-            title: "Foodpanda - Sultans Dine",
-            amount: 850.0,
-            type: .expense,
-            category: .food,
-            date: Date(),
-            accountId: "bkash-1",
-            accountName: "bKash Personal",
-            provider: .bkash,
-            rawSmsBody: "Payment Tk 850.00 to Foodpanda Bangladesh successful. Fee Tk 0.00. Balance Tk 14,250.00. TrxID 9K8L7M6N on 22/08/2026 13:45",
-            transactionReference: "9K8L7M6N",
-            balanceAfter: 14250.0,
-            notes: "Kacchi Platter lunch"
-        ),
-        CentwiseTransaction(
-            title: "Pathao Ride - Gulshan 2",
-            amount: 280.0,
-            type: .expense,
-            category: .transport,
-            date: Calendar.current.date(byAdding: .hour, value: -3, to: Date()) ?? Date(),
-            accountId: "nagad-1",
-            accountName: "Nagad Wallet",
-            provider: .nagad,
-            rawSmsBody: "You paid Tk 280.00 to Pathao Rides. TxnID: NAG984128. Current Balance: Tk 5,320.00",
-            transactionReference: "NAG984128",
-            balanceAfter: 5320.0
-        ),
-        CentwiseTransaction(
-            title: "Unimart Gulshan Grocery",
-            amount: 3450.0,
-            type: .expense,
-            category: .shopping,
-            date: Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date(),
-            accountId: "city-1",
-            accountName: "City Bank Amex Card",
-            provider: .cityBank,
-            rawSmsBody: "Your City Bank AMEX Card ending 1008 used for BDT 3,450.00 at UNIMART DHAKA on 21-AUG-26. Avail Limit BDT 187,200.00",
-            transactionReference: "CBX77123"
-        ),
-        CentwiseTransaction(
-            title: "Salary Credit - Tech Corp",
-            amount: 85000.0,
-            type: .income,
-            category: .salary,
-            date: Calendar.current.date(byAdding: .day, value: -2, to: Date()) ?? Date(),
-            accountId: "brac-1",
-            accountName: "BRAC Bank Salary",
-            provider: .bracBank,
-            rawSmsBody: "Your A/C *4190 credited by BDT 85,000.00 on 20-AUG-26 by TECH CORP SALARY. Total Balance BDT 98,400.00. Ref: SAL-AUG-26",
-            transactionReference: "SAL-AUG-26",
-            balanceAfter: 98400.0
-        ),
-        CentwiseTransaction(
-            title: "Grameenphone Flexiload",
-            amount: 300.0,
-            type: .expense,
-            category: .recharge,
-            date: Calendar.current.date(byAdding: .day, value: -3, to: Date()) ?? Date(),
-            accountId: "bkash-1",
-            accountName: "bKash Personal",
-            provider: .bkash,
-            rawSmsBody: "Mobile Recharge Tk 300.00 to 01712345678 is successful. Fee Tk 0.00. Balance Tk 15,100.00. TrxID 8A7B6C5D",
-            transactionReference: "8A7B6C5D",
-            balanceAfter: 15100.0
-        ),
-        CentwiseTransaction(
-            title: "Daraz Online Shopping",
-            amount: 2150.0,
-            type: .expense,
-            category: .shopping,
-            date: Calendar.current.date(byAdding: .day, value: -4, to: Date()) ?? Date(),
-            accountId: "bkash-1",
-            accountName: "bKash Personal",
-            provider: .bkash,
-            rawSmsBody: "Payment Tk 2,150.00 to Daraz Bangladesh successful. TrxID 7F6E5D4C",
-            transactionReference: "7F6E5D4C"
-        ),
-        CentwiseTransaction(
-            title: "Send Money to Mom",
-            amount: 5000.0,
-            type: .transfer,
-            category: .transfer,
-            date: Calendar.current.date(byAdding: .day, value: -5, to: Date()) ?? Date(),
-            accountId: "bkash-1",
-            accountName: "bKash Personal",
-            provider: .bkash,
-            rawSmsBody: "Send Money Tk 5,000.00 to 01811223344 successful. Fee Tk 5.00. TrxID 6P5O4N3M",
-            transactionReference: "6P5O4N3M"
-        )
-    ]
+    public var transactions: [CentwiseTransaction] = MockDataProvider.generateOneYearTransactions()
+
+    public static func generateOneYearTransactions() -> [CentwiseTransaction] {
+        var list: [CentwiseTransaction] = []
+        let calendar = Calendar.current
+        let today = Date()
+
+        let expenseTemplates: [(title: String, minAmt: Double, maxAmt: Double, cat: TransactionCategory, provider: FinancialProvider, accId: String, accName: String)] = [
+            ("Foodpanda - Sultans Dine", 650, 1400, .food, .bkash, "bkash-1", "bKash Personal"),
+            ("Star Kabab Dinner", 450, 950, .food, .cash, "cash-1", "Pocket Cash"),
+            ("North End Coffee", 280, 560, .food, .cityBank, "city-1", "City Bank Amex Card"),
+            ("Pathao Ride", 120, 380, .transport, .nagad, "nagad-1", "Nagad Wallet"),
+            ("Uber Premier Ride", 350, 850, .transport, .cityBank, "city-1", "City Bank Amex Card"),
+            ("Unimart Grocery", 2200, 6500, .groceries, .cityBank, "city-1", "City Bank Amex Card"),
+            ("Agora Superstore", 1200, 3800, .groceries, .bracBank, "brac-1", "BRAC Bank Salary"),
+            ("Grameenphone Flexiload", 200, 500, .recharge, .bkash, "bkash-1", "bKash Personal"),
+            ("Daraz Online Shopping", 850, 4200, .shopping, .bkash, "bkash-1", "bKash Personal"),
+            ("Aarong Lifestyle", 1800, 5400, .shopping, .cityBank, "city-1", "City Bank Amex Card"),
+            ("Pharmacy - Lazz Pharma", 350, 1850, .health, .cash, "cash-1", "Pocket Cash"),
+            ("Cineplex Movie Tickets", 900, 1800, .entertainment, .bkash, "bkash-1", "bKash Personal")
+        ]
+
+        // 1. Generate 12 months of salary on the 1st of each month
+        for monthOffset in 0..<12 {
+            if let monthDate = calendar.date(byAdding: .month, value: -monthOffset, to: today) {
+                var components = calendar.dateComponents([.year, .month], from: monthDate)
+                components.day = 1
+                components.hour = 10
+                components.minute = 30
+                if let salaryDate = calendar.date(from: components), salaryDate <= today {
+                    list.append(
+                        CentwiseTransaction(
+                            title: "Salary Credit - Tech Corp",
+                            amount: 85000.0,
+                            type: .income,
+                            category: .salary,
+                            date: salaryDate,
+                            accountId: "brac-1",
+                            accountName: "BRAC Bank Salary",
+                            provider: .bracBank,
+                            rawSmsBody: "Your A/C *4190 credited by BDT 85,000.00 on \(salaryDate.formatted(date: .abbreviated, time: .omitted)) by TECH CORP SALARY. Ref: SAL-\(monthOffset)",
+                            transactionReference: "SAL-\(1000 + monthOffset)",
+                            balanceAfter: 98400.0
+                        )
+                    )
+
+                    // Add Monthly Utilities / Rent
+                    if let billDate = calendar.date(byAdding: .day, value: 5, to: salaryDate), billDate <= today {
+                        list.append(
+                            CentwiseTransaction(
+                                title: "Apartment Rent & Service",
+                                amount: 28000.0,
+                                type: .expense,
+                                category: .bills,
+                                date: billDate,
+                                accountId: "brac-1",
+                                accountName: "BRAC Bank Salary",
+                                provider: .bracBank,
+                                rawSmsBody: "Your A/C *4190 debited BDT 28,000.00 to House Rent on \(billDate.formatted(date: .abbreviated, time: .omitted))",
+                                transactionReference: "RENT-\(monthOffset)"
+                            )
+                        )
+                    }
+
+                    if let elecDate = calendar.date(byAdding: .day, value: 12, to: salaryDate), elecDate <= today {
+                        list.append(
+                            CentwiseTransaction(
+                                title: "DESCO Electricity Bill",
+                                amount: Double(Int.random(in: 2800...4500)),
+                                type: .expense,
+                                category: .bills,
+                                date: elecDate,
+                                accountId: "bkash-1",
+                                accountName: "bKash Personal",
+                                provider: .bkash,
+                                rawSmsBody: "DESCO bill payment successful. Fee Tk 0.00",
+                                transactionReference: "DESCO-\(monthOffset)"
+                            )
+                        )
+                    }
+
+                    if let netDate = calendar.date(byAdding: .day, value: 15, to: salaryDate), netDate <= today {
+                        list.append(
+                            CentwiseTransaction(
+                                title: "Dot Internet 50Mbps",
+                                amount: 1500.0,
+                                type: .expense,
+                                category: .bills,
+                                date: netDate,
+                                accountId: "bkash-1",
+                                accountName: "bKash Personal",
+                                provider: .bkash,
+                                rawSmsBody: "Payment of Tk 1,500.00 to Dot Internet successful."
+                            )
+                        )
+                    }
+                }
+            }
+        }
+
+        // 2. Generate daily/weekly random realistic transactions across the entire past 365 days
+        for dayOffset in 0..<365 {
+            // Generate 1-3 transactions per day randomly
+            let txCount = (dayOffset % 3 == 0) ? 2 : (dayOffset % 5 == 0 ? 3 : 1)
+            guard let baseDate = calendar.date(byAdding: .day, value: -dayOffset, to: today) else { continue }
+
+            for i in 0..<txCount {
+                let templateIndex = (dayOffset * 7 + i * 3) % expenseTemplates.count
+                let template = expenseTemplates[templateIndex]
+                let amount = Double(Int.random(in: Int(template.minAmt)...Int(template.maxAmt)))
+
+                let hour = (8 + (dayOffset * 3 + i * 5) % 14)
+                let minute = (i * 17 + dayOffset * 11) % 60
+                var comps = calendar.dateComponents([.year, .month, .day], from: baseDate)
+                comps.hour = hour
+                comps.minute = minute
+                let txDate = calendar.date(from: comps) ?? baseDate
+
+                list.append(
+                    CentwiseTransaction(
+                        title: template.title,
+                        amount: amount,
+                        type: .expense,
+                        category: template.cat,
+                        date: txDate,
+                        accountId: template.accId,
+                        accountName: template.accName,
+                        provider: template.provider,
+                        rawSmsBody: "Auto-parsed SMS notification for \(template.title) Tk \(amount)",
+                        transactionReference: "TX\(dayOffset)\(i)\(Int.random(in: 100...999))"
+                    )
+                )
+            }
+
+            // Occasional Transfer or Freelance / Gift Income (every 14-20 days)
+            if dayOffset % 18 == 0 && dayOffset > 0 {
+                let freelanceDate = calendar.date(byAdding: .hour, value: 14, to: baseDate) ?? baseDate
+                list.append(
+                    CentwiseTransaction(
+                        title: "Freelance Project Payment",
+                        amount: Double(Int.random(in: 15000...35000)),
+                        type: .income,
+                        category: .salary,
+                        date: freelanceDate,
+                        accountId: "city-1",
+                        accountName: "City Bank Amex Card",
+                        provider: .cityBank,
+                        rawSmsBody: "Credit inward remittance received. Ref: UPWORK-REM"
+                    )
+                )
+            }
+        }
+
+        // Sort descending (newest first)
+        return list.sorted { $0.date > $1.date }
+    }
 }

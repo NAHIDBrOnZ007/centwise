@@ -25,4 +25,7 @@ class HomeViewModel(
 
     val monthlySaved: StateFlow<Double> = repository.totalNet
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+
+    val accounts: StateFlow<List<com.centwise.data.models.AccountItem>> = repository.accounts
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 }

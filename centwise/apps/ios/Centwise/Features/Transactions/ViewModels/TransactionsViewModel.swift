@@ -9,14 +9,32 @@ public enum TransactionSortOrder: String, CaseIterable {
     case amountLow = "Amount (Low)"
 }
 
+public enum DatePeriodFilter: String, CaseIterable {
+    case thisMonth = "This Month"
+    case lastMonth = "Last Month"
+    case allTime = "All Time"
+
+    public var icon: String {
+        switch self {
+        case .thisMonth, .lastMonth: return "calendar"
+        case .allTime: return "infinity"
+        }
+    }
+}
+
 public final class TransactionsViewModel: ObservableObject {
     @Published public var allTransactions: [CentwiseTransaction] = []
     @Published public var filteredTransactions: [CentwiseTransaction] = []
     @Published public var searchQuery: String = ""
+    @Published public var selectedPeriod: DatePeriodFilter = .allTime
     @Published public var selectedTypeFilter: TransactionType? = nil
     @Published public var selectedCategoryFilter: String? = nil
     @Published public var selectedProviderFilter: FinancialProvider? = nil
     @Published public var sortOrder: TransactionSortOrder = .newestFirst
+
+    @Published public var totalIncome: Double = 0.0
+    @Published public var totalExpense: Double = 0.0
+    @Published public var totalNet: Double = 0.0
 
     private var cancellables = Set<AnyCancellable>()
     private let repository: FakeTransactionRepository
@@ -36,7 +54,7 @@ public final class TransactionsViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        Publishers.CombineLatest4($searchQuery, $selectedTypeFilter, $selectedCategoryFilter, $selectedProviderFilter)
+        Publishers.CombineLatest4($searchQuery, $selectedTypeFilter, $selectedCategoryFilter, $selectedPeriod)
             .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
             .sink { [weak self] _ in
                 self?.applyFilters()
@@ -46,6 +64,23 @@ public final class TransactionsViewModel: ObservableObject {
 
     public func applyFilters() {
         var result = allTransactions
+        let calendar = Calendar.current
+        let today = Date()
+
+        // Date period filter
+        switch selectedPeriod {
+        case .thisMonth:
+            if let start = calendar.date(from: calendar.dateComponents([.year, .month], from: today)) {
+                result = result.filter { $0.date >= start }
+            }
+        case .lastMonth:
+            if let thisMonthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: today)),
+               let lastMonthStart = calendar.date(byAdding: .month, value: -1, to: thisMonthStart) {
+                result = result.filter { $0.date >= lastMonthStart && $0.date < thisMonthStart }
+            }
+        case .allTime:
+            break
+        }
 
         if !searchQuery.trimmingCharacters(in: .whitespaces).isEmpty {
             let q = searchQuery.lowercased()
@@ -81,23 +116,43 @@ public final class TransactionsViewModel: ObservableObject {
         }
 
         self.filteredTransactions = result
+
+        // Calculate Totals
+        var income = 0.0
+        var expense = 0.0
+        for tx in result {
+            if tx.type == .income {
+                income += tx.amount
+            } else if tx.type == .expense {
+                expense += tx.amount
+            }
+        }
+        self.totalIncome = income
+        self.totalExpense = expense
+        self.totalNet = income - expense
     }
 
     public func deleteTransaction(id: String) {
         repository.deleteTransaction(id: id)
     }
 
-    /// Groups transactions by date for Section headers
-    public var groupedTransactions: [(String, [CentwiseTransaction])] {
-        let calendar = Calendar.current
-        let grouped = Dictionary(grouping: filteredTransactions) { tx in
-            calendar.startOfDay(for: tx.date)
+    /// Groups transactions by Month (e.g. "AUGUST 2026")
+    public var groupedByMonth: [(key: String, items: [CentwiseTransaction])] {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+
+        var groups: [String: [CentwiseTransaction]] = [:]
+        var order: [String] = []
+
+        for item in filteredTransactions {
+            let monthKey = formatter.string(from: item.date).uppercased()
+            if groups[monthKey] == nil {
+                groups[monthKey] = []
+                order.append(monthKey)
+            }
+            groups[monthKey]?.append(item)
         }
 
-        let sortedKeys = grouped.keys.sorted(by: >)
-        return sortedKeys.map { date in
-            let title = DateFormatterHelper.shared.sectionHeaderTitle(for: date)
-            return (title, grouped[date] ?? [])
-        }
+        return order.map { (key: $0, items: groups[$0] ?? []) }
     }
 }

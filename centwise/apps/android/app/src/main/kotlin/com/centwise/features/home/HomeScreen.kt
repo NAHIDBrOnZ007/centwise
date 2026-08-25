@@ -90,7 +90,18 @@ fun HomeScreen(
                 )
             }
 
-            // 3. Recent Transactions Header
+            // 3. Accounts Section Carousel
+            val accounts by viewModel.accounts.collectAsState()
+            if (accounts.isNotEmpty()) {
+                item {
+                    com.centwise.core.design.components.AccountCarousel(
+                        accounts = accounts,
+                        isDark = isDark
+                    )
+                }
+            }
+
+            // 4. Recent Transactions Header
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -125,6 +136,8 @@ fun HomeScreen(
                     TransactionRow(
                         transaction = tx,
                         onClick = { selectedTransaction = tx },
+                        showBackground = true,
+                        showChevron = false,
                         isDark = isDark
                     )
                 }

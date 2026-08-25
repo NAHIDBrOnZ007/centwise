@@ -8,6 +8,8 @@ public struct HomeScreen: View {
     @ObservedObject private var profileManager = ProfileManager.shared
     @Environment(\.colorScheme) private var colorScheme
     @State private var showAddTransaction = false
+    @State private var selectedTransaction: CentwiseTransaction? = nil
+    @State private var editingTransaction: CentwiseTransaction? = nil
 
     public init(onSeeAllTransactions: (() -> Void)? = nil) {
         self.onSeeAllTransactions = onSeeAllTransactions
@@ -16,7 +18,7 @@ public struct HomeScreen: View {
     public var body: some View {
         ZStack(alignment: .bottomTrailing) {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 18) {
                     // 1. User Greeting Card
                     GreetingCard()
 
@@ -70,7 +72,12 @@ public struct HomeScreen: View {
                         monthlySaved: viewModel.monthlyNet
                     )
 
-                    // 3. Recent Transactions Header
+                    // 3. Accounts Section
+                    if !viewModel.accounts.isEmpty {
+                        AccountCarousel(accounts: viewModel.accounts)
+                    }
+
+                    // 4. Recent Transactions Header
                     HStack {
                         Text("Recent Transactions")
                             .font(.system(size: 18, weight: .bold))
@@ -83,28 +90,46 @@ public struct HomeScreen: View {
                             onSeeAllTransactions?()
                         }
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(Color(red: 0.71, green: 0.36, blue: 0.46)) // Mauve Accent
+                        .foregroundColor(themeManager.accentColor)
                     }
-                    .padding(.top, 8)
+                    .padding(.top, 4)
 
-                    // 4. Empty State
+                    // 5. Recent Transactions List
                     if viewModel.recentTransactions.isEmpty {
                         emptyStateView
                     } else {
-                        VStack(spacing: 8) {
+                        VStack(spacing: 10) {
                             ForEach(viewModel.recentTransactions) { tx in
-                                TransactionRow(transaction: tx)
+                                TransactionRow(
+                                    transaction: tx,
+                                    showChevron: false,
+                                    showMenu: true,
+                                    onTap: {
+                                        selectedTransaction = tx
+                                    },
+                                    onEdit: {
+                                        editingTransaction = tx
+                                    },
+                                    onDelete: {
+                                        FakeTransactionRepository.shared.deleteTransaction(id: tx.id)
+                                    }
+                                )
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 6)
+                                .background(colorScheme == .dark ? Color(white: 0.12) : Color.white)
+                                .cornerRadius(16)
+                                .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.2 : 0.04), radius: 4, x: 0, y: 1)
                             }
                         }
                     }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
-                .padding(.bottom, 100)
+                .padding(.bottom, 120)
             }
-            .background(colorScheme == .dark ? Color.black : Color.white)
+            .background(colorScheme == .dark ? Color.black : Color(red: 0.98, green: 0.98, blue: 0.99))
 
-            // Floating Blue (+) Button (Screenshot 2)
+            // Floating Blue (+) Button
             Button(action: {
                 themeManager.triggerHapticFeedback(.medium)
                 showAddTransaction = true
@@ -123,6 +148,22 @@ public struct HomeScreen: View {
         .navigationTitle("Centwise")
         .sheet(isPresented: $showAddTransaction) {
             AddEditTransactionView {
+                viewModel.loadHome()
+            }
+        }
+        .sheet(item: $selectedTransaction) { tx in
+            TransactionDetailSheet(
+                transaction: tx,
+                onEdit: {
+                    editingTransaction = tx
+                },
+                onDelete: {
+                    FakeTransactionRepository.shared.deleteTransaction(id: tx.id)
+                }
+            )
+        }
+        .sheet(item: $editingTransaction) { tx in
+            AddEditTransactionView(transactionToEdit: tx) {
                 viewModel.loadHome()
             }
         }
@@ -149,3 +190,4 @@ public struct HomeScreen: View {
         .padding(.vertical, 30)
     }
 }
+

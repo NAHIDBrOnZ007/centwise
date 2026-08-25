@@ -24,84 +24,113 @@ public struct AnalyticsSummaryCard: View {
         self.periodDays = max(periodDays, 1)
     }
 
+    private var net: Double {
+        income - spent
+    }
+
     private var dailyAverage: Double {
         spent / Double(periodDays)
     }
 
-    private var savingsRate: Double {
-        guard income > 0 else { return 0 }
-        return max((income - spent) / income, 0)
-    }
-
     public var body: some View {
-        CentwiseCard {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.md) {
+        VStack(alignment: .leading, spacing: 14) {
+            // Header: Spent This Period & Big Amount
+            VStack(alignment: .leading, spacing: 6) {
                 Text("SPENT THIS PERIOD")
-                    .font(CentwiseTypography.caption2)
-                    .tracking(0.8)
+                    .font(.system(size: 11, weight: .bold))
+                    .tracking(0.6)
                     .foregroundColor(.secondary)
 
-                HStack(alignment: .firstTextBaseline, spacing: CentwiseSpacing.sm) {
-                    Text(CurrencyFormatter.shared.formatBDT(spent))
-                        .font(CentwiseTypography.amountHero)
-                        .foregroundColor(.primary)
+                Text(CurrencyFormatter.shared.formatBDT(spent, showSign: false))
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .foregroundColor(.primary)
+            }
 
-                    Spacer()
+            Divider()
 
-                    Label(
-                        String(format: "%.0f%% saved", savingsRate * 100),
-                        systemImage: income >= spent ? "arrow.down.circle.fill" : "exclamationmark.circle.fill"
-                    )
-                    .font(CentwiseTypography.caption1)
-                    .foregroundColor(income >= spent ? CentwiseColors.incomeGreen : CentwiseColors.expenseRed)
-                }
+            // 3-Column Row 1: Income, Expenses, Net
+            HStack(spacing: 0) {
+                metricColumn(
+                    title: "INCOME",
+                    value: CurrencyFormatter.shared.formatBDT(income, showSign: false, compact: true),
+                    color: CentwiseColors.incomeGreen
+                )
 
-                Rectangle()
-                    .fill(CentwiseColors.border(for: colorScheme))
-                    .frame(height: 1)
+                metricColumn(
+                    title: "EXPENSES",
+                    value: CurrencyFormatter.shared.formatBDT(spent, showSign: false, compact: true),
+                    color: CentwiseColors.expenseRed
+                )
 
-                HStack(spacing: 0) {
-                    statBlock(
-                        title: "TRANSACTIONS",
-                        value: "\(transactionCount)",
-                        icon: "list.bullet.rectangle"
-                    )
+                metricColumn(
+                    title: "NET",
+                    value: "\(net >= 0 ? "+" : "-")\(CurrencyFormatter.shared.formatBDT(abs(net), showSign: false, compact: true))",
+                    color: net >= 0 ? CentwiseColors.incomeGreen : CentwiseColors.expenseRed
+                )
+            }
 
-                    statBlock(
-                        title: "DAILY AVG",
-                        value: CurrencyFormatter.shared.formatBDT(dailyAverage, compact: true),
-                        icon: "calendar"
-                    )
+            Divider()
 
-                    statBlock(
-                        title: "TOP CATEGORY",
-                        value: topCategoryName ?? "—",
-                        icon: "chart.pie.fill",
-                        isText: true
-                    )
-                }
+            // 3-Column Row 2: Transactions, Daily Avg, Top Category
+            HStack(spacing: 0) {
+                subMetricColumn(
+                    title: "TRANSACTIONS",
+                    value: "\(transactionCount)"
+                )
+
+                subMetricColumn(
+                    title: "DAILY AVG",
+                    value: CurrencyFormatter.shared.formatBDT(dailyAverage, showSign: false, compact: true)
+                )
+
+                subMetricColumn(
+                    title: "TOP CATEGORY",
+                    value: topCategoryName ?? "Others",
+                    showDot: true
+                )
             }
         }
+        .padding(18)
+        .background(colorScheme == .dark ? Color(white: 0.12) : Color.white)
+        .cornerRadius(18)
+        .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.2 : 0.04), radius: 6, x: 0, y: 2)
     }
 
-    private func statBlock(title: String, value: String, icon: String, isText: Bool = false) -> some View {
-        VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
-            HStack(spacing: CentwiseSpacing.xxs) {
-                Image(systemName: icon)
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundColor(themeManager.accentColor)
-                Text(title)
-                    .font(CentwiseTypography.caption2)
-                    .tracking(0.5)
-                    .foregroundColor(.secondary)
-            }
+    private func metricColumn(title: String, value: String, color: Color) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+                .font(.system(size: 10, weight: .bold))
+                .tracking(0.5)
+                .foregroundColor(.secondary)
 
             Text(value)
-                .font(isText ? CentwiseTypography.caption1 : CentwiseTypography.amountMedium)
-                .foregroundColor(.primary)
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundColor(color)
                 .lineLimit(1)
-                .minimumScaleFactor(0.6)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func subMetricColumn(title: String, value: String, showDot: Bool = false) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+                .font(.system(size: 10, weight: .bold))
+                .tracking(0.5)
+                .foregroundColor(.secondary)
+
+            HStack(spacing: 4) {
+                if showDot {
+                    Circle()
+                        .fill(Color.gray)
+                        .frame(width: 6, height: 6)
+                }
+                Text(value)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
+

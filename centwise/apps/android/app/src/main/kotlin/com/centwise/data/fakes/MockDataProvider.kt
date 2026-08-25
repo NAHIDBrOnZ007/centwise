@@ -7,56 +7,83 @@ import com.centwise.data.models.TransactionItem
 import com.centwise.data.models.TransactionType
 
 object MockDataProvider {
-    val sampleTransactions = listOf(
-        TransactionItem(
-            title = "Foodpanda BD",
-            amount = 650.0,
-            type = TransactionType.EXPENSE,
-            category = "Food & Dining",
-            paymentMethod = "bKash",
-            rawSms = "Payment Tk 650.00 to Foodpanda successful. Ref: FP8392. Fee Tk 0.00. Balance Tk 14,250.00. TrxID 9K38AL492 at 21/08/2026 19:42"
-        ),
-        TransactionItem(
-            title = "Pathao Rides",
-            amount = 280.0,
-            type = TransactionType.EXPENSE,
-            category = "Transport",
-            paymentMethod = "Nagad",
-            rawSms = "Payment of Tk 280.00 to Pathao successful. TrxID 77H88219. Balance: Tk 6,420.00."
-        ),
-        TransactionItem(
-            title = "Salary Deposit",
-            amount = 85000.0,
-            type = TransactionType.INCOME,
-            category = "Salary",
-            paymentMethod = "BRAC Bank",
-            rawSms = "Your A/C ...8839 is credited with BDT 85,000.00 on 01-Aug-2026 by SALARY. Avail Bal BDT 142,500.00."
-        ),
-        TransactionItem(
-            title = "Unimart Superstore",
-            amount = 4850.0,
-            type = TransactionType.EXPENSE,
-            category = "Groceries",
-            paymentMethod = "City Bank",
-            rawSms = "Approved at UNIMART GULSHAN for BDT 4,850.00 with Card ...4029 on 19-AUG-26 18:20."
-        ),
-        TransactionItem(
-            title = "DESCO Electricity Bill",
-            amount = 2450.0,
-            type = TransactionType.EXPENSE,
-            category = "Bills & Utilities",
-            paymentMethod = "bKash",
-            rawSms = "Bill Payment to DESCO for Tk 2,450.00 is successful. TrxID 8M92019A."
-        ),
-        TransactionItem(
-            title = "Netflix Bangladesh",
-            amount = 1200.0,
-            type = TransactionType.EXPENSE,
-            category = "Entertainment",
-            paymentMethod = "City Bank",
-            rawSms = "Approved at NETFLIX.COM for BDT 1,200.00 with Card ...4029."
+    val sampleTransactions: List<TransactionItem> = generateOneYearTransactions()
+
+    fun generateOneYearTransactions(): List<TransactionItem> {
+        val list = mutableListOf<TransactionItem>()
+        val now = System.currentTimeMillis()
+        val dayMillis = 86400000L
+
+        val expenseTemplates = listOf(
+            Triple("Foodpanda BD", "Food & Dining", "bKash"),
+            Triple("Star Kabab Dinner", "Food & Dining", "Cash"),
+            Triple("North End Coffee", "Food & Dining", "City Bank"),
+            Triple("Pathao Rides", "Transport", "Nagad"),
+            Triple("Uber Premier Ride", "Transport", "City Bank"),
+            Triple("Unimart Superstore", "Groceries", "City Bank"),
+            Triple("Agora Superstore", "Groceries", "BRAC Bank"),
+            Triple("Grameenphone Flexiload", "Bills & Utilities", "bKash"),
+            Triple("Daraz Online Shopping", "Shopping", "bKash"),
+            Triple("Aarong Lifestyle", "Shopping", "City Bank"),
+            Triple("Lazz Pharma", "Health", "Cash"),
+            Triple("Cineplex Tickets", "Entertainment", "bKash")
         )
-    )
+
+        // 1. 12 Monthly Salary and Rent entries
+        for (monthOffset in 0 until 12) {
+            val salaryTime = now - (monthOffset * 30L * dayMillis)
+            list.add(
+                TransactionItem(
+                    title = "Salary Deposit",
+                    amount = 85000.0,
+                    type = TransactionType.INCOME,
+                    category = "Salary",
+                    paymentMethod = "BRAC Bank",
+                    timestamp = salaryTime,
+                    rawSms = "Your A/C ...8839 is credited with BDT 85,000.00 by TECH CORP SALARY."
+                )
+            )
+
+            // Monthly Rent
+            list.add(
+                TransactionItem(
+                    title = "Apartment Rent",
+                    amount = 28000.0,
+                    type = TransactionType.EXPENSE,
+                    category = "Bills & Utilities",
+                    paymentMethod = "BRAC Bank",
+                    timestamp = salaryTime + 3 * dayMillis,
+                    rawSms = "Debit BDT 28,000.00 for House Rent"
+                )
+            )
+        }
+
+        // 2. 365 Days of Daily Expenses
+        for (dayOffset in 0 until 365) {
+            val txCount = if (dayOffset % 3 == 0) 2 else if (dayOffset % 5 == 0) 3 else 1
+            val baseTime = now - (dayOffset * dayMillis)
+
+            for (i in 0 until txCount) {
+                val t = expenseTemplates[(dayOffset * 7 + i * 3) % expenseTemplates.size]
+                val amount = (150..3500).random().toDouble()
+                val txTime = baseTime - (i * 3600000L * 4)
+
+                list.add(
+                    TransactionItem(
+                        title = t.first,
+                        amount = amount,
+                        type = TransactionType.EXPENSE,
+                        category = t.second,
+                        paymentMethod = t.third,
+                        timestamp = txTime,
+                        rawSms = "Payment of Tk $amount to ${t.first} successful."
+                    )
+                )
+            }
+        }
+
+        return list.sortedByDescending { it.timestamp }
+    }
 
     val sampleAccounts = listOf(
         AccountItem(

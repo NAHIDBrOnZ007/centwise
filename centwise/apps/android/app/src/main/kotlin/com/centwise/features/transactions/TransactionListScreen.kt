@@ -115,6 +115,22 @@ fun TransactionListScreen(
                 FilterPillRow(isDark = isDark)
             }
 
+            // Totals Summary Card (3 Columns: Income, Expenses, Net)
+            val totalIncome by viewModel.totalIncome.collectAsState()
+            val totalExpense by viewModel.totalExpense.collectAsState()
+            val totalNet by viewModel.totalNet.collectAsState()
+
+            if (transactions.isNotEmpty()) {
+                item {
+                    com.centwise.core.design.components.TransactionTotalsCard(
+                        income = totalIncome,
+                        expense = totalExpense,
+                        net = totalNet,
+                        isDark = isDark
+                    )
+                }
+            }
+
             // Transactions List or Empty State
             if (transactions.isEmpty()) {
                 item {
@@ -127,12 +143,35 @@ fun TransactionListScreen(
                     )
                 }
             } else {
-                items(transactions, key = { it.id }) { tx ->
-                    TransactionRow(
-                        transaction = tx,
-                        onClick = { selectedTransaction = tx },
-                        isDark = isDark
-                    )
+                val grouped = transactions.groupBy { tx ->
+                    val cal = java.util.Calendar.getInstance()
+                    cal.time = tx.date
+                    val monthFormat = java.text.SimpleDateFormat("MMMM yyyy", java.util.Locale.US)
+                    monthFormat.format(tx.date).uppercase()
+                }
+
+                grouped.forEach { (monthKey, itemsInMonth) ->
+                    item {
+                        Text(
+                            text = monthKey,
+                            style = CentwiseTypography.Caption,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                            color = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary,
+                            modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                        )
+                    }
+
+                    items(itemsInMonth, key = { it.id }) { tx ->
+                        TransactionRow(
+                            transaction = tx,
+                            onClick = { selectedTransaction = tx },
+                            isDark = isDark
+                        )
+                        androidx.compose.material3.HorizontalDivider(
+                            modifier = Modifier.padding(start = 56.dp),
+                            color = if (isDark) Color(0xFF2C2C2E) else Color(0xFFEEEEEE)
+                        )
+                    }
                 }
             }
         }

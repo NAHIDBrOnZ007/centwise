@@ -45,12 +45,13 @@ fun AnalyticsScreen(
     viewModel: AnalyticsViewModel = viewModel(),
     isDark: Boolean = isSystemInDarkTheme()
 ) {
+    val selectedPeriod by viewModel.selectedPeriod.collectAsState()
+    val selectedType by viewModel.selectedType.collectAsState()
     val totalIncome by viewModel.totalIncome.collectAsState()
     val totalExpense by viewModel.totalExpense.collectAsState()
+    val transactionCount by viewModel.transactionCount.collectAsState()
     val categoryBreakdown by viewModel.categoryBreakdown.collectAsState()
-    val transactions by FakeTransactionRepository.shared.transactions.collectAsState()
-
-    var selectedPeriod by remember { mutableStateOf("30D") }
+    val topMerchants by viewModel.topMerchants.collectAsState()
 
     val accent = AccentOptions.byName(AppearancePrefs.accentName).color
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground
@@ -61,9 +62,10 @@ fun AnalyticsScreen(
     val dividerColor = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000)
 
     val periodDays = when (selectedPeriod) {
-        "7D" -> 7
-        "30D" -> 30
-        "90D" -> 90
+        "This Month" -> 30
+        "Last Month" -> 30
+        "3 Months" -> 90
+        "6 Months" -> 180
         else -> 365
     }
 
@@ -84,39 +86,53 @@ fun AnalyticsScreen(
             )
         }
 
-        // 1. Interactive Timeframe Segmented Control (Hero Accent Highlight)
+        // 1. Period Filter Pills (Horizontal Scroll)
         item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(cardBg)
-                    .padding(4.dp)
+            val periods = listOf("This Month", "Last Month", "3 Months", "6 Months", "All Time")
+            androidx.compose.foundation.lazy.LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(horizontal = 2.dp)
             ) {
-                timePeriods.forEach { period ->
+                items(periods) { period ->
                     val isSelected = selectedPeriod == period
-                    val pillBg by animateColorAsState(
-                        targetValue = if (isSelected) accent else Color.Transparent,
-                        animationSpec = spring(),
-                        label = "period_pill_bg"
-                    )
                     Box(
                         modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(pillBg)
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) { selectedPeriod = period }
-                            .padding(vertical = 8.dp),
-                        contentAlignment = Alignment.Center
+                            .clip(CircleShape)
+                            .background(if (isSelected) accent else if (isDark) Color(0xFF242426) else Color(0xFFEEEEEE))
+                            .clickable { viewModel.setPeriod(period) }
+                            .padding(horizontal = 14.dp, vertical = 7.dp)
                     ) {
                         Text(
                             text = period,
-                            style = CentwiseTypography.Caption.copy(fontSize = 13.sp),
-                            color = if (isSelected) Color.White else textSecondary,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                            style = CentwiseTypography.Caption,
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
+                            color = if (isSelected) Color.White else textPrimary,
+                            fontSize = 13.sp
+                        )
+                    }
+                }
+            }
+        }
+
+        // 2. Type Filter Pills (All, Debit, Credit)
+        item {
+            val types = listOf("All", "Debit", "Credit")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                types.forEach { type ->
+                    val isSelected = selectedType == type
+                    Box(
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(if (isSelected) accent else if (isDark) Color(0xFF242426) else Color(0xFFEEEEEE))
+                            .clickable { viewModel.setTypeFilter(type) }
+                            .padding(horizontal = 16.dp, vertical = 7.dp)
+                    ) {
+                        Text(
+                            text = type,
+                            style = CentwiseTypography.Caption,
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
+                            color = if (isSelected) Color.White else textPrimary,
+                            fontSize = 13.sp
                         )
                     }
                 }
@@ -128,8 +144,8 @@ fun AnalyticsScreen(
             AnalyticsSummaryCard(
                 spent = totalExpense,
                 income = totalIncome,
-                transactionCount = transactions.size,
-                topCategoryName = categoryBreakdown.entries.maxByOrNull { it.value }?.key,
+                transactionCount = transactionCount,
+                topCategoryName = categoryBreakdown.firstOrNull()?.category,
                 periodDays = periodDays,
                 isDark = isDark
             )
@@ -226,12 +242,12 @@ fun AnalyticsScreen(
         // 4. Category Pie Chart
         item {
             CategoryPieChart(
-                slices = categoryBreakdown.entries.toList().mapIndexed { index, entry ->
+                slices = categoryBreakdown.mapIndexed { index, item ->
                     CategorySlice(
-                        name = entry.key,
-                        value = entry.value,
+                        name = item.category,
+                        value = item.totalAmount,
                         color = CategoryOption.defaults
-                            .firstOrNull { it.name.equals(entry.key, ignoreCase = true) }?.color
+                            .firstOrNull { it.name.equals(item.category, ignoreCase = true) }?.color
                             ?: CategorySliceColors.palette[index % CategorySliceColors.palette.size]
                     )
                 }
@@ -240,7 +256,8 @@ fun AnalyticsScreen(
 
         // 5. Spending Trends (Last 6 Months with Dynamic Accent Bars)
         item {
-            SpendingTrendsChart(points = monthlyTrendPoints(transactions), isDark = isDark)
+            val txs by FakeTransactionRepository.shared.transactions.collectAsState()
+            SpendingTrendsChart(points = monthlyTrendPoints(txs), isDark = isDark)
         }
 
         // 6. Spending by Category (Rich with Icons & Progress Bars)
@@ -261,19 +278,15 @@ fun AnalyticsScreen(
 
                 if (categoryBreakdown.isEmpty()) {
                     Text(
-                        "No category expenses recorded yet",
+                        "No category expenses recorded for this period",
                         style = CentwiseTypography.Subheadline,
                         color = textSecondary
                     )
                 } else {
-                    val maxCategoryVal = maxOf(categoryBreakdown.values.maxOrNull() ?: 1.0, 1.0)
-                    val totalCatSpent = maxOf(categoryBreakdown.values.sum(), 1.0)
-
-                    categoryBreakdown.entries.toList().forEachIndexed { index, entry ->
+                    categoryBreakdown.forEachIndexed { index, item ->
                         val catColor = CategoryOption.defaults
-                            .firstOrNull { it.name.equals(entry.key, ignoreCase = true) }?.color
+                            .firstOrNull { it.name.equals(item.category, ignoreCase = true) }?.color
                             ?: CategorySliceColors.palette[index % CategorySliceColors.palette.size]
-                        val pct = (entry.value / totalCatSpent).toFloat().coerceIn(0f, 1f)
 
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Row(
@@ -300,7 +313,7 @@ fun AnalyticsScreen(
                                         )
                                     }
                                     Text(
-                                        text = entry.key,
+                                        text = item.category,
                                         style = CentwiseTypography.Body,
                                         color = textPrimary
                                     )
@@ -311,12 +324,12 @@ fun AnalyticsScreen(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     Text(
-                                        text = CurrencyFormatter.formatBDT(entry.value, compact = true),
+                                        text = CurrencyFormatter.formatBDT(item.totalAmount, compact = true),
                                         style = CentwiseTypography.AmountSmall,
                                         color = textPrimary
                                     )
                                     Text(
-                                        text = "${(pct * 100).toInt()}%",
+                                        text = "${(item.percentage * 100).toInt()}%",
                                         style = CentwiseTypography.Caption,
                                         color = textSecondary
                                     )
@@ -333,7 +346,7 @@ fun AnalyticsScreen(
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .fillMaxWidth(pct)
+                                        .fillMaxWidth(item.percentage.toFloat().coerceIn(0f, 1f))
                                         .fillMaxHeight()
                                         .clip(RoundedCornerShape(999.dp))
                                         .background(catColor)
@@ -351,14 +364,7 @@ fun AnalyticsScreen(
 
         // 7. Top Spending Merchants (with Accent Rank Badges)
         item {
-            val merchants = transactions
-                .filter { it.type == TransactionType.EXPENSE }
-                .groupBy { it.title.ifBlank { "Other" } }
-                .map { Pair(it.key, it.value.sumOf { tx -> tx.amount }) }
-                .sortedByDescending { it.second }
-                .take(5)
-
-            if (merchants.isNotEmpty()) {
+            if (topMerchants.isNotEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -373,9 +379,7 @@ fun AnalyticsScreen(
                         color = textPrimary
                     )
 
-                    merchants.forEachIndexed { index, item ->
-                        val merchant = item.first
-                        val amount = item.second
+                    topMerchants.forEachIndexed { index, merchantItem ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -399,22 +403,28 @@ fun AnalyticsScreen(
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
-                                Text(
-                                    text = merchant,
-                                    style = CentwiseTypography.Body,
-                                    color = textPrimary
-                                )
+                                Column {
+                                    Text(
+                                        text = merchantItem.merchantName,
+                                        style = CentwiseTypography.Body,
+                                        color = textPrimary
+                                    )
+                                    Text(
+                                        text = "${merchantItem.transactionCount} transaction${if (merchantItem.transactionCount == 1) "" else "s"}",
+                                        style = CentwiseTypography.Caption,
+                                        color = textSecondary,
+                                        fontSize = 11.sp
+                                    )
+                                }
                             }
+
                             Text(
-                                text = CurrencyFormatter.formatBDT(amount, compact = true),
+                                text = CurrencyFormatter.formatBDT(merchantItem.totalAmount, compact = true),
                                 style = CentwiseTypography.AmountSmall,
                                 color = textPrimary
                             )
                         }
 
-                        if (index < merchants.size - 1) {
-                            HorizontalDivider(color = dividerColor)
-                        }
                     }
                 }
             }

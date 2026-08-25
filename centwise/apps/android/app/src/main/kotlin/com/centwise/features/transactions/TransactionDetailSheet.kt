@@ -33,13 +33,15 @@ fun TransactionDetailSheet(
     modifier: Modifier = Modifier,
     isDark: Boolean = isSystemInDarkTheme()
 ) {
-    val bg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
+    val bg = if (isDark) CentwiseColors.DarkBackground else Color(0xFFF7F7F8)
+    val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
 
     val isIncome = transaction.type == TransactionType.INCOME
     val amountColor = if (isIncome) CentwiseColors.IncomeGreen else CentwiseColors.ExpenseRed
     val amountPrefix = if (isIncome) "+ " else "- "
+    val badgeBg = if (isIncome) CentwiseColors.IncomeGreen.copy(alpha = 0.12f) else CentwiseColors.ExpenseRed.copy(alpha = 0.12f)
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -52,89 +54,140 @@ fun TransactionDetailSheet(
         Column(
             modifier = modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 20.dp)
                 .padding(bottom = 36.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            // Header: Title and Amount Hero
+            // Header: Big Amount + Badge Pill
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = transaction.title,
-                    style = CentwiseTypography.Title1,
-                    color = textPrimary
-                )
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = "$amountPrefix${CurrencyFormatter.formatBDT(transaction.amount)}",
                     style = CentwiseTypography.HeroAmount.copy(fontSize = 36.sp),
-                    color = amountColor
+                    color = textPrimary
                 )
-            }
 
-            HorizontalDivider(
-                color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000),
-                thickness = 1.dp
-            )
-
-            // Detail Metadata Rows
-            DetailRow(label = "Type", value = transaction.type.displayName, textPrimary = textPrimary, textSecondary = textSecondary)
-            DetailRow(label = "Category", value = transaction.category, textPrimary = textPrimary, textSecondary = textSecondary)
-            DetailRow(label = "Payment Method", value = transaction.paymentMethod, textPrimary = textPrimary, textSecondary = textSecondary)
-
-            // Raw SMS Box (if present)
-            if (!transaction.rawSms.isNullOrBlank()) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusMedium))
-                        .background(if (isDark) Color(0x14FFFFFF) else Color(0x08000000))
-                        .padding(14.dp)
+                Surface(
+                    shape = CircleShape,
+                    color = badgeBg
                 ) {
                     Text(
-                        text = "Original SMS Payload",
+                        text = if (isIncome) "↓ INCOME" else "↑ EXPENSE",
                         style = CentwiseTypography.Caption,
-                        color = textSecondary
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = transaction.rawSms,
-                        style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
-                        color = textPrimary
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        color = amountColor,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        fontSize = 11.sp
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            // Structured Details Card
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = cardBg,
+                shadowElevation = if (isDark) 4.dp else 1.dp
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    DetailRowItem(icon = "🏪", label = "Merchant", value = transaction.title, textPrimary = textPrimary, textSecondary = textSecondary)
+                    HorizontalDivider(color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
 
-            // Action Buttons (Delete)
-            Button(
-                onClick = {
-                    onDelete(transaction.id)
-                    onDismiss()
-                },
+                    DetailRowItem(icon = "🏷", label = "Category", value = transaction.category, textPrimary = textPrimary, textSecondary = textSecondary)
+                    HorizontalDivider(color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
+
+                    val dateFormat = java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a", java.util.Locale.US)
+                    DetailRowItem(icon = "📅", label = "Date & Time", value = dateFormat.format(transaction.date), textPrimary = textPrimary, textSecondary = textSecondary)
+                    HorizontalDivider(color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
+
+                    DetailRowItem(icon = "🏦", label = "Bank / Provider", value = transaction.paymentMethod, textPrimary = textPrimary, textSecondary = textSecondary)
+
+                    if (!transaction.rawSms.isNullOrBlank()) {
+                        HorizontalDivider(color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
+                        DetailRowItem(icon = "📄", label = "Notes", value = transaction.rawSms, textPrimary = textPrimary, textSecondary = textSecondary)
+                    }
+                }
+            }
+
+            // Delete Transaction Card Button
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = cardBg,
+                shadowElevation = if (isDark) 4.dp else 1.dp,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
-                shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(containerColor = CentwiseColors.ExpenseRed.copy(alpha = 0.15f))
+                    .clickable {
+                        onDelete(transaction.id)
+                        onDismiss()
+                    }
             ) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = null,
-                    tint = CentwiseColors.ExpenseRed,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Text(
-                    text = "Delete Transaction",
-                    style = CentwiseTypography.Headline,
-                    color = CentwiseColors.ExpenseRed
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 14.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = null,
+                        tint = CentwiseColors.ExpenseRed,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Delete Transaction",
+                        style = CentwiseTypography.Headline,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                        color = CentwiseColors.ExpenseRed,
+                        fontSize = 15.sp
+                    )
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun DetailRowItem(
+    icon: String,
+    label: String,
+    value: String,
+    textPrimary: Color,
+    textSecondary: Color
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(text = icon, fontSize = 14.sp)
+            Text(
+                text = label,
+                style = CentwiseTypography.Body,
+                color = textSecondary,
+                fontSize = 14.sp
+            )
+        }
+        Text(
+            text = value,
+            style = CentwiseTypography.Body,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+            color = textPrimary,
+            fontSize = 14.sp,
+            maxLines = 1
+        )
     }
 }
 
