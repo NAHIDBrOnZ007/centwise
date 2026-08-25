@@ -58,6 +58,7 @@ public final class ThemeManager: ObservableObject {
         case heavy
         case soft
         case rigid
+        case selection
         case success
         case warning
         case error
@@ -76,6 +77,8 @@ public final class ThemeManager: ObservableObject {
             UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         case .rigid:
             UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
+        case .selection:
+            UISelectionFeedbackGenerator().selectionChanged()
         case .success:
             UINotificationFeedbackGenerator().notificationOccurred(.success)
         case .warning:

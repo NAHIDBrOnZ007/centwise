@@ -4,7 +4,9 @@ public struct TransactionListView: View {
     @StateObject private var viewModel = TransactionsViewModel()
     @ObservedObject private var themeManager = ThemeManager.shared
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.isAmoledActive) private var isAmoled
     @State private var showAddTransaction = false
+    @State private var showExportSheet = false
 
     public init() {}
 
@@ -23,10 +25,10 @@ public struct TransactionListView: View {
                 .background(colorScheme == .dark ? Color(white: 0.12) : Color(red: 0.90, green: 0.90, blue: 0.92))
                 .cornerRadius(12)
 
-                // Filter Pills (Screenshot 1)
+                // Filter Pills
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        // 1. Date Filter (Active Mauve)
+                        // 1. Date Filter
                         HStack(spacing: 4) {
                             Image(systemName: "calendar")
                             Text("All Time")
@@ -35,7 +37,7 @@ public struct TransactionListView: View {
                         .font(.system(size: 13, weight: .medium))
                         .padding(.horizontal, 14)
                         .padding(.vertical, 7)
-                        .background(Color(red: 0.71, green: 0.36, blue: 0.46)) // #B55D75
+                        .background(themeManager.accentColor)
                         .foregroundColor(.white)
                         .cornerRadius(999)
 
@@ -67,7 +69,7 @@ public struct TransactionListView: View {
                     }
                 }
 
-                // Empty State (Screenshot 1)
+                // Empty State
                 if viewModel.filteredTransactions.isEmpty {
                     VStack(spacing: 12) {
                         Image(systemName: "tray")
@@ -97,7 +99,7 @@ public struct TransactionListView: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 28)
                             .padding(.vertical, 14)
-                            .background(Color(red: 0.71, green: 0.36, blue: 0.46)) // Mauve Accent
+                            .background(themeManager.accentColor)
                             .cornerRadius(999)
                         }
                         .padding(.top, 14)
@@ -115,34 +117,59 @@ public struct TransactionListView: View {
             .padding(.top, 8)
             .padding(.bottom, 100)
         }
-        .background(colorScheme == .dark ? Color.black : Color.white)
+        .background(CentwiseColors.background(for: colorScheme, isAmoled: isAmoled).ignoresSafeArea())
         .navigationTitle("Transactions")
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                // Action Pill Group (+, ⇅, 📤) (Screenshot 1)
-                HStack(spacing: 16) {
-                    Button(action: { showAddTransaction = true }) {
-                        Image(systemName: "plus")
-                    }
-                    Button(action: {}) {
-                        Image(systemName: "arrow.up.arrow.down")
-                    }
-                    Button(action: {}) {
-                        Image(systemName: "square.and.arrow.up")
-                    }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    themeManager.triggerHapticFeedback(.light)
+                    showAddTransaction = true
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(themeManager.accentColor)
                 }
-                .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(Color(red: 0.71, green: 0.36, blue: 0.46))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(colorScheme == .dark ? Color(white: 0.12) : Color(red: 0.95, green: 0.95, blue: 0.97))
-                .cornerRadius(999)
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    ForEach(TransactionSortOrder.allCases, id: \.self) { order in
+                        Button {
+                            themeManager.triggerHapticFeedback(.selection)
+                            viewModel.sortOrder = order
+                            viewModel.applyFilters()
+                        } label: {
+                            if viewModel.sortOrder == order {
+                                Label(order.rawValue, systemImage: "checkmark")
+                            } else {
+                                Text(order.rawValue)
+                            }
+                        }
+                    }
+                } label: {
+                    Image(systemName: "arrow.up.arrow.down")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(themeManager.accentColor)
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    themeManager.triggerHapticFeedback(.light)
+                    showExportSheet = true
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(themeManager.accentColor)
+                }
+                .disabled(viewModel.filteredTransactions.isEmpty)
             }
         }
         .sheet(isPresented: $showAddTransaction) {
             AddEditTransactionView {
                 viewModel.applyFilters()
             }
+        }
+        .sheet(isPresented: $showExportSheet) {
+            CsvExportSheet(transactions: viewModel.filteredTransactions)
         }
     }
 }

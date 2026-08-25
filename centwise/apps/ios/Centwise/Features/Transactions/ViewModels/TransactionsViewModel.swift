@@ -2,6 +2,13 @@ import Foundation
 import Combine
 import SwiftUI
 
+public enum TransactionSortOrder: String, CaseIterable {
+    case newestFirst = "Newest"
+    case oldestFirst = "Oldest"
+    case amountHigh = "Amount (High)"
+    case amountLow = "Amount (Low)"
+}
+
 public final class TransactionsViewModel: ObservableObject {
     @Published public var allTransactions: [CentwiseTransaction] = []
     @Published public var filteredTransactions: [CentwiseTransaction] = []
@@ -9,6 +16,7 @@ public final class TransactionsViewModel: ObservableObject {
     @Published public var selectedTypeFilter: TransactionType? = nil
     @Published public var selectedCategoryFilter: String? = nil
     @Published public var selectedProviderFilter: FinancialProvider? = nil
+    @Published public var sortOrder: TransactionSortOrder = .newestFirst
 
     private var cancellables = Set<AnyCancellable>()
     private let repository: FakeTransactionRepository
@@ -59,6 +67,17 @@ public final class TransactionsViewModel: ObservableObject {
 
         if let provider = selectedProviderFilter {
             result = result.filter { $0.provider == provider }
+        }
+
+        switch sortOrder {
+        case .newestFirst:
+            result.sort { $0.date > $1.date }
+        case .oldestFirst:
+            result.sort { $0.date < $1.date }
+        case .amountHigh:
+            result.sort { $0.amount > $1.amount }
+        case .amountLow:
+            result.sort { $0.amount < $1.amount }
         }
 
         self.filteredTransactions = result
