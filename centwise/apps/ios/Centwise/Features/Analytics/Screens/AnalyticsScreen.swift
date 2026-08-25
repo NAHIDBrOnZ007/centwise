@@ -19,6 +19,7 @@ public struct AnalyticsScreen: View {
                     }
                 }
                 .pickerStyle(.segmented)
+                .tint(themeManager.accentColor)
                 .padding(.horizontal, CentwiseSpacing.md)
                 .padding(.top, CentwiseSpacing.xs)
 

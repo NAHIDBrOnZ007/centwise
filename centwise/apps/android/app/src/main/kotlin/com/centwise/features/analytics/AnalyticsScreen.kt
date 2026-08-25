@@ -1,26 +1,44 @@
 package com.centwise.features.analytics
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Store
+import androidx.compose.material.icons.filled.TrendingUp
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.centwise.core.design.formatters.CurrencyFormatter
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
+import com.centwise.data.fakes.FakeTransactionRepository
+import com.centwise.data.models.CategoryOption
+import com.centwise.data.models.TransactionType
+import com.centwise.features.settings.AccentOptions
+import com.centwise.features.settings.AppearancePrefs
+
+private val timePeriods = listOf("7D", "30D", "90D", "1 Year")
 
 @Composable
 fun AnalyticsScreen(
@@ -30,12 +48,24 @@ fun AnalyticsScreen(
     val totalIncome by viewModel.totalIncome.collectAsState()
     val totalExpense by viewModel.totalExpense.collectAsState()
     val categoryBreakdown by viewModel.categoryBreakdown.collectAsState()
-    val transactions by com.centwise.data.fakes.FakeTransactionRepository.shared.transactions.collectAsState()
+    val transactions by FakeTransactionRepository.shared.transactions.collectAsState()
 
+    var selectedPeriod by remember { mutableStateOf("30D") }
+
+    val accent = AccentOptions.byName(AppearancePrefs.accentName).color
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
+    val fieldBg = if (isDark) Color(0x1FFFFFFF) else Color(0x0A000000)
+    val dividerColor = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000)
+
+    val periodDays = when (selectedPeriod) {
+        "7D" -> 7
+        "30D" -> 30
+        "90D" -> 90
+        else -> 365
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -48,13 +78,64 @@ fun AnalyticsScreen(
         // Header
         item {
             Text(
-                text = "Analytics",
+                text = "Analytics & Trends",
                 style = CentwiseTypography.LargeTitle,
                 color = textPrimary
             )
         }
 
-        // Cashflow Progress Card
+        // 1. Interactive Timeframe Segmented Control (Hero Accent Highlight)
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(cardBg)
+                    .padding(4.dp)
+            ) {
+                timePeriods.forEach { period ->
+                    val isSelected = selectedPeriod == period
+                    val pillBg by animateColorAsState(
+                        targetValue = if (isSelected) accent else Color.Transparent,
+                        animationSpec = spring(),
+                        label = "period_pill_bg"
+                    )
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(pillBg)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) { selectedPeriod = period }
+                            .padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = period,
+                            style = CentwiseTypography.Caption.copy(fontSize = 13.sp),
+                            color = if (isSelected) Color.White else textSecondary,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                        )
+                    }
+                }
+            }
+        }
+
+        // 2. Period Summary Hero Card (with Accent Highlights)
+        item {
+            AnalyticsSummaryCard(
+                spent = totalExpense,
+                income = totalIncome,
+                transactionCount = transactions.size,
+                topCategoryName = categoryBreakdown.entries.maxByOrNull { it.value }?.key,
+                periodDays = periodDays,
+                isDark = isDark
+            )
+        }
+
+        // 3. Cashflow Progress Card
         item {
             Column(
                 modifier = Modifier
@@ -63,12 +144,25 @@ fun AnalyticsScreen(
                     .background(cardBg)
                     .padding(18.dp)
             ) {
-                Text(
-                    text = "Monthly Cashflow",
-                    style = CentwiseTypography.Subheadline,
-                    color = textSecondary
-                )
-                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Cash Flow Overview",
+                        style = CentwiseTypography.Headline,
+                        color = textPrimary
+                    )
+                    Text(
+                        text = selectedPeriod,
+                        style = CentwiseTypography.Caption,
+                        color = accent,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Ratio Bar
                 val total = totalIncome + totalExpense
@@ -78,7 +172,7 @@ fun AnalyticsScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(12.dp)
+                        .height(10.dp)
                         .clip(RoundedCornerShape(999.dp))
                 ) {
                     Box(
@@ -96,44 +190,47 @@ fun AnalyticsScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(14.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = "Inflow: ${CurrencyFormatter.formatBDT(totalIncome)}",
-                        style = CentwiseTypography.AmountSmall,
-                        color = CentwiseColors.IncomeGreen
-                    )
-                    Text(
-                        text = "Outflow: ${CurrencyFormatter.formatBDT(totalExpense)}",
-                        style = CentwiseTypography.AmountSmall,
-                        color = CentwiseColors.ExpenseRed
-                    )
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(CentwiseColors.IncomeGreen))
+                            Text("Total Inflow", style = CentwiseTypography.Caption, color = textSecondary)
+                        }
+                        Text(
+                            text = CurrencyFormatter.formatBDT(totalIncome, compact = true),
+                            style = CentwiseTypography.AmountMedium,
+                            color = CentwiseColors.IncomeGreen
+                        )
+                    }
+
+                    Column(horizontalAlignment = Alignment.End) {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(CentwiseColors.ExpenseRed))
+                            Text("Total Outflow", style = CentwiseTypography.Caption, color = textSecondary)
+                        }
+                        Text(
+                            text = CurrencyFormatter.formatBDT(totalExpense, compact = true),
+                            style = CentwiseTypography.AmountMedium,
+                            color = CentwiseColors.ExpenseRed
+                        )
+                    }
                 }
             }
         }
 
-        // Period Summary Hero
-        item {
-            AnalyticsSummaryCard(
-                spent = totalExpense,
-                income = totalIncome,
-                transactionCount = transactions.size,
-                topCategoryName = categoryBreakdown.entries.maxByOrNull { it.value }?.key
-            )
-        }
-
-        // Category Pie Chart
+        // 4. Category Pie Chart
         item {
             CategoryPieChart(
                 slices = categoryBreakdown.entries.toList().mapIndexed { index, entry ->
                     CategorySlice(
                         name = entry.key,
                         value = entry.value,
-                        color = com.centwise.data.models.CategoryOption.defaults
+                        color = CategoryOption.defaults
                             .firstOrNull { it.name.equals(entry.key, ignoreCase = true) }?.color
                             ?: CategorySliceColors.palette[index % CategorySliceColors.palette.size]
                     )
@@ -141,42 +238,185 @@ fun AnalyticsScreen(
             )
         }
 
-        // Spending Trends (last 6 months)
+        // 5. Spending Trends (Last 6 Months with Dynamic Accent Bars)
         item {
-            SpendingTrendsChart(points = monthlyTrendPoints(transactions))
+            SpendingTrendsChart(points = monthlyTrendPoints(transactions), isDark = isDark)
         }
 
-        // Category Breakdown Header
+        // 6. Spending by Category (Rich with Icons & Progress Bars)
         item {
-            Text(
-                text = "Spending by Category",
-                style = CentwiseTypography.Title2,
-                color = textPrimary,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-        }
-
-        // Category Rows
-        items(categoryBreakdown.entries.toList(), key = { it.key }) { entry ->
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusMedium))
+                    .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
                     .background(cardBg)
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(18.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Text(
-                    text = entry.key,
+                    text = "Spending by Category",
                     style = CentwiseTypography.Headline,
                     color = textPrimary
                 )
-                Text(
-                    text = CurrencyFormatter.formatBDT(entry.value),
-                    style = CentwiseTypography.AmountMedium,
-                    color = textPrimary
-                )
+
+                if (categoryBreakdown.isEmpty()) {
+                    Text(
+                        "No category expenses recorded yet",
+                        style = CentwiseTypography.Subheadline,
+                        color = textSecondary
+                    )
+                } else {
+                    val maxCategoryVal = maxOf(categoryBreakdown.values.maxOrNull() ?: 1.0, 1.0)
+                    val totalCatSpent = maxOf(categoryBreakdown.values.sum(), 1.0)
+
+                    categoryBreakdown.entries.toList().forEachIndexed { index, entry ->
+                        val catColor = CategoryOption.defaults
+                            .firstOrNull { it.name.equals(entry.key, ignoreCase = true) }?.color
+                            ?: CategorySliceColors.palette[index % CategorySliceColors.palette.size]
+                        val pct = (entry.value / totalCatSpent).toFloat().coerceIn(0f, 1f)
+
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(28.dp)
+                                            .clip(CircleShape)
+                                            .background(catColor.copy(alpha = 0.15f)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Category,
+                                            contentDescription = null,
+                                            tint = catColor,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
+                                    Text(
+                                        text = entry.key,
+                                        style = CentwiseTypography.Body,
+                                        color = textPrimary
+                                    )
+                                }
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = CurrencyFormatter.formatBDT(entry.value, compact = true),
+                                        style = CentwiseTypography.AmountSmall,
+                                        color = textPrimary
+                                    )
+                                    Text(
+                                        text = "${(pct * 100).toInt()}%",
+                                        style = CentwiseTypography.Caption,
+                                        color = textSecondary
+                                    )
+                                }
+                            }
+
+                            // Progress Track
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(5.dp)
+                                    .clip(RoundedCornerShape(999.dp))
+                                    .background(fieldBg)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth(pct)
+                                        .fillMaxHeight()
+                                        .clip(RoundedCornerShape(999.dp))
+                                        .background(catColor)
+                                )
+                            }
+                        }
+
+                        if (index < categoryBreakdown.size - 1) {
+                            HorizontalDivider(color = dividerColor)
+                        }
+                    }
+                }
+            }
+        }
+
+        // 7. Top Spending Merchants (with Accent Rank Badges)
+        item {
+            val merchants = transactions
+                .filter { it.type == TransactionType.EXPENSE }
+                .groupBy { it.title.ifBlank { "Other" } }
+                .map { Pair(it.key, it.value.sumOf { tx -> tx.amount }) }
+                .sortedByDescending { it.second }
+                .take(5)
+
+            if (merchants.isNotEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
+                        .background(cardBg)
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Top Merchants",
+                        style = CentwiseTypography.Headline,
+                        color = textPrimary
+                    )
+
+                    merchants.forEachIndexed { index, item ->
+                        val merchant = item.first
+                        val amount = item.second
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clip(CircleShape)
+                                        .background(accent.copy(alpha = 0.15f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "${index + 1}",
+                                        style = CentwiseTypography.Caption.copy(fontSize = 11.sp),
+                                        color = accent,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                                Text(
+                                    text = merchant,
+                                    style = CentwiseTypography.Body,
+                                    color = textPrimary
+                                )
+                            }
+                            Text(
+                                text = CurrencyFormatter.formatBDT(amount, compact = true),
+                                style = CentwiseTypography.AmountSmall,
+                                color = textPrimary
+                            )
+                        }
+
+                        if (index < merchants.size - 1) {
+                            HorizontalDivider(color = dividerColor)
+                        }
+                    }
+                }
             }
         }
     }
@@ -190,14 +430,14 @@ fun AnalyticsScreenPreview() {
 
 private object CategorySliceColors {
     val palette = listOf(
-        androidx.compose.ui.graphics.Color(0xFFF97316),
-        androidx.compose.ui.graphics.Color(0xFF06B6D4),
-        androidx.compose.ui.graphics.Color(0xFFEC4899),
-        androidx.compose.ui.graphics.Color(0xFFEAB308),
-        androidx.compose.ui.graphics.Color(0xFF8B5CF6),
-        androidx.compose.ui.graphics.Color(0xFF10B981),
-        androidx.compose.ui.graphics.Color(0xFF007AFF),
-        androidx.compose.ui.graphics.Color(0xFFEF4444)
+        Color(0xFFF97316),
+        Color(0xFF06B6D4),
+        Color(0xFFEC4899),
+        Color(0xFFEAB308),
+        Color(0xFF8B5CF6),
+        Color(0xFF10B981),
+        Color(0xFF007AFF),
+        Color(0xFFEF4444)
     )
 }
 
@@ -214,7 +454,7 @@ private fun monthlyTrendPoints(
 
         val total = transactions
             .filter { transaction ->
-                if (transaction.type != com.centwise.data.models.TransactionType.EXPENSE) return@filter false
+                if (transaction.type != TransactionType.EXPENSE) return@filter false
                 val txCalendar = java.util.Calendar.getInstance().apply {
                     timeInMillis = transaction.timestamp
                 }
