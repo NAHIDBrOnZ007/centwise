@@ -19,6 +19,9 @@ apps/ios/**/*.xcuserstate
 apps/ios/**/DerivedData/
 apps/ios/.DS_Store
 .DS_Store
+**/.DS_Store
+._*
+.DS_Store?
 
 # === Windows ===
 Thumbs.db
