@@ -1,0 +1,52 @@
+# === Reference Projects ===
+pennywise/
+pennywise
+
+# === macOS ===
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# === IDEs & Editors ===
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# === iOS / Xcode ===
+**/xcuserdata/
+**/*.xcuserstate
+**/DerivedData/
+**/*.xcworkspace/xcuserdata/
+**/build/
+
+# === Android ===
+**/.gradle/
+**/build/
+**/local.properties
+**/.kotlin/
+**/*.iml
+
+# === Rust ===
+**/target/
+*.dll
+*.so
+*.dylib
+*.a
+
+# === Secrets & Keystores ===
+.env
+*.env.*
+*.jks
+*.keystore
+*.p8
+*.p12
+ExportOptions.plist
+
+# === Logs & Temp Files ===
+*.log
+*.tmp
