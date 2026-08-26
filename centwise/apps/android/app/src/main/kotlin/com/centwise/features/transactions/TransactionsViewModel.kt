@@ -13,14 +13,44 @@ class TransactionsViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    private val _selectedPeriod = MutableStateFlow("This Month")
+    val selectedPeriod: StateFlow<String> = _selectedPeriod.asStateFlow()
+
     val filteredTransactions: StateFlow<List<TransactionItem>> = combine(
         repository.transactions,
-        _searchQuery
-    ) { list, query ->
+        _searchQuery,
+        _selectedPeriod
+    ) { list, query, period ->
+        val cal = java.util.Calendar.getInstance()
+        val now = java.util.Date()
+        cal.time = now
+
+        val periodFiltered = when (period) {
+            "This Month" -> {
+                cal.set(java.util.Calendar.DAY_OF_MONTH, 1)
+                cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+                cal.set(java.util.Calendar.MINUTE, 0)
+                cal.set(java.util.Calendar.SECOND, 0)
+                val start = cal.time
+                list.filter { it.date.time >= start.time }
+            }
+            "Last Month" -> {
+                cal.set(java.util.Calendar.DAY_OF_MONTH, 1)
+                cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
+                cal.set(java.util.Calendar.MINUTE, 0)
+                cal.set(java.util.Calendar.SECOND, 0)
+                val thisMonthStart = cal.time
+                cal.add(java.util.Calendar.MONTH, -1)
+                val lastMonthStart = cal.time
+                list.filter { it.date.time >= lastMonthStart.time && it.date.time < thisMonthStart.time }
+            }
+            else -> list
+        }
+
         if (query.isBlank()) {
-            list
+            periodFiltered
         } else {
-            list.filter {
+            periodFiltered.filter {
                 it.title.contains(query, ignoreCase = true) ||
                 it.category.contains(query, ignoreCase = true) ||
                 it.paymentMethod.contains(query, ignoreCase = true)
@@ -44,6 +74,10 @@ class TransactionsViewModel(
 
     fun updateSearch(query: String) {
         _searchQuery.value = query
+    }
+
+    fun setPeriod(period: String) {
+        _selectedPeriod.value = period
     }
 
     fun addTransaction(tx: TransactionItem) {

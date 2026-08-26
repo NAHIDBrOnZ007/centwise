@@ -54,7 +54,7 @@ public struct CategoryBreakdownList: View {
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(.primary)
 
-                Text("\(FakeTransactionRepository.shared.transactions.filter { $0.category.id == item.category.id }.count) transactions")
+                Text("\(TransactionRepository.shared.transactions.filter { $0.category.id == item.category.id }.count) transactions")
                     .font(.system(size: 12))
                     .foregroundColor(.secondary)
             }

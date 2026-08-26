@@ -77,6 +77,11 @@ fun FloatingTabBar(
                     animationSpec = spring(),
                     label = "tab_color"
                 )
+                val itemScale by androidx.compose.animation.core.animateFloatAsState(
+                    targetValue = if (isSelected) 1.08f else 1.0f,
+                    animationSpec = spring(dampingRatio = 0.65f, stiffness = 400f),
+                    label = "tab_scale"
+                )
 
                 Box(
                     modifier = Modifier
@@ -91,6 +96,7 @@ fun FloatingTabBar(
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
+                        modifier = Modifier.androidx.compose.ui.draw.scale(itemScale),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -103,7 +109,10 @@ fun FloatingTabBar(
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = tab.title,
-                            style = CentwiseTypography.Caption.copy(fontSize = 10.sp),
+                            style = CentwiseTypography.Caption.copy(
+                                fontSize = 10.sp,
+                                fontWeight = if (isSelected) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.SemiBold
+                            ),
                             color = itemColor
                         )
                     }

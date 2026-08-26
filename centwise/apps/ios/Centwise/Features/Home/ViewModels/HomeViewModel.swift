@@ -14,9 +14,9 @@ public final class HomeViewModel: ObservableObject {
     @Published public var totalNetWorth: Double = 0.0
 
     private var cancellables = Set<AnyCancellable>()
-    private let repository: FakeTransactionRepository
+    private let repository: TransactionRepository
 
-    public init(repository: FakeTransactionRepository = .shared) {
+    public init(repository: TransactionRepository = .shared) {
         self.repository = repository
         bindRepository()
     }

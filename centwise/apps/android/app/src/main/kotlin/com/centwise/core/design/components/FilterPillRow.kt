@@ -27,7 +27,7 @@ import com.centwise.core.design.theme.CentwiseTypography
 
 @Composable
 fun FilterPillRow(
-    selectedPeriod: String = "All Time",
+    selectedPeriod: String = "This Month",
     selectedType: String = "Type",
     selectedCategory: String = "Category",
     onPeriodClick: () -> Unit = {},
@@ -36,37 +36,36 @@ fun FilterPillRow(
     modifier: Modifier = Modifier,
     isDark: Boolean = isSystemInDarkTheme()
 ) {
-    val scrollState = rememberScrollState()
-
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .horizontalScroll(scrollState),
+        modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // 1. Period Pill (Active Mauve)
+        // 1. Period Pill
         FilterCapsulePill(
+            modifier = Modifier.weight(1f),
             icon = Icons.Default.CalendarToday,
             text = selectedPeriod,
-            isActive = true,
+            isActive = selectedPeriod != "All Time",
             onClick = onPeriodClick,
             isDark = isDark
         )
 
         // 2. Type Pill
         FilterCapsulePill(
+            modifier = Modifier.weight(1f),
             icon = Icons.Default.Menu,
             text = selectedType,
-            isActive = false,
+            isActive = selectedType != "Type",
             onClick = onTypeClick,
             isDark = isDark
         )
 
         // 3. Category Pill
         FilterCapsulePill(
+            modifier = Modifier.weight(1f),
             icon = Icons.Default.Tune,
             text = selectedCategory,
-            isActive = false,
+            isActive = selectedCategory != "Category",
             onClick = onCategoryClick,
             isDark = isDark
         )
@@ -96,29 +95,36 @@ fun FilterCapsulePill(
 
     Row(
         modifier = modifier
-            .clip(CircleShape)
+            .clip(RoundedCornerShape(10.dp))
             .background(bg)
             .clickable { onClick() }
-            .padding(horizontal = 14.dp, vertical = 7.dp),
+            .padding(horizontal = 6.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = Arrangement.Center
     ) {
         Icon(
             imageVector = icon,
             contentDescription = null,
             tint = contentColor,
-            modifier = Modifier.size(13.dp)
+            modifier = Modifier.size(12.dp)
         )
+        Spacer(modifier = Modifier.width(3.dp))
         Text(
             text = text,
-            style = CentwiseTypography.Subheadline,
+            style = CentwiseTypography.Caption.copy(
+                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                fontSize = 11.sp
+            ),
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
             color = contentColor
         )
+        Spacer(modifier = Modifier.width(2.dp))
         Icon(
             imageVector = Icons.Default.KeyboardArrowDown,
             contentDescription = null,
-            tint = contentColor,
-            modifier = Modifier.size(14.dp)
+            tint = contentColor.copy(alpha = 0.7f),
+            modifier = Modifier.size(12.dp)
         )
     }
 }

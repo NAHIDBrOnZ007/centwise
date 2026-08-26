@@ -1,11 +1,25 @@
 import SwiftUI
 
+public enum SettingsDestination: Hashable {
+    case shortcuts
+    case appearance
+    case currency
+    case categories
+    case budgets
+    case accounts
+    case subscriptions
+    case smartRules
+    case reviewQueue
+    case dataManagement
+    case faq
+    case about
+}
+
 public struct SettingsScreen: View {
     @ObservedObject private var themeManager = ThemeManager.shared
     @ObservedObject private var profileManager = ProfileManager.shared
     @ObservedObject private var appLockManager = AppLockManager.shared
-    @ObservedObject private var repository = FakeTransactionRepository.shared
-    @State private var showExportSheet = false
+    @ObservedObject private var repository = TransactionRepository.shared
     @State private var showAvatarPicker = false
     @State private var tempName = ""
     @State private var tempAvatar = ""
@@ -19,38 +33,35 @@ public struct SettingsScreen: View {
                 // Profile Header Card
                 profileHeaderCard
 
-                sectionHeader("Automation & Personalization")
+                sectionHeader("Personalization")
 
                 sectionCard {
-                    navigationRow(
-                        systemImage: "bolt.badge.automatic.fill",
-                        iconColor: CentwiseColors.bKashPink,
-                        title: "Shortcuts & SMS Auto-Tracking",
-                        subtitle: "3-step setup guide and live parser tester",
-                        showDivider: true
-                    ) {
-                        ShortcutsGuideScreen()
-                    }
-
                     navigationRow(
                         systemImage: "paintbrush.fill",
                         iconColor: .orange,
                         title: "Appearance",
                         subtitle: themeManager.themeMode.rawValue + " theme, accent color",
-                        showDivider: true
-                    ) {
-                        AppearanceScreen()
-                    }
+                        showDivider: true,
+                        destination: .appearance
+                    )
 
                     navigationRow(
                         systemImage: "coloncurrencysign.circle.fill",
                         iconColor: .green,
                         title: "Currency",
                         subtitle: "Default currency for totals and new entries",
-                        showDivider: false
-                    ) {
-                        CurrencyPickerScreen()
-                    }
+                        showDivider: true,
+                        destination: .currency
+                    )
+
+                    navigationRow(
+                        systemImage: "bolt.badge.automatic.fill",
+                        iconColor: CentwiseColors.bKashPink,
+                        title: "Apple Shortcuts Sync",
+                        subtitle: profileManager.isShortcutsSetupActive ? "Instant SMS logging active ✓" : "Quick setup for bKash & SMS logging ⚙️",
+                        showDivider: false,
+                        destination: .shortcuts
+                    )
                 }
 
                 sectionHeader("Data Management")
@@ -61,49 +72,35 @@ public struct SettingsScreen: View {
                         iconColor: Color(red: 0.69, green: 0.32, blue: 0.87),
                         title: "Categories",
                         subtitle: "Manage expense and income categories",
-                        showDivider: true
-                    ) {
-                        CategoriesScreen()
-                    }
+                        showDivider: true,
+                        destination: .categories
+                    )
 
                     navigationRow(
                         systemImage: "chart.pie.fill",
                         iconColor: .green,
                         title: "Budgets",
                         subtitle: "Set spending limits by category",
-                        showDivider: true
-                    ) {
-                        BudgetListScreen()
-                    }
+                        showDivider: true,
+                        destination: .budgets
+                    )
 
                     navigationRow(
                         systemImage: "building.columns.fill",
                         iconColor: Color(red: 0.0, green: 0.48, blue: 1.0),
                         title: "Accounts",
                         subtitle: "Manage bank accounts and cards",
-                        showDivider: true
-                    ) {
-                        AccountListScreen()
-                    }
+                        showDivider: true,
+                        destination: .accounts
+                    )
 
                     navigationRow(
                         systemImage: "arrow.triangle.2.circlepath",
                         iconColor: Color(red: 0.35, green: 0.34, blue: 0.84),
                         title: "Subscriptions",
                         subtitle: "Track recurring payments",
-                        showDivider: true
-                    ) {
-                        SubscriptionListScreen()
-                    }
-
-                    navigationRow(
-                        systemImage: "square.and.arrow.up",
-                        iconColor: CentwiseColors.transferBlue,
-                        title: "Export CSV",
-                        subtitle: "Share all transactions as a spreadsheet",
                         showDivider: true,
-                        action: { showExportSheet = true },
-                        destination: { EmptyView() }
+                        destination: .subscriptions
                     )
 
                     navigationRow(
@@ -111,20 +108,27 @@ public struct SettingsScreen: View {
                         iconColor: Color(red: 1.0, green: 0.18, blue: 0.33),
                         title: "Smart Rules",
                         subtitle: "Auto-categorize transactions",
-                        showDivider: true
-                    ) {
-                        RulesScreen()
-                    }
+                        showDivider: true,
+                        destination: .smartRules
+                    )
 
                     navigationRow(
                         systemImage: "tray.full.fill",
                         iconColor: CentwiseColors.transferBlue,
                         title: "Review Queue",
                         subtitle: "Review unclassified SMS messages",
-                        showDivider: false
-                    ) {
-                        ReviewQueueView()
-                    }
+                        showDivider: true,
+                        destination: .reviewQueue
+                    )
+
+                    navigationRow(
+                        systemImage: "internaldrive.fill",
+                        iconColor: CentwiseColors.primaryEmerald,
+                        title: "Data & Storage Management",
+                        subtitle: "Storage status, load demo data, reset & export",
+                        showDivider: false,
+                        destination: .dataManagement
+                    )
                 }
 
                 sectionHeader("Support & About")
@@ -137,20 +141,18 @@ public struct SettingsScreen: View {
                         iconColor: CentwiseColors.transferBlue,
                         title: "FAQ",
                         subtitle: "Common questions and answers",
-                        showDivider: true
-                    ) {
-                        FAQScreen()
-                    }
+                        showDivider: true,
+                        destination: .faq
+                    )
 
                     navigationRow(
                         systemImage: "info.circle.fill",
                         iconColor: .gray,
                         title: "About Centwise",
                         subtitle: "Version, privacy, and credits",
-                        showDivider: false
-                    ) {
-                        AboutScreen()
-                    }
+                        showDivider: false,
+                        destination: .about
+                    )
                 }
             }
             .padding(.horizontal, CentwiseSpacing.md)
@@ -159,8 +161,34 @@ public struct SettingsScreen: View {
         }
         .background(CentwiseColors.background(for: colorScheme, isAmoled: themeManager.isAmoledActive).ignoresSafeArea())
         .navigationTitle("Settings")
-        .sheet(isPresented: $showExportSheet) {
-            CsvExportSheet(transactions: repository.transactions)
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(for: SettingsDestination.self) { dest in
+            switch dest {
+            case .shortcuts:
+                ShortcutsGuideScreen()
+            case .appearance:
+                AppearanceScreen()
+            case .currency:
+                CurrencyPickerScreen()
+            case .categories:
+                CategoriesScreen()
+            case .budgets:
+                BudgetListScreen()
+            case .accounts:
+                AccountListScreen()
+            case .subscriptions:
+                SubscriptionListScreen()
+            case .smartRules:
+                RulesScreen()
+            case .reviewQueue:
+                ReviewQueueView()
+            case .dataManagement:
+                DataManagementScreen()
+            case .faq:
+                FAQScreen()
+            case .about:
+                AboutScreen()
+            }
         }
         .sheet(isPresented: $showAvatarPicker) {
             NavigationStack {
@@ -173,7 +201,16 @@ public struct SettingsScreen: View {
                 )
                 .navigationTitle("Edit Profile")
                 .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button("Done") {
+                            showAvatarPicker = false
+                        }
+                        .fontWeight(.semibold)
+                    }
+                }
             }
+            .presentationDetents([.medium, .large])
         }
     }
 
@@ -252,26 +289,24 @@ public struct SettingsScreen: View {
         )
     }
 
-    private func navigationRow<Destination: View>(
+    private func navigationRow(
         systemImage: String,
         iconColor: Color,
         title: String,
         subtitle: String,
         showDivider: Bool,
-        action: (() -> Void)? = nil,
-        @ViewBuilder destination: () -> Destination
+        destination: SettingsDestination? = nil,
+        action: (() -> Void)? = nil
     ) -> some View {
         VStack(spacing: 0) {
-            if let action = action {
-                Button {
-                    action()
-                } label: {
+            if let destination = destination {
+                NavigationLink(value: destination) {
                     rowLabel(systemImage: systemImage, iconColor: iconColor, title: title, subtitle: subtitle)
                 }
                 .buttonStyle(.plain)
-            } else {
-                NavigationLink {
-                    destination()
+            } else if let action = action {
+                Button {
+                    action()
                 } label: {
                     rowLabel(systemImage: systemImage, iconColor: iconColor, title: title, subtitle: subtitle)
                 }

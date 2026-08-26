@@ -7,6 +7,7 @@ public final class ProfileManager: ObservableObject {
     @AppStorage("userAvatar") public var userAvatar: String = "avatar_1"
     @AppStorage("hasCompletedOnboarding") public var hasCompletedOnboarding: Bool = false
     @AppStorage("shortcutsSetupDismissed") public var shortcutsSetupDismissed: Bool = false
+    @AppStorage("isShortcutsSetupActive") public var isShortcutsSetupActive: Bool = false
 
     public static let availableAvatars: [String] = [
         "avatar_1", "avatar_2", "avatar_3", "avatar_4", "avatar_5",

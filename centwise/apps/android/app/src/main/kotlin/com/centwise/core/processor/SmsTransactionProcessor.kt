@@ -105,8 +105,9 @@ object SmsTransactionProcessor {
         // Store reference for dedup
         reference?.let { seenReferences.add(it) }
 
-        // Insert into repository
-        FakeTransactionRepository.shared.addTransaction(transaction)
+        // Insert into SQLite database repository
+        com.centwise.data.repository.TransactionRepository.shared.init(context)
+        com.centwise.data.repository.TransactionRepository.shared.addTransaction(transaction)
 
         // Trigger rich notification
         CentwiseNotifications.notifyNewTransaction(context, transaction)

@@ -58,6 +58,7 @@ fun SettingsScreen(
     onSubscriptionsClick: () -> Unit = {},
     onSmartRulesClick: () -> Unit = {},
     onReviewQueueClick: () -> Unit = {},
+    onDataManagementClick: () -> Unit = {},
     onFAQClick: () -> Unit = {},
     onAboutClick: () -> Unit = {},
     isDark: Boolean = isSystemInDarkTheme()
@@ -339,17 +340,6 @@ fun SettingsScreen(
                         isDark = isDark
                     )
                     SettingsRow(
-                        icon = Icons.Default.Share,
-                        iconColor = Color(0xFF007AFF),
-                        title = "Export CSV",
-                        subtitle = "Share all transactions as a spreadsheet",
-                        onClick = {
-                            com.centwise.features.transactions.CsvExporter.shareExport(context)
-                        },
-                        showDivider = true,
-                        isDark = isDark
-                    )
-                    SettingsRow(
                         icon = Icons.Default.AutoAwesome,
                         iconColor = Color(0xFFFF2D55),
                         title = "Smart Rules",
@@ -364,6 +354,15 @@ fun SettingsScreen(
                         title = "Review Queue",
                         subtitle = if (reviewQueueItems.isNotEmpty()) "${reviewQueueItems.size} pending SMS messages" else "Review unclassified SMS messages",
                         onClick = onReviewQueueClick,
+                        showDivider = true,
+                        isDark = isDark
+                    )
+                    SettingsRow(
+                        icon = Icons.Default.Storage,
+                        iconColor = CentwiseColors.PrimaryEmerald,
+                        title = "Data & Storage Management",
+                        subtitle = "Database status, load demo data, reset & export",
+                        onClick = onDataManagementClick,
                         showDivider = false,
                         isDark = isDark
                     )

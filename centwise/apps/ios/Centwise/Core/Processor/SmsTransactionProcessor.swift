@@ -66,8 +66,8 @@ public final class SmsTransactionProcessor {
         let title = party ?? "\(provider.rawValue) \(type.rawValue)"
 
         // Match or default account
-        let matchedAccount = FakeTransactionRepository.shared.accounts.first(where: { $0.provider == provider })
-            ?? FakeTransactionRepository.shared.accounts.first
+        let matchedAccount = TransactionRepository.shared.accounts.first(where: { $0.provider == provider })
+            ?? TransactionRepository.shared.accounts.first
             ?? FinancialAccount(name: provider.rawValue, provider: provider, type: .mfs, currentBalance: 0.0)
 
         let transaction = CentwiseTransaction(
@@ -89,8 +89,9 @@ public final class SmsTransactionProcessor {
             seenReferences.insert(ref)
         }
 
-        FakeTransactionRepository.shared.addTransaction(transaction)
+        TransactionRepository.shared.addTransaction(transaction)
         CentwiseNotifications.notifyNewTransaction(transaction)
+        ProfileManager.shared.isShortcutsSetupActive = true
 
         return transaction
     }

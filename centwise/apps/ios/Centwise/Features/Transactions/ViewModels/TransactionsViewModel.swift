@@ -26,7 +26,7 @@ public final class TransactionsViewModel: ObservableObject {
     @Published public var allTransactions: [CentwiseTransaction] = []
     @Published public var filteredTransactions: [CentwiseTransaction] = []
     @Published public var searchQuery: String = ""
-    @Published public var selectedPeriod: DatePeriodFilter = .allTime
+    @Published public var selectedPeriod: DatePeriodFilter = .thisMonth
     @Published public var selectedTypeFilter: TransactionType? = nil
     @Published public var selectedCategoryFilter: String? = nil
     @Published public var selectedProviderFilter: FinancialProvider? = nil
@@ -37,9 +37,9 @@ public final class TransactionsViewModel: ObservableObject {
     @Published public var totalNet: Double = 0.0
 
     private var cancellables = Set<AnyCancellable>()
-    private let repository: FakeTransactionRepository
+    private let repository: TransactionRepository
 
-    public init(repository: FakeTransactionRepository = .shared) {
+    public init(repository: TransactionRepository = .shared) {
         self.repository = repository
         bindRepository()
     }

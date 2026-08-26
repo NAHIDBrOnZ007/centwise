@@ -18,6 +18,7 @@ public enum AppTab: String, CaseIterable {
 
 public struct MainTabView: View {
     @State private var selectedTab: AppTab = .home
+    @Namespace private var tabAnimation
     @Environment(\.colorScheme) private var colorScheme
     @ObservedObject private var themeManager = ThemeManager.shared
     @ObservedObject private var profileManager = ProfileManager.shared
@@ -35,36 +36,46 @@ public struct MainTabView: View {
                 .transition(.opacity)
                 .zIndex(2)
             } else {
-                // Main Tab Viewport
-            Group {
-                switch selectedTab {
-                case .home:
-                    NavigationStack {
-                        HomeScreen(onSeeAllTransactions: { selectedTab = .transactions })
-                    }
-                case .transactions:
-                    NavigationStack {
-                        TransactionListView()
-                    }
-                case .analytics:
-                    NavigationStack {
-                        AnalyticsScreen()
-                    }
-                case .settings:
-                    NavigationStack {
-                        SettingsScreen()
+                // Memory-efficient active tab viewport (Frees inactive tab textures and charts)
+                Group {
+                    switch selectedTab {
+                    case .home:
+                        NavigationStack {
+                            HomeScreen(onSeeAllTransactions: {
+                                selectTab(.transactions)
+                            })
+                        }
+                    case .transactions:
+                        NavigationStack {
+                            TransactionListView()
+                        }
+                    case .analytics:
+                        NavigationStack {
+                            AnalyticsScreen()
+                        }
+                    case .settings:
+                        NavigationStack {
+                            SettingsScreen()
+                        }
                     }
                 }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            // Floating Pill Tab Bar (Exact from Screenshots 1, 2, 3)
-            floatingTabBar
-                .padding(.horizontal, 20)
-                .padding(.bottom, 16)
+                // Floating Pill Tab Bar
+                floatingTabBar
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 16)
             }
         }
         .ignoresSafeArea(.keyboard)
+    }
+
+    private func selectTab(_ tab: AppTab) {
+        guard selectedTab != tab else { return }
+        themeManager.triggerHapticFeedback(.selection)
+        withAnimation(.easeInOut(duration: 0.18)) {
+            selectedTab = tab
+        }
     }
 
     private var floatingTabBar: some View {
@@ -94,30 +105,46 @@ public struct MainTabView: View {
         let isSelected = selectedTab == tab
 
         Button(action: {
-            themeManager.triggerHapticFeedback(.light)
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-                selectedTab = tab
-            }
+            selectTab(tab)
         }) {
             VStack(spacing: 3) {
-                Image(systemName: tab.icon)
-                    .font(.system(size: 18, weight: .semibold))
+                if #available(iOS 17.0, *) {
+                    Image(systemName: tab.icon)
+                        .font(.system(size: 18, weight: .semibold))
+                        .symbolEffect(.bounce, value: isSelected)
+                        .scaleEffect(isSelected ? 1.08 : 1.0)
+                } else {
+                    Image(systemName: tab.icon)
+                        .font(.system(size: 18, weight: .semibold))
+                        .scaleEffect(isSelected ? 1.08 : 1.0)
+                }
 
                 Text(tab.rawValue)
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.system(size: 10, weight: isSelected ? .bold : .semibold))
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 8)
-            .background(
-                Capsule()
-                    .fill(isSelected ? Color(red: 0.71, green: 0.36, blue: 0.46).opacity(0.12) : Color.clear)
-            )
+            .background {
+                if isSelected {
+                    Capsule()
+                        .fill(themeManager.accentColor.opacity(0.14))
+                        .matchedGeometryEffect(id: "activeTabCapsule", in: tabAnimation)
+                }
+            }
             .foregroundColor(
                 isSelected
-                    ? Color(red: 0.71, green: 0.36, blue: 0.46) // Mauve / Theme Accent
-                    : (colorScheme == .dark ? Color(white: 0.6) : Color(white: 0.3))
+                    ? themeManager.accentColor
+                    : (colorScheme == .dark ? Color(white: 0.6) : Color(white: 0.35))
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(TabItemButtonStyle())
+    }
+}
+
+private struct TabItemButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.93 : 1.0)
+            .animation(.spring(response: 0.22, dampingFraction: 0.7), value: configuration.isPressed)
     }
 }

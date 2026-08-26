@@ -58,7 +58,7 @@ public struct AddEditAccountScreen: View {
                             lastFourDigits: lastFour.isEmpty ? nil : lastFour,
                             currentBalance: bal
                         )
-                        FakeTransactionRepository.shared.addAccount(newAcc)
+                        TransactionRepository.shared.addAccount(newAcc)
                         themeManager.triggerHapticFeedback(.success)
                         dismiss()
                     }

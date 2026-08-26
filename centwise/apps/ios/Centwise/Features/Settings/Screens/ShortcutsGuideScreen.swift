@@ -15,12 +15,12 @@ public struct ShortcutsGuideScreen: View {
                         Image(systemName: "bolt.badge.automatic.fill")
                             .font(.system(size: 24))
                             .foregroundColor(themeManager.accentColor)
-                        Text("iOS Auto-Tracking")
+                        Text("Apple Shortcuts Sync")
                             .font(CentwiseTypography.title2)
                             .foregroundColor(.primary)
                     }
 
-                    Text("Because iOS restricts apps from directly reading your SMS inbox, Centwise uses Apple Shortcuts Message Automation to parse your Bangladesh bank and MFS transactions silently in the background.")
+                    Text("Because iOS protects your SMS privacy, Centwise uses Apple Shortcuts Automation to log your bKash, Nagad, and bank transactions securely with zero manual entry.")
                         .font(CentwiseTypography.subheadline)
                         .foregroundColor(.secondary)
                 }
@@ -39,22 +39,27 @@ public struct ShortcutsGuideScreen: View {
                     stepCard(
                         stepNumber: 2,
                         title: "Create 'Message' Automation",
-                        description: "Select 'Message', set Message Contains to 'Tk, bKash, Nagad, Rocket, Cellfin, Citytouch', and toggle 'Run Immediately' ON.",
+                        description: "Select 'Message', set Message Contains to 'Tk' (or paste the full keyword list below), and toggle 'Run Immediately' ON.",
                         icon: "message.fill"
                     )
 
                     stepCard(
                         stepNumber: 3,
                         title: "Add Centwise Action",
-                        description: "Choose the action 'Parse SMS Transaction' from Centwise and pass the Shortcut Message Input.",
+                        description: "Tap 'Centwise' from the apps list, choose 'Track Transaction from SMS', and set SMS Body to 'Shortcut Input'.",
                         icon: "bolt.fill"
                     )
                 }
                 .padding(.horizontal, CentwiseSpacing.md)
 
+                // 1-Tap Copy Keywords Card
+                keywordsCopyCard
+                    .padding(.horizontal, CentwiseSpacing.md)
+
                 // 1-Tap Open Shortcuts Button
                 VStack(spacing: CentwiseSpacing.sm) {
                     Button(action: {
+                        themeManager.triggerHapticFeedback(.selection)
                         if let url = URL(string: "shortcuts://create-automation"), UIApplication.shared.canOpenURL(url) {
                             UIApplication.shared.open(url)
                         } else if let url = URL(string: "shortcuts://") {
@@ -63,7 +68,7 @@ public struct ShortcutsGuideScreen: View {
                     }) {
                         HStack {
                             Image(systemName: "bolt.fill")
-                            Text("Open Apple Shortcuts Automation")
+                            Text("Open Apple Shortcuts App")
                                 .fontWeight(.semibold)
                         }
                         .frame(maxWidth: .infinity)
@@ -90,7 +95,7 @@ public struct ShortcutsGuideScreen: View {
                             .font(CentwiseTypography.headline)
                             .foregroundColor(.primary)
 
-                        Text("bKash, Nagad, Rocket, Upay, Cellfin, City Bank, BRAC Bank, Eastern Bank, Dutch-Bangla Bank.")
+                        Text("bKash, Nagad, Rocket, Upay, Cellfin, City Bank, BRAC Bank, Eastern Bank, Dutch-Bangla Bank, Islami Bank, UCB, Prime Bank.")
                             .font(CentwiseTypography.footnote)
                             .foregroundColor(.secondary)
                     }
@@ -128,6 +133,68 @@ public struct ShortcutsGuideScreen: View {
                 }
             }
             .padding(.vertical, CentwiseSpacing.xs)
+        }
+    }
+
+    @State private var hasCopiedKeywords = false
+    private let allFinancialKeywords = "Tk, bKash, Nagad, Rocket, Cellfin, Payment, Balance, debited, credited, TrxID, Fee, BDT, Cash Out, Transfer"
+
+    @ViewBuilder
+    private var keywordsCopyCard: some View {
+        CentwiseCard {
+            VStack(alignment: .leading, spacing: CentwiseSpacing.xs) {
+                HStack {
+                    Image(systemName: "doc.on.doc.fill")
+                        .foregroundColor(themeManager.accentColor)
+                    Text("All Financial Keywords")
+                        .font(CentwiseTypography.headline)
+                        .foregroundColor(.primary)
+                    Spacer()
+                    if hasCopiedKeywords {
+                        Text("Copied!")
+                            .font(CentwiseTypography.caption)
+                            .foregroundColor(CentwiseColors.incomeGreen)
+                    }
+                }
+
+                Text("Copy and paste these keywords into the 'Message Contains' field in Shortcuts:")
+                    .font(CentwiseTypography.footnote)
+                    .foregroundColor(.secondary)
+
+                Text(allFinancialKeywords)
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundColor(.primary)
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(colorScheme == .dark ? Color(white: 0.12) : Color(white: 0.94))
+                    .cornerRadius(8)
+
+                Button(action: {
+                    UIPasteboard.general.string = allFinancialKeywords
+                    themeManager.triggerHapticFeedback(.selection)
+                    withAnimation {
+                        hasCopiedKeywords = true
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        withAnimation {
+                            hasCopiedKeywords = false
+                        }
+                    }
+                }) {
+                    HStack {
+                        Image(systemName: hasCopiedKeywords ? "checkmark.circle.fill" : "doc.on.doc")
+                        Text(hasCopiedKeywords ? "Copied to Clipboard!" : "Copy All Keywords")
+                            .fontWeight(.semibold)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(hasCopiedKeywords ? CentwiseColors.incomeGreen : themeManager.accentColor.opacity(0.15))
+                    .foregroundColor(hasCopiedKeywords ? .white : themeManager.accentColor)
+                    .cornerRadius(10)
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 4)
+            }
         }
     }
 

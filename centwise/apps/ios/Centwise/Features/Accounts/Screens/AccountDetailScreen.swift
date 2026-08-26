@@ -3,7 +3,7 @@ import SwiftUI
 public struct AccountDetailScreen: View {
     private let accountId: String
 
-    @ObservedObject private var repository = FakeTransactionRepository.shared
+    @ObservedObject private var repository = TransactionRepository.shared
     @State private var selectedTransaction: CentwiseTransaction?
 
     @Environment(\.colorScheme) private var colorScheme

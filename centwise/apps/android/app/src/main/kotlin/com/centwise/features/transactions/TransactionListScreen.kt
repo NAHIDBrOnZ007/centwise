@@ -110,9 +110,32 @@ fun TransactionListScreen(
                 )
             }
 
-            // Filter Chips (All Time, Type, Category)
+            // Filter Chips (Period, Type, Category)
+            val selectedPeriod by viewModel.selectedPeriod.collectAsState()
             item {
-                FilterPillRow(isDark = isDark)
+                var showPeriodMenu by remember { mutableStateOf(false) }
+                Box {
+                    FilterPillRow(
+                        selectedPeriod = selectedPeriod,
+                        onPeriodClick = { showPeriodMenu = true },
+                        isDark = isDark
+                    )
+
+                    androidx.compose.material3.DropdownMenu(
+                        expanded = showPeriodMenu,
+                        onDismissRequest = { showPeriodMenu = false }
+                    ) {
+                        listOf("This Month", "Last Month", "All Time").forEach { p ->
+                            androidx.compose.material3.DropdownMenuItem(
+                                text = { Text(p) },
+                                onClick = {
+                                    viewModel.setPeriod(p)
+                                    showPeriodMenu = false
+                                }
+                            )
+                        }
+                    }
+                }
             }
 
             // Totals Summary Card (3 Columns: Income, Expenses, Net)

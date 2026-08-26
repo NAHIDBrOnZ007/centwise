@@ -150,106 +150,114 @@ public struct TransactionListView: View {
 
     // MARK: - Filter Bar
     private var filterBar: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                // 1. Period Dropdown Menu
-                Menu {
-                    ForEach(DatePeriodFilter.allCases, id: \.self) { period in
-                        Button {
-                            themeManager.triggerHapticFeedback(.selection)
-                            viewModel.selectedPeriod = period
-                            viewModel.applyFilters()
-                        } label: {
-                            if viewModel.selectedPeriod == period {
-                                Label(period.rawValue, systemImage: "checkmark")
-                            } else {
-                                Text(period.rawValue)
-                            }
-                        }
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "calendar")
-                        Text(viewModel.selectedPeriod.rawValue)
-                        Image(systemName: "chevron.down").font(.system(size: 10))
-                    }
-                    .font(.system(size: 13, weight: .medium))
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 7)
-                    .background(themeManager.accentColor)
-                    .foregroundColor(.white)
-                    .cornerRadius(999)
-                }
-
-                // 2. Type Dropdown Menu
-                Menu {
-                    Button("All Types") {
+        HStack(spacing: 8) {
+            // 1. Period Dropdown Menu
+            Menu {
+                ForEach(DatePeriodFilter.allCases, id: \.self) { period in
+                    Button {
                         themeManager.triggerHapticFeedback(.selection)
-                        viewModel.selectedTypeFilter = nil
+                        viewModel.selectedPeriod = period
                         viewModel.applyFilters()
-                    }
-                    ForEach(TransactionType.allCases) { type in
-                        Button {
-                            themeManager.triggerHapticFeedback(.selection)
-                            viewModel.selectedTypeFilter = type
-                            viewModel.applyFilters()
-                        } label: {
-                            if viewModel.selectedTypeFilter == type {
-                                Label(type.rawValue, systemImage: "checkmark")
-                            } else {
-                                Text(type.rawValue)
-                            }
+                    } label: {
+                        if viewModel.selectedPeriod == period {
+                            Label(period.rawValue, systemImage: "checkmark")
+                        } else {
+                            Text(period.rawValue)
                         }
                     }
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "line.3.horizontal")
-                        Text(viewModel.selectedTypeFilter?.rawValue ?? "Type")
-                        Image(systemName: "chevron.down").font(.system(size: 10))
-                    }
-                    .font(.system(size: 13, weight: .medium))
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 7)
-                    .background(viewModel.selectedTypeFilter != nil ? themeManager.accentColor : (colorScheme == .dark ? Color(white: 0.14) : Color(white: 0.94)))
-                    .foregroundColor(viewModel.selectedTypeFilter != nil ? .white : .primary)
-                    .cornerRadius(999)
                 }
+            } label: {
+                filterChip(
+                    icon: "calendar",
+                    title: viewModel.selectedPeriod.rawValue,
+                    isSelected: viewModel.selectedPeriod != .allTime
+                )
+            }
 
-                // 3. Category Dropdown Menu
-                Menu {
-                    Button("All Categories") {
+            // 2. Type Dropdown Menu
+            Menu {
+                Button("All Types") {
+                    themeManager.triggerHapticFeedback(.selection)
+                    viewModel.selectedTypeFilter = nil
+                    viewModel.applyFilters()
+                }
+                ForEach(TransactionType.allCases) { type in
+                    Button {
                         themeManager.triggerHapticFeedback(.selection)
-                        viewModel.selectedCategoryFilter = nil
+                        viewModel.selectedTypeFilter = type
                         viewModel.applyFilters()
-                    }
-                    ForEach(TransactionCategory.defaultCategories) { cat in
-                        Button {
-                            themeManager.triggerHapticFeedback(.selection)
-                            viewModel.selectedCategoryFilter = cat.id
-                            viewModel.applyFilters()
-                        } label: {
-                            if viewModel.selectedCategoryFilter == cat.id {
-                                Label(cat.name, systemImage: "checkmark")
-                            } else {
-                                Text(cat.name)
-                            }
+                    } label: {
+                        if viewModel.selectedTypeFilter == type {
+                            Label(type.rawValue, systemImage: "checkmark")
+                        } else {
+                            Text(type.rawValue)
                         }
                     }
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "slider.horizontal.3")
-                        Text(viewModel.selectedCategoryFilter != nil ? (TransactionCategory.defaultCategories.first { $0.id == viewModel.selectedCategoryFilter }?.name ?? "Category") : "Category")
-                        Image(systemName: "chevron.down").font(.system(size: 10))
-                    }
-                    .font(.system(size: 13, weight: .medium))
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 7)
-                    .background(viewModel.selectedCategoryFilter != nil ? themeManager.accentColor : (colorScheme == .dark ? Color(white: 0.14) : Color(white: 0.94)))
-                    .foregroundColor(viewModel.selectedCategoryFilter != nil ? .white : .primary)
-                    .cornerRadius(999)
                 }
+            } label: {
+                filterChip(
+                    icon: "arrow.up.arrow.down",
+                    title: viewModel.selectedTypeFilter?.rawValue ?? "Type",
+                    isSelected: viewModel.selectedTypeFilter != nil
+                )
+            }
+
+            // 3. Category Dropdown Menu
+            Menu {
+                Button("All Categories") {
+                    themeManager.triggerHapticFeedback(.selection)
+                    viewModel.selectedCategoryFilter = nil
+                    viewModel.applyFilters()
+                }
+                ForEach(TransactionCategory.defaultCategories) { cat in
+                    Button {
+                        themeManager.triggerHapticFeedback(.selection)
+                        viewModel.selectedCategoryFilter = cat.id
+                        viewModel.applyFilters()
+                    } label: {
+                        if viewModel.selectedCategoryFilter == cat.id {
+                            Label(cat.name, systemImage: "checkmark")
+                        } else {
+                            Text(cat.name)
+                        }
+                    }
+                }
+            } label: {
+                let categoryName = viewModel.selectedCategoryFilter != nil
+                    ? (TransactionCategory.defaultCategories.first { $0.id == viewModel.selectedCategoryFilter }?.name ?? "Category")
+                    : "Category"
+                filterChip(
+                    icon: "square.grid.2x2",
+                    title: categoryName,
+                    isSelected: viewModel.selectedCategoryFilter != nil
+                )
             }
         }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func filterChip(icon: String, title: String, isSelected: Bool) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 11, weight: .semibold))
+
+            Text(title)
+                .font(.system(size: 12, weight: .semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+
+            Image(systemName: "chevron.down")
+                .font(.system(size: 9, weight: .bold))
+                .opacity(0.7)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .padding(.horizontal, 6)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(isSelected ? themeManager.accentColor : (colorScheme == .dark ? Color(white: 0.14) : Color(white: 0.94)))
+        )
+        .foregroundColor(isSelected ? .white : (colorScheme == .dark ? .white : .primary))
     }
 
     private var emptyState: some View {

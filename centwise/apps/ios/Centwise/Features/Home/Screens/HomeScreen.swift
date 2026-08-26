@@ -22,15 +22,15 @@ public struct HomeScreen: View {
                     // 1. User Greeting Card
                     GreetingCard()
 
-                    // Quick Shortcuts Setup Banner
-                    if !profileManager.shortcutsSetupDismissed {
+                    // Quick Shortcuts Setup Banner (Notifies user if not configured)
+                    if !profileManager.isShortcutsSetupActive && !profileManager.shortcutsSetupDismissed {
                         CentwiseCard {
                             VStack(alignment: .leading, spacing: 10) {
                                 HStack {
                                     HStack(spacing: 8) {
                                         Image(systemName: "bolt.badge.automatic.fill")
                                             .foregroundColor(themeManager.accentColor)
-                                        Text("Set Up SMS Auto-Tracking")
+                                        Text("Set Up Instant SMS Sync")
                                             .font(CentwiseTypography.headline)
                                             .foregroundColor(.primary)
                                     }
@@ -46,7 +46,7 @@ public struct HomeScreen: View {
                                     .buttonStyle(.plain)
                                 }
 
-                                Text("Centwise can auto-log your bKash, Nagad, Rocket, and bank transactions silently in the background via Apple Shortcuts.")
+                                Text("Centwise can instantly log your bKash, Nagad, Rocket, and bank receipts with Apple Shortcuts.")
                                     .font(CentwiseTypography.footnote)
                                     .foregroundColor(.secondary)
 
@@ -111,7 +111,7 @@ public struct HomeScreen: View {
                                         editingTransaction = tx
                                     },
                                     onDelete: {
-                                        FakeTransactionRepository.shared.deleteTransaction(id: tx.id)
+                                        TransactionRepository.shared.deleteTransaction(id: tx.id)
                                     }
                                 )
                                 .padding(.horizontal, 14)
@@ -158,7 +158,7 @@ public struct HomeScreen: View {
                     editingTransaction = tx
                 },
                 onDelete: {
-                    FakeTransactionRepository.shared.deleteTransaction(id: tx.id)
+                    TransactionRepository.shared.deleteTransaction(id: tx.id)
                 }
             )
         }

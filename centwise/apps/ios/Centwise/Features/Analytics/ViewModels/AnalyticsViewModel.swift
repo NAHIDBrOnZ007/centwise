@@ -76,9 +76,9 @@ public final class AnalyticsViewModel: ObservableObject {
     @Published public var trendPoints: [TrendPoint] = []
 
     private var cancellables = Set<AnyCancellable>()
-    private let repository: FakeTransactionRepository
+    private let repository: TransactionRepository
 
-    public init(repository: FakeTransactionRepository = .shared) {
+    public init(repository: TransactionRepository = .shared) {
         self.repository = repository
         bindRepository()
     }

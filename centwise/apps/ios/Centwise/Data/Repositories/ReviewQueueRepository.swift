@@ -50,7 +50,7 @@ public final class ReviewQueueRepository: ObservableObject {
     }
 
     public func confirmAsTransaction(item: ReviewQueueItem, transaction: CentwiseTransaction) {
-        FakeTransactionRepository.shared.addTransaction(transaction)
+        TransactionRepository.shared.addTransaction(transaction)
         dismissItem(id: item.id)
     }
 }

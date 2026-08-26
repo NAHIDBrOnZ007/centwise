@@ -15,7 +15,7 @@ public struct AddEditTransactionView: View {
     @State private var selectedAccountIndex: Int = 0
     @State private var date: Date = Date()
     @State private var notes: String = ""
-    @State private var accounts: [FinancialAccount] = MockDataProvider.shared.accounts
+    @State private var accounts: [FinancialAccount] = TransactionRepository.shared.accounts
 
     public init(
         transactionToEdit: CentwiseTransaction? = nil,
@@ -138,7 +138,7 @@ public struct AddEditTransactionView: View {
             updated.date = date
             updated.notes = notes.isEmpty ? nil : notes
 
-            FakeTransactionRepository.shared.updateTransaction(updated)
+            TransactionRepository.shared.updateTransaction(updated)
         } else {
             let newTx = CentwiseTransaction(
                 title: title,
@@ -152,7 +152,7 @@ public struct AddEditTransactionView: View {
                 notes: notes.isEmpty ? nil : notes,
                 isAutoTracked: false
             )
-            FakeTransactionRepository.shared.addTransaction(newTx)
+            TransactionRepository.shared.addTransaction(newTx)
         }
 
         themeManager.triggerHapticFeedback(.success)

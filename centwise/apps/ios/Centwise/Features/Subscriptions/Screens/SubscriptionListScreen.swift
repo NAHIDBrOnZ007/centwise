@@ -1,7 +1,7 @@
 import SwiftUI
 
 public struct SubscriptionListScreen: View {
-    @ObservedObject private var repository = FakeTransactionRepository.shared
+    @ObservedObject private var repository = TransactionRepository.shared
     @ObservedObject private var themeManager = ThemeManager.shared
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.isAmoledActive) private var isAmoled

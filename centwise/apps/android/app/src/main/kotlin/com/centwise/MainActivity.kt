@@ -60,6 +60,7 @@ sealed class SubScreen {
     data object FAQ : SubScreen()
     data object About : SubScreen()
     data object ReviewQueue : SubScreen()
+    data object DataManagement : SubScreen()
     data class AccountDetail(val account: AccountItem) : SubScreen()
     data class BudgetDetail(val budget: BudgetItem) : SubScreen()
 }
@@ -67,6 +68,7 @@ sealed class SubScreen {
 class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        com.centwise.data.repository.TransactionRepository.shared.init(this)
         enableEdgeToEdge()
         setContent {
             CentwiseApp()
@@ -293,6 +295,10 @@ fun CentwiseApp(
                             onBackClick = { subScreen = null },
                             isDark = effectiveDark
                         )
+                        is SubScreen.DataManagement -> com.centwise.features.settings.DataManagementScreen(
+                            onBackClick = { subScreen = null },
+                            isDark = effectiveDark
+                        )
                     }
                 }
             }
@@ -330,6 +336,7 @@ fun CentwiseApp(
                                 onSubscriptionsClick = { subScreen = SubScreen.Subscriptions },
                                 onSmartRulesClick = { subScreen = SubScreen.Rules },
                                 onReviewQueueClick = { subScreen = SubScreen.ReviewQueue },
+                                onDataManagementClick = { subScreen = SubScreen.DataManagement },
                                 onFAQClick = { subScreen = SubScreen.FAQ },
                                 onAboutClick = { subScreen = SubScreen.About },
                                 isDark = effectiveDark

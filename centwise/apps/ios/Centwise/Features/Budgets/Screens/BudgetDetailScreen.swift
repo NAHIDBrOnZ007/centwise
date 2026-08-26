@@ -3,7 +3,7 @@ import SwiftUI
 public struct BudgetDetailScreen: View {
     private let budgetId: String
 
-    @ObservedObject private var repository = FakeTransactionRepository.shared
+    @ObservedObject private var repository = TransactionRepository.shared
     @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
 

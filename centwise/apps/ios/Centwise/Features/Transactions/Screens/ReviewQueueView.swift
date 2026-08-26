@@ -29,8 +29,12 @@ public struct ReviewQueueView: View {
         .navigationTitle("Review Queue")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if !repository.items.isEmpty {
-                ToolbarItem(placement: .topBarTrailing) {
+            ToolbarItem(placement: .topBarTrailing) {
+                if repository.items.isEmpty {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 15))
+                        .foregroundColor(CentwiseColors.incomeGreen)
+                } else {
                     Text("\(repository.items.count) pending")
                         .font(CentwiseTypography.caption1)
                         .foregroundColor(.secondary)
@@ -39,7 +43,7 @@ public struct ReviewQueueView: View {
         }
         .sheet(item: $itemToConvert) { item in
             NavigationStack {
-                let defaultAccount = FakeTransactionRepository.shared.accounts.first
+                let defaultAccount = TransactionRepository.shared.accounts.first
                     ?? FinancialAccount(name: item.sender, provider: .bkash, type: .mfs, currentBalance: 0.0)
                 AddEditTransactionView(
                     transactionToEdit: CentwiseTransaction(
@@ -68,7 +72,7 @@ public struct ReviewQueueView: View {
                     .fill(CentwiseColors.incomeGreen.opacity(0.12))
                     .frame(width: 72, height: 72)
 
-                Image(systemName: "envelope.badge.shield.halfopen.fill")
+                Image(systemName: "tray.fill")
                     .font(.system(size: 32))
                     .foregroundColor(CentwiseColors.incomeGreen)
             }
@@ -84,7 +88,7 @@ public struct ReviewQueueView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, CentwiseSpacing.xl)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, minHeight: 320)
         .padding(.vertical, CentwiseSpacing.xxl)
     }
 

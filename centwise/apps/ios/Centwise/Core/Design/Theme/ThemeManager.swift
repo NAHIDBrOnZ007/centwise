@@ -32,9 +32,21 @@ public enum AccentChoice: String, CaseIterable, Identifiable {
 public final class ThemeManager: ObservableObject {
     public static let shared = ThemeManager()
 
-    @AppStorage("selectedThemeMode") public var themeMode: ThemeMode = .system
-    @AppStorage("selectedAccentChoice") public var accentChoice: AccentChoice = .emerald
-    @AppStorage("enableHaptics") public var enableHaptics: Bool = true
+    @AppStorage("selectedThemeMode") public var themeMode: ThemeMode = .system {
+        didSet {
+            objectWillChange.send()
+        }
+    }
+    @AppStorage("selectedAccentChoice") public var accentChoice: AccentChoice = .emerald {
+        didSet {
+            objectWillChange.send()
+        }
+    }
+    @AppStorage("enableHaptics") public var enableHaptics: Bool = true {
+        didSet {
+            objectWillChange.send()
+        }
+    }
 
     public var colorScheme: ColorScheme? {
         switch themeMode {
