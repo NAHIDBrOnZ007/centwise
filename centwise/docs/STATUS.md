@@ -98,7 +98,7 @@ All doable on this Windows PC, each under an hour, no NDK/Mac/emulator needed:
 
 6. **Android packaging + device integration** — install Android NDK, build the
    supported `.so` ABIs, package them under `jniLibs`, and run the app on a device/emulator.
-7. **iOS Rust build & device integration** — build the static library/XCFramework on macOS and run the Xcode scheme.
+7. **iOS Rust build & device integration** — build the static library/XCFramework on macOS and run the Xcode scheme. Follow the complete [Rust platform build and runtime verification plan](superpowers/plans/rust-platform-build-plan.md).
 8. **Backup/restore format** + full CSV import.
 9. **Store release setup** — app IDs, signing, fastlane, privacy declarations.
 
