@@ -12,7 +12,7 @@
 		074D4E6F3B78A8EA35C5FE12 /* TransactionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C8EEFDC360506547BAE1F89 /* TransactionModels.swift */; };
 		08270DD5146C7AA0885D5CEF /* CategoryChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCF7997FD0AC948D8AC55006 /* CategoryChip.swift */; };
 		083BBABF44C575CE432E89CE /* CategoryBreakdownList.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79E2F1D3C534A52CD7D2E4C /* CategoryBreakdownList.swift */; };
-		184DA1DF595E4DE366B6BB83 /* ReviewQueueRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E23038C06C6A4AB9B71A7F6 /* ReviewQueueRepository.swift */; };
+		13EAA0D1407F49C34864EB87 /* TransactionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7577E51A1E9D734D4BBEC1E4 /* TransactionRepository.swift */; };
 		19BC671BCA4F111A02D9F6D1 /* AccountCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAF8EB604F81898E0D95D7D2 /* AccountCarousel.swift */; };
 		1D8E35FFB59BBF025689F2C7 /* CategoriesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6327ABB963EED6CF91954338 /* CategoriesScreen.swift */; };
 		1E11367315E090D3A7E83A77 /* AppLockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 638C16BB45C1B8FD37B324C9 /* AppLockManager.swift */; };
@@ -27,10 +27,11 @@
 		40F851B3C29DC3E22D1178CF /* AvatarPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B7526CDEBC8C51F108DB2B5 /* AvatarPickerView.swift */; };
 		42BBFDDCA8542BD251D83D2A /* HomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4365FA011E0E9AB16BAA72DF /* HomeScreen.swift */; };
 		430E47586ED225777C5C9137 /* CentwiseCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14228D43B94C522AA65EAB39 /* CentwiseCard.swift */; };
+		4856453A265F3B3BF17A3CE1 /* DataManagementScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD825B61698CE256A95BDC13 /* DataManagementScreen.swift */; };
 		502EBDBFC59A2E0669CD722B /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12F2D8802A3C4F6E95D4D6B8 /* SettingsScreen.swift */; };
-		50FE8FC9351D570C3B3174C6 /* TransactionRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2BBE10AF9F54ADC63B28548 /* TransactionRepository.swift */; };
 		5CF080347678AB7711F65ECC /* GlassSurface.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF2C45A68F96E270680098D /* GlassSurface.swift */; };
 		5E4BF6EE47259A530E0E97CC /* AnalyticsSummaryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56C921A3BAAC8C8A09BCF22D /* AnalyticsSummaryCard.swift */; };
+		628D9130173EDB5C6A7BA34E /* CentwiseRustBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 995718A6F7E8A1EC041B3265 /* CentwiseRustBackend.swift */; };
 		6447E30BAFF17CA45088B786 /* StatPill.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279F60E744E5FC4CAB2745C9 /* StatPill.swift */; };
 		661CAB95831C8CC10E278FBA /* AddEditRuleScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CEAEE641605B19DCCF7B669 /* AddEditRuleScreen.swift */; };
 		6E9D2417D067B751B80C53DF /* OnboardingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC3EA605498FB10E67FFCFB0 /* OnboardingScreen.swift */; };
@@ -38,6 +39,7 @@
 		753B00F7924AE3B2C7DE38EF /* AddEditTransactionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F116F7F975F609F7C3FA797 /* AddEditTransactionView.swift */; };
 		7708874FFFD0B31F630B6A88 /* SubscriptionListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C29EA523A71B89A49A7ED9D /* SubscriptionListScreen.swift */; };
 		77194C9DECAB3A6564DAE710 /* TransactionRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E0F6C6D0965BD2C89108DD /* TransactionRow.swift */; };
+		7B70BD439259771B3A6ED25D /* TransactionTotalsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D333A93EAB0770B3D212B9E /* TransactionTotalsCard.swift */; };
 		7CDADCA7C0FCCCC182C49A1F /* BudgetCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5A708C91A895F43184F73ED /* BudgetCarousel.swift */; };
 		7D25683565F5762F0CBE75C0 /* CentwiseApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CF5F39E6B0B72FBB8EDF273 /* CentwiseApp.swift */; };
 		8349CD918C4C6CABD46BE9C2 /* CentwiseNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD2A4137422B4C995335366 /* CentwiseNotifications.swift */; };
@@ -51,12 +53,14 @@
 		9A741589482DA8207ACBC92B /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A9C11547D6A6D267C74F3B0 /* ThemeManager.swift */; };
 		9B1983E0E0CDE2203A559E26 /* DateFormatterHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 292A864EF19F215F34C4A4DB /* DateFormatterHelper.swift */; };
 		9D9DECDEFA0D1E472820A2DC /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C8B62967C30B4CE63E7F701 /* Localizable.strings */; };
+		AA10647BD77AA03A8277C32F /* libcentwise_ffi.a in Resources */ = {isa = PBXBuildFile; fileRef = DE7C6748454A861F1CA7E7C3 /* libcentwise_ffi.a */; };
 		AA1C8A8B847911A8FE4A8E80 /* AmountText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 563A402F65C249901DCFF586 /* AmountText.swift */; };
 		AD6F1A13B268FB3660F0F9E0 /* LockScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C41D95E4FE1C5F4910D69EF /* LockScreenView.swift */; };
 		AE8B99817D01E3A37A5BEBB6 /* RuleModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D8F6F0D7B035C283598E0C /* RuleModels.swift */; };
 		AFA0E90C865E9EF2A4BB7DBD /* AnalyticsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A730993CAD45A79658799002 /* AnalyticsScreen.swift */; };
 		B15E995DC8875B81F279B1E3 /* AccountListScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = D64D805B14E6F6378E79F39A /* AccountListScreen.swift */; };
 		B7318A8D1E2FC814C8C53FAA /* CentwiseButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C19A91F83E483A915F8399 /* CentwiseButton.swift */; };
+		B8541BEA25A9DC844F844A2D /* CentwiseCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B576BB56D0AB6813C8514880 /* CentwiseCore.swift */; };
 		B9D38C9A5D196E6AB0CD7B72 /* SpendingSummaryCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = A935E180607CD6E648378147 /* SpendingSummaryCard.swift */; };
 		BA542459F4005191800236A8 /* TransactionDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB53EE9466ECDDC26FFB1D82 /* TransactionDetailSheet.swift */; };
 		BA6DC973E36C47023B40E9C1 /* SpendingTrendsChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E37DBBCA499D82B4A177E4E /* SpendingTrendsChart.swift */; };
@@ -68,24 +72,23 @@
 		CF33CE2470A73976B9B41293 /* CentwiseSpacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C2FDA3BB5D9FAA2AAED40B8 /* CentwiseSpacing.swift */; };
 		D05A8E8D098F7B9A6C847A72 /* RulesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14987DF251B47CE4D9BA1B3D /* RulesScreen.swift */; };
 		D3DCC8BC838B8BC027636E8E /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75AD8734D68316A29A649795 /* MainTabView.swift */; };
+		DB76B6D43900D1609803F2A2 /* ReviewQueueRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56F12C5AA1096BAC5D384E54 /* ReviewQueueRepository.swift */; };
 		DDBE695480F01FB5FE9960A5 /* BudgetDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D326AC5F515ECFA8506CB9 /* BudgetDetailScreen.swift */; };
 		DFF120161336480976E9D76D /* AccountDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A981D0174E481CF067570CED /* AccountDetailScreen.swift */; };
-		E1A2B3C4D5E6F7A8B9C0D1E2 /* TransactionTotalsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1A2B3C4D5E6F7A8B9C0D1E2 /* TransactionTotalsCard.swift */; };
 		E7B33E203629EDA733CA17A4 /* AboutScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8AC085923727FD6D548AB257 /* AboutScreen.swift */; };
 		E7C225DB204FE5ED302ADDBB /* ParseTransactionIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D81CBE653D714F6E0E135BCE /* ParseTransactionIntent.swift */; };
 		ED1191FE16E742964FD794C6 /* AccountsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0D70652A52D97EC7C20C5A /* AccountsViewModel.swift */; };
 		EFD21F318535F1EEE1C15A49 /* SmsTransactionProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AC420F3821FF63CEE1C92C /* SmsTransactionProcessor.swift */; };
-		A11CE0019B7B4E3F8A5C1D20 /* CentwiseRustBackend.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11CE0019B7B4E3F8A5C1D21 /* CentwiseRustBackend.swift */; };
-		A11CE0019B7B4E3F8A5C1D22 /* CentwiseCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11CE0019B7B4E3F8A5C1D23 /* CentwiseCore.swift */; };
 		F4D9A8F243FA53C0BBFC01A0 /* GreetingCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = BED4228F2BD7264D1154DD6D /* GreetingCard.swift */; };
 		F5139EFB82AF4FB95C45EF90 /* RulesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D754F60EA78656A7C6E6BE38 /* RulesViewModel.swift */; };
 		FDCE84CC6DF2C93C153C7D91 /* ShortcutsGuideScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD679D4E99B791650E866DFD /* ShortcutsGuideScreen.swift */; };
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* DataManagementScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1C2D3E4F5A6B7C8D9E0F1A2 /* DataManagementScreen.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		06EC72A2C7305C124270C475 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		090B0637190F07E94F78E68F /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		090F128FCFE0B38F07732BAB /* CategoryPieChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryPieChart.swift; sourceTree = "<group>"; };
+		09558373CCD984133E5AAEB4 /* Centwise.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Centwise.entitlements; sourceTree = "<group>"; };
 		0C8B7D79B84341BF05E39D07 /* bn */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = bn; path = bn.lproj/Localizable.strings; sourceTree = "<group>"; };
 		12F2D8802A3C4F6E95D4D6B8 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
 		14228D43B94C522AA65EAB39 /* CentwiseCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CentwiseCard.swift; sourceTree = "<group>"; };
@@ -105,21 +108,23 @@
 		4C41D95E4FE1C5F4910D69EF /* LockScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenView.swift; sourceTree = "<group>"; };
 		563A402F65C249901DCFF586 /* AmountText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AmountText.swift; sourceTree = "<group>"; };
 		56C921A3BAAC8C8A09BCF22D /* AnalyticsSummaryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsSummaryCard.swift; sourceTree = "<group>"; };
-		5E23038C06C6A4AB9B71A7F6 /* ReviewQueueRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewQueueRepository.swift; sourceTree = "<group>"; };
+		56F12C5AA1096BAC5D384E54 /* ReviewQueueRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewQueueRepository.swift; sourceTree = "<group>"; };
 		5FFAC79DEF129018A4788B1B /* CentwiseShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CentwiseShortcuts.swift; sourceTree = "<group>"; };
 		6327ABB963EED6CF91954338 /* CategoriesScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesScreen.swift; sourceTree = "<group>"; };
 		638C16BB45C1B8FD37B324C9 /* AppLockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockManager.swift; sourceTree = "<group>"; };
 		6BC11A8C05E845ED721F9C72 /* FAQScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FAQScreen.swift; sourceTree = "<group>"; };
 		6CF5F39E6B0B72FBB8EDF273 /* CentwiseApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CentwiseApp.swift; sourceTree = "<group>"; };
+		6D333A93EAB0770B3D212B9E /* TransactionTotalsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionTotalsCard.swift; sourceTree = "<group>"; };
 		6E13C2CF557DC920189C16F3 /* AddEditCategoryScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditCategoryScreen.swift; sourceTree = "<group>"; };
 		738FDB1740E2A56A4FCC880C /* CurrencyPickerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrencyPickerScreen.swift; sourceTree = "<group>"; };
+		7577E51A1E9D734D4BBEC1E4 /* TransactionRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionRepository.swift; sourceTree = "<group>"; };
 		75AD8734D68316A29A649795 /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabView.swift; sourceTree = "<group>"; };
 		761CD0417870A1C0A23EF18A /* ProfileManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileManager.swift; sourceTree = "<group>"; };
 		7E37DBBCA499D82B4A177E4E /* SpendingTrendsChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpendingTrendsChart.swift; sourceTree = "<group>"; };
 		84D326AC5F515ECFA8506CB9 /* BudgetDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetDetailScreen.swift; sourceTree = "<group>"; };
 		8AC085923727FD6D548AB257 /* AboutScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutScreen.swift; sourceTree = "<group>"; };
-		B1C2D3E4F5A6B7C8D9E0F1A2 /* DataManagementScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManagementScreen.swift; sourceTree = "<group>"; };
 		8C2FDA3BB5D9FAA2AAED40B8 /* CentwiseSpacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CentwiseSpacing.swift; sourceTree = "<group>"; };
+		995718A6F7E8A1EC041B3265 /* CentwiseRustBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CentwiseRustBackend.swift; sourceTree = "<group>"; };
 		9B0C9AA77C39C71D904C5F5B /* BudgetListScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetListScreen.swift; sourceTree = "<group>"; };
 		9C8EEFDC360506547BAE1F89 /* TransactionModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionModels.swift; sourceTree = "<group>"; };
 		9D0D70652A52D97EC7C20C5A /* AccountsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsViewModel.swift; sourceTree = "<group>"; };
@@ -128,12 +133,14 @@
 		A79E2F1D3C534A52CD7D2E4C /* CategoryBreakdownList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryBreakdownList.swift; sourceTree = "<group>"; };
 		A935E180607CD6E648378147 /* SpendingSummaryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpendingSummaryCard.swift; sourceTree = "<group>"; };
 		A981D0174E481CF067570CED /* AccountDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailScreen.swift; sourceTree = "<group>"; };
+		AD825B61698CE256A95BDC13 /* DataManagementScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManagementScreen.swift; sourceTree = "<group>"; };
+		B576BB56D0AB6813C8514880 /* CentwiseCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CentwiseCore.swift; sourceTree = "<group>"; };
 		B5A708C91A895F43184F73ED /* BudgetCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetCarousel.swift; sourceTree = "<group>"; };
 		B5D63DB9BDDF6474771ACF81 /* CentwiseTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CentwiseTypography.swift; sourceTree = "<group>"; };
 		BB53EE9466ECDDC26FFB1D82 /* TransactionDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionDetailSheet.swift; sourceTree = "<group>"; };
 		BED4228F2BD7264D1154DD6D /* GreetingCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GreetingCard.swift; sourceTree = "<group>"; };
-		C2BBE10AF9F54ADC63B28548 /* TransactionRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionRepository.swift; sourceTree = "<group>"; };
-		C3378329584634E533C4DFC8 /* Centwise.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Centwise.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C3378329584634E533C4DFC8 /* Centwise.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Centwise.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C5BF23F85AA725C7A0C820B7 /* CentwiseCoreFFI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CentwiseCoreFFI.h; sourceTree = "<group>"; };
 		C65C599FAAE8FFB86B0C3C43 /* CsvExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CsvExporter.swift; sourceTree = "<group>"; };
 		CC3EA605498FB10E67FFCFB0 /* OnboardingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingScreen.swift; sourceTree = "<group>"; };
 		CD679D4E99B791650E866DFD /* ShortcutsGuideScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutsGuideScreen.swift; sourceTree = "<group>"; };
@@ -141,16 +148,15 @@
 		D754F60EA78656A7C6E6BE38 /* RulesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RulesViewModel.swift; sourceTree = "<group>"; };
 		D81CBE653D714F6E0E135BCE /* ParseTransactionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseTransactionIntent.swift; sourceTree = "<group>"; };
 		DAF8EB604F81898E0D95D7D2 /* AccountCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCarousel.swift; sourceTree = "<group>"; };
+		DE58260E128E9CC59B6F1132 /* CentwiseCoreFFI.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = CentwiseCoreFFI.modulemap; sourceTree = "<group>"; };
+		DE7C6748454A861F1CA7E7C3 /* libcentwise_ffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcentwise_ffi.a; sourceTree = "<group>"; };
 		DEBB4CB9314C33B17BF36654 /* TopMerchantsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopMerchantsList.swift; sourceTree = "<group>"; };
 		E2AC420F3821FF63CEE1C92C /* SmsTransactionProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmsTransactionProcessor.swift; sourceTree = "<group>"; };
-		A11CE0019B7B4E3F8A5C1D21 /* CentwiseRustBackend.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CentwiseRustBackend.swift; sourceTree = "<group>"; };
-		A11CE0019B7B4E3F8A5C1D23 /* CentwiseCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CentwiseCore.swift; sourceTree = "<group>"; };
 		E2D8F6F0D7B035C283598E0C /* RuleModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleModels.swift; sourceTree = "<group>"; };
 		E69E0A13EE0B1C61D5429A86 /* AppearanceScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceScreen.swift; sourceTree = "<group>"; };
 		E94C96FF759807E51E8BF0FC /* CategoriesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoriesViewModel.swift; sourceTree = "<group>"; };
 		ED7C9057607D5A69A4A10B53 /* AddEditBudgetScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditBudgetScreen.swift; sourceTree = "<group>"; };
 		EDE1E27CBC15F958CFBA9DA6 /* CurrencyFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrencyFormatter.swift; sourceTree = "<group>"; };
-		F1A2B3C4D5E6F7A8B9C0D1E2 /* TransactionTotalsCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionTotalsCard.swift; sourceTree = "<group>"; };
 		F1E0F6C6D0965BD2C89108DD /* TransactionRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionRow.swift; sourceTree = "<group>"; };
 		F224197DE1B59BAC503881C1 /* CentwiseColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CentwiseColors.swift; sourceTree = "<group>"; };
 		F3A4486CB65597E4A47AEB97 /* AddEditAccountScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditAccountScreen.swift; sourceTree = "<group>"; };
@@ -226,11 +232,11 @@
 				E69E0A13EE0B1C61D5429A86 /* AppearanceScreen.swift */,
 				6327ABB963EED6CF91954338 /* CategoriesScreen.swift */,
 				738FDB1740E2A56A4FCC880C /* CurrencyPickerScreen.swift */,
+				AD825B61698CE256A95BDC13 /* DataManagementScreen.swift */,
 				6BC11A8C05E845ED721F9C72 /* FAQScreen.swift */,
 				14987DF251B47CE4D9BA1B3D /* RulesScreen.swift */,
 				12F2D8802A3C4F6E95D4D6B8 /* SettingsScreen.swift */,
 				CD679D4E99B791650E866DFD /* ShortcutsGuideScreen.swift */,
-				B1C2D3E4F5A6B7C8D9E0F1A2 /* DataManagementScreen.swift */,
 			);
 			path = Screens;
 			sourceTree = "<group>";
@@ -243,11 +249,21 @@
 			path = ViewModels;
 			sourceTree = "<group>";
 		};
+		3CD48F13143B5DCB20FAF3DB /* FFI */ = {
+			isa = PBXGroup;
+			children = (
+				995718A6F7E8A1EC041B3265 /* CentwiseRustBackend.swift */,
+				D7F3180DB2DC509FB807073B /* generated */,
+				7B9CE48D0B0C7868AA550B50 /* lib */,
+			);
+			path = FFI;
+			sourceTree = "<group>";
+		};
 		42EE5D86A8647B817872B9A2 /* Core */ = {
 			isa = PBXGroup;
 			children = (
 				650E5B8548B9370C9FA8B7B8 /* Design */,
-				A11CE0019B7B4E3F8A5C1D25 /* FFI */,
+				3CD48F13143B5DCB20FAF3DB /* FFI */,
 				78D3256522039AE7706EB9CE /* Intents */,
 				B7860CB20D7FB5C3B6770F79 /* Notifications */,
 				2E5DE4FCA5090D31CE2E4EE3 /* Processor */,
@@ -267,6 +283,7 @@
 		491567CC247B1052B6FAF523 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				09558373CCD984133E5AAEB4 /* Centwise.entitlements */,
 				6CF5F39E6B0B72FBB8EDF273 /* CentwiseApp.swift */,
 				75AD8734D68316A29A649795 /* MainTabView.swift */,
 				4C8B62967C30B4CE63E7F701 /* Localizable.strings */,
@@ -334,6 +351,15 @@
 			path = ViewModels;
 			sourceTree = "<group>";
 		};
+		6EC97D66F1DA913FDC23E69F /* Repositories */ = {
+			isa = PBXGroup;
+			children = (
+				56F12C5AA1096BAC5D384E54 /* ReviewQueueRepository.swift */,
+				7577E51A1E9D734D4BBEC1E4 /* TransactionRepository.swift */,
+			);
+			path = Repositories;
+			sourceTree = "<group>";
+		};
 		733B2E0C84799F32A69138F6 /* Screens */ = {
 			isa = PBXGroup;
 			children = (
@@ -359,6 +385,15 @@
 			);
 			sourceTree = "<group>";
 		};
+		7B9CE48D0B0C7868AA550B50 /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				06EC72A2C7305C124270C475 /* .gitkeep */,
+				DE7C6748454A861F1CA7E7C3 /* libcentwise_ffi.a */,
+			);
+			path = lib;
+			sourceTree = "<group>";
+		};
 		7E475CB70F8A7C1D57C4A02E /* Glass */ = {
 			isa = PBXGroup;
 			children = (
@@ -370,8 +405,8 @@
 		815CD8D9ED5058CE09C48964 /* Data */ = {
 			isa = PBXGroup;
 			children = (
-				8737A3295C0571AA29519FCD /* Repositories */,
 				91AF5729411E4A447BBE46CD /* Models */,
+				6EC97D66F1DA913FDC23E69F /* Repositories */,
 			);
 			path = Data;
 			sourceTree = "<group>";
@@ -383,15 +418,6 @@
 				DFA2877C382F5ACA6998F5B9 /* ViewModels */,
 			);
 			path = Accounts;
-			sourceTree = "<group>";
-		};
-		8737A3295C0571AA29519FCD /* Repositories */ = {
-			isa = PBXGroup;
-			children = (
-				C2BBE10AF9F54ADC63B28548 /* TransactionRepository.swift */,
-				5E23038C06C6A4AB9B71A7F6 /* ReviewQueueRepository.swift */,
-			);
-			path = Repositories;
 			sourceTree = "<group>";
 		};
 		91AF5729411E4A447BBE46CD /* Models */ = {
@@ -425,10 +451,10 @@
 				BED4228F2BD7264D1154DD6D /* GreetingCard.swift */,
 				4C41D95E4FE1C5F4910D69EF /* LockScreenView.swift */,
 				A935E180607CD6E648378147 /* SpendingSummaryCard.swift */,
-				F1A2B3C4D5E6F7A8B9C0D1E2 /* TransactionTotalsCard.swift */,
 				279F60E744E5FC4CAB2745C9 /* StatPill.swift */,
 				BB53EE9466ECDDC26FFB1D82 /* TransactionDetailSheet.swift */,
 				F1E0F6C6D0965BD2C89108DD /* TransactionRow.swift */,
+				6D333A93EAB0770B3D212B9E /* TransactionTotalsCard.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -509,6 +535,16 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		D7F3180DB2DC509FB807073B /* generated */ = {
+			isa = PBXGroup;
+			children = (
+				B576BB56D0AB6813C8514880 /* CentwiseCore.swift */,
+				C5BF23F85AA725C7A0C820B7 /* CentwiseCoreFFI.h */,
+				DE58260E128E9CC59B6F1132 /* CentwiseCoreFFI.modulemap */,
+			);
+			path = generated;
+			sourceTree = "<group>";
+		};
 		DEC67EB3E404C57948BB4527 /* Budgets */ = {
 			isa = PBXGroup;
 			children = (
@@ -533,23 +569,6 @@
 				34FD8326E866D2CE94267FA9 /* ViewModels */,
 			);
 			path = Transactions;
-			sourceTree = "<group>";
-		};
-		A11CE0019B7B4E3F8A5C1D24 /* generated */ = {
-			isa = PBXGroup;
-			children = (
-				A11CE0019B7B4E3F8A5C1D23 /* CentwiseCore.swift */,
-			);
-			path = generated;
-			sourceTree = "<group>";
-		};
-		A11CE0019B7B4E3F8A5C1D25 /* FFI */ = {
-			isa = PBXGroup;
-			children = (
-				A11CE0019B7B4E3F8A5C1D21 /* CentwiseRustBackend.swift */,
-				A11CE0019B7B4E3F8A5C1D24 /* generated */,
-			);
-			path = FFI;
 			sourceTree = "<group>";
 		};
 		ED3534E7DA2CF89A5B96BBAE /* Centwise */ = {
@@ -592,9 +611,10 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2660;
+				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					52CFD16DC61750257CA11368 = {
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -626,6 +646,7 @@
 			files = (
 				98A71AD5514D1183C95C2B94 /* Assets.xcassets in Resources */,
 				9D9DECDEFA0D1E472820A2DC /* Localizable.strings in Resources */,
+				AA10647BD77AA03A8277C32F /* libcentwise_ffi.a in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -637,7 +658,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				E7B33E203629EDA733CA17A4 /* AboutScreen.swift in Sources */,
-				A1B2C3D4E5F6A7B8C9D0E1F2 /* DataManagementScreen.swift in Sources */,
 				19BC671BCA4F111A02D9F6D1 /* AccountCarousel.swift in Sources */,
 				DFF120161336480976E9D76D /* AccountDetailScreen.swift in Sources */,
 				B15E995DC8875B81F279B1E3 /* AccountListScreen.swift in Sources */,
@@ -667,16 +687,18 @@
 				B7318A8D1E2FC814C8C53FAA /* CentwiseButton.swift in Sources */,
 				430E47586ED225777C5C9137 /* CentwiseCard.swift in Sources */,
 				9A49F465B556B0588BAA3B6D /* CentwiseColors.swift in Sources */,
+				B8541BEA25A9DC844F844A2D /* CentwiseCore.swift in Sources */,
 				8349CD918C4C6CABD46BE9C2 /* CentwiseNotifications.swift in Sources */,
+				628D9130173EDB5C6A7BA34E /* CentwiseRustBackend.swift in Sources */,
 				835FBDF8E6534B98ED7A7EF3 /* CentwiseShortcuts.swift in Sources */,
 				CF33CE2470A73976B9B41293 /* CentwiseSpacing.swift in Sources */,
 				8AFB04B231579706638177B7 /* CentwiseTypography.swift in Sources */,
 				8E4277BC297834E6D764A77E /* CsvExporter.swift in Sources */,
 				27274C0A480406D54339F14B /* CurrencyFormatter.swift in Sources */,
 				BCF93E10F265C6678AEAE350 /* CurrencyPickerScreen.swift in Sources */,
+				4856453A265F3B3BF17A3CE1 /* DataManagementScreen.swift in Sources */,
 				9B1983E0E0CDE2203A559E26 /* DateFormatterHelper.swift in Sources */,
 				92F398F577789D49FA658C0D /* FAQScreen.swift in Sources */,
-				50FE8FC9351D570C3B3174C6 /* TransactionRepository.swift in Sources */,
 				5CF080347678AB7711F65ECC /* GlassSurface.swift in Sources */,
 				F4D9A8F243FA53C0BBFC01A0 /* GreetingCard.swift in Sources */,
 				42BBFDDCA8542BD251D83D2A /* HomeScreen.swift in Sources */,
@@ -686,7 +708,7 @@
 				6E9D2417D067B751B80C53DF /* OnboardingScreen.swift in Sources */,
 				E7C225DB204FE5ED302ADDBB /* ParseTransactionIntent.swift in Sources */,
 				C0904ECB257CCC184BF1655E /* ProfileManager.swift in Sources */,
-				184DA1DF595E4DE366B6BB83 /* ReviewQueueRepository.swift in Sources */,
+				DB76B6D43900D1609803F2A2 /* ReviewQueueRepository.swift in Sources */,
 				6EDC4BE63BE85F5DA76E59A3 /* ReviewQueueView.swift in Sources */,
 				AE8B99817D01E3A37A5BEBB6 /* RuleModels.swift in Sources */,
 				D05A8E8D098F7B9A6C847A72 /* RulesScreen.swift in Sources */,
@@ -694,10 +716,7 @@
 				502EBDBFC59A2E0669CD722B /* SettingsScreen.swift in Sources */,
 				FDCE84CC6DF2C93C153C7D91 /* ShortcutsGuideScreen.swift in Sources */,
 				EFD21F318535F1EEE1C15A49 /* SmsTransactionProcessor.swift in Sources */,
-				A11CE0019B7B4E3F8A5C1D20 /* CentwiseRustBackend.swift in Sources */,
-				A11CE0019B7B4E3F8A5C1D22 /* CentwiseCore.swift in Sources */,
 				B9D38C9A5D196E6AB0CD7B72 /* SpendingSummaryCard.swift in Sources */,
-				E1A2B3C4D5E6F7A8B9C0D1E2 /* TransactionTotalsCard.swift in Sources */,
 				BA6DC973E36C47023B40E9C1 /* SpendingTrendsChart.swift in Sources */,
 				6447E30BAFF17CA45088B786 /* StatPill.swift in Sources */,
 				7708874FFFD0B31F630B6A88 /* SubscriptionListScreen.swift in Sources */,
@@ -706,7 +725,9 @@
 				BA542459F4005191800236A8 /* TransactionDetailSheet.swift in Sources */,
 				2481362682FF7CF86632601D /* TransactionListView.swift in Sources */,
 				074D4E6F3B78A8EA35C5FE12 /* TransactionModels.swift in Sources */,
+				13EAA0D1407F49C34864EB87 /* TransactionRepository.swift in Sources */,
 				77194C9DECAB3A6564DAE710 /* TransactionRow.swift in Sources */,
+				7B70BD439259771B3A6ED25D /* TransactionTotalsCard.swift in Sources */,
 				2A1CAF5FA3204D98296B91EA /* TransactionsViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -730,8 +751,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -783,7 +802,6 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.9;
@@ -794,8 +812,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -854,7 +870,6 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.9;
@@ -865,21 +880,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Centwise/App/Centwise.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 338R5R58ZF;
-				INFOPLIST_FILE = Centwise/App/Info.plist;
-				SWIFT_INCLUDE_PATHS = "$(PROJECT_DIR)/Centwise/Core/FFI/generated";
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Centwise/Core/FFI/generated";
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Centwise/Core/FFI/lib";
-				OTHER_LDFLAGS = "$(inherited) -lcentwise_ffi";
+				INFOPLIST_FILE = Centwise/App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Centwise/Core/FFI/lib";
+				OTHER_LDFLAGS = "$(inherited) -lcentwise_ffi";
+				OTHER_SWIFT_FLAGS = "-Xcc -fmodule-map-file=$(PROJECT_DIR)/Centwise/Core/FFI/generated/CentwiseCoreFFI.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = com.centwise.ios;
-				CODE_SIGN_ENTITLEMENTS = Centwise/App/Centwise.entitlements;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INCLUDE_PATHS = "$(PROJECT_DIR)/Centwise/Core/FFI/generated";
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -888,21 +903,21 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Centwise/App/Centwise.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 338R5R58ZF;
-				INFOPLIST_FILE = Centwise/App/Info.plist;
-				SWIFT_INCLUDE_PATHS = "$(PROJECT_DIR)/Centwise/Core/FFI/generated";
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/Centwise/Core/FFI/generated";
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Centwise/Core/FFI/lib";
-				OTHER_LDFLAGS = "$(inherited) -lcentwise_ffi";
+				INFOPLIST_FILE = Centwise/App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Centwise/Core/FFI/lib";
+				OTHER_LDFLAGS = "$(inherited) -lcentwise_ffi";
+				OTHER_SWIFT_FLAGS = "-Xcc -fmodule-map-file=$(PROJECT_DIR)/Centwise/Core/FFI/generated/CentwiseCoreFFI.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = com.centwise.ios;
-				CODE_SIGN_ENTITLEMENTS = Centwise/App/Centwise.entitlements;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INCLUDE_PATHS = "$(PROJECT_DIR)/Centwise/Core/FFI/generated";
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
