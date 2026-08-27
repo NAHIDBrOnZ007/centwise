@@ -53,7 +53,6 @@
 		9A741589482DA8207ACBC92B /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A9C11547D6A6D267C74F3B0 /* ThemeManager.swift */; };
 		9B1983E0E0CDE2203A559E26 /* DateFormatterHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 292A864EF19F215F34C4A4DB /* DateFormatterHelper.swift */; };
 		9D9DECDEFA0D1E472820A2DC /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4C8B62967C30B4CE63E7F701 /* Localizable.strings */; };
-		AA10647BD77AA03A8277C32F /* libcentwise_ffi.a in Resources */ = {isa = PBXBuildFile; fileRef = DE7C6748454A861F1CA7E7C3 /* libcentwise_ffi.a */; };
 		AA1C8A8B847911A8FE4A8E80 /* AmountText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 563A402F65C249901DCFF586 /* AmountText.swift */; };
 		AD6F1A13B268FB3660F0F9E0 /* LockScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C41D95E4FE1C5F4910D69EF /* LockScreenView.swift */; };
 		AE8B99817D01E3A37A5BEBB6 /* RuleModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D8F6F0D7B035C283598E0C /* RuleModels.swift */; };
@@ -85,7 +84,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		06EC72A2C7305C124270C475 /* .gitkeep */ = {isa = PBXFileReference; path = .gitkeep; sourceTree = "<group>"; };
 		090B0637190F07E94F78E68F /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		090F128FCFE0B38F07732BAB /* CategoryPieChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryPieChart.swift; sourceTree = "<group>"; };
 		09558373CCD984133E5AAEB4 /* Centwise.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Centwise.entitlements; sourceTree = "<group>"; };
@@ -149,7 +147,6 @@
 		D81CBE653D714F6E0E135BCE /* ParseTransactionIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParseTransactionIntent.swift; sourceTree = "<group>"; };
 		DAF8EB604F81898E0D95D7D2 /* AccountCarousel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountCarousel.swift; sourceTree = "<group>"; };
 		DE58260E128E9CC59B6F1132 /* CentwiseCoreFFI.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = CentwiseCoreFFI.modulemap; sourceTree = "<group>"; };
-		DE7C6748454A861F1CA7E7C3 /* libcentwise_ffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcentwise_ffi.a; sourceTree = "<group>"; };
 		DEBB4CB9314C33B17BF36654 /* TopMerchantsList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopMerchantsList.swift; sourceTree = "<group>"; };
 		E2AC420F3821FF63CEE1C92C /* SmsTransactionProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmsTransactionProcessor.swift; sourceTree = "<group>"; };
 		E2D8F6F0D7B035C283598E0C /* RuleModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleModels.swift; sourceTree = "<group>"; };
@@ -254,7 +251,6 @@
 			children = (
 				995718A6F7E8A1EC041B3265 /* CentwiseRustBackend.swift */,
 				D7F3180DB2DC509FB807073B /* generated */,
-				7B9CE48D0B0C7868AA550B50 /* lib */,
 			);
 			path = FFI;
 			sourceTree = "<group>";
@@ -383,15 +379,6 @@
 				ED3534E7DA2CF89A5B96BBAE /* Centwise */,
 				C8A531FBD2C807193668A11F /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		7B9CE48D0B0C7868AA550B50 /* lib */ = {
-			isa = PBXGroup;
-			children = (
-				06EC72A2C7305C124270C475 /* .gitkeep */,
-				DE7C6748454A861F1CA7E7C3 /* libcentwise_ffi.a */,
-			);
-			path = lib;
 			sourceTree = "<group>";
 		};
 		7E475CB70F8A7C1D57C4A02E /* Glass */ = {
@@ -646,7 +633,6 @@
 			files = (
 				98A71AD5514D1183C95C2B94 /* Assets.xcassets in Resources */,
 				9D9DECDEFA0D1E472820A2DC /* Localizable.strings in Resources */,
-				AA10647BD77AA03A8277C32F /* libcentwise_ffi.a in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -888,7 +874,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Centwise/Core/FFI/lib";
+				LIBRARY_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/Centwise/Core/FFI/lib/$(PLATFORM_NAME)",
+					"$(PROJECT_DIR)/Centwise/Core/FFI/lib",
+				);
 				OTHER_LDFLAGS = "$(inherited) -lcentwise_ffi";
 				OTHER_SWIFT_FLAGS = "-Xcc -fmodule-map-file=$(PROJECT_DIR)/Centwise/Core/FFI/generated/CentwiseCoreFFI.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = com.centwise.ios;
@@ -911,7 +900,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/Centwise/Core/FFI/lib";
+				LIBRARY_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/Centwise/Core/FFI/lib/$(PLATFORM_NAME)",
+					"$(PROJECT_DIR)/Centwise/Core/FFI/lib",
+				);
 				OTHER_LDFLAGS = "$(inherited) -lcentwise_ffi";
 				OTHER_SWIFT_FLAGS = "-Xcc -fmodule-map-file=$(PROJECT_DIR)/Centwise/Core/FFI/generated/CentwiseCoreFFI.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = com.centwise.ios;

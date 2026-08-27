@@ -29,6 +29,7 @@ targets:
       - path: Centwise
         excludes:
           - "App/Info.plist"
+          - "Core/FFI/lib"
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.centwise.ios
@@ -40,7 +41,9 @@ targets:
         SWIFT_INCLUDE_PATHS: "$(PROJECT_DIR)/Centwise/Core/FFI/generated"
         OTHER_SWIFT_FLAGS: "-Xcc -fmodule-map-file=$(PROJECT_DIR)/Centwise/Core/FFI/generated/CentwiseCoreFFI.modulemap"
         HEADER_SEARCH_PATHS: "$(PROJECT_DIR)/Centwise/Core/FFI/generated"
-        LIBRARY_SEARCH_PATHS: "$(PROJECT_DIR)/Centwise/Core/FFI/lib"
+        LIBRARY_SEARCH_PATHS:
+          - "$(PROJECT_DIR)/Centwise/Core/FFI/lib/$(PLATFORM_NAME)"
+          - "$(PROJECT_DIR)/Centwise/Core/FFI/lib"
         OTHER_LDFLAGS: "$(inherited) -lcentwise_ffi"
 schemes:
   Centwise:
