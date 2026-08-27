@@ -5,6 +5,8 @@ import java.text.DecimalFormatSymbols
 import java.util.Locale
 
 object CurrencyFormatter {
+    fun format(amount: Double): String = formatBDT(amount)
+
     private val bengaliDigits = charArrayOf('০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯')
 
     fun formatBDT(

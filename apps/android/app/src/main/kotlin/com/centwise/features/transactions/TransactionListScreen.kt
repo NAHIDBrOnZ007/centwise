@@ -168,9 +168,9 @@ fun TransactionListScreen(
             } else {
                 val grouped = transactions.groupBy { tx ->
                     val cal = java.util.Calendar.getInstance()
-                    cal.time = tx.date
+                    cal.time = java.util.Date(tx.timestamp)
                     val monthFormat = java.text.SimpleDateFormat("MMMM yyyy", java.util.Locale.US)
-                    monthFormat.format(tx.date).uppercase()
+                    monthFormat.format(java.util.Date(tx.timestamp)).uppercase()
                 }
 
                 grouped.forEach { (monthKey, itemsInMonth) ->

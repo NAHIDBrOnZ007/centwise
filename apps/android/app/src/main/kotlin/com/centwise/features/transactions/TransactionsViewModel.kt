@@ -32,7 +32,7 @@ class TransactionsViewModel(
                 cal.set(java.util.Calendar.MINUTE, 0)
                 cal.set(java.util.Calendar.SECOND, 0)
                 val start = cal.time
-                list.filter { it.date.time >= start.time }
+                list.filter { it.timestamp >= start.time }
             }
             "Last Month" -> {
                 cal.set(java.util.Calendar.DAY_OF_MONTH, 1)
@@ -42,7 +42,7 @@ class TransactionsViewModel(
                 val thisMonthStart = cal.time
                 cal.add(java.util.Calendar.MONTH, -1)
                 val lastMonthStart = cal.time
-                list.filter { it.date.time >= lastMonthStart.time && it.date.time < thisMonthStart.time }
+                list.filter { it.timestamp >= lastMonthStart.time && it.timestamp < thisMonthStart.time }
             }
             else -> list
         }
