@@ -6,10 +6,66 @@ on:
       - 'v*.*.*'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.caching=true
+
+defaults:
+  run:
+    shell: bash
+
 jobs:
-  build-android-release:
-    name: Build Android APK
+  verify-rust:
+    name: Verify Rust Core and Bindings
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Format check
+        run: cargo fmt --all --check
+        working-directory: core
+      - name: Clippy lint
+        run: cargo clippy --workspace --all-targets -- -D warnings
+        working-directory: core
+      - name: Run Rust tests
+        run: cargo test --workspace
+        working-directory: core
+      - name: Verify committed UniFFI bindings are current
+        working-directory: core
+        run: |
+          cargo build -p centwise-ffi
+          binding_check_dir="$(mktemp -d)"
+          cargo run -p uniffi-bindgen -- generate \
+            --library target/debug/libcentwise_ffi.so \
+            --language kotlin \
+            --config centwise-ffi/uniffi.toml \
+            --out-dir "$binding_check_dir/android"
+          cargo run -p uniffi-bindgen -- generate \
+            --library target/debug/libcentwise_ffi.so \
+            --language swift \
+            --config centwise-ffi/uniffi.toml \
+            --out-dir "$binding_check_dir/ios"
+          diff -ru \
+            ../apps/android/app/src/main/kotlin/com/centwise/core/uniffi \
+            "$binding_check_dir/android/com/centwise/core/uniffi"
+          diff -ru \
+            ../apps/ios/Centwise/Core/FFI/generated \
+            "$binding_check_dir/ios"
+
+  build-android-release:
+    name: Build Android Rust Core and APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: verify-rust
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 17
@@ -17,39 +73,126 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: 'platforms;android-35 build-tools;35.0.0 ndk;27.2.12479018'
+      - name: Pin Android NDK for cargo-ndk
+        run: |
+          echo "ANDROID_NDK_HOME=${ANDROID_SDK_ROOT}/ndk/27.2.12479018" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_ROOT=${ANDROID_SDK_ROOT}/ndk/27.2.12479018" >> "$GITHUB_ENV"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android, armv7-linux-androideabi, x86_64-linux-android, i686-linux-android
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk --locked
+      - name: Build Rust libraries for all Android ABIs
+        working-directory: core
+        run: |
+          cargo ndk \
+            -t arm64-v8a \
+            -t armeabi-v7a \
+            -t x86_64 \
+            -t x86 \
+            -o ../apps/android/app/src/main/jniLibs \
+            build --release -p centwise-ffi
+      - uses: gradle/actions/setup-gradle@v4
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
         working-directory: apps/android
-      - name: Assemble Release / Debug APK
-        run: ./gradlew :app:assembleDebug --no-daemon
+      - name: Assemble unsigned Release APK
+        run: ./gradlew :app:assembleRelease --no-daemon --build-cache
         working-directory: apps/android
       - name: Upload Android Release Artifact
         uses: actions/upload-artifact@v4
         with:
           name: centwise-android-apk
-          path: apps/android/app/build/outputs/apk/debug/app-debug.apk
+          path: apps/android/app/build/outputs/apk/release/*release*.apk
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload Android Rust libraries
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: centwise-android-release-rust-libraries
+          path: apps/android/app/src/main/jniLibs
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload Android diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: centwise-android-release-diagnostics
+          path: apps/android/app/build/reports
+          if-no-files-found: ignore
+          retention-days: 7
 
   build-ios-release:
-    name: Build iOS Archive & App
+    name: Build iOS Rust Core and Simulator Release App
     runs-on: macos-14
+    timeout-minutes: 30
+    needs: verify-rust
     steps:
       - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios-sim, aarch64-apple-ios
+      - name: Build Rust simulator library
+        working-directory: core
+        run: cargo build --release --target aarch64-apple-ios-sim -p centwise-ffi
+      - name: Build Rust device library
+        working-directory: core
+        run: cargo build --release --target aarch64-apple-ios -p centwise-ffi
+      - name: Generate Swift bindings from the simulator library
+        working-directory: core
+        run: |
+          cargo run -p uniffi-bindgen -- generate \
+            --library target/aarch64-apple-ios-sim/release/libcentwise_ffi.a \
+            --language swift \
+            --config centwise-ffi/uniffi.toml \
+            --out-dir ../apps/ios/Centwise/Core/FFI/generated
+      - name: Stage Rust simulator library
+        run: |
+          cp core/target/aarch64-apple-ios-sim/release/libcentwise_ffi.a \
+            apps/ios/Centwise/Core/FFI/lib/libcentwise_ffi.a
       - name: Install XcodeGen
         run: brew install xcodegen
       - name: Generate Xcode Project
         run: xcodegen generate
         working-directory: apps/ios
-      - name: Build iOS Application
+      - name: Build iOS simulator application
         run: |
+          set -o pipefail
           xcodebuild -project apps/ios/Centwise.xcodeproj \
             -scheme Centwise \
             -destination 'generic/platform=iOS Simulator' \
             -configuration Release \
             -derivedDataPath apps/ios/build \
             clean build \
-            CODE_SIGNING_ALLOWED=NO
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee apps/ios/xcodebuild.log
       - name: Upload iOS Release Bundle
         uses: actions/upload-artifact@v4
         with:
           name: centwise-ios-release
           path: apps/ios/build/Build/Products/Release-iphonesimulator/Centwise.app
+          if-no-files-found: error
+          retention-days: 7
+      - name: Upload iOS Rust libraries
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: centwise-ios-release-rust-libraries
+          path: |
+            core/target/aarch64-apple-ios-sim/release/libcentwise_ffi.a
+            core/target/aarch64-apple-ios/release/libcentwise_ffi.a
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload iOS diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: centwise-ios-release-diagnostics
+          path: |
+            apps/ios/xcodebuild.log
+            apps/ios/build/Logs
+          if-no-files-found: ignore
+          retention-days: 7

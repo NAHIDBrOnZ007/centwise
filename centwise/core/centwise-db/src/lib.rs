@@ -15,7 +15,10 @@ use std::sync::{Arc, Mutex, MutexGuard};
 use notify::{DataObserver, ObserverRegistry};
 use rusqlite::Connection;
 
-use centwise_domain::{NewTransaction, ReviewQueueItem, Transaction};
+use centwise_domain::{
+    Account, NewCategory, NewSmartRule, NewSubscription, NewTransaction, ReviewQueueItem,
+    SmartRule, Transaction,
+};
 pub use error::{DbError, DbResult};
 pub use queries::Queries;
 
@@ -103,6 +106,10 @@ impl Database {
         self.write(|queries| queries.insert_transaction(transaction))
     }
 
+    pub fn update_transaction(&self, transaction: &NewTransaction) -> DbResult<bool> {
+        self.write(|queries| queries.update_transaction(transaction))
+    }
+
     pub fn delete_transaction(&self, id: &str) -> DbResult<bool> {
         self.write(|queries| queries.delete_transaction(id))
     }
@@ -115,12 +122,44 @@ impl Database {
         self.read(|queries| queries.list_accounts())
     }
 
+    pub fn update_account(&self, account: &Account) -> DbResult<bool> {
+        self.write(|queries| queries.update_account(account))
+    }
+
+    pub fn delete_account(&self, id: &str) -> DbResult<bool> {
+        self.write(|queries| queries.delete_account(id))
+    }
+
     pub fn list_budgets(&self) -> DbResult<Vec<centwise_domain::BudgetWithProgress>> {
         self.read(|queries| queries.list_budgets())
     }
 
+    pub fn insert_budget(&self, budget: &centwise_domain::NewBudget) -> DbResult<()> {
+        self.write(|queries| queries.insert_budget(budget))
+    }
+
+    pub fn update_budget(&self, budget: &centwise_domain::NewBudget) -> DbResult<bool> {
+        self.write(|queries| queries.update_budget(budget))
+    }
+
+    pub fn delete_budget(&self, id: &str) -> DbResult<bool> {
+        self.write(|queries| queries.delete_budget(id))
+    }
+
     pub fn list_subscriptions(&self) -> DbResult<Vec<centwise_domain::SubscriptionSummary>> {
         self.read(|queries| queries.list_subscriptions())
+    }
+
+    pub fn insert_subscription(&self, subscription: &NewSubscription) -> DbResult<()> {
+        self.write(|queries| queries.insert_subscription(subscription))
+    }
+
+    pub fn update_subscription(&self, subscription: &NewSubscription) -> DbResult<bool> {
+        self.write(|queries| queries.update_subscription(subscription))
+    }
+
+    pub fn delete_subscription(&self, id: &str) -> DbResult<bool> {
+        self.write(|queries| queries.delete_subscription(id))
     }
 
     pub fn category_count(&self) -> DbResult<u32> {
@@ -129,6 +168,34 @@ impl Database {
 
     pub fn list_categories(&self) -> DbResult<Vec<centwise_domain::CategorySummary>> {
         self.read(|queries| queries.list_categories())
+    }
+
+    pub fn insert_category(&self, category: &NewCategory) -> DbResult<()> {
+        self.write(|queries| queries.insert_category(category))
+    }
+
+    pub fn update_category(&self, category: &NewCategory) -> DbResult<bool> {
+        self.write(|queries| queries.update_category(category))
+    }
+
+    pub fn delete_category(&self, id: &str) -> DbResult<bool> {
+        self.write(|queries| queries.delete_category(id))
+    }
+
+    pub fn list_rules(&self) -> DbResult<Vec<SmartRule>> {
+        self.read(|queries| queries.list_rules())
+    }
+
+    pub fn insert_rule(&self, rule: &NewSmartRule) -> DbResult<()> {
+        self.write(|queries| queries.insert_rule(rule))
+    }
+
+    pub fn update_rule(&self, rule: &NewSmartRule) -> DbResult<bool> {
+        self.write(|queries| queries.update_rule(rule))
+    }
+
+    pub fn delete_rule(&self, id: &str) -> DbResult<bool> {
+        self.write(|queries| queries.delete_rule(id))
     }
 
     /// Replaces all user records with the deterministic Rust-owned demo set.

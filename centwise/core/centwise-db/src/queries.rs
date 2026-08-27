@@ -1,7 +1,8 @@
 use centwise_domain::{
     Account, AccountSummary, BudgetWithProgress, CategorySpendSummary, CategorySummary,
-    HomeDashboard, MerchantSpendSummary, MonthlySpend, NewBudget, NewSubscription, NewTransaction,
-    ReviewQueueItem, SubscriptionSummary, Transaction, TransactionSummary, TransactionType,
+    HomeDashboard, MerchantSpendSummary, MonthlySpend, NewBudget, NewCategory, NewSmartRule,
+    NewSubscription, NewTransaction, ReviewQueueItem, RuleMatchType, SmartRule,
+    SubscriptionSummary, Transaction, TransactionSummary, TransactionType,
 };
 use rusqlite::{params, Connection, OptionalExtension};
 
@@ -26,7 +27,9 @@ impl<'a> Queries<'a> {
              DELETE FROM transactions;
              DELETE FROM budgets;
              DELETE FROM subscriptions;
-             DELETE FROM accounts;",
+             DELETE FROM accounts;
+             DELETE FROM rules;
+             DELETE FROM categories WHERE is_system = 0;",
         )?;
         Ok(())
     }
@@ -58,6 +61,199 @@ impl<'a> Queries<'a> {
         rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
     }
 
+    pub fn insert_category(&self, category: &NewCategory) -> DbResult<()> {
+        if category.name.trim().is_empty() {
+            return Err(DbError::Invalid("category name must not be empty".into()));
+        }
+
+        self.connection.execute(
+            "INSERT INTO categories (id, name, icon, color_hex, is_system, sort_order)
+             VALUES (?1, ?2, ?3, ?4, 0,
+                 COALESCE((SELECT MAX(sort_order) + 1 FROM categories), 0))",
+            params![
+                category.id,
+                category.name.trim(),
+                category.icon,
+                category.color_hex
+            ],
+        )?;
+        Ok(())
+    }
+
+    pub fn update_category(&self, category: &NewCategory) -> DbResult<bool> {
+        let system: Option<i64> = self
+            .connection
+            .query_row(
+                "SELECT is_system FROM categories WHERE id = ?1",
+                params![category.id],
+                |row| row.get(0),
+            )
+            .optional()?;
+        let Some(system) = system else {
+            return Ok(false);
+        };
+        if system != 0 {
+            return Err(DbError::Invalid(
+                "system categories cannot be modified".into(),
+            ));
+        }
+        if category.name.trim().is_empty() {
+            return Err(DbError::Invalid("category name must not be empty".into()));
+        }
+
+        let changed = self.connection.execute(
+            "UPDATE categories SET name = ?1, icon = ?2, color_hex = ?3 WHERE id = ?4",
+            params![
+                category.name.trim(),
+                category.icon,
+                category.color_hex,
+                category.id
+            ],
+        )?;
+        Ok(changed == 1)
+    }
+
+    pub fn delete_category(&self, id: &str) -> DbResult<bool> {
+        let system: Option<i64> = self
+            .connection
+            .query_row(
+                "SELECT is_system FROM categories WHERE id = ?1",
+                params![id],
+                |row| row.get(0),
+            )
+            .optional()?;
+        let Some(system) = system else {
+            return Ok(false);
+        };
+        if system != 0 {
+            return Err(DbError::Invalid(
+                "system categories cannot be deleted".into(),
+            ));
+        }
+
+        let reference_count: i64 = self.connection.query_row(
+            "SELECT
+                (SELECT COUNT(*) FROM transactions WHERE category_id = ?1) +
+                (SELECT COUNT(*) FROM budgets WHERE category_id = ?1) +
+                (SELECT COUNT(*) FROM rules WHERE category_id = ?1) +
+                (SELECT COUNT(*) FROM review_queue WHERE category_id = ?1 AND status = 'pending')",
+            params![id],
+            |row| row.get(0),
+        )?;
+        if reference_count > 0 {
+            return Err(DbError::Invalid(
+                "category is still used by transactions, budgets, or rules".into(),
+            ));
+        }
+
+        Ok(self
+            .connection
+            .execute("DELETE FROM categories WHERE id = ?1", params![id])?
+            == 1)
+    }
+
+    pub fn list_rules(&self) -> DbResult<Vec<SmartRule>> {
+        let mut statement = self.connection.prepare(
+            "SELECT id, name, keyword, match_type, category_id, transaction_type,
+                    is_enabled, sort_order
+             FROM rules
+             ORDER BY sort_order ASC, id ASC",
+        )?;
+        let rows = statement.query_map([], |row| {
+            let match_type: String = row.get(3)?;
+            let transaction_type: String = row.get(5)?;
+            Ok(SmartRule {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                keyword: row.get(2)?,
+                match_type: RuleMatchType::from_str_value(&match_type).ok_or_else(|| {
+                    rusqlite::Error::FromSqlConversionFailure(
+                        3,
+                        rusqlite::types::Type::Text,
+                        Box::new(DbError::Corrupt(format!(
+                            "unknown rule match type: {match_type}"
+                        ))),
+                    )
+                })?,
+                category_id: row.get(4)?,
+                transaction_type: TransactionType::from_str_value(&transaction_type).ok_or_else(
+                    || {
+                        rusqlite::Error::FromSqlConversionFailure(
+                            5,
+                            rusqlite::types::Type::Text,
+                            Box::new(DbError::Corrupt(format!(
+                                "unknown rule transaction type: {transaction_type}"
+                            ))),
+                        )
+                    },
+                )?,
+                is_enabled: row.get::<_, i64>(6)? != 0,
+                sort_order: row.get(7)?,
+            })
+        })?;
+
+        rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
+    }
+
+    pub fn insert_rule(&self, rule: &NewSmartRule) -> DbResult<()> {
+        validate_rule(self.connection, rule)?;
+        self.connection.execute(
+            "INSERT INTO rules
+                (id, name, keyword, match_type, category_id, transaction_type,
+                 is_enabled, sort_order)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7,
+                 COALESCE((SELECT MAX(sort_order) + 1 FROM rules), 0))",
+            params![
+                rule.id,
+                rule.name.trim(),
+                rule.keyword.trim(),
+                rule.match_type.as_str(),
+                rule.category_id,
+                rule.transaction_type.as_str(),
+                rule.is_enabled as i64
+            ],
+        )?;
+        Ok(())
+    }
+
+    pub fn update_rule(&self, rule: &NewSmartRule) -> DbResult<bool> {
+        validate_rule(self.connection, rule)?;
+        let changed = self.connection.execute(
+            "UPDATE rules SET name = ?1, keyword = ?2, match_type = ?3,
+                    category_id = ?4, transaction_type = ?5, is_enabled = ?6
+             WHERE id = ?7",
+            params![
+                rule.name.trim(),
+                rule.keyword.trim(),
+                rule.match_type.as_str(),
+                rule.category_id,
+                rule.transaction_type.as_str(),
+                rule.is_enabled as i64,
+                rule.id
+            ],
+        )?;
+        Ok(changed == 1)
+    }
+
+    pub fn delete_rule(&self, id: &str) -> DbResult<bool> {
+        Ok(self
+            .connection
+            .execute("DELETE FROM rules WHERE id = ?1", params![id])?
+            == 1)
+    }
+
+    pub fn matching_rule(
+        &self,
+        merchant_or_party: &str,
+        transaction_type: TransactionType,
+    ) -> DbResult<Option<SmartRule>> {
+        Ok(self.list_rules()?.into_iter().find(|rule| {
+            rule.is_enabled
+                && rule.transaction_type == transaction_type
+                && rule.match_type.matches(merchant_or_party, &rule.keyword)
+        }))
+    }
+
     /// Inserts an account.
     pub fn insert_account(&self, account: &Account) -> DbResult<()> {
         self.connection.execute(
@@ -74,6 +270,40 @@ impl<'a> Queries<'a> {
             ],
         )?;
         Ok(())
+    }
+
+    pub fn update_account(&self, account: &Account) -> DbResult<bool> {
+        let changed = self.connection.execute(
+            "UPDATE accounts SET name = ?1, provider = ?2, last_four = ?3,
+                    balance_minor = ?4, archived = ?5
+             WHERE id = ?6",
+            params![
+                account.name,
+                account.provider,
+                account.last_four,
+                account.balance_minor,
+                account.archived as i64,
+                account.id
+            ],
+        )?;
+        Ok(changed == 1)
+    }
+
+    pub fn delete_account(&self, id: &str) -> DbResult<bool> {
+        let transaction_count: i64 = self.connection.query_row(
+            "SELECT COUNT(*) FROM transactions WHERE account_id = ?1",
+            params![id],
+            |row| row.get(0),
+        )?;
+        if transaction_count > 0 {
+            return Err(DbError::Invalid(
+                "account is still used by transactions".into(),
+            ));
+        }
+        Ok(self
+            .connection
+            .execute("DELETE FROM accounts WHERE id = ?1", params![id])?
+            == 1)
     }
 
     /// Current balance of an account, or 0 when unknown.
@@ -155,6 +385,87 @@ impl<'a> Queries<'a> {
         }
 
         Ok(())
+    }
+
+    pub fn update_transaction(&self, transaction: &NewTransaction) -> DbResult<bool> {
+        if transaction.amount_minor < 0 {
+            return Err(DbError::Invalid("amount_minor must not be negative".into()));
+        }
+
+        let stored: Option<(i64, String, String)> = self
+            .connection
+            .query_row(
+                "SELECT amount_minor, transaction_type, account_id
+                 FROM transactions WHERE id = ?1",
+                params![transaction.id],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+            )
+            .optional()?;
+        let Some((old_amount, old_type, old_account_id)) = stored else {
+            return Ok(false);
+        };
+
+        if let Some(reference) = transaction.reference.as_deref() {
+            let duplicate: i64 = self.connection.query_row(
+                "SELECT EXISTS(SELECT 1 FROM transactions
+                 WHERE reference = ?1 AND id <> ?2)",
+                params![reference, transaction.id],
+                |row| row.get(0),
+            )?;
+            if duplicate != 0 {
+                return Err(DbError::DuplicateReference(reference.to_string()));
+            }
+        }
+
+        let old_type = TransactionType::from_str_value(&old_type)
+            .ok_or_else(|| DbError::Corrupt(format!("unknown transaction type: {old_type}")))?;
+        let old_delta = balance_delta(old_type, old_amount);
+        let new_delta = balance_delta(transaction.transaction_type, transaction.amount_minor);
+
+        let changed = self.connection.execute(
+            "UPDATE transactions SET title = ?1, amount_minor = ?2, currency = ?3,
+                    transaction_type = ?4, category_id = ?5, occurred_at_epoch_ms = ?6,
+                    account_id = ?7, reference = ?8, balance_after_minor = ?9,
+                    notes = ?10, raw_sms = ?11, fee_minor = ?12, is_auto_tracked = ?13
+             WHERE id = ?14",
+            params![
+                transaction.title,
+                transaction.amount_minor,
+                transaction.currency,
+                transaction.transaction_type.as_str(),
+                transaction.category_id,
+                transaction.occurred_at_epoch_ms,
+                transaction.account_id,
+                transaction.reference,
+                transaction.balance_after_minor,
+                transaction.notes,
+                transaction.raw_sms,
+                transaction.fee_minor,
+                transaction.is_auto_tracked as i64,
+                transaction.id
+            ],
+        )?;
+        if changed != 1 {
+            return Ok(false);
+        }
+
+        if old_account_id == transaction.account_id {
+            self.connection.execute(
+                "UPDATE accounts SET balance_minor = balance_minor - ?1 + ?2 WHERE id = ?3",
+                params![old_delta, new_delta, old_account_id],
+            )?;
+        } else {
+            self.connection.execute(
+                "UPDATE accounts SET balance_minor = balance_minor - ?1 WHERE id = ?2",
+                params![old_delta, old_account_id],
+            )?;
+            self.connection.execute(
+                "UPDATE accounts SET balance_minor = balance_minor + ?1 WHERE id = ?2",
+                params![new_delta, transaction.account_id],
+            )?;
+        }
+
+        Ok(true)
     }
 
     /// Deletes a transaction and reverses its balance effect.
@@ -515,6 +826,33 @@ impl<'a> Queries<'a> {
         Ok(())
     }
 
+    pub fn update_budget(&self, budget: &NewBudget) -> DbResult<bool> {
+        if budget.limit_minor <= 0 {
+            return Err(DbError::Invalid("budget limit must be positive".into()));
+        }
+        let changed = self.connection.execute(
+            "UPDATE budgets SET category_id = ?1, limit_minor = ?2, period = ?3,
+                    start_epoch_ms = ?4, end_epoch_ms = ?5
+             WHERE id = ?6",
+            params![
+                budget.category_id,
+                budget.limit_minor,
+                budget.period,
+                budget.start_epoch_ms,
+                budget.end_epoch_ms,
+                budget.id
+            ],
+        )?;
+        Ok(changed == 1)
+    }
+
+    pub fn delete_budget(&self, id: &str) -> DbResult<bool> {
+        Ok(self
+            .connection
+            .execute("DELETE FROM budgets WHERE id = ?1", params![id])?
+            == 1)
+    }
+
     /// Budgets with live spending (expenses in the budget's own period).
     pub fn list_budgets(&self) -> DbResult<Vec<BudgetWithProgress>> {
         let mut statement = self.connection.prepare(
@@ -567,6 +905,30 @@ impl<'a> Queries<'a> {
             ],
         )?;
         Ok(())
+    }
+
+    pub fn update_subscription(&self, subscription: &NewSubscription) -> DbResult<bool> {
+        let changed = self.connection.execute(
+            "UPDATE subscriptions SET name = ?1, amount_minor = ?2,
+                    billing_cycle = ?3, next_due_epoch_ms = ?4, is_active = ?5
+             WHERE id = ?6",
+            params![
+                subscription.name,
+                subscription.amount_minor,
+                subscription.billing_cycle,
+                subscription.next_due_epoch_ms,
+                subscription.is_active as i64,
+                subscription.id
+            ],
+        )?;
+        Ok(changed == 1)
+    }
+
+    pub fn delete_subscription(&self, id: &str) -> DbResult<bool> {
+        Ok(self
+            .connection
+            .execute("DELETE FROM subscriptions WHERE id = ?1", params![id])?
+            == 1)
     }
 
     /// Subscriptions ordered by next due date, active first.
@@ -696,6 +1058,32 @@ impl<'a> Queries<'a> {
         })?;
 
         collect(rows)
+    }
+}
+
+fn validate_rule(connection: &Connection, rule: &NewSmartRule) -> DbResult<()> {
+    if rule.name.trim().is_empty() {
+        return Err(DbError::Invalid("rule name must not be empty".into()));
+    }
+    if rule.keyword.trim().is_empty() {
+        return Err(DbError::Invalid("rule keyword must not be empty".into()));
+    }
+    let category_exists: i64 = connection.query_row(
+        "SELECT EXISTS(SELECT 1 FROM categories WHERE id = ?1)",
+        params![rule.category_id],
+        |row| row.get(0),
+    )?;
+    if category_exists == 0 {
+        return Err(DbError::Invalid("rule category does not exist".into()));
+    }
+    Ok(())
+}
+
+fn balance_delta(transaction_type: TransactionType, amount_minor: i64) -> i64 {
+    match transaction_type {
+        TransactionType::Income => amount_minor,
+        TransactionType::Expense | TransactionType::Refund => -amount_minor,
+        TransactionType::Transfer => 0,
     }
 }
 

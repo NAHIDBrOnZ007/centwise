@@ -14,48 +14,106 @@ pub struct CategorizationResult {
 const MERCHANT_RULES: &[(&[&str], &str)] = &[
     (
         &[
-            "foodpanda", "hungerstation", "sultan's dine", "sultans dine",
-            "kacchi bhai", "pizza hut", "kfc", "domino's", "dominos",
-            "burger king", "chillox", "madchef", "takeout", "bfc",
-            "herfy", "gloria jean", "secret recipe"
+            "foodpanda",
+            "hungerstation",
+            "sultan's dine",
+            "sultans dine",
+            "kacchi bhai",
+            "pizza hut",
+            "kfc",
+            "domino's",
+            "dominos",
+            "burger king",
+            "chillox",
+            "madchef",
+            "takeout",
+            "bfc",
+            "herfy",
+            "gloria jean",
+            "secret recipe",
         ],
-        "food"
+        "food",
     ),
     (
         &[
-            "pathao", "uber", "obhai", "shohoz", "cng", "rail sheba",
-            "jatri", "biman", "us-bangla", "novoair"
+            "pathao",
+            "uber",
+            "obhai",
+            "shohoz",
+            "cng",
+            "rail sheba",
+            "jatri",
+            "biman",
+            "us-bangla",
+            "novoair",
         ],
-        "transport"
+        "transport",
     ),
     (
         &[
-            "daraz", "pickaboo", "unimart", "swapno", "shwapno", "meena bazar",
-            "agora", "aarong", "apex", "bata", "chaldal", "sailor",
-            "cats eye", "yellow", "artisan", "almas", "lotto"
+            "daraz",
+            "pickaboo",
+            "unimart",
+            "swapno",
+            "shwapno",
+            "meena bazar",
+            "agora",
+            "aarong",
+            "apex",
+            "bata",
+            "chaldal",
+            "sailor",
+            "cats eye",
+            "yellow",
+            "artisan",
+            "almas",
+            "lotto",
         ],
-        "shopping"
+        "shopping",
     ),
     (
         &[
-            "airtel", "grameenphone", "gp", "robi", "banglalink", "teletalk", "skitto"
+            "airtel",
+            "grameenphone",
+            "gp",
+            "robi",
+            "banglalink",
+            "teletalk",
+            "skitto",
         ],
-        "recharge"
+        "recharge",
     ),
     (
         &[
-            "netflix", "spotify", "hoichoi", "chorki", "star cineplex",
-            "blockbuster", "toffee", "sony liv"
+            "netflix",
+            "spotify",
+            "hoichoi",
+            "chorki",
+            "star cineplex",
+            "blockbuster",
+            "toffee",
+            "sony liv",
         ],
-        "entertainment"
+        "entertainment",
     ),
     (
         &[
-            "desco", "dpdc", "nesco", "wasa", "titas", "bakhrabad",
-            "karnaphuli", "palli bidyut", "btcl", "link3", "amberit",
-            "carnival", "dot internet", "sam online"
+            "desco",
+            "dpdc",
+            "nesco",
+            "wasa",
+            "titas",
+            "bakhrabad",
+            "karnaphuli",
+            "palli bidyut",
+            "btcl",
+            "link3",
+            "amberit",
+            "carnival",
+            "dot internet",
+            "sam online",
         ],
-        "bills"
+        "bills",
     ),
 ];
 
@@ -148,8 +206,17 @@ mod tests {
 
     #[test]
     fn fallback_by_keywords() {
-        assert_eq!(categorize_by_type_or_keywords("Mobile Recharge Tk 100", false), Some("recharge".to_string()));
-        assert_eq!(categorize_by_type_or_keywords("ATM Cash Withdrawal", false), Some("cash-withdrawal".to_string()));
-        assert_eq!(categorize_by_type_or_keywords("EMI of Tk 8500", false), Some("bills".to_string()));
+        assert_eq!(
+            categorize_by_type_or_keywords("Mobile Recharge Tk 100", false),
+            Some("recharge".to_string())
+        );
+        assert_eq!(
+            categorize_by_type_or_keywords("ATM Cash Withdrawal", false),
+            Some("cash-withdrawal".to_string())
+        );
+        assert_eq!(
+            categorize_by_type_or_keywords("EMI of Tk 8500", false),
+            Some("bills".to_string())
+        );
     }
 }

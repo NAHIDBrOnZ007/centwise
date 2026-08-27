@@ -13,7 +13,6 @@
 		08270DD5146C7AA0885D5CEF /* CategoryChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCF7997FD0AC948D8AC55006 /* CategoryChip.swift */; };
 		083BBABF44C575CE432E89CE /* CategoryBreakdownList.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79E2F1D3C534A52CD7D2E4C /* CategoryBreakdownList.swift */; };
 		184DA1DF595E4DE366B6BB83 /* ReviewQueueRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E23038C06C6A4AB9B71A7F6 /* ReviewQueueRepository.swift */; };
-		18C30157516EC25212768C12 /* SmartRulesRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C08B33580EEB27D28DC272 /* SmartRulesRepository.swift */; };
 		19BC671BCA4F111A02D9F6D1 /* AccountCarousel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAF8EB604F81898E0D95D7D2 /* AccountCarousel.swift */; };
 		1D8E35FFB59BBF025689F2C7 /* CategoriesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6327ABB963EED6CF91954338 /* CategoriesScreen.swift */; };
 		1E11367315E090D3A7E83A77 /* AppLockManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 638C16BB45C1B8FD37B324C9 /* AppLockManager.swift */; };
@@ -99,7 +98,6 @@
 		2B7526CDEBC8C51F108DB2B5 /* AvatarPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvatarPickerView.swift; sourceTree = "<group>"; };
 		2CEAEE641605B19DCCF7B669 /* AddEditRuleScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditRuleScreen.swift; sourceTree = "<group>"; };
 		30B1C75CBD6CC88B8AF22E71 /* AddEditSubscriptionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditSubscriptionScreen.swift; sourceTree = "<group>"; };
-		35C08B33580EEB27D28DC272 /* SmartRulesRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartRulesRepository.swift; sourceTree = "<group>"; };
 		4365FA011E0E9AB16BAA72DF /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
 		48E0369CEA83C00CB691CC2E /* TransactionsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsViewModel.swift; sourceTree = "<group>"; };
 		492FBDCD1E9C6D3BA3BC2F10 /* ReviewQueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewQueueView.swift; sourceTree = "<group>"; };
@@ -392,7 +390,6 @@
 			children = (
 				C2BBE10AF9F54ADC63B28548 /* TransactionRepository.swift */,
 				5E23038C06C6A4AB9B71A7F6 /* ReviewQueueRepository.swift */,
-				35C08B33580EEB27D28DC272 /* SmartRulesRepository.swift */,
 			);
 			path = Repositories;
 			sourceTree = "<group>";
@@ -696,7 +693,6 @@
 				F5139EFB82AF4FB95C45EF90 /* RulesViewModel.swift in Sources */,
 				502EBDBFC59A2E0669CD722B /* SettingsScreen.swift in Sources */,
 				FDCE84CC6DF2C93C153C7D91 /* ShortcutsGuideScreen.swift in Sources */,
-				18C30157516EC25212768C12 /* SmartRulesRepository.swift in Sources */,
 				EFD21F318535F1EEE1C15A49 /* SmsTransactionProcessor.swift in Sources */,
 				A11CE0019B7B4E3F8A5C1D20 /* CentwiseRustBackend.swift in Sources */,
 				A11CE0019B7B4E3F8A5C1D22 /* CentwiseCore.swift in Sources */,
@@ -881,6 +877,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.centwise.ios;
+				CODE_SIGN_ENTITLEMENTS = Centwise/App/Centwise.entitlements;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -903,6 +900,7 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.centwise.ios;
+				CODE_SIGN_ENTITLEMENTS = Centwise/App/Centwise.entitlements;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = 1;

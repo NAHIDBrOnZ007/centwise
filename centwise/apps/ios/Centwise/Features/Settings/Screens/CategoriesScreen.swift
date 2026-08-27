@@ -79,6 +79,15 @@ public struct CategoriesScreen: View {
             VStack(spacing: CentwiseSpacing.xs) {
                 ForEach(categories) { category in
                     categoryRow(category, allowEditing: allowEditing)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            if allowEditing {
+                                Button(role: .destructive) {
+                                    viewModel.deleteCategory(id: category.id)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                        }
                 }
             }
             .padding(CentwiseSpacing.xs)

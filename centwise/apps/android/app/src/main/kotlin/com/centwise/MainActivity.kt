@@ -71,7 +71,7 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
         com.centwise.data.repository.TransactionRepository.shared.init(this)
         CentwiseRustBackend.initialize(applicationContext)
-        com.centwise.data.repository.TransactionRepository.shared.loadFromSQLite()
+        com.centwise.data.repository.SmartRulesRepository.shared.refresh()
         com.centwise.data.repository.ReviewQueueRepository.shared.refresh()
         enableEdgeToEdge()
         setContent {

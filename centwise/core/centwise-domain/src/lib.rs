@@ -77,6 +77,81 @@ pub struct CategorySummary {
     pub sort_order: i32,
 }
 
+/// A user-created category to persist in the shared database.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NewCategory {
+    pub id: String,
+    pub name: String,
+    pub icon: String,
+    pub color_hex: String,
+}
+
+/// Match operation used by a persisted Smart Rule.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RuleMatchType {
+    Contains,
+    StartsWith,
+    ExactlyMatches,
+}
+
+impl RuleMatchType {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            RuleMatchType::Contains => "contains",
+            RuleMatchType::StartsWith => "starts_with",
+            RuleMatchType::ExactlyMatches => "exactly_matches",
+        }
+    }
+
+    pub fn from_str_value(value: &str) -> Option<Self> {
+        match value {
+            "contains" => Some(RuleMatchType::Contains),
+            "starts_with" => Some(RuleMatchType::StartsWith),
+            "exactly_matches" => Some(RuleMatchType::ExactlyMatches),
+            _ => None,
+        }
+    }
+
+    pub fn matches(&self, value: &str, keyword: &str) -> bool {
+        let value = value.to_lowercase();
+        let keyword = keyword.trim().to_lowercase();
+        if keyword.is_empty() {
+            return false;
+        }
+
+        match self {
+            RuleMatchType::Contains => value.contains(&keyword),
+            RuleMatchType::StartsWith => value.starts_with(&keyword),
+            RuleMatchType::ExactlyMatches => value == keyword,
+        }
+    }
+}
+
+/// A Smart Rule stored in Rust SQLite and applied during SMS ingestion.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SmartRule {
+    pub id: String,
+    pub name: String,
+    pub keyword: String,
+    pub match_type: RuleMatchType,
+    pub category_id: String,
+    pub transaction_type: TransactionType,
+    pub is_enabled: bool,
+    pub sort_order: i32,
+}
+
+/// A Smart Rule to insert or update.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct NewSmartRule {
+    pub id: String,
+    pub name: String,
+    pub keyword: String,
+    pub match_type: RuleMatchType,
+    pub category_id: String,
+    pub transaction_type: TransactionType,
+    pub is_enabled: bool,
+}
+
 /// A bank account, MFS wallet, card, or cash wallet.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Account {

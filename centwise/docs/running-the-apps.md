@@ -1,23 +1,37 @@
-# Running the Apps (UI Check Guide)
+# Running the Apps (Rust-Backed Verification Guide)
 
-How to run and visually check the Android and iOS apps.
+How to build and run the Android and iOS apps against the shared Rust core.
 
-Both apps currently run on **fake data** — no Rust build, no NDK, no real
-database needed. This guide is for checking the UI only.
-Neither app has been compiled/run yet, so expect small fixes on first build.
+Both apps use Rust-owned SQLite for categories, Smart Rules, transactions,
+budgets, subscriptions, accounts, demo data, and the review queue. Native
+repositories only adapt Rust records into UI state. The Rust mobile library
+must be built and packaged before launching either app.
 
 ## Android (works on this Windows PC)
 
 ### Requirements
 
-- Android Studio (bundles JDK + Android SDK): https://developer.android.com/studio
-- That's it. No Rust toolchain needed for UI.
+- Android Studio: https://developer.android.com/studio
+- JDK 17 selected as the Gradle JDK
+- Android SDK Platform 35, Build Tools 35.0.0, and an installed NDK
+- Rust stable, Android targets, and `cargo-ndk`
 
 ### Option A — Android Studio (easiest)
 
-1. Open Android Studio → **Open** → select `apps/android`
-2. Wait for Gradle sync to finish (first sync takes a few minutes)
-3. Device Manager → create any emulator (e.g. Pixel 7, API 34+)
+1. Build the Rust libraries from `core`:
+
+   ```bash
+   rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android i686-linux-android
+   cargo install cargo-ndk --locked
+   cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 -t x86 \
+     -o ../apps/android/app/src/main/jniLibs \
+     build --release -p centwise-ffi
+   ```
+
+2. Open Android Studio → **Open** → select `apps/android`
+3. Confirm Android Studio uses JDK 17 for Gradle
+4. Wait for Gradle sync to finish (first sync takes a few minutes)
+5. Device Manager → create any emulator (e.g. Pixel 7, API 34+)
    — or plug in a real phone with USB debugging enabled
 4. Press **▶ Run** (`Shift+F10`)
 
@@ -41,6 +55,16 @@ cd apps/android
 - CSV export share sheet, home-screen widget
 - System back button on sub-screens
 
+### Android Rust persistence checks
+
+- On first launch, confirm the 11 system categories are present.
+- Add, edit, disable, and delete a custom category and a Smart Rule.
+- Force-stop and reopen the app; the changes must still exist.
+- Load demo data, force-stop/reopen, then reset data. User/demo records must
+  disappear while system categories remain.
+- Send an anonymized SMS through the receiver or historical scanner; parsing
+  and persistence must come from Rust.
+
 ## iOS (requires a Mac — cannot run on Windows)
 
 ### Requirements
@@ -48,20 +72,35 @@ cd apps/android
 - A Mac with Xcode 15+ (App Store or developer.apple.com)
 - Simulator comes bundled with Xcode
 
-### ⚠️ Known gap: no Xcode project file yet
+`apps/ios/project.yml` is the source of truth for the Xcode project. On a Mac:
 
-`apps/ios/` contains only Swift sources (`Centwise/` folder) — there is **no
-`.xcodeproj` yet**, despite what README says. First-time setup on a Mac:
+1. Build the Rust simulator library:
 
-1. Open Xcode → **File → New → Project → iOS App**
-   - Product name: `Centwise`, interface: SwiftUI, language: Swift
-2. Save the project **into `apps/ios/`**
-3. Delete the auto-generated `ContentView.swift` and its files
-4. Drag the existing `apps/ios/Centwise/` folder (App, Core, Data, Features,
-   Assets.xcassets, en.lproj, bn.lproj) into the Xcode project
-   (check "Copy items if needed" is OFF — keep files in place, target membership ON)
-5. Build (`Cmd+B`), fix any small compile errors, then run (`Cmd+R`)
-   on any iPhone simulator
+   ```bash
+   rustup target add aarch64-apple-ios-sim
+   cd core
+   cargo build --release --target aarch64-apple-ios-sim -p centwise-ffi
+   cargo run -p uniffi-bindgen -- generate \
+     --library target/aarch64-apple-ios-sim/release/libcentwise_ffi.a \
+     --language swift \
+     --config centwise-ffi/uniffi.toml \
+     --out-dir ../apps/ios/Centwise/Core/FFI/generated
+   cp target/aarch64-apple-ios-sim/release/libcentwise_ffi.a \
+     ../apps/ios/Centwise/Core/FFI/lib/libcentwise_ffi.a
+   ```
+
+2. Generate the project and open it:
+
+   ```bash
+   cd ../apps/ios
+   brew install xcodegen  # one time
+   xcodegen generate
+   open Centwise.xcodeproj
+   ```
+
+3. Select an iPhone Simulator and run (`Cmd+R`). The simulator library is not
+   valid for a physical iPhone; build `aarch64-apple-ios` separately for a
+   device.
 
 ### No Mac? Alternatives
 
@@ -75,16 +114,27 @@ Same list as Android minus widget/onboarding differences: app lock
 (Face ID/Touch ID in simulator), themes, Bengali localization, analytics
 charts, CSV export share sheet.
 
+### iOS Rust persistence checks
+
+- Confirm the App Group database is used at `group.com.centwise.shared`.
+- Repeat the category, Smart Rule, demo-data, reset, and restart checks above.
+- Run the Shortcut/App Intent with an anonymized SMS and verify the result
+  appears through the Rust ingestion path.
+
 ## Troubleshooting (first build)
 
 | Problem | Fix |
 |---|---|
 | Gradle sync fails | Check JDK: Android Studio → Settings → Build → Gradle JDK |
+| `UnsatisfiedLinkError` | Build all Android Rust `.so` files into `app/src/main/jniLibs` |
 | Emulator missing | Device Manager → create virtual device (API 34+) |
-| Kotlin compile errors | Expected — app never compiled before; fix as they appear |
-| Xcode "no scheme" | The .xcodeproj was just created — set the app target's scheme |
+| Kotlin compile errors | Run `./gradlew :app:testDebugUnitTest` and fix the reported source error |
+| iOS missing `-lcentwise_ffi` | Build and copy the Rust library into `Centwise/Core/FFI/lib` |
+| iOS architecture mismatch | Use the simulator Rust target for a simulator and the device target for an iPhone |
 
 ## After the UI check
 
-Next real step (per `docs/STATUS.md`): Android NDK cross-compile so the
-apps run on the real Rust database instead of fake data.
+The remaining work is target-host verification: build the Android `.so` files
+on Windows/Android CI, build the iOS simulator/device library on macOS, then
+exercise the persistence and SMS checks above. The Rust core itself is already
+covered by the workspace test suite.

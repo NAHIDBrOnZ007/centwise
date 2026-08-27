@@ -66,6 +66,9 @@ fn fresh_install_creates_latest_schema_and_seeds_categories() {
         .read(|queries| queries.account_balance("missing"))
         .expect("accounts queryable");
     assert_eq!(balance, 0);
+
+    let starter_rules = database.list_rules().expect("rules queryable");
+    assert_eq!(starter_rules.len(), 5);
 }
 
 #[test]

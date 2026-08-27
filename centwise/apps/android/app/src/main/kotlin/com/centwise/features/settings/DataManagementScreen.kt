@@ -77,7 +77,7 @@ fun DataManagementScreen(
                         val summary = CentwiseRustBackend.loadDemoData()
                         val message = if (summary != null) {
                             repository.clearLegacyStorage()
-                            repository.loadFromSQLite()
+                            repository.loadFromRust()
                             "Rust demo data loaded: ${summary.transactions} transactions"
                         } else {
                             "Rust core is unavailable; demo data was not loaded"

@@ -129,6 +129,11 @@ CREATE INDEX idx_transactions_reference
     ON transactions(reference);
 "#,
     },
+    Migration {
+        version: 3,
+        name: "default smart rules",
+        sql: r#"-- Default rules are seeded after category migrations run."#,
+    },
 ];
 
 /// Latest schema version available in this build.
@@ -158,7 +163,38 @@ pub fn run(connection: &Connection) -> DbResult<()> {
     if current == 0 {
         seed_system_data(connection)?;
     }
+    if current < 3 {
+        seed_default_rules(connection)?;
+    }
 
+    Ok(())
+}
+
+/// Seeds the same useful starter rules on a fresh install or the first build
+/// that introduced Rust-owned rules. These are ordinary editable rows, so a
+/// user can change or delete them and they will not be recreated afterwards.
+fn seed_default_rules(connection: &Connection) -> DbResult<()> {
+    let defaults = [
+        ("rule-foodpanda", "Foodpanda is Food", "Foodpanda", "food"),
+        ("rule-pathao", "Pathao is Transport", "Pathao", "transport"),
+        ("rule-daraz", "Daraz is Shopping", "Daraz", "shopping"),
+        ("rule-chaldal", "Chaldal is Food", "Chaldal", "food"),
+        (
+            "rule-skitto",
+            "Skitto is Mobile Recharge",
+            "Skitto",
+            "recharge",
+        ),
+    ];
+    for (sort_order, (id, name, keyword, category_id)) in defaults.into_iter().enumerate() {
+        connection.execute(
+            "INSERT OR IGNORE INTO rules
+                (id, name, keyword, match_type, category_id, transaction_type,
+                 is_enabled, sort_order)
+             VALUES (?1, ?2, ?3, 'contains', ?4, 'expense', 1, ?5)",
+            rusqlite::params![id, name, keyword, category_id, sort_order as i64],
+        )?;
+    }
     Ok(())
 }
 

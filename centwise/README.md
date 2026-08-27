@@ -42,10 +42,10 @@ cargo test --workspace
 cargo fmt --all --check
 cargo clippy --workspace --all-targets
 
-# Android
+# Android (build Rust `.so` files first; see docs/running-the-apps.md)
 cd apps/android && ./gradlew :app:assembleDebug
 
-# iOS (requires macOS + Xcode)
+# iOS (requires macOS + Xcode; build/link the Rust simulator library first)
 open apps/ios/Centwise.xcodeproj
 ```
 
@@ -56,6 +56,7 @@ Binding generation and native integration steps: [core/README.md](core/README.md
 | File | Purpose |
 |---|---|
 | [docs/STATUS.md](docs/STATUS.md) | What's done / next / later |
+| [docs/CI-SETUP.md](docs/CI-SETUP.md) | GitHub Actions, artifacts, and release prerequisites |
 | [CHANGELOG.md](CHANGELOG.md) | All notable changes |
 | [tech.md](tech.md) | Technology and architecture |
 | [features.md](features.md) | Product features |

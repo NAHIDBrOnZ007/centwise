@@ -1,49 +1,47 @@
 import Foundation
 
-/// Owns the process-wide Rust core handle. Native code supplies only storage
-/// location, account identity migration, and incoming message metadata.
+/// Owns the process-wide Rust core handle. Native code supplies only the
+/// storage location and platform metadata; parsing, rules, and persistence are Rust-owned.
 enum CentwiseRustBackend {
     private static let appGroupIdentifier = "group.com.centwise.shared"
     private static var core: CentwiseCore?
 
-    static func initialize() {
-        guard core == nil else { return }
-
-        let databaseURL = FileManager.default
+    static func databaseURL() -> URL {
+        FileManager.default
             .containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier)?
             .appendingPathComponent("centwise.db")
             ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent("centwise.db")
+    }
+
+    static func initialize() {
+        guard core == nil else { return }
+
+        let databaseURL = databaseURL()
         try? FileManager.default.createDirectory(
             at: databaseURL.deletingLastPathComponent(),
             withIntermediateDirectories: true
         )
         do {
             core = try CentwiseCore.open(path: databaseURL.path)
-            syncExistingAccounts()
         } catch {
-            // Keep the app launchable while a native Rust binary is being packaged.
             core = nil
-        }
-    }
-
-    static func ingestSMS(body: String, senderHint: String?, date: Date) -> SmsIngestResult? {
-        initialize()
-        guard let core else { return nil }
-        do {
-            return try core.ingestSms(
-                body: body,
-                senderHint: senderHint,
-                occurredAtEpochMs: Int64(date.timeIntervalSince1970 * 1000)
-            )
-        } catch {
-            return nil
         }
     }
 
     static func isAvailable() -> Bool {
         initialize()
         return core != nil
+    }
+
+    static func ingestSMS(body: String, senderHint: String?, date: Date) -> SmsIngestResult? {
+        initialize()
+        guard let core else { return nil }
+        return try? core.ingestSms(
+            body: body,
+            senderHint: senderHint,
+            occurredAtEpochMs: Int64(date.timeIntervalSince1970 * 1000)
+        )
     }
 
     @discardableResult
@@ -55,12 +53,7 @@ enum CentwiseRustBackend {
     static func resetToEmptyDatabase() -> Bool {
         initialize()
         guard let core else { return false }
-        do {
-            try core.resetToEmptyDatabase()
-            return true
-        } catch {
-            return false
-        }
+        return (try? core.resetToEmptyDatabase()) != nil
     }
 
     static func listTransactions() -> [TransactionRecord] {
@@ -88,33 +81,174 @@ enum CentwiseRustBackend {
         return (try? core?.listCategories()) ?? []
     }
 
+    static func listRules() -> [SmartRuleRecord] {
+        initialize()
+        return (try? core?.listRules()) ?? []
+    }
+
+    static func insertCategory(_ category: TransactionCategory) -> Bool {
+        initialize()
+        guard let core else { return false }
+        return (try? core.insertCategory(input: CategoryInput(
+            id: category.id, name: category.name, icon: category.icon, colorHex: category.colorHex
+        ))) != nil
+    }
+
+    static func updateCategory(_ category: TransactionCategory) -> Bool {
+        initialize()
+        guard let core else { return false }
+        return (try? core.updateCategory(input: CategoryInput(
+            id: category.id, name: category.name, icon: category.icon, colorHex: category.colorHex
+        ))) ?? false
+    }
+
+    static func deleteCategory(id: String) -> Bool {
+        initialize()
+        return (try? core?.deleteCategory(id: id)) ?? false
+    }
+
+    static func insertRule(_ rule: SmartRule) -> Bool {
+        initialize()
+        guard let core else { return false }
+        return (try? core.insertRule(input: ruleInput(rule))) != nil
+    }
+
+    static func updateRule(_ rule: SmartRule) -> Bool {
+        initialize()
+        guard let core else { return false }
+        return (try? core.updateRule(input: ruleInput(rule))) ?? false
+    }
+
+    static func deleteRule(id: String) -> Bool {
+        initialize()
+        return (try? core?.deleteRule(id: id)) ?? false
+    }
+
+    static func insertTransaction(_ transaction: CentwiseTransaction) -> Bool {
+        initialize()
+        guard let core else { return false }
+        return (try? core.insertTransaction(input: transactionInput(transaction))) != nil
+    }
+
+    static func updateTransaction(_ transaction: CentwiseTransaction) -> Bool {
+        initialize()
+        guard let core else { return false }
+        return (try? core.updateTransaction(input: transactionInput(transaction))) ?? false
+    }
+
+    static func deleteTransaction(id: String) -> Bool {
+        initialize()
+        return (try? core?.deleteTransaction(id: id)) ?? false
+    }
+
+    static func insertAccount(_ account: FinancialAccount) -> Bool {
+        initialize()
+        guard let core else { return false }
+        return (try? core.insertAccount(account: accountInput(account))) != nil
+    }
+
+    static func updateAccount(_ account: FinancialAccount) -> Bool {
+        initialize()
+        guard let core else { return false }
+        return (try? core.updateAccount(account: accountInput(account))) ?? false
+    }
+
+    static func insertBudget(_ budget: CategoryBudget) -> Bool {
+        initialize()
+        guard let core else { return false }
+        return (try? core.insertBudget(input: BudgetInput(
+            id: budget.id,
+            categoryId: budget.categoryId,
+            limitMinor: Int64(budget.budgetLimit * 100),
+            period: "monthly",
+            startEpochMs: 0,
+            endEpochMs: 4_102_444_800_000
+        ))) != nil
+    }
+
+    static func updateBudget(_ budget: CategoryBudget) -> Bool {
+        initialize()
+        guard let core else { return false }
+        return (try? core.updateBudget(input: BudgetInput(
+            id: budget.id,
+            categoryId: budget.categoryId,
+            limitMinor: Int64(budget.budgetLimit * 100),
+            period: "monthly",
+            startEpochMs: 0,
+            endEpochMs: 4_102_444_800_000
+        ))) ?? false
+    }
+
+    static func deleteBudget(id: String) -> Bool {
+        initialize()
+        return (try? core?.deleteBudget(id: id)) ?? false
+    }
+
+    static func insertSubscription(_ subscription: RecurringSubscription) -> Bool {
+        initialize()
+        guard let core else { return false }
+        return (try? core.insertSubscription(input: SubscriptionInput(
+            id: subscription.id,
+            name: subscription.name,
+            amountMinor: Int64(subscription.amount * 100),
+            billingCycle: subscription.billingCycle.lowercased(),
+            nextDueEpochMs: Int64(subscription.nextDueDate.timeIntervalSince1970 * 1000),
+            isActive: subscription.isActive
+        ))) != nil
+    }
+
+    static func updateSubscription(_ subscription: RecurringSubscription) -> Bool {
+        initialize()
+        guard let core else { return false }
+        return (try? core.updateSubscription(input: SubscriptionInput(
+            id: subscription.id,
+            name: subscription.name,
+            amountMinor: Int64(subscription.amount * 100),
+            billingCycle: subscription.billingCycle.lowercased(),
+            nextDueEpochMs: Int64(subscription.nextDueDate.timeIntervalSince1970 * 1000),
+            isActive: subscription.isActive
+        ))) ?? false
+    }
+
+    static func deleteSubscription(id: String) -> Bool {
+        initialize()
+        return (try? core?.deleteSubscription(id: id)) ?? false
+    }
+
     static func listReviewQueue() -> [ReviewQueueRecord] {
         initialize()
-        guard let core else { return [] }
-        return (try? core.listReviewQueue(limit: 100)) ?? []
+        return (try? core?.listReviewQueue(limit: 100)) ?? []
     }
 
     static func dismissReviewQueueItem(id: String) -> Bool {
         initialize()
-        guard let core else { return false }
-        return (try? core.dismissReviewQueueItem(id: id)) ?? false
+        return (try? core?.dismissReviewQueueItem(id: id)) ?? false
     }
 
     static func convertReviewQueueItem(id: String, transaction: CentwiseTransaction) -> Bool {
         initialize()
         guard let core else { return false }
-        let kind: TransactionKind = switch transaction.type {
-        case .expense: .expense
-        case .income: .income
-        case .transfer: .transfer
-        case .refund: .refund
-        }
-        let input = TransactionInput(
+        return (try? core.convertReviewQueueItem(id: id, input: transactionInput(transaction))) ?? false
+    }
+
+    private static func accountInput(_ account: FinancialAccount) -> AccountInput {
+        AccountInput(
+            id: account.id,
+            name: account.name,
+            provider: canonicalProvider(account.provider),
+            lastFour: account.lastFourDigits.map { String($0.suffix(4)) },
+            startingBalanceMinor: Int64(account.currentBalance * 100),
+            archived: account.isArchived
+        )
+    }
+
+    private static func transactionInput(_ transaction: CentwiseTransaction) -> TransactionInput {
+        TransactionInput(
             id: transaction.id,
             title: transaction.title,
             amountMinor: Int64(transaction.amount * 100),
             currency: transaction.currency,
-            kind: kind,
+            kind: transaction.type.rustKind,
             categoryId: transaction.category.id,
             occurredAtEpochMs: Int64(transaction.date.timeIntervalSince1970 * 1000),
             accountId: transaction.accountId,
@@ -125,21 +259,18 @@ enum CentwiseRustBackend {
             rawSms: transaction.rawSmsBody,
             isAutoTracked: transaction.isAutoTracked
         )
-        return (try? core.convertReviewQueueItem(id: id, input: input)) ?? false
     }
 
-    private static func syncExistingAccounts() {
-        TransactionRepository.shared.accounts.forEach { account in
-            try? core?.insertAccount(
-                account: AccountInput(
-                    id: account.id,
-                    name: account.name,
-                    provider: canonicalProvider(account.provider),
-                    lastFour: account.lastFourDigits,
-                    startingBalanceMinor: Int64(account.currentBalance * 100)
-                )
-            )
-        }
+    private static func ruleInput(_ rule: SmartRule) -> SmartRuleInput {
+        SmartRuleInput(
+            id: rule.id,
+            name: rule.name,
+            keyword: rule.keyword,
+            matchType: rule.matchType.rustValue,
+            categoryId: rule.category.id,
+            kind: rule.transactionType.rustKind,
+            isEnabled: rule.isEnabled
+        )
     }
 
     private static func canonicalProvider(_ provider: FinancialProvider) -> String {
@@ -152,6 +283,27 @@ enum CentwiseRustBackend {
         case .bracBank: return "brac-bank"
         case .easternBank: return "ebl"
         default: return "banks-generic"
+        }
+    }
+}
+
+private extension TransactionType {
+    var rustKind: TransactionKind {
+        switch self {
+        case .expense: return .expense
+        case .income: return .income
+        case .transfer: return .transfer
+        case .refund: return .refund
+        }
+    }
+}
+
+private extension RuleMatchType {
+    var rustValue: String {
+        switch self {
+        case .contains: return "contains"
+        case .startsWith: return "starts_with"
+        case .equals: return "exactly_matches"
         }
     }
 }

@@ -11,8 +11,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,11 +34,11 @@ fun CategoriesScreen(
     onBackClick: () -> Unit = {},
     isDark: Boolean = isSystemInDarkTheme()
 ) {
-    var customCategories by remember { mutableStateOf(listOf<CategoryOption>()) }
     var showAddSheet by remember { mutableStateOf(false) }
     var editingCategory by remember { mutableStateOf<CategoryOption?>(null) }
     val categories by TransactionRepository.shared.categories.collectAsState()
     val systemCategories = categories.filter { it.isSystem }
+    val customCategories = categories.filterNot { it.isSystem }
 
     val accent = AccentOptions.byName(AppearancePrefs.accentName).color
 
@@ -165,6 +167,9 @@ fun CategoriesScreen(
                             textPrimary = textPrimary,
                             textSecondary = textSecondary
                         )
+                        IconButton(onClick = { TransactionRepository.shared.deleteCategory(category.id) }) {
+                            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = CentwiseColors.ExpenseRed)
+                        }
                     }
                 }
             }
@@ -175,7 +180,7 @@ fun CategoriesScreen(
         AddEditCategorySheet(
             onDismiss = { showAddSheet = false },
             onSave = { newCategory ->
-                customCategories = customCategories + newCategory
+                TransactionRepository.shared.insertCategory(newCategory)
                 showAddSheet = false
             }
         )
@@ -186,7 +191,7 @@ fun CategoriesScreen(
             editingCategory = category,
             onDismiss = { editingCategory = null },
             onSave = { updated ->
-                customCategories = customCategories.map { if (it.id == updated.id) updated else it }
+                TransactionRepository.shared.updateCategory(updated)
                 editingCategory = null
             }
         )

@@ -11,7 +11,8 @@ import com.centwise.data.models.TransactionType
 
 /**
  * Home-screen widget showing this month's expense total.
- * Until the Rust database lands, it reads the shared repository state.
+ * It reads the Rust-backed repository cache; the repository itself reloads
+ * from Rust SQLite after writes and app startup.
  */
 class SpendingWidgetProvider : AppWidgetProvider() {
 

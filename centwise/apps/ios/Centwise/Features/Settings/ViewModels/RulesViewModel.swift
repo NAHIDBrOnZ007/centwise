@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 
+/// Rust-backed Smart Rules view model. Published values are a UI cache only.
 public final class RulesViewModel: ObservableObject {
     @Published public private(set) var rules: [SmartRule] = []
 
@@ -9,49 +10,54 @@ public final class RulesViewModel: ObservableObject {
     }
 
     public func loadRules() {
-        if rules.isEmpty {
-            rules = [
-                SmartRule(
-                    name: "Foodpanda is Food",
-                    keyword: "Foodpanda",
-                    category: TransactionRepository.shared.category(id: "food")
-                ),
-                SmartRule(
-                    name: "Pathao is Transport",
-                    keyword: "Pathao",
-                    category: TransactionRepository.shared.category(id: "transport")
-                ),
-                SmartRule(
-                    name: "Daraz is Shopping",
-                    keyword: "Daraz",
-                    category: TransactionRepository.shared.category(id: "shopping"),
-                    isEnabled: false
-                )
-            ]
+        rules = CentwiseRustBackend.listRules().map { record in
+            SmartRule(
+                id: record.id,
+                name: record.name,
+                keyword: record.keyword,
+                matchType: matchType(record.matchType),
+                category: TransactionRepository.shared.category(id: record.categoryId),
+                transactionType: transactionType(record.kind),
+                isEnabled: record.isEnabled
+            )
         }
     }
 
     public func addRule(_ rule: SmartRule) {
-        rules.insert(rule, at: 0)
+        guard CentwiseRustBackend.insertRule(rule) else { return }
+        loadRules()
     }
 
     public func updateRule(_ rule: SmartRule) {
-        if let index = rules.firstIndex(where: { $0.id == rule.id }) {
-            rules[index] = rule
-        }
+        guard CentwiseRustBackend.updateRule(rule) else { return }
+        loadRules()
     }
 
     public func deleteRule(id: String) {
-        rules.removeAll { $0.id == id }
+        guard CentwiseRustBackend.deleteRule(id: id) else { return }
+        loadRules()
     }
 
     public func toggleRule(id: String, isEnabled: Bool) {
-        if let index = rules.firstIndex(where: { $0.id == id }) {
-            rules[index].isEnabled = isEnabled
+        guard var rule = rules.first(where: { $0.id == id }) else { return }
+        rule.isEnabled = isEnabled
+        updateRule(rule)
+    }
+
+    private func matchType(_ value: String) -> RuleMatchType {
+        switch value {
+        case "starts_with": return .startsWith
+        case "exactly_matches": return .equals
+        default: return .contains
         }
     }
 
-    public func firstMatch(merchant: String) -> SmartRule? {
-        rules.first { $0.isEnabled && $0.matchType.matches(merchant: merchant, keyword: $0.keyword) }
+    private func transactionType(_ kind: TransactionKind) -> TransactionType {
+        switch kind {
+        case .expense: return .expense
+        case .income: return .income
+        case .transfer: return .transfer
+        case .refund: return .refund
+        }
     }
 }

@@ -28,7 +28,8 @@ data class AccountItem(
     val type: String,
     val balance: Double,
     val providerName: String,
-    val accountNumber: String
+    val accountNumber: String,
+    val archived: Boolean = false
 )
 
 data class BudgetItem(
@@ -36,7 +37,10 @@ data class BudgetItem(
     val categoryName: String,
     val allocatedAmount: Double,
     val spentAmount: Double,
-    val period: String = "Monthly"
+    val period: String = "Monthly",
+    val categoryId: String = "",
+    val startEpochMs: Long = 0L,
+    val endEpochMs: Long = 0L
 ) {
     val progress: Float
         get() = if (allocatedAmount > 0) (spentAmount / allocatedAmount).toFloat().coerceIn(0f, 1f) else 0f
@@ -48,5 +52,7 @@ data class SubscriptionItem(
     val amount: Double,
     val billingCycle: String = "Monthly",
     val nextBillingDate: String,
-    val icon: String = "creditcard"
+    val icon: String = "creditcard",
+    val nextDueEpochMs: Long = 0L,
+    val isActive: Boolean = true
 )

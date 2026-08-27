@@ -15,8 +15,7 @@ public struct DataManagementScreen: View {
     public init() {}
 
     private var databaseFileSizeString: String {
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let dbUrl = docs.appendingPathComponent("centwise.sqlite")
+        let dbUrl = CentwiseRustBackend.databaseURL()
         if let attrs = try? FileManager.default.attributesOfItem(atPath: dbUrl.path),
            let size = attrs[.size] as? Int64 {
             let kb = Double(size) / 1024.0

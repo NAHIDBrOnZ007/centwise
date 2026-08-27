@@ -23,7 +23,7 @@ struct CentwiseApp: App {
             .environment(\.isAmoledActive, themeManager.isAmoledActive)
             .onAppear {
                 CentwiseRustBackend.initialize()
-                TransactionRepository.shared.loadFromSQLite()
+                TransactionRepository.shared.loadFromRust()
                 if appLockManager.appLockEnabled {
                     appLockManager.lockNow()
                 }

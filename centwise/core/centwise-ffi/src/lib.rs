@@ -71,6 +71,50 @@ pub struct AccountInput {
     pub provider: String,
     pub last_four: Option<String>,
     pub starting_balance_minor: i64,
+    pub archived: bool,
+}
+
+/// A user-created category to insert or update.
+#[derive(uniffi::Record)]
+pub struct CategoryInput {
+    pub id: String,
+    pub name: String,
+    pub icon: String,
+    pub color_hex: String,
+}
+
+/// A Smart Rule to insert or update.
+#[derive(uniffi::Record)]
+pub struct SmartRuleInput {
+    pub id: String,
+    pub name: String,
+    pub keyword: String,
+    pub match_type: String,
+    pub category_id: String,
+    pub kind: TransactionKind,
+    pub is_enabled: bool,
+}
+
+/// A budget to insert or update.
+#[derive(uniffi::Record)]
+pub struct BudgetInput {
+    pub id: String,
+    pub category_id: String,
+    pub limit_minor: i64,
+    pub period: String,
+    pub start_epoch_ms: i64,
+    pub end_epoch_ms: i64,
+}
+
+/// A subscription to insert or update.
+#[derive(uniffi::Record)]
+pub struct SubscriptionInput {
+    pub id: String,
+    pub name: String,
+    pub amount_minor: i64,
+    pub billing_cycle: String,
+    pub next_due_epoch_ms: i64,
+    pub is_active: bool,
 }
 
 /// A short transaction for lists.
@@ -148,6 +192,20 @@ pub struct CategoryRecord {
     pub sort_order: i32,
 }
 
+/// A persisted Smart Rule shaped for native settings screens.
+#[derive(uniffi::Record)]
+pub struct SmartRuleRecord {
+    pub id: String,
+    pub name: String,
+    pub keyword: String,
+    pub match_type: String,
+    pub category_id: String,
+    pub category_name: String,
+    pub kind: TransactionKind,
+    pub is_enabled: bool,
+    pub sort_order: i32,
+}
+
 /// Everything the Home screen needs in one call.
 #[derive(uniffi::Record)]
 pub struct HomeDashboardRecord {
@@ -206,7 +264,9 @@ pub struct DemoDataSummaryRecord {
 
 #[cfg(test)]
 mod ingestion_tests {
-    use super::{AccountInput, CentwiseCore, SmsIngestStatus};
+    use super::{
+        AccountInput, CategoryInput, CentwiseCore, SmartRuleInput, SmsIngestStatus, TransactionKind,
+    };
 
     fn core_with_account() -> std::sync::Arc<CentwiseCore> {
         let core = CentwiseCore::open(":memory:".into()).expect("open core");
@@ -216,6 +276,7 @@ mod ingestion_tests {
             provider: "bkash".into(),
             last_four: None,
             starting_balance_minor: 0,
+            archived: false,
         })
         .expect("account");
         core
@@ -250,6 +311,7 @@ mod ingestion_tests {
                 provider: "bkash".into(),
                 last_four: None,
                 starting_balance_minor: 0,
+                archived: false,
             })
             .expect("account");
         }
@@ -294,6 +356,46 @@ mod ingestion_tests {
             .ingest_sms(no_reference.into(), Some("bKash".into()), 1_700_000_000_011)
             .expect("no-reference duplicate ingest");
         assert_eq!(no_reference_duplicate.status, SmsIngestStatus::Duplicate);
+    }
+
+    #[test]
+    fn ingest_sms_applies_a_persisted_rust_rule() {
+        let core = core_with_account();
+        core.insert_category(CategoryInput {
+            id: "coffee".into(),
+            name: "Coffee".into(),
+            icon: "cup".into(),
+            color_hex: "#A855F7".into(),
+        })
+        .expect("category");
+        core.insert_rule(SmartRuleInput {
+            id: "rule-coffee".into(),
+            name: "Coffee merchants".into(),
+            keyword: "CoffeeHouse".into(),
+            match_type: "contains".into(),
+            category_id: "coffee".into(),
+            kind: TransactionKind::Expense,
+            is_enabled: true,
+        })
+        .expect("rule");
+
+        let result = core
+            .ingest_sms(
+                "Payment of Tk 120.00 to CoffeeHouse successful. Ref: COF1.".into(),
+                Some("bKash".into()),
+                1_700_000_000_000,
+            )
+            .expect("ingest");
+
+        assert_eq!(result.status, SmsIngestStatus::Inserted);
+        let transaction = core
+            .list_transactions(10)
+            .expect("transactions")
+            .into_iter()
+            .find(|item| item.reference.as_deref() == Some("COF1"))
+            .expect("stored transaction");
+        assert_eq!(transaction.category_id, "coffee");
+        assert_eq!(core.list_rules().expect("rules").len(), 6);
     }
 
     #[test]
@@ -394,15 +496,25 @@ impl CentwiseCore {
     pub fn insert_account(&self, account: AccountInput) -> Result<(), CentwiseError> {
         self.database
             .write(|queries| {
-                queries.insert_account(&domain::Account {
-                    id: account.id,
-                    name: account.name,
-                    provider: account.provider,
-                    last_four: account.last_four,
-                    balance_minor: account.starting_balance_minor,
-                    archived: false,
-                })
+                let account = account_record_to_domain(account);
+                if queries.update_account(&account)? {
+                    Ok(())
+                } else {
+                    queries.insert_account(&account)
+                }
             })
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn update_account(&self, account: AccountInput) -> Result<bool, CentwiseError> {
+        self.database
+            .update_account(&account_record_to_domain(account))
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn delete_account(&self, id: String) -> Result<bool, CentwiseError> {
+        self.database
+            .delete_account(&id)
             .map_err(CentwiseError::from)
     }
 
@@ -446,6 +558,12 @@ impl CentwiseCore {
             .map_err(CentwiseError::from)
     }
 
+    pub fn update_transaction(&self, input: TransactionInput) -> Result<bool, CentwiseError> {
+        self.database
+            .update_transaction(&transaction_input_to_domain(input))
+            .map_err(CentwiseError::from)
+    }
+
     pub fn list_transactions(&self, limit: u32) -> Result<Vec<TransactionRecord>, CentwiseError> {
         self.database
             .list_transactions(limit)
@@ -474,11 +592,107 @@ impl CentwiseCore {
             .map_err(CentwiseError::from)
     }
 
+    pub fn insert_budget(&self, input: BudgetInput) -> Result<(), CentwiseError> {
+        self.database
+            .insert_budget(&budget_input_to_domain(input))
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn update_budget(&self, input: BudgetInput) -> Result<bool, CentwiseError> {
+        self.database
+            .update_budget(&budget_input_to_domain(input))
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn delete_budget(&self, id: String) -> Result<bool, CentwiseError> {
+        self.database
+            .delete_budget(&id)
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn insert_subscription(&self, input: SubscriptionInput) -> Result<(), CentwiseError> {
+        self.database
+            .insert_subscription(&subscription_input_to_domain(input))
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn update_subscription(&self, input: SubscriptionInput) -> Result<bool, CentwiseError> {
+        self.database
+            .update_subscription(&subscription_input_to_domain(input))
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn delete_subscription(&self, id: String) -> Result<bool, CentwiseError> {
+        self.database
+            .delete_subscription(&id)
+            .map_err(CentwiseError::from)
+    }
+
     pub fn list_categories(&self) -> Result<Vec<CategoryRecord>, CentwiseError> {
         self.database
             .list_categories()
             .map(|items| items.into_iter().map(category_record).collect())
             .map_err(CentwiseError::from)
+    }
+
+    pub fn insert_category(&self, input: CategoryInput) -> Result<(), CentwiseError> {
+        self.database
+            .insert_category(&domain::NewCategory {
+                id: input.id,
+                name: input.name,
+                icon: input.icon,
+                color_hex: input.color_hex,
+            })
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn update_category(&self, input: CategoryInput) -> Result<bool, CentwiseError> {
+        self.database
+            .update_category(&domain::NewCategory {
+                id: input.id,
+                name: input.name,
+                icon: input.icon,
+                color_hex: input.color_hex,
+            })
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn delete_category(&self, id: String) -> Result<bool, CentwiseError> {
+        self.database
+            .delete_category(&id)
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn list_rules(&self) -> Result<Vec<SmartRuleRecord>, CentwiseError> {
+        let categories = self
+            .database
+            .list_categories()
+            .map_err(CentwiseError::from)?;
+        self.database
+            .list_rules()
+            .map(|items| {
+                items
+                    .into_iter()
+                    .map(|item| smart_rule_record(item, &categories))
+                    .collect()
+            })
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn insert_rule(&self, input: SmartRuleInput) -> Result<(), CentwiseError> {
+        self.database
+            .insert_rule(&smart_rule_input_to_domain(input)?)
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn update_rule(&self, input: SmartRuleInput) -> Result<bool, CentwiseError> {
+        self.database
+            .update_rule(&smart_rule_input_to_domain(input)?)
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn delete_rule(&self, id: String) -> Result<bool, CentwiseError> {
+        self.database.delete_rule(&id).map_err(CentwiseError::from)
     }
 
     /// Parses, resolves, deduplicates, and stores an SMS in one Rust-owned
@@ -499,6 +713,24 @@ impl CentwiseCore {
                         parsed.account_last4.as_deref(),
                     )?;
                     let reference = parsed.reference.clone();
+                    let merchant_or_party = parsed
+                        .merchant
+                        .as_deref()
+                        .or(parsed.party.as_deref())
+                        .unwrap_or_default();
+                    let rule_category_id = queries
+                        .matching_rule(merchant_or_party, parsed.transaction_type)?
+                        .map(|rule| rule.category_id);
+                    let category_id = rule_category_id
+                        .clone()
+                        .or_else(|| parsed.category_id.clone())
+                        .unwrap_or_else(|| {
+                            if parsed.transaction_type == domain::TransactionType::Income {
+                                "salary".into()
+                            } else {
+                                "other".into()
+                            }
+                        });
 
                     if matches.len() == 1 {
                         let transaction_id = sms_transaction_id(reference.as_deref(), &body);
@@ -512,13 +744,7 @@ impl CentwiseCore {
                             amount_minor: parsed.amount_minor,
                             currency: "BDT".into(),
                             transaction_type: parsed.transaction_type,
-                            category_id: parsed.category_id.clone().unwrap_or_else(|| {
-                                if parsed.transaction_type == domain::TransactionType::Income {
-                                    "salary".into()
-                                } else {
-                                    "other".into()
-                                }
-                            }),
+                            category_id: category_id.clone(),
                             occurred_at_epoch_ms,
                             account_id: matches[0].id.clone(),
                             reference: parsed.reference.clone(),
@@ -568,7 +794,7 @@ impl CentwiseCore {
                             reference: parsed.reference.clone(),
                             party: parsed.party.clone(),
                             merchant: parsed.merchant.clone(),
-                            category_id: parsed.category_id.clone(),
+                            category_id: Some(category_id),
                             account_last4: parsed.account_last4.clone(),
                             account_hint: parsed.account_hint.clone(),
                         };
@@ -858,6 +1084,99 @@ fn category_record(item: domain::CategorySummary) -> CategoryRecord {
         icon: item.icon,
         color_hex: item.color_hex,
         is_system: item.is_system,
+        sort_order: item.sort_order,
+    }
+}
+
+fn account_record_to_domain(input: AccountInput) -> domain::Account {
+    domain::Account {
+        id: input.id,
+        name: input.name,
+        provider: input.provider,
+        last_four: input.last_four,
+        balance_minor: input.starting_balance_minor,
+        archived: input.archived,
+    }
+}
+
+fn transaction_input_to_domain(input: TransactionInput) -> domain::NewTransaction {
+    domain::NewTransaction {
+        id: input.id,
+        title: input.title,
+        amount_minor: input.amount_minor,
+        currency: input.currency,
+        transaction_type: input.kind.into(),
+        category_id: input.category_id,
+        occurred_at_epoch_ms: input.occurred_at_epoch_ms,
+        account_id: input.account_id,
+        reference: input.reference,
+        balance_after_minor: input.balance_after_minor,
+        fee_minor: input.fee_minor,
+        notes: input.notes,
+        raw_sms: input.raw_sms,
+        is_auto_tracked: input.is_auto_tracked,
+    }
+}
+
+fn budget_input_to_domain(input: BudgetInput) -> domain::NewBudget {
+    domain::NewBudget {
+        id: input.id,
+        category_id: input.category_id,
+        limit_minor: input.limit_minor,
+        period: input.period,
+        start_epoch_ms: input.start_epoch_ms,
+        end_epoch_ms: input.end_epoch_ms,
+    }
+}
+
+fn subscription_input_to_domain(input: SubscriptionInput) -> domain::NewSubscription {
+    domain::NewSubscription {
+        id: input.id,
+        name: input.name,
+        amount_minor: input.amount_minor,
+        billing_cycle: input.billing_cycle,
+        next_due_epoch_ms: input.next_due_epoch_ms,
+        is_active: input.is_active,
+    }
+}
+
+fn smart_rule_input_to_domain(
+    input: SmartRuleInput,
+) -> Result<domain::NewSmartRule, CentwiseError> {
+    let match_type = domain::RuleMatchType::from_str_value(&input.match_type).ok_or_else(|| {
+        CentwiseError::Invalid {
+            message: format!("unknown rule match type: {}", input.match_type),
+        }
+    })?;
+    Ok(domain::NewSmartRule {
+        id: input.id,
+        name: input.name,
+        keyword: input.keyword,
+        match_type,
+        category_id: input.category_id,
+        transaction_type: input.kind.into(),
+        is_enabled: input.is_enabled,
+    })
+}
+
+fn smart_rule_record(
+    item: domain::SmartRule,
+    categories: &[domain::CategorySummary],
+) -> SmartRuleRecord {
+    let category_name = categories
+        .iter()
+        .find(|category| category.id == item.category_id)
+        .map(|category| category.name.clone())
+        .unwrap_or_else(|| item.category_id.clone());
+    SmartRuleRecord {
+        id: item.id,
+        name: item.name,
+        keyword: item.keyword,
+        match_type: item.match_type.as_str().into(),
+        category_id: item.category_id,
+        category_name,
+        kind: item.transaction_type.into(),
+        is_enabled: item.is_enabled,
         sort_order: item.sort_order,
     }
 }
