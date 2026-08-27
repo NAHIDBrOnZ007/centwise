@@ -42,30 +42,28 @@ public struct ReviewQueueView: View {
             }
         }
         .sheet(item: $itemToConvert) { item in
-            NavigationStack {
-                let defaultAccount = TransactionRepository.shared.accounts.first
-                    ?? FinancialAccount(name: item.sender, provider: .bkash, type: .mfs, currentBalance: 0.0)
-                AddEditTransactionView(
-                    transactionToEdit: CentwiseTransaction(
-                        title: item.candidateParty ?? "\(item.sender) Transaction",
-                        amount: item.candidateAmount ?? 0.0,
-                        type: item.candidateType ?? .expense,
-                        category: TransactionRepository.shared.category(id: "other"),
-                        date: item.timestamp,
-                        accountId: defaultAccount.id,
-                        accountName: defaultAccount.name,
-                        provider: defaultAccount.provider,
-                        rawSmsBody: item.rawSms,
-                        transactionReference: item.reference
-                    ),
-                    onSave: {
-                    },
-                    writesToRepository: false,
-                    onCommit: { transaction in
-                        repository.confirmAsTransaction(item: item, transaction: transaction)
-                    }
-                )
-            }
+            let defaultAccount = TransactionRepository.shared.accounts.first
+                ?? FinancialAccount(name: item.sender, provider: .bkash, type: .mfs, currentBalance: 0.0)
+            AddEditTransactionView(
+                transactionToEdit: CentwiseTransaction(
+                    title: item.candidateParty ?? "\(item.sender) Transaction",
+                    amount: item.candidateAmount ?? 0.0,
+                    type: item.candidateType ?? .expense,
+                    category: TransactionRepository.shared.category(id: "other"),
+                    date: item.timestamp,
+                    accountId: defaultAccount.id,
+                    accountName: defaultAccount.name,
+                    provider: defaultAccount.provider,
+                    rawSmsBody: item.rawSms,
+                    transactionReference: item.reference
+                ),
+                onSave: {
+                },
+                writesToRepository: false,
+                onCommit: { transaction in
+                    repository.confirmAsTransaction(item: item, transaction: transaction)
+                }
+            )
         }
     }
 

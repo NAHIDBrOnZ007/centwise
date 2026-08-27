@@ -45,7 +45,7 @@ public final class ReviewQueueRepository: ObservableObject {
     }
 
     public func refresh() {
-        items = CentwiseRustBackend.listReviewQueue().map { item in
+        let loaded = CentwiseRustBackend.listReviewQueue().map { item in
             ReviewQueueItem(
                 id: item.id,
                 sender: item.sender ?? "Financial SMS",
@@ -65,6 +65,13 @@ public final class ReviewQueueRepository: ObservableObject {
                 reason: item.reason
             )
         }
+        if Thread.isMainThread {
+            self.items = loaded
+        } else {
+            DispatchQueue.main.async {
+                self.items = loaded
+            }
+        }
     }
 
     public func dismissItem(id: String) {
@@ -76,6 +83,7 @@ public final class ReviewQueueRepository: ObservableObject {
     public func confirmAsTransaction(item: ReviewQueueItem, transaction: CentwiseTransaction) {
         if CentwiseRustBackend.convertReviewQueueItem(id: item.id, transaction: transaction) {
             refresh()
+            TransactionRepository.shared.loadFromRust()
         }
     }
 }

@@ -126,7 +126,7 @@ fn reference_is_deduplicated_across_transactions_and_review_queue() {
 }
 
 #[test]
-fn ambiguous_review_conversion_fails_closed() {
+fn user_can_convert_ambiguous_review_item_to_selected_account() {
     let database = Database::open_in_memory().expect("open");
     database
         .write(|queries| {
@@ -162,12 +162,20 @@ fn ambiguous_review_conversion_fails_closed() {
         })
         .expect("setup");
 
+    // Non-existent account fails conversion
+    let mut invalid_tx = transaction();
+    invalid_tx.account_id = "non-existent-acct".into();
     assert!(!database
+        .convert_review_queue_item("review-ambiguous", &invalid_tx)
+        .expect("invalid account conversion"));
+
+    // User-selected existing account succeeds
+    assert!(database
         .convert_review_queue_item("review-ambiguous", &transaction())
         .expect("conversion result"));
-    assert_eq!(database.list_review_queue(10).expect("queue").len(), 1);
-    assert!(database
-        .list_transactions(10)
-        .expect("transactions")
-        .is_empty());
+    assert_eq!(database.list_review_queue(10).expect("queue").len(), 0);
+    assert_eq!(
+        database.list_transactions(10).expect("transactions").len(),
+        1
+    );
 }

@@ -49,16 +49,19 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
 
     public func loadFromRust() {
         guard CentwiseRustBackend.isAvailable() else {
-            transactions = []
-            accounts = []
-            budgets = []
-            subscriptions = []
-            categories = []
+            let clearAction = {
+                self.transactions = []
+                self.accounts = []
+                self.budgets = []
+                self.subscriptions = []
+                self.categories = []
+            }
+            if Thread.isMainThread { clearAction() } else { DispatchQueue.main.async(execute: clearAction) }
             return
         }
 
         let categoryRecords = CentwiseRustBackend.listCategories()
-        categories = categoryRecords.map { record in
+        let loadedCategories = categoryRecords.map { record in
             TransactionCategory(
                 id: record.id,
                 name: record.name,
@@ -68,7 +71,7 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
             )
         }
         let accountRecords = CentwiseRustBackend.listAccounts()
-        accounts = accountRecords.map { account in
+        let loadedAccounts = accountRecords.map { account in
             let providerValue = provider(account.provider)
             return FinancialAccount(
                 id: account.id,
@@ -80,15 +83,22 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
                 isArchived: account.archived
             )
         }
-        transactions = CentwiseRustBackend.listTransactions().map { transaction in
+        let loadedTransactions = CentwiseRustBackend.listTransactions().map { transaction in
             let account = accountRecords.first { $0.id == transaction.accountId }
+            let cat = loadedCategories.first { $0.id == transaction.categoryId } ?? TransactionCategory(
+                id: transaction.categoryId,
+                name: "Other",
+                icon: "square.grid.2x2",
+                colorHex: "#6B7280",
+                isSystem: true
+            )
             return CentwiseTransaction(
                 id: transaction.id,
                 title: transaction.title,
                 amount: Double(transaction.amountMinor) / 100,
                 currency: transaction.currency,
                 type: transactionType(transaction.kind),
-                category: category(id: transaction.categoryId),
+                category: cat,
                 date: Date(timeIntervalSince1970: TimeInterval(transaction.occurredAtEpochMs) / 1000),
                 accountId: transaction.accountId,
                 accountName: account?.name ?? "Unknown account",
@@ -100,19 +110,19 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
                 isAutoTracked: transaction.isAutoTracked
             )
         }
-        budgets = CentwiseRustBackend.listBudgets().map { budget in
-            let category = category(id: budget.categoryId)
+        let loadedBudgets = CentwiseRustBackend.listBudgets().map { budget in
+            let cat = loadedCategories.first { $0.id == budget.categoryId }
             return CategoryBudget(
                 id: budget.id,
                 categoryId: budget.categoryId,
                 categoryName: budget.categoryName,
-                categoryIcon: category.icon,
-                categoryColorHex: category.colorHex,
+                categoryIcon: cat?.icon ?? "square.grid.2x2",
+                categoryColorHex: cat?.colorHex ?? "#6B7280",
                 budgetLimit: Double(budget.limitMinor) / 100,
                 currentSpent: Double(budget.spentMinor) / 100
             )
         }
-        subscriptions = CentwiseRustBackend.listSubscriptions().map { subscription in
+        let loadedSubscriptions = CentwiseRustBackend.listSubscriptions().map { subscription in
             RecurringSubscription(
                 id: subscription.id,
                 name: subscription.name,
@@ -121,6 +131,20 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
                 nextDueDate: Date(timeIntervalSince1970: TimeInterval(subscription.nextDueEpochMs) / 1000),
                 isActive: subscription.isActive
             )
+        }
+
+        let updateAction = {
+            self.categories = loadedCategories
+            self.accounts = loadedAccounts
+            self.transactions = loadedTransactions
+            self.budgets = loadedBudgets
+            self.subscriptions = loadedSubscriptions
+        }
+
+        if Thread.isMainThread {
+            updateAction()
+        } else {
+            DispatchQueue.main.async(execute: updateAction)
         }
     }
 

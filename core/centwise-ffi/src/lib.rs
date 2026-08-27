@@ -732,7 +732,34 @@ impl CentwiseCore {
                             }
                         });
 
-                    if matches.len() == 1 {
+                    let target_account_id = if matches.len() == 1 {
+                        Some(matches[0].id.clone())
+                    } else if matches.is_empty() {
+                        let auto_id = format!("auto-{}", parsed.provider_id);
+                        let auto_name = match parsed.provider_id.as_str() {
+                            "bkash" => "bKash",
+                            "nagad" => "Nagad",
+                            "rocket" => "Rocket",
+                            "dbbl" => "Dutch-Bangla Bank",
+                            "city-bank" => "City Bank",
+                            "brac-bank" => "BRAC Bank",
+                            "ebl" => "Eastern Bank",
+                            _ => "Primary Account",
+                        };
+                        let _ = queries.insert_account(&domain::Account {
+                            id: auto_id.clone(),
+                            name: auto_name.to_string(),
+                            provider: parsed.provider_id.clone(),
+                            last_four: parsed.account_last4.clone(),
+                            balance_minor: 0,
+                            archived: false,
+                        });
+                        Some(auto_id)
+                    } else {
+                        None
+                    };
+
+                    if let Some(account_id) = target_account_id {
                         let transaction_id = sms_transaction_id(reference.as_deref(), &body);
                         let transaction = domain::NewTransaction {
                             id: transaction_id.clone(),
@@ -746,7 +773,7 @@ impl CentwiseCore {
                             transaction_type: parsed.transaction_type,
                             category_id: category_id.clone(),
                             occurred_at_epoch_ms,
-                            account_id: matches[0].id.clone(),
+                            account_id,
                             reference: parsed.reference.clone(),
                             balance_after_minor: parsed.balance_after_minor,
                             fee_minor: parsed.fee_minor,

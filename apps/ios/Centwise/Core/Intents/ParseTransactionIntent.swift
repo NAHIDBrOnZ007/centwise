@@ -2,14 +2,20 @@ import AppIntents
 import Foundation
 
 public struct ParseTransactionIntent: AppIntent {
-    public static var title: LocalizedStringResource = "Track Transaction from SMS"
-    public static var description = IntentDescription("Parses incoming bKash, Nagad, Rocket, or Bank SMS and adds the transaction to Centwise.")
+    public static var title: LocalizedStringResource = "Log Transaction"
+    public static var description = IntentDescription("Analyzes financial message text and records the transaction in Centwise.")
 
-    @Parameter(title: "SMS Body")
-    public var smsBody: String
+    @Parameter(title: "Message Text", description: "The transaction text or notification to log", requestValueDialog: "What is the transaction message?")
+    public var smsBody: String?
 
-    @Parameter(title: "Sender")
+    @Parameter(title: "Sender (Optional)", description: "The message sender or provider name")
     public var senderHint: String?
+
+    public static var parameterSummary: some ParameterSummary {
+        Summary("Log transaction from \(\.$smsBody)") {
+            \.$senderHint
+        }
+    }
 
     public init() {}
 
@@ -19,16 +25,23 @@ public struct ParseTransactionIntent: AppIntent {
     }
 
     public func perform() async throws -> some IntentResult & ProvidesDialog {
-        let result = SmsTransactionProcessor.shared.processIncomingSms(body: smsBody, senderHint: senderHint)
+        let bodyToProcess: String
+        if let input = smsBody, !input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            bodyToProcess = input
+        } else {
+            bodyToProcess = try await $smsBody.requestValue("What transaction message would you like to log?")
+        }
+
+        let result = SmsTransactionProcessor.shared.processIncomingSms(body: bodyToProcess, senderHint: senderHint)
         switch result?.status {
         case .inserted:
-            return .result(dialog: "Centwise tracked the transaction.")
+            return .result(dialog: "Transaction logged successfully.")
         case .queuedForReview:
-            return .result(dialog: "Centwise added the message to your review queue.")
+            return .result(dialog: "Message added to review queue.")
         case .duplicate:
-            return .result(dialog: "Centwise had already tracked this transaction.")
+            return .result(dialog: "Transaction was already logged.")
         default:
-            return .result(dialog: "Centwise filtered this message.")
+            return .result(dialog: "Message processed.")
         }
     }
 }

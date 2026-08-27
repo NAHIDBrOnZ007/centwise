@@ -131,9 +131,21 @@ public struct AddEditTransactionView: View {
     private func saveTransaction() {
         guard let amount = Double(amountString), !title.isEmpty else { return }
 
-        let chosenAccount = accounts.indices.contains(selectedAccountIndex)
-            ? accounts[selectedAccountIndex]
-            : accounts.first!
+        let fallbackAccount = FinancialAccount(
+            id: transactionToEdit?.accountId ?? "default",
+            name: transactionToEdit?.accountName ?? "Cash / Wallet",
+            provider: transactionToEdit?.provider ?? .bkash,
+            type: .mfs,
+            currentBalance: 0.0
+        )
+        let chosenAccount: FinancialAccount
+        if accounts.indices.contains(selectedAccountIndex) {
+            chosenAccount = accounts[selectedAccountIndex]
+        } else if let first = accounts.first {
+            chosenAccount = first
+        } else {
+            chosenAccount = fallbackAccount
+        }
 
         if let existing = transactionToEdit {
             var updated = existing

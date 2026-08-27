@@ -5,12 +5,12 @@ public struct CentwiseShortcuts: AppShortcutsProvider {
         AppShortcut(
             intent: ParseTransactionIntent(),
             phrases: [
-                "Track transaction in \(.applicationName)",
-                "Parse SMS in \(.applicationName)",
-                "Log financial message in \(.applicationName)"
+                "Log transaction in \(.applicationName)",
+                "Track expense in \(.applicationName)",
+                "Add transaction to \(.applicationName)"
             ],
-            shortTitle: "Track SMS",
-            systemImageName: "creditcard.and.123"
+            shortTitle: "Log Transaction",
+            systemImageName: "plus.circle.fill"
         )
     }
 }

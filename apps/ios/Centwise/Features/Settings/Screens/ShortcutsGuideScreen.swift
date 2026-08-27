@@ -46,7 +46,7 @@ public struct ShortcutsGuideScreen: View {
                     stepCard(
                         stepNumber: 3,
                         title: "Add Centwise Action",
-                        description: "Tap 'Centwise' from the apps list, choose 'Track Transaction from SMS', and set SMS Body to 'Shortcut Input'.",
+                        description: "Tap 'Centwise' from the apps list, choose 'Log Transaction', and set Message Text to 'Shortcut Input'.",
                         icon: "bolt.fill"
                     )
                 }
@@ -223,13 +223,15 @@ public struct ShortcutsGuideScreen: View {
 
                 HStack(spacing: CentwiseSpacing.xs) {
                     Button("bKash Sample") {
-                        sampleSmsText = "Payment Tk 500.00 to Foodpanda successful. TrxID TEST\(Int.random(in: 100...999)). Balance Tk 4,250.50."
+                        let uniqueId = Int(Date().timeIntervalSince1970) % 100000 + Int.random(in: 100...999)
+                        sampleSmsText = "Payment Tk 500.00 to Foodpanda successful. TrxID BK\(uniqueId). Balance Tk 4,250.50."
                     }
                     .font(CentwiseTypography.caption)
                     .buttonStyle(.bordered)
 
                     Button("Nagad Sample") {
-                        sampleSmsText = "Payment of Tk 250.00 to Pathao is successful. TrxID NAG\(Int.random(in: 100...999)). Balance Tk 3,000.00."
+                        let uniqueId = Int(Date().timeIntervalSince1970) % 100000 + Int.random(in: 100...999)
+                        sampleSmsText = "Payment of Tk 250.00 to Pathao is successful. TrxID NG\(uniqueId). Balance Tk 3,000.00."
                     }
                     .font(CentwiseTypography.caption)
                     .buttonStyle(.bordered)
@@ -237,10 +239,17 @@ public struct ShortcutsGuideScreen: View {
 
                 Button(action: {
                     let result = SmsTransactionProcessor.shared.processIncomingSms(body: sampleSmsText)
-                    if case .inserted? = result?.status {
-                        testResult = "✅ Rust core tracked the sample transaction"
-                    } else {
-                        testResult = "ℹ️ Message filtered / queued to Review Queue"
+                    switch result?.status {
+                    case .inserted?:
+                        testResult = "✅ Transaction tracked and added to your dashboard!"
+                    case .queuedForReview?:
+                        testResult = "📝 Sent to Review Queue for your confirmation."
+                    case .duplicate?:
+                        testResult = "ℹ️ This transaction (TrxID) was already recorded earlier."
+                    case .ignored?:
+                        testResult = "ℹ️ Non-financial message (filtered out safely)."
+                    case .none:
+                        testResult = "⚠️ Could not process message."
                     }
                 }) {
                     HStack {

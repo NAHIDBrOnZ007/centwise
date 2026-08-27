@@ -111,9 +111,9 @@ public struct DataManagementScreen: View {
                 let summary = repository.loadSampleDemoData()
                 themeManager.triggerHapticFeedback(.success)
                 if let summary {
-                    showToast("Rust demo data loaded (\(summary.transactions) transactions)")
+                    showToast("Sample demo data loaded (\(summary.transactions) transactions)")
                 } else {
-                    showToast("Rust core is unavailable; demo data was not loaded")
+                    showToast("Could not load demo data")
                 }
             }
         } message: {

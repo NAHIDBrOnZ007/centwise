@@ -5,6 +5,8 @@ struct CentwiseApp: App {
     @ObservedObject private var themeManager = ThemeManager.shared
     @StateObject private var appLockManager = AppLockManager.shared
 
+    @Environment(\.scenePhase) private var scenePhase
+
     var body: some Scene {
         WindowGroup {
             ZStack {
@@ -24,8 +26,16 @@ struct CentwiseApp: App {
             .onAppear {
                 CentwiseRustBackend.initialize()
                 TransactionRepository.shared.loadFromRust()
+                ReviewQueueRepository.shared.refresh()
+                CentwiseShortcuts.updateAppShortcutParameters()
                 if appLockManager.appLockEnabled {
                     appLockManager.lockNow()
+                }
+            }
+            .onChange(of: scenePhase) { newPhase in
+                if newPhase == .active {
+                    TransactionRepository.shared.loadFromRust()
+                    ReviewQueueRepository.shared.refresh()
                 }
             }
             .onOpenURL { url in

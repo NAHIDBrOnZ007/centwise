@@ -12,6 +12,11 @@ public final class SmsTransactionProcessor {
         senderHint: String? = nil,
         date: Date = Date()
     ) -> SmsIngestResult? {
-        CentwiseRustBackend.ingestSMS(body: body, senderHint: senderHint, date: date)
+        let result = CentwiseRustBackend.ingestSMS(body: body, senderHint: senderHint, date: date)
+        DispatchQueue.main.async {
+            TransactionRepository.shared.loadFromRust()
+            ReviewQueueRepository.shared.refresh()
+        }
+        return result
     }
 }
