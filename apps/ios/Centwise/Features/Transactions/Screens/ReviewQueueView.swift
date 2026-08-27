@@ -55,15 +55,15 @@ public struct ReviewQueueView: View {
                         accountId: defaultAccount.id,
                         accountName: defaultAccount.name,
                         provider: defaultAccount.provider,
-                        transactionReference: item.reference,
-                        rawSmsBody: item.rawSms
+                        rawSmsBody: item.rawSms,
+                        transactionReference: item.reference
                     ),
-                    writesToRepository: false,
                     onCommit: { transaction in
                         repository.confirmAsTransaction(item: item, transaction: transaction)
                     },
                     onSave: {
-                    }
+                    },
+                    writesToRepository: false
                 )
             }
         }
