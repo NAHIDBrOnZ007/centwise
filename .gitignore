@@ -2,6 +2,9 @@
 pennywise/
 pennywise
 
+pennywiseai-tracker
+pennywiseai-tracker/
+
 # === macOS ===
 .DS_Store
 .DS_Store?
