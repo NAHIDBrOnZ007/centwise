@@ -1,57 +1,47 @@
-# === Reference Projects ===
+# Reference-only sibling project; never include it in Centwise commits.
 pennywise/
-pennywise
-
-pennywiseai-tracker
-pennywiseai-tracker/
-
-# === macOS ===
-.DS_Store
-.DS_Store?
-._*
-**/.DS_Store
-.AppleDouble
-.LSOverride
-.Spotlight-V100
-.Trashes
-
-# === IDEs & Editors ===
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# === iOS / Xcode ===
-**/xcuserdata/
-**/*.xcuserstate
-**/DerivedData/
-**/*.xcworkspace/xcuserdata/
-**/build/
-
-# === Android ===
-**/.gradle/
-**/build/
-**/local.properties
-**/.kotlin/
-**/*.iml
 
 # === Rust ===
-**/target/
+core/target/
 *.dll
 *.so
 *.dylib
 *.a
 
-# === Secrets & Keystores ===
+# === Android ===
+apps/android/**/build/
+apps/android/.gradle/
+apps/android/local.properties
+apps/android/.idea/
+apps/android/**/*.iml
+apps/android/.kotlin/
+
+# === iOS / Xcode ===
+apps/ios/**/xcuserdata/
+apps/ios/**/*.xcuserstate
+apps/ios/**/DerivedData/
+apps/ios/.DS_Store
+.DS_Store
+**/.DS_Store
+._*
+.DS_Store?
+
+# === Windows ===
+Thumbs.db
+Desktop.ini
+desktop.ini
+
+# === macOS ===
+*.swp
+
+# === Secrets and local environment (never commit) ===
 .env
-*.env.*
 *.jks
 *.keystore
 *.p8
 *.p12
 ExportOptions.plist
 
-# === Logs & Temp Files ===
+# === Temporary files ===
 *.log
 *.tmp
