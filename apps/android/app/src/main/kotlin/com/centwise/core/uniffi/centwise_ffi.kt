@@ -3283,18 +3283,18 @@ sealed class CentwiseException: kotlin.Exception() {
     
     class Db(
         
-        val `message`: kotlin.String
+        val `reason`: kotlin.String
         ) : CentwiseException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "reason=${ `reason` }"
     }
     
     class Invalid(
         
-        val `message`: kotlin.String
+        val `reason`: kotlin.String
         ) : CentwiseException() {
         override val message
-            get() = "message=${ `message` }"
+            get() = "reason=${ `reason` }"
     }
     
 
@@ -3328,12 +3328,12 @@ public object FfiConverterTypeCentwiseError : FfiConverterRustBuffer<CentwiseExc
             is CentwiseException.Db -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`reason`)
             )
             is CentwiseException.Invalid -> (
                 // Add the size for the Int that specifies the variant plus the size needed for all fields
                 4UL
-                + FfiConverterString.allocationSize(value.`message`)
+                + FfiConverterString.allocationSize(value.`reason`)
             )
         }
     }
@@ -3342,12 +3342,12 @@ public object FfiConverterTypeCentwiseError : FfiConverterRustBuffer<CentwiseExc
         when(value) {
             is CentwiseException.Db -> {
                 buf.putInt(1)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`reason`, buf)
                 Unit
             }
             is CentwiseException.Invalid -> {
                 buf.putInt(2)
-                FfiConverterString.write(value.`message`, buf)
+                FfiConverterString.write(value.`reason`, buf)
                 Unit
             }
         }.let { /* this makes the `when` an expression, which ensures it is exhaustive */ }

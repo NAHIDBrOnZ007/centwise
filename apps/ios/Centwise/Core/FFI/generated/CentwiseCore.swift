@@ -7,7 +7,9 @@ import Foundation
 // Depending on the consumer's build setup, the low-level FFI code
 // might be in a separate module, or it might be compiled inline into
 // this module. This is a bit of light hackery to work with both.
+#if canImport(CentwiseCoreFFI)
 import CentwiseCoreFFI
+#endif
 
 fileprivate extension RustBuffer {
     // Allocate a new buffer, copying the contents of a `UInt8` array.
@@ -514,91 +516,91 @@ fileprivate struct FfiConverterString: FfiConverter {
  * The Centwise core handle shared with both platforms.
  */
 public protocol CentwiseCoreProtocol : AnyObject {
-
+    
     func accountBalance(accountId: String) throws  -> Int64
-
+    
     /**
      * Registers a change listener. Keep the object alive on the native side
      * or notifications stop.
      */
-    func addListener(listener: ChangeListener)
-
+    func addListener(listener: ChangeListener) 
+    
     func convertReviewQueueItem(id: String, input: TransactionInput) throws  -> Bool
-
+    
     func deleteAccount(id: String) throws  -> Bool
-
+    
     func deleteBudget(id: String) throws  -> Bool
-
+    
     func deleteCategory(id: String) throws  -> Bool
-
+    
     func deleteRule(id: String) throws  -> Bool
-
+    
     func deleteSubscription(id: String) throws  -> Bool
-
+    
     func deleteTransaction(id: String) throws  -> Bool
-
+    
     func dismissReviewQueueItem(id: String) throws  -> Bool
-
+    
     /**
      * The single query powering the Home screen.
      */
     func homeDashboard(startEpochMs: Int64, endEpochMs: Int64, recentLimit: UInt32) throws  -> HomeDashboardRecord
-
+    
     /**
      * Parses, resolves, deduplicates, and stores an SMS in one Rust-owned
      * operation. Native platforms only provide the message and timestamp.
      */
     func ingestSms(body: String, senderHint: String?, occurredAtEpochMs: Int64) throws  -> SmsIngestResult
-
-    func insertAccount(account: AccountInput) throws
-
-    func insertBudget(input: BudgetInput) throws
-
-    func insertCategory(input: CategoryInput) throws
-
-    func insertRule(input: SmartRuleInput) throws
-
-    func insertSubscription(input: SubscriptionInput) throws
-
-    func insertTransaction(input: TransactionInput) throws
-
+    
+    func insertAccount(account: AccountInput) throws 
+    
+    func insertBudget(input: BudgetInput) throws 
+    
+    func insertCategory(input: CategoryInput) throws 
+    
+    func insertRule(input: SmartRuleInput) throws 
+    
+    func insertSubscription(input: SubscriptionInput) throws 
+    
+    func insertTransaction(input: TransactionInput) throws 
+    
     func listAccounts() throws  -> [AccountRecord]
-
+    
     func listBudgets() throws  -> [BudgetRecord]
-
+    
     func listCategories() throws  -> [CategoryRecord]
-
+    
     func listReviewQueue(limit: UInt32) throws  -> [ReviewQueueRecord]
-
+    
     func listRules() throws  -> [SmartRuleRecord]
-
+    
     func listSubscriptions() throws  -> [SubscriptionRecord]
-
+    
     func listTransactions(limit: UInt32) throws  -> [TransactionRecord]
-
+    
     /**
      * Explicitly replaces user records with Rust's deterministic demo set.
      * The native UI must ask for confirmation before calling this method.
      */
     func loadDemoData() throws  -> DemoDataSummaryRecord
-
+    
     /**
      * Clears user records and preserves Rust's system categories.
      */
-    func resetToEmptyDatabase() throws
-
+    func resetToEmptyDatabase() throws 
+    
     func updateAccount(account: AccountInput) throws  -> Bool
-
+    
     func updateBudget(input: BudgetInput) throws  -> Bool
-
+    
     func updateCategory(input: CategoryInput) throws  -> Bool
-
+    
     func updateRule(input: SmartRuleInput) throws  -> Bool
-
+    
     func updateSubscription(input: SubscriptionInput) throws  -> Bool
-
+    
     func updateTransaction(input: TransactionInput) throws  -> Bool
-
+    
 }
 
 /**
@@ -651,7 +653,7 @@ open class CentwiseCore:
         try! rustCall { uniffi_centwise_ffi_fn_free_centwisecore(pointer, $0) }
     }
 
-
+    
     /**
      * Opens (or creates) the shared database at `path` and runs migrations.
      * The platform passes an app-container path; Rust never decides locations.
@@ -663,9 +665,9 @@ public static func `open`(path: String)throws  -> CentwiseCore {
     )
 })
 }
+    
 
-
-
+    
 open func accountBalance(accountId: String)throws  -> Int64 {
     return try  FfiConverterInt64.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_account_balance(self.uniffiClonePointer(),
@@ -673,7 +675,7 @@ open func accountBalance(accountId: String)throws  -> Int64 {
     )
 })
 }
-
+    
     /**
      * Registers a change listener. Keep the object alive on the native side
      * or notifications stop.
@@ -684,7 +686,7 @@ open func addListener(listener: ChangeListener) {try! rustCall() {
     )
 }
 }
-
+    
 open func convertReviewQueueItem(id: String, input: TransactionInput)throws  -> Bool {
     return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_convert_review_queue_item(self.uniffiClonePointer(),
@@ -693,7 +695,7 @@ open func convertReviewQueueItem(id: String, input: TransactionInput)throws  -> 
     )
 })
 }
-
+    
 open func deleteAccount(id: String)throws  -> Bool {
     return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_delete_account(self.uniffiClonePointer(),
@@ -701,7 +703,7 @@ open func deleteAccount(id: String)throws  -> Bool {
     )
 })
 }
-
+    
 open func deleteBudget(id: String)throws  -> Bool {
     return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_delete_budget(self.uniffiClonePointer(),
@@ -709,7 +711,7 @@ open func deleteBudget(id: String)throws  -> Bool {
     )
 })
 }
-
+    
 open func deleteCategory(id: String)throws  -> Bool {
     return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_delete_category(self.uniffiClonePointer(),
@@ -717,7 +719,7 @@ open func deleteCategory(id: String)throws  -> Bool {
     )
 })
 }
-
+    
 open func deleteRule(id: String)throws  -> Bool {
     return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_delete_rule(self.uniffiClonePointer(),
@@ -725,7 +727,7 @@ open func deleteRule(id: String)throws  -> Bool {
     )
 })
 }
-
+    
 open func deleteSubscription(id: String)throws  -> Bool {
     return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_delete_subscription(self.uniffiClonePointer(),
@@ -733,7 +735,7 @@ open func deleteSubscription(id: String)throws  -> Bool {
     )
 })
 }
-
+    
 open func deleteTransaction(id: String)throws  -> Bool {
     return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_delete_transaction(self.uniffiClonePointer(),
@@ -741,7 +743,7 @@ open func deleteTransaction(id: String)throws  -> Bool {
     )
 })
 }
-
+    
 open func dismissReviewQueueItem(id: String)throws  -> Bool {
     return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_dismiss_review_queue_item(self.uniffiClonePointer(),
@@ -749,7 +751,7 @@ open func dismissReviewQueueItem(id: String)throws  -> Bool {
     )
 })
 }
-
+    
     /**
      * The single query powering the Home screen.
      */
@@ -762,7 +764,7 @@ open func homeDashboard(startEpochMs: Int64, endEpochMs: Int64, recentLimit: UIn
     )
 })
 }
-
+    
     /**
      * Parses, resolves, deduplicates, and stores an SMS in one Rust-owned
      * operation. Native platforms only provide the message and timestamp.
@@ -776,70 +778,70 @@ open func ingestSms(body: String, senderHint: String?, occurredAtEpochMs: Int64)
     )
 })
 }
-
+    
 open func insertAccount(account: AccountInput)throws  {try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_insert_account(self.uniffiClonePointer(),
         FfiConverterTypeAccountInput.lower(account),$0
     )
 }
 }
-
+    
 open func insertBudget(input: BudgetInput)throws  {try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_insert_budget(self.uniffiClonePointer(),
         FfiConverterTypeBudgetInput.lower(input),$0
     )
 }
 }
-
+    
 open func insertCategory(input: CategoryInput)throws  {try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_insert_category(self.uniffiClonePointer(),
         FfiConverterTypeCategoryInput.lower(input),$0
     )
 }
 }
-
+    
 open func insertRule(input: SmartRuleInput)throws  {try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_insert_rule(self.uniffiClonePointer(),
         FfiConverterTypeSmartRuleInput.lower(input),$0
     )
 }
 }
-
+    
 open func insertSubscription(input: SubscriptionInput)throws  {try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_insert_subscription(self.uniffiClonePointer(),
         FfiConverterTypeSubscriptionInput.lower(input),$0
     )
 }
 }
-
+    
 open func insertTransaction(input: TransactionInput)throws  {try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_insert_transaction(self.uniffiClonePointer(),
         FfiConverterTypeTransactionInput.lower(input),$0
     )
 }
 }
-
+    
 open func listAccounts()throws  -> [AccountRecord] {
     return try  FfiConverterSequenceTypeAccountRecord.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_list_accounts(self.uniffiClonePointer(),$0
     )
 })
 }
-
+    
 open func listBudgets()throws  -> [BudgetRecord] {
     return try  FfiConverterSequenceTypeBudgetRecord.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_list_budgets(self.uniffiClonePointer(),$0
     )
 })
 }
-
+    
 open func listCategories()throws  -> [CategoryRecord] {
     return try  FfiConverterSequenceTypeCategoryRecord.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_list_categories(self.uniffiClonePointer(),$0
     )
 })
 }
-
+    
 open func listReviewQueue(limit: UInt32)throws  -> [ReviewQueueRecord] {
     return try  FfiConverterSequenceTypeReviewQueueRecord.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_list_review_queue(self.uniffiClonePointer(),
@@ -847,21 +849,21 @@ open func listReviewQueue(limit: UInt32)throws  -> [ReviewQueueRecord] {
     )
 })
 }
-
+    
 open func listRules()throws  -> [SmartRuleRecord] {
     return try  FfiConverterSequenceTypeSmartRuleRecord.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_list_rules(self.uniffiClonePointer(),$0
     )
 })
 }
-
+    
 open func listSubscriptions()throws  -> [SubscriptionRecord] {
     return try  FfiConverterSequenceTypeSubscriptionRecord.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_list_subscriptions(self.uniffiClonePointer(),$0
     )
 })
 }
-
+    
 open func listTransactions(limit: UInt32)throws  -> [TransactionRecord] {
     return try  FfiConverterSequenceTypeTransactionRecord.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_list_transactions(self.uniffiClonePointer(),
@@ -869,7 +871,7 @@ open func listTransactions(limit: UInt32)throws  -> [TransactionRecord] {
     )
 })
 }
-
+    
     /**
      * Explicitly replaces user records with Rust's deterministic demo set.
      * The native UI must ask for confirmation before calling this method.
@@ -880,7 +882,7 @@ open func loadDemoData()throws  -> DemoDataSummaryRecord {
     )
 })
 }
-
+    
     /**
      * Clears user records and preserves Rust's system categories.
      */
@@ -889,7 +891,7 @@ open func resetToEmptyDatabase()throws  {try rustCallWithError(FfiConverterTypeC
     )
 }
 }
-
+    
 open func updateAccount(account: AccountInput)throws  -> Bool {
     return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_update_account(self.uniffiClonePointer(),
@@ -897,7 +899,7 @@ open func updateAccount(account: AccountInput)throws  -> Bool {
     )
 })
 }
-
+    
 open func updateBudget(input: BudgetInput)throws  -> Bool {
     return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_update_budget(self.uniffiClonePointer(),
@@ -905,7 +907,7 @@ open func updateBudget(input: BudgetInput)throws  -> Bool {
     )
 })
 }
-
+    
 open func updateCategory(input: CategoryInput)throws  -> Bool {
     return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_update_category(self.uniffiClonePointer(),
@@ -913,7 +915,7 @@ open func updateCategory(input: CategoryInput)throws  -> Bool {
     )
 })
 }
-
+    
 open func updateRule(input: SmartRuleInput)throws  -> Bool {
     return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_update_rule(self.uniffiClonePointer(),
@@ -921,7 +923,7 @@ open func updateRule(input: SmartRuleInput)throws  -> Bool {
     )
 })
 }
-
+    
 open func updateSubscription(input: SubscriptionInput)throws  -> Bool {
     return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_update_subscription(self.uniffiClonePointer(),
@@ -929,7 +931,7 @@ open func updateSubscription(input: SubscriptionInput)throws  -> Bool {
     )
 })
 }
-
+    
 open func updateTransaction(input: TransactionInput)throws  -> Bool {
     return try  FfiConverterBool.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_update_transaction(self.uniffiClonePointer(),
@@ -937,7 +939,7 @@ open func updateTransaction(input: TransactionInput)throws  -> Bool {
     )
 })
 }
-
+    
 
 }
 
@@ -1059,11 +1061,11 @@ public struct FfiConverterTypeAccountInput: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AccountInput {
         return
             try AccountInput(
-                id: FfiConverterString.read(from: &buf),
-                name: FfiConverterString.read(from: &buf),
-                provider: FfiConverterString.read(from: &buf),
-                lastFour: FfiConverterOptionString.read(from: &buf),
-                startingBalanceMinor: FfiConverterInt64.read(from: &buf),
+                id: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                provider: FfiConverterString.read(from: &buf), 
+                lastFour: FfiConverterOptionString.read(from: &buf), 
+                startingBalanceMinor: FfiConverterInt64.read(from: &buf), 
                 archived: FfiConverterBool.read(from: &buf)
         )
     }
@@ -1157,11 +1159,11 @@ public struct FfiConverterTypeAccountRecord: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> AccountRecord {
         return
             try AccountRecord(
-                id: FfiConverterString.read(from: &buf),
-                name: FfiConverterString.read(from: &buf),
-                provider: FfiConverterString.read(from: &buf),
-                lastFour: FfiConverterOptionString.read(from: &buf),
-                balanceMinor: FfiConverterInt64.read(from: &buf),
+                id: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                provider: FfiConverterString.read(from: &buf), 
+                lastFour: FfiConverterOptionString.read(from: &buf), 
+                balanceMinor: FfiConverterInt64.read(from: &buf), 
                 archived: FfiConverterBool.read(from: &buf)
         )
     }
@@ -1258,11 +1260,11 @@ public struct FfiConverterTypeBudgetInput: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> BudgetInput {
         return
             try BudgetInput(
-                id: FfiConverterString.read(from: &buf),
-                categoryId: FfiConverterString.read(from: &buf),
-                limitMinor: FfiConverterInt64.read(from: &buf),
-                period: FfiConverterString.read(from: &buf),
-                startEpochMs: FfiConverterInt64.read(from: &buf),
+                id: FfiConverterString.read(from: &buf), 
+                categoryId: FfiConverterString.read(from: &buf), 
+                limitMinor: FfiConverterInt64.read(from: &buf), 
+                period: FfiConverterString.read(from: &buf), 
+                startEpochMs: FfiConverterInt64.read(from: &buf), 
                 endEpochMs: FfiConverterInt64.read(from: &buf)
         )
     }
@@ -1368,13 +1370,13 @@ public struct FfiConverterTypeBudgetRecord: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> BudgetRecord {
         return
             try BudgetRecord(
-                id: FfiConverterString.read(from: &buf),
-                categoryId: FfiConverterString.read(from: &buf),
-                categoryName: FfiConverterString.read(from: &buf),
-                limitMinor: FfiConverterInt64.read(from: &buf),
-                period: FfiConverterString.read(from: &buf),
-                startEpochMs: FfiConverterInt64.read(from: &buf),
-                endEpochMs: FfiConverterInt64.read(from: &buf),
+                id: FfiConverterString.read(from: &buf), 
+                categoryId: FfiConverterString.read(from: &buf), 
+                categoryName: FfiConverterString.read(from: &buf), 
+                limitMinor: FfiConverterInt64.read(from: &buf), 
+                period: FfiConverterString.read(from: &buf), 
+                startEpochMs: FfiConverterInt64.read(from: &buf), 
+                endEpochMs: FfiConverterInt64.read(from: &buf), 
                 spentMinor: FfiConverterInt64.read(from: &buf)
         )
     }
@@ -1461,9 +1463,9 @@ public struct FfiConverterTypeCategoryInput: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CategoryInput {
         return
             try CategoryInput(
-                id: FfiConverterString.read(from: &buf),
-                name: FfiConverterString.read(from: &buf),
-                icon: FfiConverterString.read(from: &buf),
+                id: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                icon: FfiConverterString.read(from: &buf), 
                 colorHex: FfiConverterString.read(from: &buf)
         )
     }
@@ -1558,11 +1560,11 @@ public struct FfiConverterTypeCategoryRecord: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> CategoryRecord {
         return
             try CategoryRecord(
-                id: FfiConverterString.read(from: &buf),
-                name: FfiConverterString.read(from: &buf),
-                icon: FfiConverterString.read(from: &buf),
-                colorHex: FfiConverterString.read(from: &buf),
-                isSystem: FfiConverterBool.read(from: &buf),
+                id: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                icon: FfiConverterString.read(from: &buf), 
+                colorHex: FfiConverterString.read(from: &buf), 
+                isSystem: FfiConverterBool.read(from: &buf), 
                 sortOrder: FfiConverterInt32.read(from: &buf)
         )
     }
@@ -1648,9 +1650,9 @@ public struct FfiConverterTypeDemoDataSummaryRecord: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> DemoDataSummaryRecord {
         return
             try DemoDataSummaryRecord(
-                accounts: FfiConverterUInt32.read(from: &buf),
-                transactions: FfiConverterUInt32.read(from: &buf),
-                budgets: FfiConverterUInt32.read(from: &buf),
+                accounts: FfiConverterUInt32.read(from: &buf), 
+                transactions: FfiConverterUInt32.read(from: &buf), 
+                budgets: FfiConverterUInt32.read(from: &buf), 
                 subscriptions: FfiConverterUInt32.read(from: &buf)
         )
     }
@@ -1727,8 +1729,8 @@ public struct FfiConverterTypeHomeDashboardRecord: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> HomeDashboardRecord {
         return
             try HomeDashboardRecord(
-                periodExpenseMinor: FfiConverterInt64.read(from: &buf),
-                periodIncomeMinor: FfiConverterInt64.read(from: &buf),
+                periodExpenseMinor: FfiConverterInt64.read(from: &buf), 
+                periodIncomeMinor: FfiConverterInt64.read(from: &buf), 
                 recentTransactions: FfiConverterSequenceTypeTransactionSummaryRecord.read(from: &buf)
         )
     }
@@ -1864,18 +1866,18 @@ public struct FfiConverterTypeParsedSmsRecord: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ParsedSmsRecord {
         return
             try ParsedSmsRecord(
-                isTransaction: FfiConverterBool.read(from: &buf),
-                providerId: FfiConverterString.read(from: &buf),
-                kind: FfiConverterOptionTypeTransactionKind.read(from: &buf),
-                amountMinor: FfiConverterOptionInt64.read(from: &buf),
-                feeMinor: FfiConverterOptionInt64.read(from: &buf),
-                balanceAfterMinor: FfiConverterOptionInt64.read(from: &buf),
-                reference: FfiConverterOptionString.read(from: &buf),
-                party: FfiConverterOptionString.read(from: &buf),
-                merchant: FfiConverterOptionString.read(from: &buf),
-                categoryId: FfiConverterOptionString.read(from: &buf),
-                accountLast4: FfiConverterOptionString.read(from: &buf),
-                accountHint: FfiConverterOptionString.read(from: &buf),
+                isTransaction: FfiConverterBool.read(from: &buf), 
+                providerId: FfiConverterString.read(from: &buf), 
+                kind: FfiConverterOptionTypeTransactionKind.read(from: &buf), 
+                amountMinor: FfiConverterOptionInt64.read(from: &buf), 
+                feeMinor: FfiConverterOptionInt64.read(from: &buf), 
+                balanceAfterMinor: FfiConverterOptionInt64.read(from: &buf), 
+                reference: FfiConverterOptionString.read(from: &buf), 
+                party: FfiConverterOptionString.read(from: &buf), 
+                merchant: FfiConverterOptionString.read(from: &buf), 
+                categoryId: FfiConverterOptionString.read(from: &buf), 
+                accountLast4: FfiConverterOptionString.read(from: &buf), 
+                accountHint: FfiConverterOptionString.read(from: &buf), 
                 rawDate: FfiConverterOptionString.read(from: &buf)
         )
     }
@@ -2039,21 +2041,21 @@ public struct FfiConverterTypeReviewQueueRecord: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> ReviewQueueRecord {
         return
             try ReviewQueueRecord(
-                id: FfiConverterString.read(from: &buf),
-                sender: FfiConverterOptionString.read(from: &buf),
-                rawSms: FfiConverterString.read(from: &buf),
-                receivedAtEpochMs: FfiConverterInt64.read(from: &buf),
-                providerId: FfiConverterOptionString.read(from: &buf),
-                reason: FfiConverterString.read(from: &buf),
-                candidateAmountMinor: FfiConverterOptionInt64.read(from: &buf),
-                candidateKind: FfiConverterOptionTypeTransactionKind.read(from: &buf),
-                feeMinor: FfiConverterOptionInt64.read(from: &buf),
-                balanceAfterMinor: FfiConverterOptionInt64.read(from: &buf),
-                reference: FfiConverterOptionString.read(from: &buf),
-                party: FfiConverterOptionString.read(from: &buf),
-                merchant: FfiConverterOptionString.read(from: &buf),
-                categoryId: FfiConverterOptionString.read(from: &buf),
-                accountLast4: FfiConverterOptionString.read(from: &buf),
+                id: FfiConverterString.read(from: &buf), 
+                sender: FfiConverterOptionString.read(from: &buf), 
+                rawSms: FfiConverterString.read(from: &buf), 
+                receivedAtEpochMs: FfiConverterInt64.read(from: &buf), 
+                providerId: FfiConverterOptionString.read(from: &buf), 
+                reason: FfiConverterString.read(from: &buf), 
+                candidateAmountMinor: FfiConverterOptionInt64.read(from: &buf), 
+                candidateKind: FfiConverterOptionTypeTransactionKind.read(from: &buf), 
+                feeMinor: FfiConverterOptionInt64.read(from: &buf), 
+                balanceAfterMinor: FfiConverterOptionInt64.read(from: &buf), 
+                reference: FfiConverterOptionString.read(from: &buf), 
+                party: FfiConverterOptionString.read(from: &buf), 
+                merchant: FfiConverterOptionString.read(from: &buf), 
+                categoryId: FfiConverterOptionString.read(from: &buf), 
+                accountLast4: FfiConverterOptionString.read(from: &buf), 
                 accountHint: FfiConverterOptionString.read(from: &buf)
         )
     }
@@ -2166,12 +2168,12 @@ public struct FfiConverterTypeSmartRuleInput: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SmartRuleInput {
         return
             try SmartRuleInput(
-                id: FfiConverterString.read(from: &buf),
-                name: FfiConverterString.read(from: &buf),
-                keyword: FfiConverterString.read(from: &buf),
-                matchType: FfiConverterString.read(from: &buf),
-                categoryId: FfiConverterString.read(from: &buf),
-                kind: FfiConverterTypeTransactionKind.read(from: &buf),
+                id: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                keyword: FfiConverterString.read(from: &buf), 
+                matchType: FfiConverterString.read(from: &buf), 
+                categoryId: FfiConverterString.read(from: &buf), 
+                kind: FfiConverterTypeTransactionKind.read(from: &buf), 
                 isEnabled: FfiConverterBool.read(from: &buf)
         )
     }
@@ -2287,14 +2289,14 @@ public struct FfiConverterTypeSmartRuleRecord: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SmartRuleRecord {
         return
             try SmartRuleRecord(
-                id: FfiConverterString.read(from: &buf),
-                name: FfiConverterString.read(from: &buf),
-                keyword: FfiConverterString.read(from: &buf),
-                matchType: FfiConverterString.read(from: &buf),
-                categoryId: FfiConverterString.read(from: &buf),
-                categoryName: FfiConverterString.read(from: &buf),
-                kind: FfiConverterTypeTransactionKind.read(from: &buf),
-                isEnabled: FfiConverterBool.read(from: &buf),
+                id: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                keyword: FfiConverterString.read(from: &buf), 
+                matchType: FfiConverterString.read(from: &buf), 
+                categoryId: FfiConverterString.read(from: &buf), 
+                categoryName: FfiConverterString.read(from: &buf), 
+                kind: FfiConverterTypeTransactionKind.read(from: &buf), 
+                isEnabled: FfiConverterBool.read(from: &buf), 
                 sortOrder: FfiConverterInt32.read(from: &buf)
         )
     }
@@ -2379,9 +2381,9 @@ public struct FfiConverterTypeSmsIngestResult: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SmsIngestResult {
         return
             try SmsIngestResult(
-                status: FfiConverterTypeSmsIngestStatus.read(from: &buf),
-                transactionId: FfiConverterOptionString.read(from: &buf),
-                reviewId: FfiConverterOptionString.read(from: &buf),
+                status: FfiConverterTypeSmsIngestStatus.read(from: &buf), 
+                transactionId: FfiConverterOptionString.read(from: &buf), 
+                reviewId: FfiConverterOptionString.read(from: &buf), 
                 reference: FfiConverterOptionString.read(from: &buf)
         )
     }
@@ -2476,11 +2478,11 @@ public struct FfiConverterTypeSubscriptionInput: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SubscriptionInput {
         return
             try SubscriptionInput(
-                id: FfiConverterString.read(from: &buf),
-                name: FfiConverterString.read(from: &buf),
-                amountMinor: FfiConverterInt64.read(from: &buf),
-                billingCycle: FfiConverterString.read(from: &buf),
-                nextDueEpochMs: FfiConverterInt64.read(from: &buf),
+                id: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                amountMinor: FfiConverterInt64.read(from: &buf), 
+                billingCycle: FfiConverterString.read(from: &buf), 
+                nextDueEpochMs: FfiConverterInt64.read(from: &buf), 
                 isActive: FfiConverterBool.read(from: &buf)
         )
     }
@@ -2574,11 +2576,11 @@ public struct FfiConverterTypeSubscriptionRecord: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SubscriptionRecord {
         return
             try SubscriptionRecord(
-                id: FfiConverterString.read(from: &buf),
-                name: FfiConverterString.read(from: &buf),
-                amountMinor: FfiConverterInt64.read(from: &buf),
-                billingCycle: FfiConverterString.read(from: &buf),
-                nextDueEpochMs: FfiConverterInt64.read(from: &buf),
+                id: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                amountMinor: FfiConverterInt64.read(from: &buf), 
+                billingCycle: FfiConverterString.read(from: &buf), 
+                nextDueEpochMs: FfiConverterInt64.read(from: &buf), 
                 isActive: FfiConverterBool.read(from: &buf)
         )
     }
@@ -2723,19 +2725,19 @@ public struct FfiConverterTypeTransactionInput: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TransactionInput {
         return
             try TransactionInput(
-                id: FfiConverterString.read(from: &buf),
-                title: FfiConverterString.read(from: &buf),
-                amountMinor: FfiConverterInt64.read(from: &buf),
-                currency: FfiConverterString.read(from: &buf),
-                kind: FfiConverterTypeTransactionKind.read(from: &buf),
-                categoryId: FfiConverterString.read(from: &buf),
-                occurredAtEpochMs: FfiConverterInt64.read(from: &buf),
-                accountId: FfiConverterString.read(from: &buf),
-                reference: FfiConverterOptionString.read(from: &buf),
-                balanceAfterMinor: FfiConverterOptionInt64.read(from: &buf),
-                feeMinor: FfiConverterOptionInt64.read(from: &buf),
-                notes: FfiConverterOptionString.read(from: &buf),
-                rawSms: FfiConverterOptionString.read(from: &buf),
+                id: FfiConverterString.read(from: &buf), 
+                title: FfiConverterString.read(from: &buf), 
+                amountMinor: FfiConverterInt64.read(from: &buf), 
+                currency: FfiConverterString.read(from: &buf), 
+                kind: FfiConverterTypeTransactionKind.read(from: &buf), 
+                categoryId: FfiConverterString.read(from: &buf), 
+                occurredAtEpochMs: FfiConverterInt64.read(from: &buf), 
+                accountId: FfiConverterString.read(from: &buf), 
+                reference: FfiConverterOptionString.read(from: &buf), 
+                balanceAfterMinor: FfiConverterOptionInt64.read(from: &buf), 
+                feeMinor: FfiConverterOptionInt64.read(from: &buf), 
+                notes: FfiConverterOptionString.read(from: &buf), 
+                rawSms: FfiConverterOptionString.read(from: &buf), 
                 isAutoTracked: FfiConverterBool.read(from: &buf)
         )
     }
@@ -2885,19 +2887,19 @@ public struct FfiConverterTypeTransactionRecord: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TransactionRecord {
         return
             try TransactionRecord(
-                id: FfiConverterString.read(from: &buf),
-                title: FfiConverterString.read(from: &buf),
-                amountMinor: FfiConverterInt64.read(from: &buf),
-                currency: FfiConverterString.read(from: &buf),
-                kind: FfiConverterTypeTransactionKind.read(from: &buf),
-                categoryId: FfiConverterString.read(from: &buf),
-                occurredAtEpochMs: FfiConverterInt64.read(from: &buf),
-                accountId: FfiConverterString.read(from: &buf),
-                reference: FfiConverterOptionString.read(from: &buf),
-                balanceAfterMinor: FfiConverterOptionInt64.read(from: &buf),
-                feeMinor: FfiConverterOptionInt64.read(from: &buf),
-                notes: FfiConverterOptionString.read(from: &buf),
-                rawSms: FfiConverterOptionString.read(from: &buf),
+                id: FfiConverterString.read(from: &buf), 
+                title: FfiConverterString.read(from: &buf), 
+                amountMinor: FfiConverterInt64.read(from: &buf), 
+                currency: FfiConverterString.read(from: &buf), 
+                kind: FfiConverterTypeTransactionKind.read(from: &buf), 
+                categoryId: FfiConverterString.read(from: &buf), 
+                occurredAtEpochMs: FfiConverterInt64.read(from: &buf), 
+                accountId: FfiConverterString.read(from: &buf), 
+                reference: FfiConverterOptionString.read(from: &buf), 
+                balanceAfterMinor: FfiConverterOptionInt64.read(from: &buf), 
+                feeMinor: FfiConverterOptionInt64.read(from: &buf), 
+                notes: FfiConverterOptionString.read(from: &buf), 
+                rawSms: FfiConverterOptionString.read(from: &buf), 
                 isAutoTracked: FfiConverterBool.read(from: &buf)
         )
     }
@@ -3020,14 +3022,14 @@ public struct FfiConverterTypeTransactionSummaryRecord: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TransactionSummaryRecord {
         return
             try TransactionSummaryRecord(
-                id: FfiConverterString.read(from: &buf),
-                title: FfiConverterString.read(from: &buf),
-                amountMinor: FfiConverterInt64.read(from: &buf),
-                kind: FfiConverterTypeTransactionKind.read(from: &buf),
-                categoryName: FfiConverterString.read(from: &buf),
-                categoryIcon: FfiConverterString.read(from: &buf),
-                categoryColorHex: FfiConverterString.read(from: &buf),
-                occurredAtEpochMs: FfiConverterInt64.read(from: &buf),
+                id: FfiConverterString.read(from: &buf), 
+                title: FfiConverterString.read(from: &buf), 
+                amountMinor: FfiConverterInt64.read(from: &buf), 
+                kind: FfiConverterTypeTransactionKind.read(from: &buf), 
+                categoryName: FfiConverterString.read(from: &buf), 
+                categoryIcon: FfiConverterString.read(from: &buf), 
+                categoryColorHex: FfiConverterString.read(from: &buf), 
+                occurredAtEpochMs: FfiConverterInt64.read(from: &buf), 
                 accountName: FfiConverterString.read(from: &buf)
         )
     }
@@ -3066,11 +3068,11 @@ public func FfiConverterTypeTransactionSummaryRecord_lower(_ value: TransactionS
  */
 public enum CentwiseError {
 
-
-
-    case Db(message: String
+    
+    
+    case Db(reason: String
     )
-    case Invalid(message: String
+    case Invalid(reason: String
     )
 }
 
@@ -3085,14 +3087,14 @@ public struct FfiConverterTypeCentwiseError: FfiConverterRustBuffer {
         let variant: Int32 = try readInt(&buf)
         switch variant {
 
+        
 
-
-
+        
         case 1: return .Db(
-            message: try FfiConverterString.read(from: &buf)
+            reason: try FfiConverterString.read(from: &buf)
             )
         case 2: return .Invalid(
-            message: try FfiConverterString.read(from: &buf)
+            reason: try FfiConverterString.read(from: &buf)
             )
 
          default: throw UniffiInternalError.unexpectedEnumCase
@@ -3102,19 +3104,19 @@ public struct FfiConverterTypeCentwiseError: FfiConverterRustBuffer {
     public static func write(_ value: CentwiseError, into buf: inout [UInt8]) {
         switch value {
 
+        
 
-
-
-
-        case let .Db(message):
+        
+        
+        case let .Db(reason):
             writeInt(&buf, Int32(1))
-            FfiConverterString.write(message, into: &buf)
-
-
-        case let .Invalid(message):
+            FfiConverterString.write(reason, into: &buf)
+            
+        
+        case let .Invalid(reason):
             writeInt(&buf, Int32(2))
-            FfiConverterString.write(message, into: &buf)
-
+            FfiConverterString.write(reason, into: &buf)
+            
         }
     }
 }
@@ -3135,7 +3137,7 @@ extension CentwiseError: Foundation.LocalizedError {
  */
 
 public enum SmsIngestStatus {
-
+    
     case inserted
     case queuedForReview
     case ignored
@@ -3152,38 +3154,38 @@ public struct FfiConverterTypeSmsIngestStatus: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SmsIngestStatus {
         let variant: Int32 = try readInt(&buf)
         switch variant {
-
+        
         case 1: return .inserted
-
+        
         case 2: return .queuedForReview
-
+        
         case 3: return .ignored
-
+        
         case 4: return .duplicate
-
+        
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
 
     public static func write(_ value: SmsIngestStatus, into buf: inout [UInt8]) {
         switch value {
-
-
+        
+        
         case .inserted:
             writeInt(&buf, Int32(1))
-
-
+        
+        
         case .queuedForReview:
             writeInt(&buf, Int32(2))
-
-
+        
+        
         case .ignored:
             writeInt(&buf, Int32(3))
-
-
+        
+        
         case .duplicate:
             writeInt(&buf, Int32(4))
-
+        
         }
     }
 }
@@ -3216,7 +3218,7 @@ extension SmsIngestStatus: Equatable, Hashable {}
  */
 
 public enum TransactionKind {
-
+    
     case expense
     case income
     case transfer
@@ -3233,38 +3235,38 @@ public struct FfiConverterTypeTransactionKind: FfiConverterRustBuffer {
     public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> TransactionKind {
         let variant: Int32 = try readInt(&buf)
         switch variant {
-
+        
         case 1: return .expense
-
+        
         case 2: return .income
-
+        
         case 3: return .transfer
-
+        
         case 4: return .refund
-
+        
         default: throw UniffiInternalError.unexpectedEnumCase
         }
     }
 
     public static func write(_ value: TransactionKind, into buf: inout [UInt8]) {
         switch value {
-
-
+        
+        
         case .expense:
             writeInt(&buf, Int32(1))
-
-
+        
+        
         case .income:
             writeInt(&buf, Int32(2))
-
-
+        
+        
         case .transfer:
             writeInt(&buf, Int32(3))
-
-
+        
+        
         case .refund:
             writeInt(&buf, Int32(4))
-
+        
         }
     }
 }
@@ -3297,9 +3299,9 @@ extension TransactionKind: Equatable, Hashable {}
  * Implemented in Kotlin/Swift. Fires after every data write.
  */
 public protocol ChangeListener : AnyObject {
-
-    func onDataChanged()
-
+    
+    func onDataChanged() 
+    
 }
 
 // Magic number for the Rust proxy to call using the same mechanism as every other method,
@@ -3330,7 +3332,7 @@ fileprivate struct UniffiCallbackInterfaceChangeListener {
                 )
             }
 
-
+            
             let writeReturn = { () }
             uniffiTraitInterfaceCall(
                 callStatus: uniffiCallStatus,

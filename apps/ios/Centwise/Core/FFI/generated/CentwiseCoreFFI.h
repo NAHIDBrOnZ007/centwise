@@ -253,7 +253,7 @@ typedef void (*UniffiForeignFutureCompleteVoid)(uint64_t, UniffiForeignFutureStr
 #endif
 #ifndef UNIFFI_FFIDEF_CALLBACK_INTERFACE_CHANGE_LISTENER_METHOD0
 #define UNIFFI_FFIDEF_CALLBACK_INTERFACE_CHANGE_LISTENER_METHOD0
-typedef void (*UniffiCallbackInterfaceChangeListenerMethod0)(uint64_t, void* _Nonnull,
+typedef void (*UniffiCallbackInterfaceChangeListenerMethod0)(uint64_t, void* _Nonnull, 
         RustCallStatus *_Nonnull uniffiCallStatus
     );
 
@@ -739,223 +739,223 @@ void ffi_centwise_ffi_rust_future_complete_void(uint64_t handle, RustCallStatus 
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_FUNC_PARSE_SMS_MESSAGE
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_FUNC_PARSE_SMS_MESSAGE
 uint16_t uniffi_centwise_ffi_checksum_func_parse_sms_message(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_ACCOUNT_BALANCE
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_ACCOUNT_BALANCE
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_account_balance(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_ADD_LISTENER
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_ADD_LISTENER
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_add_listener(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_CONVERT_REVIEW_QUEUE_ITEM
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_CONVERT_REVIEW_QUEUE_ITEM
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_convert_review_queue_item(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_DELETE_ACCOUNT
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_DELETE_ACCOUNT
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_delete_account(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_DELETE_BUDGET
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_DELETE_BUDGET
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_delete_budget(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_DELETE_CATEGORY
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_DELETE_CATEGORY
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_delete_category(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_DELETE_RULE
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_DELETE_RULE
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_delete_rule(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_DELETE_SUBSCRIPTION
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_DELETE_SUBSCRIPTION
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_delete_subscription(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_DELETE_TRANSACTION
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_DELETE_TRANSACTION
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_delete_transaction(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_DISMISS_REVIEW_QUEUE_ITEM
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_DISMISS_REVIEW_QUEUE_ITEM
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_dismiss_review_queue_item(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_HOME_DASHBOARD
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_HOME_DASHBOARD
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_home_dashboard(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_INGEST_SMS
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_INGEST_SMS
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_ingest_sms(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_INSERT_ACCOUNT
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_INSERT_ACCOUNT
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_insert_account(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_INSERT_BUDGET
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_INSERT_BUDGET
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_insert_budget(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_INSERT_CATEGORY
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_INSERT_CATEGORY
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_insert_category(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_INSERT_RULE
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_INSERT_RULE
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_insert_rule(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_INSERT_SUBSCRIPTION
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_INSERT_SUBSCRIPTION
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_insert_subscription(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_INSERT_TRANSACTION
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_INSERT_TRANSACTION
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_insert_transaction(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_LIST_ACCOUNTS
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_LIST_ACCOUNTS
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_list_accounts(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_LIST_BUDGETS
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_LIST_BUDGETS
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_list_budgets(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_LIST_CATEGORIES
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_LIST_CATEGORIES
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_list_categories(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_LIST_REVIEW_QUEUE
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_LIST_REVIEW_QUEUE
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_list_review_queue(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_LIST_RULES
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_LIST_RULES
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_list_rules(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_LIST_SUBSCRIPTIONS
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_LIST_SUBSCRIPTIONS
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_list_subscriptions(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_LIST_TRANSACTIONS
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_LIST_TRANSACTIONS
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_list_transactions(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_LOAD_DEMO_DATA
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_LOAD_DEMO_DATA
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_load_demo_data(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_RESET_TO_EMPTY_DATABASE
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_RESET_TO_EMPTY_DATABASE
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_reset_to_empty_database(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_UPDATE_ACCOUNT
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_UPDATE_ACCOUNT
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_update_account(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_UPDATE_BUDGET
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_UPDATE_BUDGET
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_update_budget(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_UPDATE_CATEGORY
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_UPDATE_CATEGORY
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_update_category(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_UPDATE_RULE
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_UPDATE_RULE
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_update_rule(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_UPDATE_SUBSCRIPTION
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_UPDATE_SUBSCRIPTION
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_update_subscription(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_UPDATE_TRANSACTION
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CENTWISECORE_UPDATE_TRANSACTION
 uint16_t uniffi_centwise_ffi_checksum_method_centwisecore_update_transaction(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_CONSTRUCTOR_CENTWISECORE_OPEN
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_CONSTRUCTOR_CENTWISECORE_OPEN
 uint16_t uniffi_centwise_ffi_checksum_constructor_centwisecore_open(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CHANGELISTENER_ON_DATA_CHANGED
 #define UNIFFI_FFIDEF_UNIFFI_CENTWISE_FFI_CHECKSUM_METHOD_CHANGELISTENER_ON_DATA_CHANGED
 uint16_t uniffi_centwise_ffi_checksum_method_changelistener_on_data_changed(void
-
+    
 );
 #endif
 #ifndef UNIFFI_FFIDEF_FFI_CENTWISE_FFI_UNIFFI_CONTRACT_VERSION
 #define UNIFFI_FFIDEF_FFI_CENTWISE_FFI_UNIFFI_CONTRACT_VERSION
 uint32_t ffi_centwise_ffi_uniffi_contract_version(void
-
+    
 );
 #endif
 

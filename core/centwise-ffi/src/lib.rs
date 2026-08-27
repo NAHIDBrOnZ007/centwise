@@ -431,15 +431,15 @@ mod ingestion_tests {
 /// Errors surfaced to Kotlin/Swift.
 #[derive(Debug, uniffi::Error)]
 pub enum CentwiseError {
-    Db { message: String },
-    Invalid { message: String },
+    Db { reason: String },
+    Invalid { reason: String },
 }
 
 impl std::fmt::Display for CentwiseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            CentwiseError::Db { message } => write!(f, "database error: {message}"),
-            CentwiseError::Invalid { message } => write!(f, "invalid input: {message}"),
+            CentwiseError::Db { reason } => write!(f, "database error: {reason}"),
+            CentwiseError::Invalid { reason } => write!(f, "invalid input: {reason}"),
         }
     }
 }
@@ -447,9 +447,9 @@ impl std::fmt::Display for CentwiseError {
 impl From<centwise_db::DbError> for CentwiseError {
     fn from(error: centwise_db::DbError) -> Self {
         match error {
-            centwise_db::DbError::Invalid(message) => CentwiseError::Invalid { message },
+            centwise_db::DbError::Invalid(reason) => CentwiseError::Invalid { reason },
             other => CentwiseError::Db {
-                message: other.to_string(),
+                reason: other.to_string(),
             },
         }
     }
@@ -1145,7 +1145,7 @@ fn smart_rule_input_to_domain(
 ) -> Result<domain::NewSmartRule, CentwiseError> {
     let match_type = domain::RuleMatchType::from_str_value(&input.match_type).ok_or_else(|| {
         CentwiseError::Invalid {
-            message: format!("unknown rule match type: {}", input.match_type),
+            reason: format!("unknown rule match type: {}", input.match_type),
         }
     })?;
     Ok(domain::NewSmartRule {

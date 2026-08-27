@@ -58,12 +58,12 @@ public struct ReviewQueueView: View {
                         rawSmsBody: item.rawSms,
                         transactionReference: item.reference
                     ),
-                    onCommit: { transaction in
-                        repository.confirmAsTransaction(item: item, transaction: transaction)
-                    },
                     onSave: {
                     },
-                    writesToRepository: false
+                    writesToRepository: false,
+                    onCommit: { transaction in
+                        repository.confirmAsTransaction(item: item, transaction: transaction)
+                    }
                 )
             }
         }
