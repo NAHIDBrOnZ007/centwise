@@ -1,7 +1,7 @@
 # Centwise — Handoff Plan for Next Agent
 
 Created: 2026-08-22. Read this file fully before doing anything.
-Project root: `centwise/` inside the "centwise workspace" folder (Windows PC).
+Project root: the repository root (`D:\Hello\centwise workspace\centwise`) on the Windows PC.
 
 ## ⚡ IMMEDIATE FIRST TASK (in progress, not finished)
 
@@ -12,7 +12,7 @@ re-verified).** Your first job: re-run the build and fix whatever remains.
 ### Build command (this Windows PC — `java` is NOT on PATH, use Android Studio's bundled JBR):
 
 ```bash
-cd "centwise/apps/android"
+cd "apps/android"
 JAVA_HOME="C:\Program Files\Android\Android Studio\jbr" ./gradlew :app:assembleDebug
 ```
 

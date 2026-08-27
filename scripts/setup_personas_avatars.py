@@ -19,9 +19,9 @@ def setup_personas_avatars():
         ("avatar_10", "Mia", "female"),
     ]
 
-    ios_root = "centwise/apps/ios/Centwise/Assets.xcassets"
-    android_root = "centwise/apps/android/app/src/main/res/drawable"
-    preview_root = "centwise/preview"
+    ios_root = "apps/ios/Centwise/Assets.xcassets"
+    android_root = "apps/android/app/src/main/res/drawable"
+    preview_root = "preview"
 
     os.makedirs(ios_root, exist_ok=True)
     os.makedirs(android_root, exist_ok=True)
@@ -80,7 +80,7 @@ def setup_personas_avatars():
             print(f"[ERROR] Failed to download {name}: {e}")
 
     # Clean up test temp folder
-    test_dir = "centwise/preview/personas_test"
+    test_dir = "preview/personas_test"
     if os.path.exists(test_dir):
         import shutil
         shutil.rmtree(test_dir, ignore_errors=True)

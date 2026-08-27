@@ -18,9 +18,9 @@ def download_notionists_avatars():
         ("avatar_10", "Aria", "female"),
     ]
 
-    ios_assets_root = "centwise/apps/ios/Centwise/Assets.xcassets"
-    android_res_root = "centwise/apps/android/app/src/main/res/drawable"
-    preview_root = "centwise/preview"
+    ios_assets_root = "apps/ios/Centwise/Assets.xcassets"
+    android_res_root = "apps/android/app/src/main/res/drawable"
+    preview_root = "preview"
 
     os.makedirs(ios_assets_root, exist_ok=True)
     os.makedirs(android_res_root, exist_ok=True)

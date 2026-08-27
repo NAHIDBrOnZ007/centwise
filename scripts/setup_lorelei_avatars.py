@@ -19,9 +19,9 @@ def setup_lorelei_avatars():
         ("avatar_10", "Aria", "female"),
     ]
 
-    ios_root = "centwise/apps/ios/Centwise/Assets.xcassets"
-    android_root = "centwise/apps/android/app/src/main/res/drawable"
-    preview_root = "centwise/preview"
+    ios_root = "apps/ios/Centwise/Assets.xcassets"
+    android_root = "apps/android/app/src/main/res/drawable"
+    preview_root = "preview"
 
     os.makedirs(ios_root, exist_ok=True)
     os.makedirs(android_root, exist_ok=True)
