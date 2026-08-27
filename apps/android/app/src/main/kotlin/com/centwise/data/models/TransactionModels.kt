@@ -20,7 +20,10 @@ data class TransactionItem(
     val note: String? = null,
     val rawSms: String? = null,
     val reference: String? = null
-)
+) {
+    val date: java.util.Date
+        get() = java.util.Date(timestamp)
+}
 
 data class AccountItem(
     val id: String = UUID.randomUUID().toString(),

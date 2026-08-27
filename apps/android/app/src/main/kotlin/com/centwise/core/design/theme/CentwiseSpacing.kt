@@ -4,6 +4,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 object CentwiseSpacing {
+    val ScreenPadding: Dp = 20.dp
     val xxs: Dp = 2.dp
     val xs: Dp = 4.dp
     val sm: Dp = 8.dp

@@ -37,6 +37,10 @@ fun TransactionListScreen(
 ) {
     val transactions by viewModel.filteredTransactions.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val selectedPeriod by viewModel.selectedPeriod.collectAsState()
+    val totalIncome by viewModel.totalIncome.collectAsState()
+    val totalExpense by viewModel.totalExpense.collectAsState()
+    val totalNet by viewModel.totalNet.collectAsState()
     var selectedTransaction by remember { mutableStateOf<TransactionItem?>(null) }
 
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground
@@ -111,7 +115,6 @@ fun TransactionListScreen(
             }
 
             // Filter Chips (Period, Type, Category)
-            val selectedPeriod by viewModel.selectedPeriod.collectAsState()
             item {
                 var showPeriodMenu by remember { mutableStateOf(false) }
                 Box {
@@ -139,10 +142,6 @@ fun TransactionListScreen(
             }
 
             // Totals Summary Card (3 Columns: Income, Expenses, Net)
-            val totalIncome by viewModel.totalIncome.collectAsState()
-            val totalExpense by viewModel.totalExpense.collectAsState()
-            val totalNet by viewModel.totalNet.collectAsState()
-
             if (transactions.isNotEmpty()) {
                 item {
                     com.centwise.core.design.components.TransactionTotalsCard(

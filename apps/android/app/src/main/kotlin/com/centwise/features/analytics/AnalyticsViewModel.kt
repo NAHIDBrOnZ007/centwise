@@ -30,7 +30,7 @@ class AnalyticsViewModel(
     val selectedType = MutableStateFlow("All")
 
     private val periodRange: Flow<Pair<Date, Date>> = selectedPeriod.map { period ->
-        val cal = Calendar.currentOrInstance()
+        val cal = Calendar.getInstance()
         val now = Date()
         cal.time = now
         val endOfToday = now
@@ -51,7 +51,7 @@ class AnalyticsViewModel(
                 cal.add(Calendar.MONTH, -1)
                 val start = cal.time
 
-                val calEnd = Calendar.currentOrInstance()
+                val calEnd = Calendar.getInstance()
                 calEnd.time = now
                 calEnd.set(Calendar.DAY_OF_MONTH, 1)
                 calEnd.set(Calendar.HOUR_OF_DAY, 0)
@@ -141,5 +141,4 @@ class AnalyticsViewModel(
     }
 }
 
-private fun Calendar.Companion.currentOrInstance(): Calendar = Calendar.getInstance()
 

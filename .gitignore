@@ -9,6 +9,7 @@ core/target/
 *.a
 
 # === Android ===
+.idea/
 apps/android/**/build/
 apps/android/.gradle/
 apps/android/local.properties

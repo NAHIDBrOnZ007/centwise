@@ -3,6 +3,7 @@ package com.centwise.core.design.theme
 import androidx.compose.ui.graphics.Color
 
 object CentwiseColors {
+    val PrimaryEmerald = Color(0xFF059669)
     // Core Semantic Colors
     val AccentMauve = Color(0xFFB55D75)
     val AccentBlue = Color(0xFF007AFF)

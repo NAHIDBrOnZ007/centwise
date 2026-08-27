@@ -43,6 +43,7 @@ fun HomeScreen(
     val monthlyExpense by viewModel.monthlyExpense.collectAsState()
     val monthlyIncome by viewModel.monthlyIncome.collectAsState()
     val monthlySaved by viewModel.monthlySaved.collectAsState()
+    val accounts by viewModel.accounts.collectAsState()
 
     var selectedTransaction by remember { mutableStateOf<TransactionItem?>(null) }
 
@@ -91,7 +92,6 @@ fun HomeScreen(
             }
 
             // 3. Accounts Section Carousel
-            val accounts by viewModel.accounts.collectAsState()
             if (accounts.isNotEmpty()) {
                 item {
                     com.centwise.core.design.components.AccountCarousel(
