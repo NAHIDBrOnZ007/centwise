@@ -4,13 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.CreditCard
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -24,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.centwise.core.design.formatters.CurrencyFormatter
 import com.centwise.core.design.theme.CentwiseColors
-import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.data.models.TransactionItem
 import com.centwise.data.models.TransactionType
@@ -32,10 +30,10 @@ import com.centwise.data.models.TransactionType
 @Composable
 fun TransactionRow(
     transaction: TransactionItem,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
     showBackground: Boolean = false,
     showChevron: Boolean = true,
-    modifier: Modifier = Modifier,
     isDark: Boolean = isSystemInDarkTheme()
 ) {
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
@@ -52,8 +50,6 @@ fun TransactionRow(
         TransactionType.CREDIT -> Icons.Default.CreditCard
         TransactionType.TRANSFER -> Icons.Default.SwapHoriz
     }
-    val providerColor = CentwiseColors.providerColor(transaction.paymentMethod)
-
     val rowModifier = if (showBackground) {
         modifier
             .fillMaxWidth()
@@ -127,7 +123,7 @@ fun TransactionRow(
         if (showChevron) {
             Spacer(modifier = Modifier.width(6.dp))
             Icon(
-                imageVector = Icons.Default.KeyboardArrowRight,
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = null,
                 tint = textSecondary.copy(alpha = 0.5f),
                 modifier = Modifier.size(16.dp)
@@ -141,10 +137,12 @@ fun TransactionRow(
 fun TransactionRowPreview() {
     TransactionRow(
         transaction = TransactionItem(
+            //noinspection SpellCheckingInspection
             title = "Foodpanda BD",
             amount = 650.0,
             type = TransactionType.EXPENSE,
             category = "Food & Dining",
+            //noinspection SpellCheckingInspection
             paymentMethod = "bKash"
         )
     )
