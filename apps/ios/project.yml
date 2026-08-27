@@ -38,6 +38,7 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
         SWIFT_EMIT_LOC_STRINGS: "YES"
         SWIFT_INCLUDE_PATHS: "$(PROJECT_DIR)/Centwise/Core/FFI/generated"
+        OTHER_SWIFT_FLAGS: "-Xcc -fmodule-map-file=$(PROJECT_DIR)/Centwise/Core/FFI/generated/CentwiseCoreFFI.modulemap"
         HEADER_SEARCH_PATHS: "$(PROJECT_DIR)/Centwise/Core/FFI/generated"
         LIBRARY_SEARCH_PATHS: "$(PROJECT_DIR)/Centwise/Core/FFI/lib"
         OTHER_LDFLAGS: "$(inherited) -lcentwise_ffi"

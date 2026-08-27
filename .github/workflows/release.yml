@@ -150,6 +150,7 @@ jobs:
             --language swift \
             --config centwise-ffi/uniffi.toml \
             --out-dir ../apps/ios/Centwise/Core/FFI/generated
+          sed -i '' '1,15{/^#if canImport(CentwiseCoreFFI)$/d; /^#endif$/d;}' ../apps/ios/Centwise/Core/FFI/generated/CentwiseCore.swift
       - name: Stage Rust simulator library
         run: |
           cp core/target/aarch64-apple-ios-sim/release/libcentwise_ffi.a \

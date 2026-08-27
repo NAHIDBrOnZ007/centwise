@@ -7,9 +7,7 @@ import Foundation
 // Depending on the consumer's build setup, the low-level FFI code
 // might be in a separate module, or it might be compiled inline into
 // this module. This is a bit of light hackery to work with both.
-#if canImport(CentwiseCoreFFI)
 import CentwiseCoreFFI
-#endif
 
 fileprivate extension RustBuffer {
     // Allocate a new buffer, copying the contents of a `UInt8` array.
