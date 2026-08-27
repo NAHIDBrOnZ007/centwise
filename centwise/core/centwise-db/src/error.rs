@@ -9,6 +9,10 @@ pub enum DbError {
     Corrupt(String),
     /// The caller supplied invalid input.
     Invalid(String),
+    /// An SMS reference has already been stored or queued.
+    DuplicateReference(String),
+    /// A transaction id has already been stored.
+    DuplicateTransaction(String),
 }
 
 impl fmt::Display for DbError {
@@ -17,6 +21,10 @@ impl fmt::Display for DbError {
             DbError::Sqlite(message) => write!(f, "database error: {message}"),
             DbError::Corrupt(message) => write!(f, "corrupt data: {message}"),
             DbError::Invalid(message) => write!(f, "invalid input: {message}"),
+            DbError::DuplicateReference(reference) => {
+                write!(f, "duplicate transaction reference: {reference}")
+            }
+            DbError::DuplicateTransaction(id) => write!(f, "duplicate transaction id: {id}"),
         }
     }
 }

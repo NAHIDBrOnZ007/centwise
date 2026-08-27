@@ -3,27 +3,32 @@ import Combine
 
 public final class CategoriesViewModel: ObservableObject {
     @Published public private(set) var categories: [TransactionCategory] = []
+    private var cancellables = Set<AnyCancellable>()
 
     public init() {
         loadCategories()
+        TransactionRepository.shared.$categories
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] categories in
+                self?.categories = categories
+            }
+            .store(in: &cancellables)
     }
 
     public var systemCategories: [TransactionCategory] {
         categories.filter { category in
-            TransactionCategory.defaultCategories.contains { $0.id == category.id }
+            category.isSystem
         }
     }
 
     public var customCategories: [TransactionCategory] {
         categories.filter { category in
-            !TransactionCategory.defaultCategories.contains { $0.id == category.id }
+            !category.isSystem
         }
     }
 
     public func loadCategories() {
-        if categories.isEmpty {
-            categories = TransactionCategory.defaultCategories
-        }
+        categories = TransactionRepository.shared.categories
     }
 
     public func addCategory(_ category: TransactionCategory) {
@@ -43,6 +48,6 @@ public final class CategoriesViewModel: ObservableObject {
     }
 
     public func isSystemCategory(_ category: TransactionCategory) -> Bool {
-        TransactionCategory.defaultCategories.contains { $0.id == category.id }
+        category.isSystem
     }
 }

@@ -42,7 +42,9 @@ fn test_transaction(
         account_id: "acct-1".into(),
         reference: None,
         balance_after_minor: None,
+        fee_minor: None,
         notes: None,
+        raw_sms: None,
         is_auto_tracked: true,
     }
 }

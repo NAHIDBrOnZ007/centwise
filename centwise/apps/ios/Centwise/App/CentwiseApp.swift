@@ -22,6 +22,8 @@ struct CentwiseApp: App {
             .preferredColorScheme(themeManager.colorScheme)
             .environment(\.isAmoledActive, themeManager.isAmoledActive)
             .onAppear {
+                CentwiseRustBackend.initialize()
+                TransactionRepository.shared.loadFromSQLite()
                 if appLockManager.appLockEnabled {
                     appLockManager.lockNow()
                 }

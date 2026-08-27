@@ -1,6 +1,7 @@
 [bindings.kotlin]
-package = "com.centwise.core"
+package_name = "com.centwise.core.uniffi"
 generate_immutable_records = true
+android = true
 
 [bindings.swift]
 module_name = "CentwiseCore"

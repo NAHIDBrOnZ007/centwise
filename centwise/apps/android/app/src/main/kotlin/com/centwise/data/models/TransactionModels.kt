@@ -18,7 +18,8 @@ data class TransactionItem(
     val paymentMethod: String,
     val timestamp: Long = System.currentTimeMillis(),
     val note: String? = null,
-    val rawSms: String? = null
+    val rawSms: String? = null,
+    val reference: String? = null
 )
 
 data class AccountItem(

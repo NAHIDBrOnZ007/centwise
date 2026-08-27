@@ -2,7 +2,7 @@ package com.centwise.features.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.centwise.data.fakes.FakeTransactionRepository
+import com.centwise.data.repository.TransactionRepository
 import com.centwise.data.models.TransactionItem
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 class HomeViewModel(
-    private val repository: FakeTransactionRepository = FakeTransactionRepository.shared
+    private val repository: TransactionRepository = TransactionRepository.shared
 ) : ViewModel() {
 
     val recentTransactions: StateFlow<List<TransactionItem>> = repository.transactions

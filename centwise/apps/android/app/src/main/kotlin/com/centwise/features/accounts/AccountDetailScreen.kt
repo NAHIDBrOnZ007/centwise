@@ -26,7 +26,7 @@ import com.centwise.core.design.formatters.CurrencyFormatter
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
-import com.centwise.data.fakes.FakeTransactionRepository
+import com.centwise.data.repository.TransactionRepository
 import com.centwise.data.models.AccountItem
 
 @Composable
@@ -35,7 +35,7 @@ fun AccountDetailScreen(
     onBackClick: () -> Unit = {},
     isDark: Boolean = isSystemInDarkTheme()
 ) {
-    val repository = FakeTransactionRepository.shared
+    val repository = TransactionRepository.shared
     val transactions by repository.transactions.collectAsState()
 
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground

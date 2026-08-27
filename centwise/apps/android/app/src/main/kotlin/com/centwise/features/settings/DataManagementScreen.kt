@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
+import com.centwise.core.backend.CentwiseRustBackend
 import com.centwise.data.repository.TransactionRepository
 import java.io.File
 
@@ -52,7 +53,7 @@ fun DataManagementScreen(
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
 
-    val dbFile = context.getDatabasePath("centwise.db")
+    val dbFile = context.noBackupFilesDir.resolve("centwise.db")
     val dbSizeString = if (dbFile.exists()) {
         val bytes = dbFile.length()
         val kb = bytes / 1024.0
@@ -73,15 +74,15 @@ fun DataManagementScreen(
                 Button(
                     onClick = {
                         showLoadDemoDialog = false
-                        // Load demo data
-                        val helper = com.centwise.data.repository.CentwiseDatabaseHelper.getInstance(context)
-                        helper?.clearAllTables()
-                        com.centwise.data.fakes.MockDataProvider.sampleTransactions.forEach { helper?.insertTransaction(it) }
-                        com.centwise.data.fakes.MockDataProvider.sampleAccounts.forEach { helper?.insertOrUpdateAccount(it) }
-                        com.centwise.data.fakes.MockDataProvider.sampleBudgets.forEach { helper?.insertOrUpdateBudget(it) }
-                        com.centwise.data.fakes.MockDataProvider.sampleSubscriptions.forEach { helper?.insertOrUpdateSubscription(it) }
-                        repository.loadFromSQLite()
-                        Toast.makeText(context, "Demo data loaded successfully!", Toast.LENGTH_SHORT).show()
+                        val summary = CentwiseRustBackend.loadDemoData()
+                        val message = if (summary != null) {
+                            repository.clearLegacyStorage()
+                            repository.loadFromSQLite()
+                            "Rust demo data loaded: ${summary.transactions} transactions"
+                        } else {
+                            "Rust core is unavailable; demo data was not loaded"
+                        }
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = accent)
                 ) {

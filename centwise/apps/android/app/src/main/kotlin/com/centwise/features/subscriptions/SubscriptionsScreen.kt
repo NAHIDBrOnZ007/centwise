@@ -30,7 +30,7 @@ import com.centwise.core.design.formatters.CurrencyFormatter
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
-import com.centwise.data.fakes.FakeTransactionRepository
+import com.centwise.data.repository.TransactionRepository
 import com.centwise.features.accounts.providerColor
 import com.centwise.features.accounts.providerIcon
 import com.centwise.features.settings.AccentOptions
@@ -41,7 +41,7 @@ fun SubscriptionsScreen(
     onBackClick: () -> Unit = {},
     isDark: Boolean = isSystemInDarkTheme()
 ) {
-    val repository = FakeTransactionRepository.shared
+    val repository = TransactionRepository.shared
     val subscriptions by repository.subscriptions.collectAsState()
     var showAddSheet by remember { mutableStateOf(false) }
 
@@ -174,7 +174,7 @@ fun SubscriptionsScreen(
                     }
 
                     IconButton(
-                        onClick = { FakeTransactionRepository.shared.deleteSubscription(subscription.id) }
+                        onClick = { TransactionRepository.shared.deleteSubscription(subscription.id) }
                     ) {
                         Icon(
                             imageVector = Icons.Default.Delete,
@@ -192,7 +192,7 @@ fun SubscriptionsScreen(
         AddEditSubscriptionSheet(
             onDismiss = { showAddSheet = false },
             onSave = { subscription ->
-                FakeTransactionRepository.shared.addSubscription(subscription)
+                TransactionRepository.shared.addSubscription(subscription)
                 showAddSheet = false
             }
         )

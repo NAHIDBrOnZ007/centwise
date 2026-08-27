@@ -3,6 +3,8 @@ import SwiftUI
 public struct AddEditTransactionView: View {
     public var transactionToEdit: CentwiseTransaction?
     public var onSave: (() -> Void)?
+    public var writesToRepository: Bool
+    public var onCommit: ((CentwiseTransaction) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
@@ -11,7 +13,8 @@ public struct AddEditTransactionView: View {
     @State private var title: String = ""
     @State private var amountString: String = ""
     @State private var selectedType: TransactionType = .expense
-    @State private var selectedCategory: TransactionCategory = .food
+    @ObservedObject private var repository = TransactionRepository.shared
+    @State private var selectedCategory: TransactionCategory = TransactionRepository.shared.category(id: "food")
     @State private var selectedAccountIndex: Int = 0
     @State private var date: Date = Date()
     @State private var notes: String = ""
@@ -19,10 +22,14 @@ public struct AddEditTransactionView: View {
 
     public init(
         transactionToEdit: CentwiseTransaction? = nil,
-        onSave: (() -> Void)? = nil
+        onSave: (() -> Void)? = nil,
+        writesToRepository: Bool = true,
+        onCommit: ((CentwiseTransaction) -> Void)? = nil
     ) {
         self.transactionToEdit = transactionToEdit
         self.onSave = onSave
+        self.writesToRepository = writesToRepository
+        self.onCommit = onCommit
     }
 
     public var body: some View {
@@ -64,7 +71,7 @@ public struct AddEditTransactionView: View {
                     TextField("Merchant / Title (e.g. Foodpanda)", text: $title)
 
                     Picker("Category", selection: $selectedCategory) {
-                        ForEach(TransactionCategory.defaultCategories) { cat in
+                        ForEach(repository.categories) { cat in
                             HStack {
                                 Image(systemName: cat.icon)
                                 Text(cat.name)
@@ -114,6 +121,8 @@ public struct AddEditTransactionView: View {
                     selectedCategory = tx.category
                     date = tx.date
                     notes = tx.notes ?? ""
+                } else if let firstCategory = repository.categories.first {
+                    selectedCategory = firstCategory
                 }
             }
         }
@@ -138,7 +147,10 @@ public struct AddEditTransactionView: View {
             updated.date = date
             updated.notes = notes.isEmpty ? nil : notes
 
-            TransactionRepository.shared.updateTransaction(updated)
+            if writesToRepository {
+                TransactionRepository.shared.updateTransaction(updated)
+            }
+            onCommit?(updated)
         } else {
             let newTx = CentwiseTransaction(
                 title: title,
@@ -152,7 +164,10 @@ public struct AddEditTransactionView: View {
                 notes: notes.isEmpty ? nil : notes,
                 isAutoTracked: false
             )
-            TransactionRepository.shared.addTransaction(newTx)
+            if writesToRepository {
+                TransactionRepository.shared.addTransaction(newTx)
+            }
+            onCommit?(newTx)
         }
 
         themeManager.triggerHapticFeedback(.success)

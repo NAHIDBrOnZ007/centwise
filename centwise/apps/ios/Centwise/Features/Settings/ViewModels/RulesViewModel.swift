@@ -14,17 +14,17 @@ public final class RulesViewModel: ObservableObject {
                 SmartRule(
                     name: "Foodpanda is Food",
                     keyword: "Foodpanda",
-                    category: .food
+                    category: TransactionRepository.shared.category(id: "food")
                 ),
                 SmartRule(
                     name: "Pathao is Transport",
                     keyword: "Pathao",
-                    category: .transport
+                    category: TransactionRepository.shared.category(id: "transport")
                 ),
                 SmartRule(
                     name: "Daraz is Shopping",
                     keyword: "Daraz",
-                    category: .shopping,
+                    category: TransactionRepository.shared.category(id: "shopping"),
                     isEnabled: false
                 )
             ]

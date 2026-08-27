@@ -9,7 +9,7 @@ public final class SmartRulesRepository: ObservableObject {
             name: "Foodpanda is Food",
             keyword: "Foodpanda",
             matchType: .contains,
-            category: .food,
+            category: TransactionRepository.shared.category(id: "food"),
             transactionType: .expense,
             isEnabled: true
         ),
@@ -17,7 +17,7 @@ public final class SmartRulesRepository: ObservableObject {
             name: "Pathao is Transport",
             keyword: "Pathao",
             matchType: .contains,
-            category: .transport,
+            category: TransactionRepository.shared.category(id: "transport"),
             transactionType: .expense,
             isEnabled: true
         ),
@@ -25,7 +25,7 @@ public final class SmartRulesRepository: ObservableObject {
             name: "Daraz is Shopping",
             keyword: "Daraz",
             matchType: .contains,
-            category: .shopping,
+            category: TransactionRepository.shared.category(id: "shopping"),
             transactionType: .expense,
             isEnabled: true
         ),
@@ -33,7 +33,7 @@ public final class SmartRulesRepository: ObservableObject {
             name: "Chaldal is Groceries",
             keyword: "Chaldal",
             matchType: .contains,
-            category: .groceries,
+            category: TransactionRepository.shared.category(id: "food"),
             transactionType: .expense,
             isEnabled: true
         )

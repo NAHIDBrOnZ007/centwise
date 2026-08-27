@@ -6,7 +6,7 @@ import android.content.Context
 import android.widget.RemoteViews
 import com.centwise.R
 import com.centwise.core.design.formatters.CurrencyFormatter
-import com.centwise.data.fakes.FakeTransactionRepository
+import com.centwise.data.repository.TransactionRepository
 import com.centwise.data.models.TransactionType
 
 /**
@@ -20,7 +20,7 @@ class SpendingWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetIds: IntArray
     ) {
-        val transactions = FakeTransactionRepository.shared.transactions.value
+        val transactions = TransactionRepository.shared.transactions.value
 
         val calendar = java.util.Calendar.getInstance()
         val monthlyExpense = transactions

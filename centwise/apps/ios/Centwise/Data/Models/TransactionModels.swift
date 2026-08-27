@@ -98,34 +98,33 @@ public struct TransactionCategory: Identifiable, Hashable, Codable {
     public let name: String
     public let icon: String
     public let colorHex: String
+    public let isSystem: Bool
 
-    public init(id: String, name: String, icon: String, colorHex: String) {
+    public init(id: String, name: String, icon: String, colorHex: String, isSystem: Bool = false) {
         self.id = id
         self.name = name
         self.icon = icon
         self.colorHex = colorHex
+        self.isSystem = isSystem
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, icon, colorHex, isSystem
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        icon = try container.decode(String.self, forKey: .icon)
+        colorHex = try container.decode(String.self, forKey: .colorHex)
+        isSystem = try container.decodeIfPresent(Bool.self, forKey: .isSystem) ?? false
     }
 
     public var color: Color {
         Color(hex: colorHex) ?? CentwiseColors.primaryEmerald
     }
 
-    public static let food = TransactionCategory(id: "food", name: "Food & Dining", icon: "fork.knife", colorHex: "#F97316")
-    public static let groceries = TransactionCategory(id: "groceries", name: "Groceries", icon: "cart.fill", colorHex: "#22C55E")
-    public static let transport = TransactionCategory(id: "transport", name: "Transport & Rides", icon: "car.fill", colorHex: "#06B6D4")
-    public static let shopping = TransactionCategory(id: "shopping", name: "Shopping", icon: "bag.fill", colorHex: "#EC4899")
-    public static let bills = TransactionCategory(id: "bills", name: "Bills & Utilities", icon: "bolt.fill", colorHex: "#EAB308")
-    public static let recharge = TransactionCategory(id: "recharge", name: "Mobile Recharge", icon: "antenna.radiowaves.left.and.right", colorHex: "#8B5CF6")
-    public static let salary = TransactionCategory(id: "salary", name: "Salary & Income", icon: "banknote.fill", colorHex: "#10B981")
-    public static let transfer = TransactionCategory(id: "transfer", name: "Transfers", icon: "arrow.left.arrow.right", colorHex: "#3B82F6")
-    public static let health = TransactionCategory(id: "health", name: "Healthcare", icon: "cross.case.fill", colorHex: "#EF4444")
-    public static let entertainment = TransactionCategory(id: "entertainment", name: "Entertainment", icon: "play.tv.fill", colorHex: "#6366F1")
-    public static let education = TransactionCategory(id: "education", name: "Education", icon: "book.closed.fill", colorHex: "#14B8A6")
-    public static let other = TransactionCategory(id: "other", name: "Other", icon: "square.grid.2x2.fill", colorHex: "#64748B")
-
-    public static let defaultCategories: [TransactionCategory] = [
-        .food, .groceries, .transport, .shopping, .bills, .recharge, .salary, .transfer, .health, .entertainment, .education, .other
-    ]
 }
 
 // MARK: - Account

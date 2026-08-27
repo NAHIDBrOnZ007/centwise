@@ -2,7 +2,7 @@ package com.centwise.data.repository
 
 import com.centwise.data.models.ReviewQueueItem
 import com.centwise.data.models.TransactionItem
-import com.centwise.data.fakes.FakeTransactionRepository
+import com.centwise.core.backend.CentwiseRustBackend
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,20 +18,35 @@ class ReviewQueueRepository private constructor() {
 
     val pendingCount = _items.map { it.size }
 
-    fun addItem(item: ReviewQueueItem) {
-        // Prevent duplicate queue entries for the identical SMS text
-        if (_items.value.none { it.rawSms == item.rawSms }) {
-            _items.value = listOf(item) + _items.value
+    fun refresh() {
+        _items.value = CentwiseRustBackend.listReviewQueue().map { item ->
+            ReviewQueueItem(
+                id = item.id,
+                sender = item.sender ?: "Financial SMS",
+                rawSms = item.rawSms,
+                timestamp = item.receivedAtEpochMs,
+                candidateAmount = item.candidateAmountMinor?.div(100.0),
+                candidateParty = item.party ?: item.merchant,
+                candidateType = item.candidateKind?.let { kind ->
+                    when (kind) {
+                        com.centwise.core.uniffi.TransactionKind.EXPENSE -> com.centwise.data.models.TransactionType.EXPENSE
+                        com.centwise.core.uniffi.TransactionKind.INCOME -> com.centwise.data.models.TransactionType.INCOME
+                        com.centwise.core.uniffi.TransactionKind.TRANSFER -> com.centwise.data.models.TransactionType.TRANSFER
+                        com.centwise.core.uniffi.TransactionKind.REFUND -> com.centwise.data.models.TransactionType.CREDIT
+                    }
+                },
+                reference = item.reference,
+                reason = item.reason
+            )
         }
     }
 
     fun dismissItem(id: String) {
-        _items.value = _items.value.filter { it.id != id }
+        if (CentwiseRustBackend.dismissReviewQueueItem(id)) refresh()
     }
 
     fun confirmAsTransaction(item: ReviewQueueItem, transaction: TransactionItem) {
-        FakeTransactionRepository.shared.addTransaction(transaction)
-        dismissItem(item.id)
+        if (CentwiseRustBackend.convertReviewQueueItem(item.id, transaction)) refresh()
     }
 
     companion object {

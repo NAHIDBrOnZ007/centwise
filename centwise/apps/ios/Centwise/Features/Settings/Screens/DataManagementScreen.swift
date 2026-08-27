@@ -109,9 +109,13 @@ public struct DataManagementScreen: View {
         .alert("Load Demo Sample Data?", isPresented: $showLoadDemoAlert) {
             Button("Cancel", role: .cancel) {}
             Button("Load Demo Data") {
-                repository.loadSampleDemoData()
+                let summary = repository.loadSampleDemoData()
                 themeManager.triggerHapticFeedback(.success)
-                showToast("Demo data loaded successfully! (14 transactions)")
+                if let summary {
+                    showToast("Rust demo data loaded (\(summary.transactions) transactions)")
+                } else {
+                    showToast("Rust core is unavailable; demo data was not loaded")
+                }
             }
         } message: {
             Text("This will populate your database with realistic sample transactions, accounts, budgets, and subscriptions for previewing Centwise.")

@@ -36,6 +36,10 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         TARGETED_DEVICE_FAMILY: "1"
         SWIFT_EMIT_LOC_STRINGS: "YES"
+        SWIFT_INCLUDE_PATHS: "$(PROJECT_DIR)/Centwise/Core/FFI/generated"
+        HEADER_SEARCH_PATHS: "$(PROJECT_DIR)/Centwise/Core/FFI/generated"
+        LIBRARY_SEARCH_PATHS: "$(PROJECT_DIR)/Centwise/Core/FFI/lib"
+        OTHER_LDFLAGS: "$(inherited) -lcentwise_ffi"
 schemes:
   Centwise:
     build:

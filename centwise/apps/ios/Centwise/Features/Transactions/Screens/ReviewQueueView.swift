@@ -50,15 +50,19 @@ public struct ReviewQueueView: View {
                         title: item.candidateParty ?? "\(item.sender) Transaction",
                         amount: item.candidateAmount ?? 0.0,
                         type: item.candidateType ?? .expense,
-                        category: .other,
+                        category: TransactionRepository.shared.category(id: "other"),
                         date: item.timestamp,
                         accountId: defaultAccount.id,
                         accountName: defaultAccount.name,
                         provider: defaultAccount.provider,
+                        transactionReference: item.reference,
                         rawSmsBody: item.rawSms
                     ),
+                    writesToRepository: false,
+                    onCommit: { transaction in
+                        repository.confirmAsTransaction(item: item, transaction: transaction)
+                    },
                     onSave: {
-                        repository.dismissItem(id: item.id)
                     }
                 )
             }

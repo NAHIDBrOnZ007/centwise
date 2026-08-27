@@ -7,7 +7,8 @@ public struct AddEditRuleScreen: View {
     @State private var name: String = ""
     @State private var keyword: String = ""
     @State private var matchType: RuleMatchType = .contains
-    @State private var selectedCategory: TransactionCategory = .other
+    @ObservedObject private var repository = TransactionRepository.shared
+    @State private var selectedCategory: TransactionCategory = TransactionRepository.shared.category(id: "other")
     @State private var selectedType: TransactionType = .expense
     @State private var isEnabled: Bool = true
 
@@ -46,7 +47,7 @@ public struct AddEditRuleScreen: View {
 
             Section("Assign To") {
                 Picker("Category", selection: $selectedCategory) {
-                    ForEach(TransactionCategory.defaultCategories) { category in
+                    ForEach(repository.categories) { category in
                         Text(category.name).tag(category)
                     }
                 }

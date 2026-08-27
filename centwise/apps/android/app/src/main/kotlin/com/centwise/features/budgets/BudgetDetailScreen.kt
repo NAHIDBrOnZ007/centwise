@@ -33,7 +33,7 @@ import com.centwise.core.design.formatters.CurrencyFormatter
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
-import com.centwise.data.fakes.FakeTransactionRepository
+import com.centwise.data.repository.TransactionRepository
 import com.centwise.data.models.BudgetItem
 import com.centwise.features.settings.AccentOptions
 import com.centwise.features.settings.AppearancePrefs
@@ -45,7 +45,7 @@ fun BudgetDetailScreen(
     onBackClick: () -> Unit = {},
     isDark: Boolean = isSystemInDarkTheme()
 ) {
-    val repository = FakeTransactionRepository.shared
+    val repository = TransactionRepository.shared
     val transactions by repository.transactions.collectAsState()
 
     var showEditSheet by remember { mutableStateOf(false) }
@@ -241,7 +241,7 @@ fun BudgetDetailScreen(
             editingBudget = budget,
             onDismiss = { showEditSheet = false },
             onSave = { updated ->
-                FakeTransactionRepository.shared.updateBudget(updated)
+                TransactionRepository.shared.updateBudget(updated)
                 showEditSheet = false
             }
         )
@@ -255,7 +255,7 @@ fun BudgetDetailScreen(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        FakeTransactionRepository.shared.deleteBudget(budget.id)
+                        TransactionRepository.shared.deleteBudget(budget.id)
                         showDeleteDialog = false
                         onBackClick()
                     }

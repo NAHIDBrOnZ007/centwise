@@ -79,29 +79,33 @@ All doable on this Windows PC, each under an hour, no NDK/Mac/emulator needed:
 ---
 
 ## ⚡ Quick Wins & Verification Status
-- **Android App:** `./gradlew :app:assembleDebug` compiles cleanly with 0 errors (`BUILD SUCCESSFUL in 1s`).
-- **iOS App:** XcodeGen configuration and Swift source tree ready for automated CI compilation.
+- **Rust workspace:** Full workspace tests and `clippy --workspace --all-targets -- -D warnings` pass on Windows.
+- **Native source wiring:** Android and iOS adapters call the generated Rust FFI for SMS ingestion, review queue operations, and the Rust-owned demo dataset.
+- **System categories:** Seeded and read from Rust through `listCategories()` on both platforms; native category catalogs are removed.
+- **Native builds:** Platform builds still require the Android Rust `.so` files/Java toolchain or the iOS Rust static library/Xcode on their respective hosts.
 
-## 🔜 Current Phase (Phase 1 — SMS Parser Core)
+## ✅ Completed Core Work
 
 1. **SMS Parser crate (`centwise-parser`)** — Generic field hunting for
    bKash (13 fixtures), Nagad (6 fixtures), Rocket (5 fixtures), and Bangladeshi Banks (5 fixtures).
 2. **Merchant Categorization crate (`centwise-categorization`)** — Merchant dictionary
    and category mapping engine.
-3. **UniFFI Bridge exposure** — Exposing SMS parser to Kotlin and Swift bindings.
+3. **UniFFI Bridge exposure** — Exposing SMS ingestion, persistence, review queue, and typed records to Kotlin and Swift bindings.
+4. **Rust-owned demo data** — Deterministic accounts, transactions, budgets, and subscriptions with idempotent reset/load tests.
+5. **Native demo cleanup** — Removed platform mock/demo providers and starter seed records; both data-management screens call Rust.
 
 ## ⏳ Next Phases
 
-4. **Android cross-compile + real integration** — install Android NDK,
-   build `aarch64-linux-android`, generate bindings against the real `.so`,
-   add `jniLibs` to Gradle, flip `USE_RUST_BACKEND = true`, wire `SmsBroadcastReceiver`.
-5. **iOS Rust build & TestFlight** — via GitHub Actions macOS runner.
-6. **Backup/restore format** + full CSV import.
-7. **Store release setup** — app IDs, signing, fastlane, privacy declarations.
+6. **Android packaging + device integration** — install Android NDK, build the
+   supported `.so` ABIs, package them under `jniLibs`, and run the app on a device/emulator.
+7. **iOS Rust build & device integration** — build the static library/XCFramework on macOS and run the Xcode scheme.
+8. **Backup/restore format** + full CSV import.
+9. **Store release setup** — app IDs, signing, fastlane, privacy declarations.
 
 ## ⚠️ Known Gaps / Reminders
 
-- Apps run on fake data until the Rust backend is wired to Android/iOS UI.
-- All writes must go through Rust core; ViewModels stay thin.
+- Demo data is loaded only through `CentwiseCore.loadDemoData()`; native starter/mock datasets are removed.
+- SMS ingestion, review queue, and demo operations go through Rust; manual CRUD still needs the planned full Rust migration.
+- ViewModels stay thin and native platform code must not parse SMS or own the Rust database.
 - AGPL reminder: Pennywise is reference-only — never copy its code/assets/strings.
 

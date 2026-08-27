@@ -236,8 +236,9 @@ public struct ShortcutsGuideScreen: View {
                 }
 
                 Button(action: {
-                    if let tx = SmsTransactionProcessor.shared.processIncomingSms(body: sampleSmsText) {
-                        testResult = "✅ Tracked: \(tx.title) (৳\(Int(tx.amount))) in \(tx.category.name)"
+                    let result = SmsTransactionProcessor.shared.processIncomingSms(body: sampleSmsText)
+                    if case .inserted? = result?.status {
+                        testResult = "✅ Rust core tracked the sample transaction"
                     } else {
                         testResult = "ℹ️ Message filtered / queued to Review Queue"
                     }

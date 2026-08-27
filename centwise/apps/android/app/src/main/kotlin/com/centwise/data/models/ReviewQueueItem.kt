@@ -14,5 +14,6 @@ data class ReviewQueueItem(
     val candidateAmount: Double? = null,
     val candidateParty: String? = null,
     val candidateType: TransactionType? = null,
+    val reference: String? = null,
     val reason: String = "Format needs confirmation"
 )

@@ -37,7 +37,8 @@ struct ExpectedResult {
     pub account_last4: Option<String>,
     #[serde(rename = "accountHint")]
     pub account_hint: Option<String>,
-    pub date: Option<String>,
+    #[serde(rename = "date")]
+    pub _date: Option<String>,
 }
 
 fn test_fixture_file(relative_path: &str) {
@@ -55,7 +56,11 @@ fn test_fixture_file(relative_path: &str) {
     let fixture: FixtureFile = serde_json::from_str(&content)
         .unwrap_or_else(|e| panic!("Failed to deserialize {:?}: {}", full_path, e));
 
-    println!("Testing fixture provider '{}' with {} messages", fixture.provider, fixture.messages.len());
+    println!(
+        "Testing fixture provider '{}' with {} messages",
+        fixture.provider,
+        fixture.messages.len()
+    );
 
     for msg in &fixture.messages {
         let outcome = parse_sms(&msg.body, msg.sender_hint.as_deref());
@@ -99,72 +104,88 @@ fn test_fixture_file(relative_path: &str) {
                 // Check fee
                 if let Some(expected_fee) = msg.expected.fee_minor {
                     assert_eq!(
-                        tx.fee_minor, Some(expected_fee),
+                        tx.fee_minor,
+                        Some(expected_fee),
                         "Fee mismatch in kind '{}': body: '{}'",
-                        msg.kind, msg.body
+                        msg.kind,
+                        msg.body
                     );
                 }
 
                 // Check balance after
                 if let Some(expected_bal) = msg.expected.balance_after_minor {
                     assert_eq!(
-                        tx.balance_after_minor, Some(expected_bal),
+                        tx.balance_after_minor,
+                        Some(expected_bal),
                         "Balance mismatch in kind '{}': body: '{}'",
-                        msg.kind, msg.body
+                        msg.kind,
+                        msg.body
                     );
                 }
 
                 // Check reference
                 if let Some(expected_ref) = &msg.expected.reference {
                     assert_eq!(
-                        tx.reference.as_deref(), Some(expected_ref.as_str()),
+                        tx.reference.as_deref(),
+                        Some(expected_ref.as_str()),
                         "Reference mismatch in kind '{}': body: '{}'",
-                        msg.kind, msg.body
+                        msg.kind,
+                        msg.body
                     );
                 }
 
                 // Check party
                 if let Some(expected_party) = &msg.expected.party {
                     assert_eq!(
-                        tx.party.as_deref(), Some(expected_party.as_str()),
+                        tx.party.as_deref(),
+                        Some(expected_party.as_str()),
                         "Party mismatch in kind '{}': body: '{}'",
-                        msg.kind, msg.body
+                        msg.kind,
+                        msg.body
                     );
                 }
 
                 // Check merchant
                 if let Some(expected_merchant) = &msg.expected.merchant {
                     assert_eq!(
-                        tx.merchant.as_deref(), Some(expected_merchant.as_str()),
+                        tx.merchant.as_deref(),
+                        Some(expected_merchant.as_str()),
                         "Merchant mismatch in kind '{}': body: '{}'",
-                        msg.kind, msg.body
+                        msg.kind,
+                        msg.body
                     );
                 }
 
                 // Check category
                 if let Some(expected_cat) = &msg.expected.category {
                     assert_eq!(
-                        tx.category_id.as_deref(), Some(expected_cat.as_str()),
+                        tx.category_id.as_deref(),
+                        Some(expected_cat.as_str()),
                         "Category mismatch in kind '{}': body: '{}'",
-                        msg.kind, msg.body
+                        msg.kind,
+                        msg.body
                     );
                 }
 
                 // Check account last 4
                 if let Some(expected_last4) = &msg.expected.account_last4 {
                     assert_eq!(
-                        tx.account_last4.as_deref(), Some(expected_last4.as_str()),
+                        tx.account_last4.as_deref(),
+                        Some(expected_last4.as_str()),
                         "Account Last4 mismatch in kind '{}': body: '{}'",
-                        msg.kind, msg.body
+                        msg.kind,
+                        msg.body
                     );
                 }
 
                 // Check account hint
                 if let Some(expected_hint) = &msg.expected.account_hint {
                     assert_eq!(
-                        tx.account_hint.as_deref(), Some(expected_hint.as_str()),
+                        tx.account_hint.as_deref(),
+                        Some(expected_hint.as_str()),
                         "Account Hint mismatch in kind '{}': body: '{}'",
-                        msg.kind, msg.body
+                        msg.kind,
+                        msg.body
                     );
                 }
             }

@@ -165,7 +165,8 @@ fun ReviewQueueScreen(
                 type = item.candidateType ?: TransactionType.EXPENSE,
                 category = "General",
                 paymentMethod = item.sender,
-                rawSms = item.rawSms
+                rawSms = item.rawSms,
+                reference = item.reference
             ),
             onDismiss = { editingItem = null },
             onSave = { transaction ->

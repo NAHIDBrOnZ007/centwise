@@ -19,12 +19,16 @@ public struct ParseTransactionIntent: AppIntent {
     }
 
     public func perform() async throws -> some IntentResult & ProvidesDialog {
-        if let transaction = SmsTransactionProcessor.shared.processIncomingSms(body: smsBody, senderHint: senderHint) {
-            let sign = transaction.type == .income ? "+" : "-"
-            let formatted = "\(transaction.title) (\(sign)৳\(String(format: "%.0f", transaction.amount)))"
-            return .result(dialog: "Centwise tracked: \(formatted)")
-        } else {
-            return .result(dialog: "Centwise checked message and updated your review queue.")
+        let result = SmsTransactionProcessor.shared.processIncomingSms(body: smsBody, senderHint: senderHint)
+        switch result?.status {
+        case .inserted:
+            return .result(dialog: "Centwise tracked the transaction.")
+        case .queuedForReview:
+            return .result(dialog: "Centwise added the message to your review queue.")
+        case .duplicate:
+            return .result(dialog: "Centwise had already tracked this transaction.")
+        default:
+            return .result(dialog: "Centwise filtered this message.")
         }
     }
 }

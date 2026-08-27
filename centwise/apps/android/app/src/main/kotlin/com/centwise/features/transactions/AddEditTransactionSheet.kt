@@ -36,6 +36,7 @@ import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.data.models.TransactionItem
 import com.centwise.data.models.TransactionType
+import com.centwise.data.repository.TransactionRepository
 import com.centwise.features.settings.AccentOptions
 import com.centwise.features.settings.AppearancePrefs
 
@@ -56,11 +57,19 @@ fun AddEditTransactionSheet(
         )
     }
     var selectedType by remember { mutableStateOf(initialTransaction?.type ?: TransactionType.EXPENSE) }
-    var selectedCategory by remember { mutableStateOf(initialTransaction?.category ?: "Food & Dining") }
+    var selectedCategory by remember { mutableStateOf(initialTransaction?.category ?: "") }
     var selectedPaymentMethod by remember { mutableStateOf(initialTransaction?.paymentMethod ?: "bKash") }
 
-    val categories = listOf("Food & Dining", "Groceries", "Transport", "Bills & Utilities", "Entertainment", "Shopping", "Salary")
+    val categories by TransactionRepository.shared.categories.collectAsState()
     val paymentMethods = listOf("bKash", "Nagad", "Rocket", "BRAC Bank", "City Bank", "Cash")
+
+    LaunchedEffect(categories, initialTransaction) {
+        if (initialTransaction != null) {
+            selectedCategory = initialTransaction.category
+        } else if (selectedCategory.isEmpty()) {
+            selectedCategory = categories.firstOrNull()?.name.orEmpty()
+        }
+    }
 
     val accent = AccentOptions.byName(AppearancePrefs.accentName).color
 
@@ -251,14 +260,14 @@ fun AddEditTransactionSheet(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     categories.forEach { cat ->
-                        val isSelected = selectedCategory == cat
+                        val isSelected = selectedCategory == cat.name
                         Surface(
                             shape = RoundedCornerShape(10.dp),
                             color = if (isSelected) accent else fieldBg,
-                            modifier = Modifier.clickable { selectedCategory = cat }
+                            modifier = Modifier.clickable { selectedCategory = cat.name }
                         ) {
                             Text(
-                                text = cat,
+                                text = cat.name,
                                 style = CentwiseTypography.Subheadline,
                                 color = if (isSelected) Color.White else textPrimary,
                                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
@@ -282,7 +291,9 @@ fun AddEditTransactionSheet(
                                 amount = amount,
                                 type = selectedType,
                                 category = selectedCategory,
-                                paymentMethod = selectedPaymentMethod
+                                paymentMethod = selectedPaymentMethod,
+                                reference = initialTransaction?.reference,
+                                rawSms = initialTransaction?.rawSms
                             )
                         )
                         onDismiss()

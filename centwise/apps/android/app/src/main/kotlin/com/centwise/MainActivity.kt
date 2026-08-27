@@ -23,7 +23,8 @@ import kotlinx.coroutines.launch
 import com.centwise.core.design.components.CentwiseTab
 import com.centwise.core.design.components.FloatingTabBar
 import com.centwise.core.design.theme.CentwiseColors
-import com.centwise.data.fakes.FakeTransactionRepository
+import com.centwise.core.backend.CentwiseRustBackend
+import com.centwise.data.repository.TransactionRepository
 import com.centwise.data.models.AccountItem
 import com.centwise.data.models.BudgetItem
 import com.centwise.features.accounts.AccountDetailScreen
@@ -69,6 +70,9 @@ class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         com.centwise.data.repository.TransactionRepository.shared.init(this)
+        CentwiseRustBackend.initialize(applicationContext)
+        com.centwise.data.repository.TransactionRepository.shared.loadFromSQLite()
+        com.centwise.data.repository.ReviewQueueRepository.shared.refresh()
         enableEdgeToEdge()
         setContent {
             CentwiseApp()
@@ -360,7 +364,7 @@ fun CentwiseApp(
             AddEditTransactionSheet(
                 onDismiss = { showAddSheet = false },
                 onSave = { tx ->
-                    FakeTransactionRepository.shared.addTransaction(tx)
+                    TransactionRepository.shared.addTransaction(tx)
                     com.centwise.core.notifications.CentwiseNotifications.notifyNewTransaction(context, tx)
                 },
                 isDark = effectiveDark

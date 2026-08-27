@@ -4,6 +4,7 @@ import android.content.Context
 import android.provider.Telephony
 import android.util.Log
 import com.centwise.core.processor.SmsTransactionProcessor
+import com.centwise.core.uniffi.SmsIngestStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -75,7 +76,7 @@ object HistoricalSmsScanner {
                                 body = body,
                                 timestamp = date
                             )
-                            if (tx != null) {
+                            if (tx?.status == SmsIngestStatus.INSERTED) {
                                 transactionsImported++
                             }
                         }

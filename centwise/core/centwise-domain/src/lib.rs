@@ -6,12 +6,34 @@
 //! - Ids are caller-generated stable strings.
 
 /// Transaction kind as parsed from SMS or entered manually.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum TransactionType {
     Expense,
     Income,
     Transfer,
     Refund,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::TransactionType;
+
+    #[test]
+    fn transaction_type_round_trips_through_json() {
+        let variants = [
+            TransactionType::Expense,
+            TransactionType::Income,
+            TransactionType::Transfer,
+            TransactionType::Refund,
+        ];
+
+        for variant in variants {
+            let encoded = serde_json::to_string(&variant).expect("transaction type serializes");
+            let decoded: TransactionType =
+                serde_json::from_str(&encoded).expect("transaction type deserializes");
+            assert_eq!(decoded, variant);
+        }
+    }
 }
 
 impl TransactionType {
@@ -44,6 +66,17 @@ pub struct Category {
     pub color_hex: String,
 }
 
+/// A category row read from the Rust-owned database.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CategorySummary {
+    pub id: String,
+    pub name: String,
+    pub icon: String,
+    pub color_hex: String,
+    pub is_system: bool,
+    pub sort_order: i32,
+}
+
 /// A bank account, MFS wallet, card, or cash wallet.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Account {
@@ -68,7 +101,9 @@ pub struct Transaction {
     pub account_id: String,
     pub reference: Option<String>,
     pub balance_after_minor: Option<i64>,
+    pub fee_minor: Option<i64>,
     pub notes: Option<String>,
+    pub raw_sms: Option<String>,
     pub is_auto_tracked: bool,
 }
 
@@ -85,7 +120,9 @@ pub struct NewTransaction {
     pub account_id: String,
     pub reference: Option<String>,
     pub balance_after_minor: Option<i64>,
+    pub fee_minor: Option<i64>,
     pub notes: Option<String>,
+    pub raw_sms: Option<String>,
     pub is_auto_tracked: bool,
 }
 
@@ -102,10 +139,34 @@ impl NewTransaction {
             account_id: self.account_id,
             reference: self.reference,
             balance_after_minor: self.balance_after_minor,
+            fee_minor: self.fee_minor,
             notes: self.notes,
+            raw_sms: self.raw_sms,
             is_auto_tracked: self.is_auto_tracked,
         }
     }
+}
+
+/// An ambiguous or otherwise reviewable financial SMS persisted until the
+/// user resolves it or dismisses it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReviewQueueItem {
+    pub id: String,
+    pub sender: Option<String>,
+    pub raw_sms: String,
+    pub received_at_epoch_ms: i64,
+    pub provider_id: Option<String>,
+    pub reason: String,
+    pub candidate_amount_minor: Option<i64>,
+    pub candidate_type: Option<TransactionType>,
+    pub fee_minor: Option<i64>,
+    pub balance_after_minor: Option<i64>,
+    pub reference: Option<String>,
+    pub party: Option<String>,
+    pub merchant: Option<String>,
+    pub category_id: Option<String>,
+    pub account_last4: Option<String>,
+    pub account_hint: Option<String>,
 }
 
 /// A short transaction representation for lists.

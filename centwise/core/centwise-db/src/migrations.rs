@@ -15,10 +15,11 @@ pub struct Migration {
 /// Rules (see docs/decisions/0001-single-rust-database.md):
 /// - Append-only: never edit a shipped migration.
 /// - Never destructive for released user data.
-pub const MIGRATIONS: &[Migration] = &[Migration {
-    version: 1,
-    name: "initial schema",
-    sql: r#"
+pub const MIGRATIONS: &[Migration] = &[
+    Migration {
+        version: 1,
+        name: "initial schema",
+        sql: r#"
 CREATE TABLE accounts (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
@@ -91,7 +92,44 @@ CREATE TABLE rules (
     sort_order INTEGER NOT NULL DEFAULT 0
 );
 "#,
-}];
+    },
+    Migration {
+        version: 2,
+        name: "sms provenance and review queue",
+        sql: r#"
+ALTER TABLE transactions ADD COLUMN raw_sms TEXT;
+ALTER TABLE transactions ADD COLUMN fee_minor INTEGER;
+
+CREATE TABLE review_queue (
+    id TEXT PRIMARY KEY NOT NULL,
+    sender TEXT,
+    raw_sms TEXT NOT NULL,
+    received_at_epoch_ms INTEGER NOT NULL,
+    provider_id TEXT,
+    reason TEXT NOT NULL,
+    candidate_amount_minor INTEGER,
+    candidate_type TEXT,
+    fee_minor INTEGER,
+    balance_after_minor INTEGER,
+    reference TEXT,
+    party TEXT,
+    merchant TEXT,
+    category_id TEXT,
+    account_last4 TEXT,
+    account_hint TEXT,
+    created_at_epoch_ms INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending'
+);
+
+CREATE INDEX idx_review_queue_pending
+    ON review_queue(status, received_at_epoch_ms DESC);
+CREATE INDEX idx_review_queue_reference
+    ON review_queue(reference);
+CREATE INDEX idx_transactions_reference
+    ON transactions(reference);
+"#,
+    },
+];
 
 /// Latest schema version available in this build.
 pub fn latest_version() -> i64 {

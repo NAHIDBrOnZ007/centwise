@@ -2,7 +2,7 @@ package com.centwise.features.analytics
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.centwise.data.fakes.FakeTransactionRepository
+import com.centwise.data.repository.TransactionRepository
 import com.centwise.data.models.TransactionItem
 import com.centwise.data.models.TransactionType
 import kotlinx.coroutines.flow.*
@@ -23,7 +23,7 @@ data class MerchantSpendItem(
 )
 
 class AnalyticsViewModel(
-    private val repository: FakeTransactionRepository = FakeTransactionRepository.shared
+    private val repository: TransactionRepository = TransactionRepository.shared
 ) : ViewModel() {
 
     val selectedPeriod = MutableStateFlow("This Month")

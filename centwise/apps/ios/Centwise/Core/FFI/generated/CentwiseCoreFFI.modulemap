@@ -1,0 +1,4 @@
+module CentwiseCoreFFI {
+    header "CentwiseCoreFFI.h"
+    export *
+}

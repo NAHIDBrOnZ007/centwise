@@ -1,7 +1,8 @@
 # Centwise Core (Rust)
 
 Shared engine for Android and iOS: one SQLite database, one migration runner,
-all writes through Rust. See
+with SMS ingestion, review-queue persistence, and demo-data operations owned by
+Rust. See
 [`../docs/decisions/0001-single-rust-database.md`](../docs/decisions/0001-single-rust-database.md).
 
 ## Crates
@@ -38,14 +39,14 @@ cargo run -p uniffi-bindgen -- generate \
   --library target/debug/centwise_ffi.dll \
   --language kotlin \
   --config centwise-ffi/uniffi.toml \
-  --out-dir /tmp/bindings-preview
+  --out-dir ../apps/android/app/src/main/kotlin
 ```
 
 For the real app, cross-compile Android targets (requires the Android NDK
 and linker configuration for `aarch64-linux-android` etc.), then run the same
-`generate` command against the Android `.so` and copy the output into
-`apps/android/app/src/main/kotlin/com/centwise/core/ffi/generated/`, plus add
-`jniLibs` in `apps/android/app/build.gradle.kts`.
+`generate` command against each Android `.so`. The generated Kotlin file is
+committed under `apps/android/app/src/main/kotlin/com/centwise/core/uniffi/`;
+the matching `.so` files belong under `apps/android/app/src/main/jniLibs/<abi>/`.
 
 ### iOS (requires macOS)
 
@@ -61,119 +62,34 @@ cargo run -p uniffi-bindgen -- generate \
 (Swift binding generation itself was verified from Windows; only the iOS
 library compile and Xcode wiring need a Mac.)
 
-Add the generated `.modulemap`/`.swift` files and the static library to the
-Xcode target (Xcode 16+ supports bundled frameworks via `SWIFT_INCLUDE_PATHS`).
+The generated Swift/header/modulemap files are committed under
+`apps/ios/Centwise/Core/FFI/generated/`. Build the iOS static library into
+`apps/ios/Centwise/Core/FFI/lib/libcentwise_ffi.a`; `project.yml` already adds
+the include and library search paths.
 
-## Native reactive wrappers
+`CentwiseCore.ingestSms` is the single SMS entry point. Android calls it from
+the SMS receiver/scanner and iOS calls it from the Shortcut/App Intent. The
+platforms must not parse SMS, write SQLite, or maintain an in-memory review
+queue around that call.
 
-Paste after generating bindings. The app keeps building with fake data until
-you flip `USE_RUST_BACKEND`.
+## Native platform adapters
 
-### Android (`core/ffi/CentwiseDataWatcher.kt`, package `com.centwise.core.ffi`)
+Android and iOS initialize `CentwiseCore` with their platform-owned database
+path. SMS ingestion, parsing, persistence, review-queue durability, and demo
+data are Rust-owned; the native layers only adapt FFI records into UI models.
 
-```kotlin
-object CentwiseBackend {
-    const val USE_RUST_BACKEND = false
+`CentwiseCore.loadDemoData()` explicitly replaces the current user records with
+the deterministic Rust demo dataset. `resetToEmptyDatabase()` removes those
+records while preserving system categories. Both operations are available from
+each platform's data-management screen and are intended for local development
+and QA only.
 
-    lateinit var core: com.centwise.core.CentwiseCore
-        private set
+`CentwiseCore.listCategories()` is the canonical category read used by both
+platforms. System categories are seeded by the Rust migration and are never
+deleted by a user-data reset.
 
-    fun initialize(path: String) {
-        core = com.centwise.core.CentwiseCore.open(path)
-    }
-}
-
-class CentwiseDataWatcher(private val core: com.centwise.core.CentwiseCore) {
-    private val _changeTick = kotlinx.coroutines.flow.MutableStateFlow(0)
-    val changeTick: kotlinx.coroutines.flow.StateFlow<Int> = _changeTick.asStateFlow()
-
-    private val listener = object : com.centwise.core.ChangeListener {
-        override fun onDataChanged() {
-            _changeTick.update { it + 1 }
-        }
-    }
-
-    init { core.addListener(listener) }
-}
-```
-
-In `MainActivity.onCreate` (after `super.onCreate`):
-
-```kotlin
-if (CentwiseBackend.USE_RUST_BACKEND) {
-    CentwiseBackend.initialize(filesDir.resolve("centwise.db").absolutePath)
-}
-```
-
-### iOS (`Core/FFI/CentwiseBackend.swift`)
-
-```swift
-import Foundation
-import CentwiseCore
-import Combine
-
-enum CentwiseBackend {
-    static let useRustBackend = false
-    static var core: CentwiseCore?
-
-    static func initialize() {
-        let url = FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: "group.com.centwise.shared")?
-            .appendingPathComponent("centwise.db")
-        // Fallback to documents when the App Group is not yet configured.
-        core = try? CentwiseCore.open(
-            url?.path ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                .appendingPathComponent("centwise.db").path
-        )
-    }
-}
-
-final class CentwiseDataWatcher: ObservableObject {
-    let subject = PassthroughSubject<Void, Never>()
-    private var handle: ChangeListener?
-
-    init(core: CentwiseCore) {
-        let sink = subject
-        let listener = RustChangeListener()
-        listener.onDataChanged = { sink.send() }
-        handle = listener
-        core.addListener(listener)
-    }
-}
-
-private final class RustChangeListener: ChangeListener {
-    var onDataChanged: (() -> Void)?
-    func on_data_changed() { onDataChanged?() }
-}
-```
-
-(App Group container on iOS lets the app, App Intents, and Share Extension
-share one database file in WAL mode — see decision record.)
-
-## Swapping the Home screen (end-to-end proof)
-
-After generating bindings and setting `USE_RUST_BACKEND = true`:
-
-**Android `HomeViewModel`** — replace repository flows with:
-
-```kotlin
-val watcher = CentwiseDataWatcher(CentwiseBackend.core)
-
-val homeState = watcher.changeTick.flatMapLatest {
-    flow {
-        val monthStart = /* first day of month, epoch ms */
-        val dashboard = CentwiseBackend.core.homeDashboard(
-            startEpochMs = monthStart,
-            endEpochMs = Long.MAX_VALUE,
-            recentLimit = 5
-        )
-        emit(dashboard)
-    }
-}.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-```
-
-**iOS `HomeViewModel`** — on watcher subject, re-query
-`CentwiseBackend.core.homeDashboard(...)` and map to published properties.
+The generated Kotlin and Swift bindings are committed under the app folders.
+Regenerate them whenever the public `centwise-ffi` API changes.
 
 ## Schema changes
 

@@ -3,9 +3,15 @@ package com.centwise.data.repository
 import android.content.Context
 import com.centwise.data.models.AccountItem
 import com.centwise.data.models.BudgetItem
+import com.centwise.data.models.CategoryOption
 import com.centwise.data.models.SubscriptionItem
 import com.centwise.data.models.TransactionItem
 import com.centwise.data.models.TransactionType
+import com.centwise.core.backend.CentwiseRustBackend
+import com.centwise.core.uniffi.TransactionKind
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,6 +33,9 @@ class TransactionRepository private constructor() {
 
     private val _subscriptions = MutableStateFlow<List<SubscriptionItem>>(emptyList())
     val subscriptions: StateFlow<List<SubscriptionItem>> = _subscriptions.asStateFlow()
+
+    private val _categories = MutableStateFlow<List<CategoryOption>>(emptyList())
+    val categories: StateFlow<List<CategoryOption>> = _categories.asStateFlow()
 
     private var dbHelper: CentwiseDatabaseHelper? = null
 
@@ -50,6 +59,17 @@ class TransactionRepository private constructor() {
     }
 
     fun loadFromSQLite() {
+        _categories.value = CentwiseRustBackend.listCategories().map { category ->
+            CategoryOption(
+                id = category.id,
+                name = category.name,
+                icon = category.icon,
+                colorHex = parseColor(category.colorHex),
+                isSystem = category.isSystem
+            )
+        }
+        if (loadFromRustIfPopulated()) return
+
         val helper = dbHelper ?: return
 
         // 1. Transactions
@@ -57,19 +77,87 @@ class TransactionRepository private constructor() {
 
         // 2. Accounts
         val loadedAccs = helper.getAllAccounts()
-        if (loadedAccs.isNotEmpty()) {
-            _accounts.value = loadedAccs
-        } else {
-            val starterAccs = defaultStarterAccounts
-            starterAccs.forEach { helper.insertOrUpdateAccount(it) }
-            _accounts.value = starterAccs
-        }
+        _accounts.value = loadedAccs
 
         // 3. Budgets (Clean empty by default)
         _budgets.value = helper.getAllBudgets()
 
         // 4. Subscriptions (Clean empty by default)
         _subscriptions.value = helper.getAllSubscriptions()
+    }
+
+    private fun loadFromRustIfPopulated(): Boolean {
+        if (!CentwiseRustBackend.isAvailable()) return false
+
+        val rustTransactions = CentwiseRustBackend.listTransactions()
+        val rustAccounts = CentwiseRustBackend.listAccounts()
+        val rustBudgets = CentwiseRustBackend.listBudgets()
+        val rustSubscriptions = CentwiseRustBackend.listSubscriptions()
+        val hasRustData = rustTransactions.isNotEmpty() ||
+            rustBudgets.isNotEmpty() ||
+            rustSubscriptions.isNotEmpty() ||
+            rustAccounts.any { it.id.startsWith("demo-") }
+        if (!hasRustData) return false
+
+        _transactions.value = rustTransactions.map { transaction ->
+            TransactionItem(
+                id = transaction.id,
+                title = transaction.title,
+                amount = transaction.amountMinor / 100.0,
+                type = when (transaction.kind) {
+                    TransactionKind.INCOME -> TransactionType.INCOME
+                    TransactionKind.EXPENSE -> TransactionType.EXPENSE
+                    TransactionKind.TRANSFER -> TransactionType.TRANSFER
+                    TransactionKind.REFUND -> TransactionType.CREDIT
+                },
+                category = categoryName(transaction.categoryId),
+                paymentMethod = rustAccounts.firstOrNull { it.id == transaction.accountId }?.name
+                    ?: "Unknown account",
+                timestamp = transaction.occurredAtEpochMs,
+                note = transaction.notes,
+                rawSms = transaction.rawSms,
+                reference = transaction.reference
+            )
+        }
+        _accounts.value = rustAccounts.map { account ->
+            AccountItem(
+                id = account.id,
+                name = account.name,
+                type = account.provider,
+                balance = account.balanceMinor / 100.0,
+                providerName = account.provider,
+                accountNumber = account.lastFour?.let { "****$it" } ?: ""
+            )
+        }
+        _budgets.value = rustBudgets.map { budget ->
+            BudgetItem(
+                id = budget.id,
+                categoryName = budget.categoryName,
+                allocatedAmount = budget.limitMinor / 100.0,
+                spentAmount = budget.spentMinor / 100.0,
+                period = budget.period
+            )
+        }
+        _subscriptions.value = rustSubscriptions.map { subscription ->
+            SubscriptionItem(
+                id = subscription.id,
+                name = subscription.name,
+                amount = subscription.amountMinor / 100.0,
+                billingCycle = subscription.billingCycle,
+                nextBillingDate = SimpleDateFormat("MMM dd, yyyy", Locale.US)
+                    .format(Date(subscription.nextDueEpochMs))
+            )
+        }
+        return true
+    }
+
+    private fun categoryName(id: String): String =
+        _categories.value.firstOrNull { it.id == id }?.name ?: id
+
+    private fun parseColor(value: String): Long {
+        val digits = value.removePrefix("#")
+        val parsed = digits.toLongOrNull(16) ?: return 0xFF64748BL
+        return if (digits.length <= 6) parsed or 0xFF000000L else parsed
     }
 
     fun addTransaction(tx: TransactionItem) {
@@ -134,32 +222,24 @@ class TransactionRepository private constructor() {
 
     fun resetToEmptyDatabase() {
         val helper = dbHelper ?: return
+        CentwiseRustBackend.resetToEmptyDatabase()
         helper.clearAllTables()
 
-        defaultStarterAccounts.forEach { helper.insertOrUpdateAccount(it) }
-        defaultStarterBudgets.forEach { helper.insertOrUpdateBudget(it) }
-
         _transactions.value = emptyList()
-        _accounts.value = defaultStarterAccounts
-        _budgets.value = defaultStarterBudgets
+        _accounts.value = emptyList()
+        _budgets.value = emptyList()
+        _subscriptions.value = emptyList()
+    }
+
+    fun clearLegacyStorage() {
+        dbHelper?.clearAllTables()
+        _transactions.value = emptyList()
+        _accounts.value = emptyList()
+        _budgets.value = emptyList()
         _subscriptions.value = emptyList()
     }
 
     companion object {
-        val defaultStarterAccounts = listOf(
-            AccountItem(name = "bKash", type = "MFS", balance = 0.0, providerName = "bKash", accountNumber = "bKash Wallet"),
-            AccountItem(name = "Nagad", type = "MFS", balance = 0.0, providerName = "Nagad", accountNumber = "Nagad Wallet"),
-            AccountItem(name = "Bank Account", type = "Bank", balance = 0.0, providerName = "Bank", accountNumber = "Primary Bank A/C"),
-            AccountItem(name = "Cash Wallet", type = "Cash", balance = 0.0, providerName = "Cash", accountNumber = "Cash")
-        )
-
-        val defaultStarterBudgets = listOf(
-            BudgetItem(categoryName = "Food & Dining", allocatedAmount = 10000.0, spentAmount = 0.0),
-            BudgetItem(categoryName = "Transport & Rides", allocatedAmount = 5000.0, spentAmount = 0.0),
-            BudgetItem(categoryName = "Bills & Utilities", allocatedAmount = 8000.0, spentAmount = 0.0),
-            BudgetItem(categoryName = "Shopping", allocatedAmount = 7000.0, spentAmount = 0.0)
-        )
-
         val shared = TransactionRepository()
     }
 }

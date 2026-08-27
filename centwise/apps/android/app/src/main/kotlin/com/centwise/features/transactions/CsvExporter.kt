@@ -3,7 +3,7 @@ package com.centwise.features.transactions
 import android.content.Context
 import android.content.Intent
 import androidx.core.content.FileProvider
-import com.centwise.data.fakes.FakeTransactionRepository
+import com.centwise.data.repository.TransactionRepository
 import com.centwise.data.models.TransactionItem
 import java.io.File
 import java.text.SimpleDateFormat
@@ -51,7 +51,7 @@ object CsvExporter {
 
     /** Exports current transactions and opens the system share sheet. */
     fun shareExport(context: Context): Boolean {
-        val transactions = FakeTransactionRepository.shared.transactions.value
+        val transactions = TransactionRepository.shared.transactions.value
         val file = writeCsvFile(context, transactions) ?: return false
 
         val uri = FileProvider.getUriForFile(

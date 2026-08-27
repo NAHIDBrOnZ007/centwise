@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.sp
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.data.models.BudgetItem
-import com.centwise.data.models.CategoryOption
+import com.centwise.data.repository.TransactionRepository
 import com.centwise.features.settings.AccentOptions
 import com.centwise.features.settings.AppearancePrefs
 
@@ -41,7 +41,7 @@ fun AddEditBudgetSheet(
     isDark: Boolean = isSystemInDarkTheme()
 ) {
     var selectedCategoryName by remember {
-        mutableStateOf(editingBudget?.categoryName ?: CategoryOption.defaults.first().name)
+        mutableStateOf(editingBudget?.categoryName ?: "")
     }
     var limitText by remember {
         mutableStateOf(
@@ -49,6 +49,15 @@ fun AddEditBudgetSheet(
                 if (it % 1.0 == 0.0) it.toLong().toString() else it.toString()
             } ?: ""
         )
+    }
+
+    val categories by TransactionRepository.shared.categories.collectAsState()
+    LaunchedEffect(categories, editingBudget) {
+        if (editingBudget != null) {
+            selectedCategoryName = editingBudget.categoryName
+        } else if (selectedCategoryName.isEmpty()) {
+            selectedCategoryName = categories.firstOrNull()?.name.orEmpty()
+        }
     }
 
     val accent = AccentOptions.byName(AppearancePrefs.accentName).color
@@ -148,7 +157,7 @@ fun AddEditBudgetSheet(
                         .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    CategoryOption.defaults.forEach { cat ->
+                    categories.forEach { cat ->
                         val isSelected = selectedCategoryName == cat.name
                         Surface(
                             shape = RoundedCornerShape(10.dp),

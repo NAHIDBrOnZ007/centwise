@@ -26,10 +26,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseTypography
-import com.centwise.data.models.CategoryOption
 import com.centwise.data.models.RuleMatchType
 import com.centwise.data.models.SmartRule
 import com.centwise.data.models.TransactionType
+import com.centwise.data.repository.TransactionRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,9 +43,18 @@ fun AddEditRuleSheet(
     var name by remember { mutableStateOf(editingRule?.name ?: "") }
     var keyword by remember { mutableStateOf(editingRule?.keyword ?: "") }
     var matchType by remember { mutableStateOf(editingRule?.matchType ?: RuleMatchType.CONTAINS) }
-    var categoryName by remember { mutableStateOf(editingRule?.categoryName ?: CategoryOption.defaults.first().name) }
+    var categoryName by remember { mutableStateOf(editingRule?.categoryName ?: "") }
     var selectedTransactionType by remember { mutableStateOf(editingRule?.transactionType ?: TransactionType.EXPENSE) }
     var isEnabled by remember { mutableStateOf(editingRule?.isEnabled ?: true) }
+
+    val categories by TransactionRepository.shared.categories.collectAsState()
+    LaunchedEffect(categories, editingRule) {
+        if (editingRule != null) {
+            categoryName = editingRule.categoryName
+        } else if (categoryName.isEmpty()) {
+            categoryName = categories.firstOrNull()?.name.orEmpty()
+        }
+    }
 
     val accent = AccentOptions.byName(AppearancePrefs.accentName).color
 
@@ -183,7 +192,7 @@ fun AddEditRuleSheet(
                         .horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    CategoryOption.defaults.forEach { cat ->
+                    categories.forEach { cat ->
                         val isSelected = categoryName == cat.name
                         Surface(
                             shape = RoundedCornerShape(10.dp),

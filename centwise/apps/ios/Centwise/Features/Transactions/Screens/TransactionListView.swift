@@ -2,6 +2,7 @@ import SwiftUI
 
 public struct TransactionListView: View {
     @StateObject private var viewModel = TransactionsViewModel()
+    @ObservedObject private var repository = TransactionRepository.shared
     @ObservedObject private var themeManager = ThemeManager.shared
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.isAmoledActive) private var isAmoled
@@ -209,7 +210,7 @@ public struct TransactionListView: View {
                     viewModel.selectedCategoryFilter = nil
                     viewModel.applyFilters()
                 }
-                ForEach(TransactionCategory.defaultCategories) { cat in
+                ForEach(repository.categories) { cat in
                     Button {
                         themeManager.triggerHapticFeedback(.selection)
                         viewModel.selectedCategoryFilter = cat.id
@@ -224,7 +225,7 @@ public struct TransactionListView: View {
                 }
             } label: {
                 let categoryName = viewModel.selectedCategoryFilter != nil
-                    ? (TransactionCategory.defaultCategories.first { $0.id == viewModel.selectedCategoryFilter }?.name ?? "Category")
+                    ? (repository.categories.first { $0.id == viewModel.selectedCategoryFilter }?.name ?? "Category")
                     : "Category"
                 filterChip(
                     icon: "square.grid.2x2",

@@ -33,6 +33,7 @@ android {
     buildFeatures {
         compose = true
     }
+    sourceSets["main"].jniLibs.srcDirs("src/main/jniLibs")
 }
 
 dependencies {
@@ -51,6 +52,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.biometric)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.jna)
 
     debugImplementation(libs.androidx.compose.ui.tooling)
 }

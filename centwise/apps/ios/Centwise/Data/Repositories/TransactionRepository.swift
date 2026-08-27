@@ -433,6 +433,7 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
     @Published public private(set) var accounts: [FinancialAccount] = []
     @Published public private(set) var budgets: [CategoryBudget] = []
     @Published public private(set) var subscriptions: [RecurringSubscription] = []
+    @Published public private(set) var categories: [TransactionCategory] = []
 
     private let sqlite = CentwiseSQLiteDatabase.shared
 
@@ -460,20 +461,24 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
     }
 
     public func loadFromSQLite() {
+        categories = CentwiseRustBackend.listCategories().map { category in
+            TransactionCategory(
+                id: category.id,
+                name: category.name,
+                icon: category.icon,
+                colorHex: category.colorHex,
+                isSystem: category.isSystem
+            )
+        }
+        if loadFromRustIfPopulated() { return }
+
         // 1. Transactions
         let loadedTxs = sqlite.fetchTransactions()
         self.transactions = loadedTxs
 
         // 2. Accounts
         let loadedAccs = sqlite.fetchAccounts()
-        if !loadedAccs.isEmpty {
-            self.accounts = loadedAccs
-        } else {
-            self.accounts = Self.defaultStarterAccounts
-            for acc in self.accounts {
-                sqlite.insertOrUpdateAccount(acc)
-            }
-        }
+        self.accounts = loadedAccs
 
         // 3. Budgets (Clean empty by default)
         self.budgets = sqlite.fetchBudgets()
@@ -482,45 +487,126 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
         self.subscriptions = sqlite.fetchSubscriptions()
     }
 
-    // MARK: - Clean Starter Profiles
+    private func loadFromRustIfPopulated() -> Bool {
+        guard CentwiseRustBackend.isAvailable() else { return false }
+        let rustTransactions = CentwiseRustBackend.listTransactions()
+        let rustAccounts = CentwiseRustBackend.listAccounts()
+        let rustBudgets = CentwiseRustBackend.listBudgets()
+        let rustSubscriptions = CentwiseRustBackend.listSubscriptions()
+        let hasRustData = !rustTransactions.isEmpty || !rustBudgets.isEmpty ||
+            !rustSubscriptions.isEmpty || rustAccounts.contains { $0.id.hasPrefix("demo-") }
+        guard hasRustData else { return false }
 
-    public static var defaultStarterAccounts: [FinancialAccount] {
-        [
-            FinancialAccount(name: "bKash", provider: .bkash, type: .mfs, currentBalance: 0.0),
-            FinancialAccount(name: "Nagad", provider: .nagad, type: .mfs, currentBalance: 0.0),
-            FinancialAccount(name: "Bank Account", provider: .bracBank, type: .bank, currentBalance: 0.0),
-            FinancialAccount(name: "Cash Wallet", provider: .cash, type: .cash, currentBalance: 0.0)
-        ]
+        transactions = rustTransactions.map { transaction in
+            let account = rustAccounts.first { $0.id == transaction.accountId }
+            return CentwiseTransaction(
+                id: transaction.id,
+                title: transaction.title,
+                amount: Double(transaction.amountMinor) / 100,
+                currency: transaction.currency,
+                type: transactionType(transaction.kind),
+                category: category(id: transaction.categoryId),
+                date: Date(timeIntervalSince1970: TimeInterval(transaction.occurredAtEpochMs) / 1000),
+                accountId: transaction.accountId,
+                accountName: account?.name ?? "Unknown account",
+                provider: provider(account?.provider),
+                rawSmsBody: transaction.rawSms,
+                transactionReference: transaction.reference,
+                balanceAfter: transaction.balanceAfterMinor.map { Double($0) / 100 },
+                notes: transaction.notes,
+                isAutoTracked: transaction.isAutoTracked
+            )
+        }
+        accounts = rustAccounts.map { account in
+            let providerValue = provider(account.provider)
+            return FinancialAccount(
+                id: account.id,
+                name: account.name,
+                provider: providerValue,
+                type: accountType(providerValue),
+                lastFourDigits: account.lastFour,
+                currentBalance: Double(account.balanceMinor) / 100,
+                isArchived: account.archived
+            )
+        }
+        budgets = rustBudgets.map { budget in
+            CategoryBudget(
+                id: budget.id,
+                categoryId: budget.categoryId,
+                categoryName: budget.categoryName,
+                categoryIcon: category(id: budget.categoryId).icon,
+                categoryColorHex: category(id: budget.categoryId).colorHex,
+                budgetLimit: Double(budget.limitMinor) / 100,
+                currentSpent: Double(budget.spentMinor) / 100
+            )
+        }
+        subscriptions = rustSubscriptions.map { subscription in
+            RecurringSubscription(
+                id: subscription.id,
+                name: subscription.name,
+                amount: Double(subscription.amountMinor) / 100,
+                billingCycle: subscription.billingCycle,
+                nextDueDate: Date(timeIntervalSince1970: TimeInterval(subscription.nextDueEpochMs) / 1000),
+                isActive: subscription.isActive
+            )
+        }
+        return true
+    }
+
+    private func transactionType(_ kind: TransactionKind) -> TransactionType {
+        switch kind {
+        case .expense: return .expense
+        case .income: return .income
+        case .transfer: return .transfer
+        case .refund: return .refund
+        }
+    }
+
+    public func category(id: String) -> TransactionCategory {
+        categories.first { $0.id == id } ?? TransactionCategory(
+            id: id,
+            name: id,
+            icon: "tag",
+            colorHex: "#64748B"
+        )
+    }
+
+    private func provider(_ value: String?) -> FinancialProvider {
+        switch value {
+        case "bkash": return .bkash
+        case "nagad": return .nagad
+        case "rocket": return .rocket
+        case "city-bank": return .cityBank
+        case "brac-bank": return .bracBank
+        case "dbbl": return .dutchBangla
+        case "ebl": return .easternBank
+        default: return .other
+        }
+    }
+
+    private func accountType(_ provider: FinancialProvider) -> AccountType {
+        switch provider {
+        case .bkash, .nagad, .rocket, .upay, .cellfin: return .mfs
+        case .cityBank, .bracBank, .easternBank, .dutchBangla, .standardChartered: return .bank
+        case .cash: return .cash
+        case .other: return .bank
+        }
     }
 
     // MARK: - Demo & Reset Operations
 
-    public func loadSampleDemoData() {
+    @discardableResult
+    public func loadSampleDemoData() -> DemoDataSummaryRecord? {
+        guard let summary = CentwiseRustBackend.loadDemoData() else { return nil }
         sqlite.clearAllTables()
-
-        for tx in MockDataProvider.shared.transactions {
-            sqlite.insertTransaction(tx)
-        }
-        for acc in MockDataProvider.shared.accounts {
-            sqlite.insertOrUpdateAccount(acc)
-        }
-        for b in MockDataProvider.shared.budgets {
-            sqlite.insertOrUpdateBudget(b)
-        }
-        for s in MockDataProvider.shared.subscriptions {
-            sqlite.insertOrUpdateSubscription(s)
-        }
-
         loadFromSQLite()
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        return summary
     }
 
     public func resetToEmptyDatabase() {
+        _ = CentwiseRustBackend.resetToEmptyDatabase()
         sqlite.clearAllTables()
-
-        for acc in Self.defaultStarterAccounts {
-            sqlite.insertOrUpdateAccount(acc)
-        }
 
         loadFromSQLite()
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)

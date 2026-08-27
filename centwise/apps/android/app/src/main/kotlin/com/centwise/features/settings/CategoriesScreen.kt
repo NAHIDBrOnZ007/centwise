@@ -25,6 +25,7 @@ import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.data.models.CategoryOption
+import com.centwise.data.repository.TransactionRepository
 
 @Composable
 fun CategoriesScreen(
@@ -34,6 +35,8 @@ fun CategoriesScreen(
     var customCategories by remember { mutableStateOf(listOf<CategoryOption>()) }
     var showAddSheet by remember { mutableStateOf(false) }
     var editingCategory by remember { mutableStateOf<CategoryOption?>(null) }
+    val categories by TransactionRepository.shared.categories.collectAsState()
+    val systemCategories = categories.filter { it.isSystem }
 
     val accent = AccentOptions.byName(AppearancePrefs.accentName).color
 
@@ -100,7 +103,7 @@ fun CategoriesScreen(
                         .background(cardBg)
                         .padding(horizontal = 14.dp, vertical = 6.dp)
                 ) {
-                    CategoryOption.defaults.forEachIndexed { index, category ->
+                    systemCategories.forEachIndexed { index, category ->
                         CategoryRow(
                             category = category,
                             badge = "Default",
@@ -108,7 +111,7 @@ fun CategoriesScreen(
                             textPrimary = textPrimary,
                             textSecondary = textSecondary
                         )
-                        if (index < CategoryOption.defaults.lastIndex) {
+                        if (index < systemCategories.lastIndex) {
                             HorizontalDivider(color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
                         }
                     }

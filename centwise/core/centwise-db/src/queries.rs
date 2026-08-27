@@ -1,7 +1,7 @@
 use centwise_domain::{
-    Account, AccountSummary, BudgetWithProgress, CategorySpendSummary, HomeDashboard,
-    MerchantSpendSummary, MonthlySpend, NewBudget, NewSubscription, NewTransaction,
-    SubscriptionSummary, Transaction, TransactionSummary, TransactionType,
+    Account, AccountSummary, BudgetWithProgress, CategorySpendSummary, CategorySummary,
+    HomeDashboard, MerchantSpendSummary, MonthlySpend, NewBudget, NewSubscription, NewTransaction,
+    ReviewQueueItem, SubscriptionSummary, Transaction, TransactionSummary, TransactionType,
 };
 use rusqlite::{params, Connection, OptionalExtension};
 
@@ -13,9 +13,49 @@ pub struct Queries<'a> {
     connection: &'a Connection,
 }
 
+type ReviewAccountContext = (Option<String>, Option<String>, String, Option<String>);
+
 impl<'a> Queries<'a> {
     pub fn new(connection: &'a Connection) -> Self {
         Queries { connection }
+    }
+
+    pub fn clear_user_records(&self) -> DbResult<()> {
+        self.connection.execute_batch(
+            "DELETE FROM review_queue;
+             DELETE FROM transactions;
+             DELETE FROM budgets;
+             DELETE FROM subscriptions;
+             DELETE FROM accounts;",
+        )?;
+        Ok(())
+    }
+
+    pub fn category_count(&self) -> DbResult<u32> {
+        Ok(self
+            .connection
+            .query_row("SELECT COUNT(*) FROM categories", [], |row| {
+                row.get::<_, i64>(0)
+            })? as u32)
+    }
+
+    pub fn list_categories(&self) -> DbResult<Vec<CategorySummary>> {
+        let mut statement = self.connection.prepare(
+            "SELECT id, name, icon, color_hex, is_system, sort_order
+             FROM categories
+             ORDER BY sort_order ASC, id ASC",
+        )?;
+        let rows = statement.query_map([], |row| {
+            Ok(CategorySummary {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                icon: row.get(2)?,
+                color_hex: row.get(3)?,
+                is_system: row.get::<_, i64>(4)? != 0,
+                sort_order: row.get(5)?,
+            })
+        })?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
     }
 
     /// Inserts an account.
@@ -55,13 +95,28 @@ impl<'a> Queries<'a> {
             return Err(DbError::Invalid("amount_minor must not be negative".into()));
         }
 
+        let id_exists: i64 = self.connection.query_row(
+            "SELECT EXISTS(SELECT 1 FROM transactions WHERE id = ?1)",
+            params![transaction.id],
+            |row| row.get(0),
+        )?;
+        if id_exists != 0 {
+            return Err(DbError::DuplicateTransaction(transaction.id.clone()));
+        }
+
+        if let Some(reference) = transaction.reference.as_deref() {
+            if self.reference_exists(reference)? {
+                return Err(DbError::DuplicateReference(reference.to_string()));
+            }
+        }
+
         let now = now_epoch_ms();
         let affected = self.connection.execute(
             "INSERT INTO transactions (
                 id, title, amount_minor, currency, transaction_type, category_id,
                 occurred_at_epoch_ms, account_id, reference, balance_after_minor,
-                notes, is_auto_tracked, created_at_epoch_ms
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)",
+                notes, raw_sms, fee_minor, is_auto_tracked, created_at_epoch_ms
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)",
             params![
                 transaction.id,
                 transaction.title,
@@ -74,6 +129,8 @@ impl<'a> Queries<'a> {
                 transaction.reference,
                 transaction.balance_after_minor,
                 transaction.notes,
+                transaction.raw_sms,
+                transaction.fee_minor,
                 transaction.is_auto_tracked as i64,
                 now
             ],
@@ -142,7 +199,7 @@ impl<'a> Queries<'a> {
         let mut statement = self.connection.prepare(
             "SELECT id, title, amount_minor, currency, transaction_type, category_id,
                     occurred_at_epoch_ms, account_id, reference, balance_after_minor,
-                    notes, is_auto_tracked
+                    notes, raw_sms, fee_minor, is_auto_tracked
              FROM transactions
              ORDER BY occurred_at_epoch_ms DESC
              LIMIT ?1",
@@ -250,6 +307,189 @@ impl<'a> Queries<'a> {
         })?;
 
         collect(rows)
+    }
+
+    // MARK: - SMS review queue
+
+    /// Returns active accounts that can safely be associated with a parsed SMS.
+    /// A caller must still require exactly one match before auto-importing.
+    pub fn find_matching_accounts(
+        &self,
+        provider_id: &str,
+        account_last4: Option<&str>,
+    ) -> DbResult<Vec<AccountSummary>> {
+        let mut statement = self.connection.prepare(
+            "SELECT id, name, provider, last_four, balance_minor, archived
+             FROM accounts
+             WHERE archived = 0 AND provider = ?1
+               AND (?2 IS NULL OR last_four = ?2)
+             ORDER BY name ASC",
+        )?;
+
+        let rows = statement.query_map(params![provider_id, account_last4], |row| {
+            Ok(AccountSummary {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                provider: row.get(2)?,
+                last_four: row.get(3)?,
+                balance_minor: row.get(4)?,
+                archived: row.get::<_, i64>(5)? != 0,
+            })
+        })?;
+
+        collect(rows)
+    }
+
+    /// Adds a pending review item unless the same reference is already active.
+    pub fn insert_review_queue_item(&self, item: &ReviewQueueItem) -> DbResult<bool> {
+        if item.raw_sms.trim().is_empty() {
+            return Err(DbError::Invalid("raw_sms must not be empty".into()));
+        }
+        let id_exists: i64 = self.connection.query_row(
+            "SELECT EXISTS(SELECT 1 FROM review_queue WHERE id = ?1)",
+            params![item.id],
+            |row| row.get(0),
+        )?;
+        if id_exists != 0 {
+            return Ok(false);
+        }
+        if let Some(reference) = item.reference.as_deref() {
+            if self.reference_exists(reference)? {
+                return Ok(false);
+            }
+        }
+
+        let affected = self.connection.execute(
+            "INSERT INTO review_queue (
+                id, sender, raw_sms, received_at_epoch_ms, provider_id, reason,
+                candidate_amount_minor, candidate_type, fee_minor, balance_after_minor,
+                reference, party, merchant, category_id, account_last4, account_hint,
+                created_at_epoch_ms, status
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, 'pending')",
+            params![
+                item.id,
+                item.sender,
+                item.raw_sms,
+                item.received_at_epoch_ms,
+                item.provider_id,
+                item.reason,
+                item.candidate_amount_minor,
+                item.candidate_type.map(|kind| kind.as_str()),
+                item.fee_minor,
+                item.balance_after_minor,
+                item.reference,
+                item.party,
+                item.merchant,
+                item.category_id,
+                item.account_last4,
+                item.account_hint,
+                now_epoch_ms()
+            ],
+        )?;
+
+        Ok(affected == 1)
+    }
+
+    /// Lists pending review items, newest received message first.
+    pub fn list_review_queue(&self, limit: u32) -> DbResult<Vec<ReviewQueueItem>> {
+        let mut statement = self.connection.prepare(
+            "SELECT id, sender, raw_sms, received_at_epoch_ms, provider_id, reason,
+                    candidate_amount_minor, candidate_type, fee_minor, balance_after_minor,
+                    reference, party, merchant, category_id, account_last4, account_hint
+             FROM review_queue
+             WHERE status = 'pending'
+             ORDER BY received_at_epoch_ms DESC, created_at_epoch_ms DESC
+             LIMIT ?1",
+        )?;
+
+        let rows = statement.query_map(params![limit as i64], map_review_queue_row)?;
+        collect(rows)
+    }
+
+    /// Dismisses a pending review item without deleting its audit record.
+    pub fn dismiss_review_queue_item(&self, id: &str) -> DbResult<bool> {
+        Ok(self.connection.execute(
+            "UPDATE review_queue SET status = 'dismissed' WHERE id = ?1 AND status = 'pending'",
+            params![id],
+        )? == 1)
+    }
+
+    /// Converts a pending review item and marks it converted in the same DB transaction.
+    pub fn convert_review_queue_item(
+        &self,
+        id: &str,
+        transaction: &NewTransaction,
+    ) -> DbResult<bool> {
+        if !self.review_queue_allows_account(id, &transaction.account_id)? {
+            return Ok(false);
+        }
+
+        let affected = self.connection.execute(
+            "UPDATE review_queue SET status = 'converted' WHERE id = ?1 AND status = 'pending'",
+            params![id],
+        )?;
+        if affected == 0 {
+            return Ok(false);
+        }
+
+        self.insert_transaction(transaction)?;
+        Ok(true)
+    }
+
+    /// A review conversion may only use the one active account that matches
+    /// the parsed provider and optional masked account suffix.
+    fn review_queue_allows_account(&self, id: &str, account_id: &str) -> DbResult<bool> {
+        let context: Option<ReviewAccountContext> = self
+            .connection
+            .query_row(
+                "SELECT rq.provider_id, rq.account_last4, a.provider, a.last_four
+                 FROM review_queue rq
+                 JOIN accounts a ON a.id = ?2 AND a.archived = 0
+                 WHERE rq.id = ?1 AND rq.status = 'pending'",
+                params![id, account_id],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
+            )
+            .optional()?;
+
+        let Some((provider_id, queue_last4, account_provider, account_last4)) = context else {
+            return Ok(false);
+        };
+        let Some(provider_id) = provider_id else {
+            return Ok(false);
+        };
+        if account_provider != provider_id {
+            return Ok(false);
+        }
+        if queue_last4.is_some() && queue_last4 != account_last4 {
+            return Ok(false);
+        }
+
+        let active_matches: i64 = self.connection.query_row(
+            "SELECT COUNT(*) FROM accounts
+             WHERE archived = 0 AND provider = ?1
+               AND (?2 IS NULL OR last_four = ?2)",
+            params![provider_id, queue_last4],
+            |row| row.get(0),
+        )?;
+        Ok(active_matches == 1)
+    }
+
+    fn reference_exists(&self, reference: &str) -> DbResult<bool> {
+        let transaction_exists: i64 = self.connection.query_row(
+            "SELECT EXISTS(SELECT 1 FROM transactions WHERE reference = ?1)",
+            params![reference],
+            |row| row.get(0),
+        )?;
+        if transaction_exists != 0 {
+            return Ok(true);
+        }
+
+        let queued_exists: i64 = self.connection.query_row(
+            "SELECT EXISTS(SELECT 1 FROM review_queue WHERE reference = ?1 AND status = 'pending')",
+            params![reference],
+            |row| row.get(0),
+        )?;
+        Ok(queued_exists != 0)
     }
 
     // MARK: - Budgets
@@ -495,7 +735,45 @@ fn map_full_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<Transaction> {
         reference: row.get(8)?,
         balance_after_minor: row.get(9)?,
         notes: row.get(10)?,
-        is_auto_tracked: row.get::<_, i64>(11)? != 0,
+        raw_sms: row.get(11)?,
+        fee_minor: row.get(12)?,
+        is_auto_tracked: row.get::<_, i64>(13)? != 0,
+    })
+}
+
+fn map_review_queue_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<ReviewQueueItem> {
+    let type_value: Option<String> = row.get(7)?;
+    let candidate_type = match type_value.as_deref() {
+        None => None,
+        Some(value) => Some(TransactionType::from_str_value(value).ok_or_else(|| {
+            rusqlite::Error::FromSqlConversionFailure(
+                7,
+                rusqlite::types::Type::Text,
+                Box::new(std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    "unknown review transaction type",
+                )),
+            )
+        })?),
+    };
+
+    Ok(ReviewQueueItem {
+        id: row.get(0)?,
+        sender: row.get(1)?,
+        raw_sms: row.get(2)?,
+        received_at_epoch_ms: row.get(3)?,
+        provider_id: row.get(4)?,
+        reason: row.get(5)?,
+        candidate_amount_minor: row.get(6)?,
+        candidate_type,
+        fee_minor: row.get(8)?,
+        balance_after_minor: row.get(9)?,
+        reference: row.get(10)?,
+        party: row.get(11)?,
+        merchant: row.get(12)?,
+        category_id: row.get(13)?,
+        account_last4: row.get(14)?,
+        account_hint: row.get(15)?,
     })
 }
 

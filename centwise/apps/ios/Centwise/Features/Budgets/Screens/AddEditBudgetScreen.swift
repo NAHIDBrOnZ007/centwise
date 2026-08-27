@@ -4,7 +4,8 @@ public struct AddEditBudgetScreen: View {
     private let editingBudget: CategoryBudget?
     private let onSave: (CategoryBudget) -> Void
 
-    @State private var selectedCategoryId: String = TransactionCategory.food.id
+    @ObservedObject private var repository = TransactionRepository.shared
+    @State private var selectedCategoryId: String = "food"
     @State private var limitText: String = ""
     @State private var period: BudgetPeriod = .monthly
 
@@ -28,14 +29,15 @@ public struct AddEditBudgetScreen: View {
     }
 
     private var selectedCategory: TransactionCategory {
-        TransactionCategory.defaultCategories.first { $0.id == selectedCategoryId } ?? .other
+        repository.categories.first { $0.id == selectedCategoryId }
+            ?? repository.category(id: selectedCategoryId)
     }
 
     public var body: some View {
         Form {
             Section {
                 Picker("Category", selection: $selectedCategoryId) {
-                    ForEach(TransactionCategory.defaultCategories) { category in
+                    ForEach(repository.categories) { category in
                         Label(category.name, systemImage: category.icon)
                             .tag(category.id)
                     }

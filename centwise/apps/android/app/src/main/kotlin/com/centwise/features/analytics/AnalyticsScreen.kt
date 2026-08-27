@@ -32,8 +32,7 @@ import com.centwise.core.design.formatters.CurrencyFormatter
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
-import com.centwise.data.fakes.FakeTransactionRepository
-import com.centwise.data.models.CategoryOption
+import com.centwise.data.repository.TransactionRepository
 import com.centwise.data.models.TransactionType
 import com.centwise.features.settings.AccentOptions
 import com.centwise.features.settings.AppearancePrefs
@@ -52,6 +51,7 @@ fun AnalyticsScreen(
     val transactionCount by viewModel.transactionCount.collectAsState()
     val categoryBreakdown by viewModel.categoryBreakdown.collectAsState()
     val topMerchants by viewModel.topMerchants.collectAsState()
+    val categories by TransactionRepository.shared.categories.collectAsState()
 
     val accent = AccentOptions.byName(AppearancePrefs.accentName).color
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground
@@ -246,7 +246,7 @@ fun AnalyticsScreen(
                     CategorySlice(
                         name = item.category,
                         value = item.totalAmount,
-                        color = CategoryOption.defaults
+                        color = categories
                             .firstOrNull { it.name.equals(item.category, ignoreCase = true) }?.color
                             ?: CategorySliceColors.palette[index % CategorySliceColors.palette.size]
                     )
@@ -256,7 +256,7 @@ fun AnalyticsScreen(
 
         // 5. Spending Trends (Last 6 Months with Dynamic Accent Bars)
         item {
-            val txs by FakeTransactionRepository.shared.transactions.collectAsState()
+            val txs by TransactionRepository.shared.transactions.collectAsState()
             SpendingTrendsChart(points = monthlyTrendPoints(txs), isDark = isDark)
         }
 
@@ -284,7 +284,7 @@ fun AnalyticsScreen(
                     )
                 } else {
                     categoryBreakdown.forEachIndexed { index, item ->
-                        val catColor = CategoryOption.defaults
+                        val catColor = categories
                             .firstOrNull { it.name.equals(item.category, ignoreCase = true) }?.color
                             ?: CategorySliceColors.palette[index % CategorySliceColors.palette.size]
 

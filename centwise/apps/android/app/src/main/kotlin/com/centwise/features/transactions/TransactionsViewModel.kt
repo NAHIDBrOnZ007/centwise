@@ -2,12 +2,12 @@ package com.centwise.features.transactions
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.centwise.data.fakes.FakeTransactionRepository
+import com.centwise.data.repository.TransactionRepository
 import com.centwise.data.models.TransactionItem
 import kotlinx.coroutines.flow.*
 
 class TransactionsViewModel(
-    private val repository: FakeTransactionRepository = FakeTransactionRepository.shared
+    private val repository: TransactionRepository = TransactionRepository.shared
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
