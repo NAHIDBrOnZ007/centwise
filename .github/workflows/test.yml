@@ -23,7 +23,7 @@ defaults:
 
 jobs:
   rust-core:
-    name: Rust Core Tests & Lints
+    name: Core CI
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -63,7 +63,7 @@ jobs:
             "$binding_check_dir/ios"
 
   android-app:
-    name: Android Rust Core and Debug APK
+    name: Android CI
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -135,7 +135,7 @@ jobs:
           retention-days: 7
 
   ios-app:
-    name: iOS Rust Core and Simulator App
+    name: iOS CI
     runs-on: macos-15
     timeout-minutes: 30
     steps:
