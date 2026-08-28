@@ -22,6 +22,7 @@ public struct TransactionListView: View {
     @ObservedObject private var themeManager = ThemeManager.shared
 
     @State private var presentedSheet: TransactionSheet?
+    @State private var toastItem: ToastItem?
 
     public init() {}
 
@@ -74,6 +75,7 @@ public struct TransactionListView: View {
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button(role: .destructive) {
                                     viewModel.deleteTransaction(id: transaction.id)
+                                    toastItem = ToastItem("Transaction deleted", style: .success)
                                 } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
@@ -122,11 +124,13 @@ public struct TransactionListView: View {
         .onChange(of: viewModel.sortOrder) { _ in
             viewModel.applyFilters()
         }
+        .toast(item: $toastItem)
         .sheet(item: $presentedSheet) { sheet in
             switch sheet {
             case .add:
                 AddEditTransactionView {
                     viewModel.applyFilters()
+                    toastItem = ToastItem("Transaction added successfully", style: .success)
                 }
             case .detail(let transaction):
                 TransactionDetailSheet(
@@ -135,11 +139,13 @@ public struct TransactionListView: View {
                     onDelete: {
                         viewModel.deleteTransaction(id: transaction.id)
                         presentedSheet = nil
+                        toastItem = ToastItem("Transaction deleted", style: .success)
                     }
                 )
             case .edit(let transaction):
                 AddEditTransactionView(transactionToEdit: transaction) {
                     viewModel.applyFilters()
+                    toastItem = ToastItem("Transaction updated successfully", style: .success)
                 }
             case .export:
                 CsvExportSheet(transactions: viewModel.filteredTransactions)

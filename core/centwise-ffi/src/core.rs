@@ -114,15 +114,34 @@ impl CentwiseCore {
     }
 
     pub fn update_transaction(&self, input: TransactionInput) -> Result<bool, CentwiseError> {
-        let transaction = transaction_input_to_domain(input);
+        let provider_hint = input
+            .account_provider
+            .clone()
+            .filter(|value| !value.trim().is_empty());
+        let account_name_hint = input
+            .account_name
+            .clone()
+            .filter(|value| !value.trim().is_empty());
+        let account_last_four = input
+            .account_last_four
+            .clone()
+            .filter(|value| !value.trim().is_empty());
+        let mut transaction = transaction_input_to_domain(input);
+
         self.database
             .write(|queries| {
                 if transaction.account_id.trim().is_empty()
                     || !queries.account_exists(&transaction.account_id)?
                 {
-                    return Err(centwise_db::DbError::Invalid(
-                        "updating a transaction requires an existing account".into(),
-                    ));
+                    let provider = provider_hint.as_deref().unwrap_or("cash");
+                    let account_name = account_name_hint
+                        .as_deref()
+                        .unwrap_or_else(|| default_account_name(provider));
+                    transaction.account_id = queries.resolve_or_create_account(
+                        provider,
+                        account_last_four.as_deref(),
+                        account_name,
+                    )?;
                 }
                 queries.update_transaction(&transaction)
             })

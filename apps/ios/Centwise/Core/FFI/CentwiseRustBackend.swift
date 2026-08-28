@@ -127,13 +127,24 @@ enum CentwiseRustBackend {
     static func insertTransaction(_ transaction: CentwiseTransaction) -> Bool {
         initialize()
         guard let core else { return false }
-        return (try? core.insertTransaction(input: transactionInput(transaction))) != nil
+        do {
+            try core.insertTransaction(input: transactionInput(transaction))
+            return true
+        } catch {
+            print("❌ CentwiseRustBackend.insertTransaction failed: \(error)")
+            return false
+        }
     }
 
     static func updateTransaction(_ transaction: CentwiseTransaction) -> Bool {
         initialize()
         guard let core else { return false }
-        return (try? core.updateTransaction(input: transactionInput(transaction))) ?? false
+        do {
+            return try core.updateTransaction(input: transactionInput(transaction))
+        } catch {
+            print("❌ CentwiseRustBackend.updateTransaction failed: \(error)")
+            return false
+        }
     }
 
     static func deleteTransaction(id: String) -> Bool {

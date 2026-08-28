@@ -78,6 +78,7 @@ public final class ThemeManager: ObservableObject {
 
     public func triggerHapticFeedback(_ type: HapticType = .medium) {
         guard enableHaptics else { return }
+        #if !targetEnvironment(simulator)
         switch type {
         case .light:
             UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -98,6 +99,7 @@ public final class ThemeManager: ObservableObject {
         case .error:
             UINotificationFeedbackGenerator().notificationOccurred(.error)
         }
+        #endif
     }
 }
 

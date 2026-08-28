@@ -336,4 +336,28 @@ mod ingestion_tests {
         assert_eq!(categories[0].id, "food");
         assert!(categories.iter().all(|category| category.is_system));
     }
+
+    #[test]
+    fn update_transaction_updates_fields_and_resolves_account() {
+        let core = CentwiseCore::open(":memory:".into()).expect("open core");
+        let tx = manual_transaction("tx-1", "", Some("nagad"), None);
+        core.insert_transaction(tx).expect("insert");
+
+        let stored = core.list_transactions(10).expect("list");
+        assert_eq!(stored.len(), 1);
+        assert_eq!(stored[0].title, "Manual transaction");
+
+        let mut update_input = manual_transaction("tx-1", &stored[0].account_id, None, None);
+        update_input.title = "Pathao Rides".into();
+        update_input.amount_minor = 76_000;
+        update_input.category_id = "transport".into();
+
+        let updated = core.update_transaction(update_input).expect("update");
+        assert!(updated);
+
+        let after_update = core.list_transactions(10).expect("list");
+        assert_eq!(after_update[0].title, "Pathao Rides");
+        assert_eq!(after_update[0].amount_minor, 76_000);
+        assert_eq!(after_update[0].category_id, "transport");
+    }
 }

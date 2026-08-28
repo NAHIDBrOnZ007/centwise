@@ -176,10 +176,6 @@ public struct AddEditTransactionView: View {
         let saved: Bool
 
         if let existing = transactionToEdit {
-            guard !chosenAccount.id.isEmpty else {
-                saveError = "Choose an existing account when editing a transaction."
-                return
-            }
             var updated = existing
             updated.title = title
             updated.amount = amount

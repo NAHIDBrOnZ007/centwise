@@ -8,6 +8,7 @@ public struct HomeScreen: View {
     @ObservedObject private var profileManager = ProfileManager.shared
 
     @State private var presentedSheet: TransactionSheet?
+    @State private var toastItem: ToastItem?
 
     public init(onSeeAllTransactions: (() -> Void)? = nil) {
         self.onSeeAllTransactions = onSeeAllTransactions
@@ -49,11 +50,13 @@ public struct HomeScreen: View {
                 }
             }
         }
+        .toast(item: $toastItem)
         .sheet(item: $presentedSheet) { sheet in
             switch sheet {
             case .add:
                 AddEditTransactionView {
                     viewModel.loadHome()
+                    toastItem = ToastItem("Transaction added successfully", style: .success)
                 }
             case .detail(let transaction):
                 TransactionDetailSheet(
@@ -62,11 +65,13 @@ public struct HomeScreen: View {
                     onDelete: {
                         TransactionRepository.shared.deleteTransaction(id: transaction.id)
                         presentedSheet = nil
+                        toastItem = ToastItem("Transaction deleted", style: .success)
                     }
                 )
             case .edit(let transaction):
                 AddEditTransactionView(transactionToEdit: transaction) {
                     viewModel.loadHome()
+                    toastItem = ToastItem("Transaction updated successfully", style: .success)
                 }
             case .export:
                 EmptyView()
