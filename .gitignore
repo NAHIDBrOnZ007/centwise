@@ -1,5 +1,7 @@
-# Reference-only sibling project; never include it in Centwise commits.
+# Reference-only projects; never include in Centwise commits.
 pennywise/
+pennywiseai-tracker/
+reference/
 
 # === Rust ===
 core/target/

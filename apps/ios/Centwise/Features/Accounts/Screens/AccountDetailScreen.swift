@@ -5,8 +5,11 @@ public struct AccountDetailScreen: View {
 
     @ObservedObject private var repository = TransactionRepository.shared
     @State private var selectedTransaction: CentwiseTransaction?
+    @State private var showEditSheet = false
+    @State private var showingDeleteAlert = false
 
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dismiss) private var dismiss
     @ObservedObject private var themeManager = ThemeManager.shared
 
     public init(accountId: String) {
@@ -24,87 +27,160 @@ public struct AccountDetailScreen: View {
     }
 
     public var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.lg) {
-                balanceCard
-
-                statsCard
-
-                transactionsSection
+        List {
+            // 1. Unified Hero Account & Stats Card
+            Section {
+                heroCard
+                    .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 4, trailing: 0))
+                    .listRowBackground(Color.clear)
             }
-            .padding(.horizontal, CentwiseSpacing.md)
-            .padding(.top, CentwiseSpacing.sm)
-            .padding(.bottom, CentwiseSpacing.xxl)
+
+            // 2. Transactions Section
+            Section {
+                if accountTransactions.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "tray")
+                            .font(.system(size: 36))
+                            .foregroundStyle(.secondary)
+                            .accessibilityHidden(true)
+
+                        Text("No transactions yet")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+
+                        Text("Transactions associated with this account will appear here.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 28)
+                    .listRowBackground(Color.clear)
+                } else {
+                    ForEach(accountTransactions) { transaction in
+                        TransactionRow(
+                            transaction: transaction,
+                            showChevron: true,
+                            onTap: {
+                                selectedTransaction = transaction
+                            }
+                        )
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color(uiColor: .secondarySystemGroupedBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                    }
+                }
+            } header: {
+                Text("Transactions (\(accountTransactions.count))")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .textCase(.uppercase)
+            }
+
+            // 3. Destructive Action Section
+            Section {
+                Button(role: .destructive) {
+                    showingDeleteAlert = true
+                } label: {
+                    HStack {
+                        Spacer()
+                        Text("Delete Account")
+                            .font(.system(size: 15, weight: .medium))
+                        Spacer()
+                    }
+                }
+            }
         }
-        .background(CentwiseColors.background(for: colorScheme, isAmoled: themeManager.isAmoledActive).ignoresSafeArea())
+        .listStyle(.insetGrouped)
         .navigationTitle(account?.name ?? "Account")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    themeManager.triggerHapticFeedback(.light)
+                    showEditSheet = true
+                } label: {
+                    Image(systemName: "pencil")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(themeManager.accentColor)
+                }
+            }
+        }
         .sheet(item: $selectedTransaction) { transaction in
             TransactionDetailSheet(transaction: transaction)
         }
-    }
-
-    // MARK: - Balance Card
-
-    private var balanceCard: some View {
-        CentwiseCard {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.md) {
-                HStack(spacing: CentwiseSpacing.md) {
-                    Image(systemName: account?.provider.icon ?? "building.columns.fill")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(.white)
-                        .frame(width: 46, height: 46)
-                        .background(
-                            Circle().fill(account?.provider.brandColor ?? themeManager.accentColor)
-                        )
-
-                    VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
-                        Text(account?.name ?? "Account")
-                            .font(CentwiseTypography.headline)
-                            .foregroundColor(.primary)
-
-                        HStack(spacing: CentwiseSpacing.sm) {
-                            if let lastFour = account?.lastFourDigits {
-                                Text("••\(lastFour)")
-                                    .font(CentwiseTypography.caption1)
-                                    .foregroundColor(.secondary)
-                            }
-                            Text(account?.type.rawValue ?? "")
-                                .font(CentwiseTypography.caption2)
-                                .foregroundColor(account?.provider.brandColor ?? themeManager.accentColor)
-                                .padding(.horizontal, CentwiseSpacing.sm)
-                                .padding(.vertical, CentwiseSpacing.xxs)
-                                .background(
-                                    Capsule().fill((account?.provider.brandColor ?? themeManager.accentColor).opacity(0.12))
-                                )
-                        }
-                    }
-
-                    Spacer()
-                }
-
-                Divider()
-
-                VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
-                    Text("Current Balance")
-                        .font(CentwiseTypography.caption1)
-                        .foregroundColor(.secondary)
-                    Text(CurrencyFormatter.shared.formatBDT(account?.currentBalance ?? 0))
-                        .font(CentwiseTypography.amountHero)
-                        .foregroundColor((account?.currentBalance ?? 0) < 0 ? CentwiseColors.expenseRed : .primary)
-                }
+        .sheet(isPresented: $showEditSheet) {
+            if let account = account {
+                AddEditAccountScreen(accountToEdit: account)
             }
+        }
+        .alert("Delete Account?", isPresented: $showingDeleteAlert) {
+            Button("Delete", role: .destructive) {
+                // Delete logic
+                dismiss()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Are you sure you want to remove this account?")
         }
     }
 
-    // MARK: - Stats Card
+    // MARK: - Hero Account & Stats Card
 
-    private var statsCard: some View {
+    private var heroCard: some View {
         let transactions = accountTransactions
         let moneyIn = transactions.filter { $0.type == .income }.reduce(0) { $0 + $1.amount }
         let moneyOut = transactions.filter { $0.type == .expense }.reduce(0) { $0 + $1.amount }
 
-        return CentwiseCard {
+        return VStack(alignment: .leading, spacing: 12) {
+            // Header: Icon, Name & Type Badge
+            HStack(spacing: 12) {
+                Image(systemName: account?.provider.icon ?? "building.columns")
+                    .font(.system(size: 24, weight: .regular))
+                    .foregroundColor(themeManager.accentColor)
+                    .frame(width: 32, height: 32)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(account?.name ?? "Account")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.primary)
+
+                    HStack(spacing: 6) {
+                        if let lastFour = account?.lastFourDigits {
+                            Text("••\(lastFour)")
+                                .font(.system(size: 12))
+                                .foregroundColor(.secondary)
+                        }
+
+                        if let type = account?.type {
+                            AccountTypeBadge(type: type)
+                        }
+                    }
+                }
+
+                Spacer()
+            }
+
+            Divider()
+
+            // Balance Section
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Current Balance")
+                    .font(.system(size: 12, weight: .regular))
+                    .foregroundColor(.secondary)
+
+                Text(CurrencyFormatter.shared.formatBDT(account?.currentBalance ?? 0))
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .foregroundColor((account?.currentBalance ?? 0) < 0 ? CentwiseColors.expenseRed : .primary)
+            }
+
+            Divider()
+
+            // 3-Column Stats Row
             HStack(spacing: 0) {
                 statColumn(
                     title: "Money In",
@@ -114,8 +190,8 @@ public struct AccountDetailScreen: View {
                 )
 
                 Rectangle()
-                    .fill(CentwiseColors.border(for: colorScheme))
-                    .frame(width: 1, height: 40)
+                    .fill(Color(uiColor: .separator).opacity(0.4))
+                    .frame(width: 1, height: 32)
 
                 statColumn(
                     title: "Money Out",
@@ -125,8 +201,8 @@ public struct AccountDetailScreen: View {
                 )
 
                 Rectangle()
-                    .fill(CentwiseColors.border(for: colorScheme))
-                    .frame(width: 1, height: 40)
+                    .fill(Color(uiColor: .separator).opacity(0.4))
+                    .frame(width: 1, height: 32)
 
                 statColumn(
                     title: "Transactions",
@@ -136,59 +212,27 @@ public struct AccountDetailScreen: View {
                 )
             }
         }
+        .padding(14)
+        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
     private func statColumn(title: String, value: String, color: Color, icon: String) -> some View {
-        VStack(spacing: CentwiseSpacing.xs) {
+        VStack(spacing: 3) {
             Image(systemName: icon)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(color)
 
             Text(value)
-                .font(CentwiseTypography.amountMedium)
+                .font(.system(size: 14, weight: .bold, design: .rounded))
                 .foregroundColor(.primary)
                 .lineLimit(1)
-                .minimumScaleFactor(0.7)
+                .minimumScaleFactor(0.75)
 
             Text(title)
-                .font(CentwiseTypography.caption2)
+                .font(.system(size: 11, weight: .regular))
                 .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity)
-    }
-
-    // MARK: - Transactions
-
-    private var transactionsSection: some View {
-        VStack(alignment: .leading, spacing: CentwiseSpacing.sm) {
-            Text("Transactions")
-                .font(CentwiseTypography.headline)
-                .foregroundColor(.primary)
-
-            if accountTransactions.isEmpty {
-                CentwiseCard {
-                    VStack(spacing: CentwiseSpacing.sm) {
-                        Image(systemName: "tray")
-                            .font(.system(size: 26))
-                            .foregroundColor(.secondary)
-                        Text("No transactions yet")
-                            .font(CentwiseTypography.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(maxWidth: .infinity)
-                }
-            } else {
-                VStack(spacing: CentwiseSpacing.xs) {
-                    ForEach(accountTransactions) { transaction in
-                        Button {
-                            selectedTransaction = transaction
-                        } label: {
-                            TransactionRow(transaction: transaction)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-            }
-        }
     }
 }

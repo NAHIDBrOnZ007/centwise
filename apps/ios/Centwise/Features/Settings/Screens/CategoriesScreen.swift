@@ -11,34 +11,35 @@ public struct CategoriesScreen: View {
     public init() {}
 
     public var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.lg) {
-                categorySection("System Categories", viewModel.systemCategories, allowEditing: false)
-
-                if viewModel.customCategories.isEmpty {
-                    CentwiseCard {
-                        VStack(spacing: CentwiseSpacing.sm) {
-                            Image(systemName: "tag")
-                                .font(.system(size: 28))
-                                .foregroundColor(.secondary)
-                            Text("No custom categories yet")
-                                .font(CentwiseTypography.subheadline)
-                                .foregroundColor(.secondary)
-                            Text("Tap + to create your own category")
-                                .font(CentwiseTypography.caption1)
-                                .foregroundColor(.secondary)
-                        }
-                        .frame(maxWidth: .infinity)
-                    }
-                    .padding(.horizontal, CentwiseSpacing.md)
-                } else {
-                    categorySection("Custom Categories", viewModel.customCategories, allowEditing: true)
+        List {
+            Section("System Categories") {
+                ForEach(viewModel.systemCategories) { category in
+                    categoryRow(category, allowEditing: false)
                 }
             }
-            .padding(.top, CentwiseSpacing.sm)
-            .padding(.bottom, CentwiseSpacing.xxl)
+
+            Section("Custom Categories") {
+                if viewModel.customCategories.isEmpty {
+                    Label("No custom categories yet", systemImage: "tag")
+                        .foregroundStyle(.secondary)
+                    Text("Tap + to create your own category.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                } else {
+                    ForEach(viewModel.customCategories) { category in
+                        categoryRow(category, allowEditing: true)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    viewModel.deleteCategory(id: category.id)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
+                    }
+                }
+            }
         }
-        .background(CentwiseColors.background(for: colorScheme, isAmoled: themeManager.isAmoledActive).ignoresSafeArea())
+        .listStyle(.insetGrouped)
         .navigationTitle("Categories")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -68,41 +69,6 @@ public struct CategoriesScreen: View {
 
     // MARK: - Sections
 
-    @ViewBuilder
-    private func categorySection(_ title: String, _ categories: [TransactionCategory], allowEditing: Bool) -> some View {
-        VStack(alignment: .leading, spacing: CentwiseSpacing.sm) {
-            Text(title)
-                .font(CentwiseTypography.headline)
-                .foregroundColor(.primary)
-                .padding(.horizontal, CentwiseSpacing.md)
-
-            VStack(spacing: CentwiseSpacing.xs) {
-                ForEach(categories) { category in
-                    categoryRow(category, allowEditing: allowEditing)
-                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                            if allowEditing {
-                                Button(role: .destructive) {
-                                    viewModel.deleteCategory(id: category.id)
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
-                                }
-                            }
-                        }
-                }
-            }
-            .padding(CentwiseSpacing.xs)
-            .background(
-                RoundedRectangle(cornerRadius: CentwiseSpacing.radiusLg, style: .continuous)
-                    .fill(CentwiseColors.surface(for: colorScheme, isAmoled: themeManager.isAmoledActive))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: CentwiseSpacing.radiusLg, style: .continuous)
-                    .strokeBorder(CentwiseColors.border(for: colorScheme), lineWidth: 1)
-            )
-            .padding(.horizontal, CentwiseSpacing.md)
-        }
-    }
-
     private func categoryRow(_ category: TransactionCategory, allowEditing: Bool) -> some View {
         Button {
             if allowEditing {
@@ -110,14 +76,10 @@ public struct CategoriesScreen: View {
             }
         } label: {
             HStack(spacing: CentwiseSpacing.md) {
-                Circle()
-                    .fill(category.color.opacity(0.15))
-                    .frame(width: 38, height: 38)
-                    .overlay(
-                        Image(systemName: category.icon)
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(category.color)
-                    )
+                Image(systemName: category.icon)
+                    .font(.system(size: 18, weight: .regular))
+                    .foregroundColor(themeManager.accentColor)
+                    .frame(width: 28, height: 28)
 
                 Text(category.name)
                     .font(CentwiseTypography.bodyMedium)
@@ -140,9 +102,8 @@ public struct CategoriesScreen: View {
                         )
                 }
             }
-            .padding(.horizontal, CentwiseSpacing.mdSm)
-            .padding(.vertical, CentwiseSpacing.xs)
+            .padding(.vertical, CentwiseSpacing.xxs)
         }
-        .buttonStyle(.plain)
+        .tint(themeManager.accentColor)
     }
 }

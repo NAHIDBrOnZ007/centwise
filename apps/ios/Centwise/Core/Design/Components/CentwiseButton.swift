@@ -16,6 +16,7 @@ public struct CentwiseButton: View {
 
     @ObservedObject private var themeManager = ThemeManager.shared
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(
         _ title: String,
@@ -55,7 +56,7 @@ public struct CentwiseButton: View {
                     .stroke(borderColor, lineWidth: variant == .outline ? 1.5 : 0)
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(CentwisePressStyle(reduceMotion: reduceMotion))
     }
 
     @ViewBuilder
@@ -88,5 +89,19 @@ public struct CentwiseButton: View {
         default:
             return .clear
         }
+    }
+}
+
+private struct CentwisePressStyle: ButtonStyle {
+    let reduceMotion: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? 0.72 : 1)
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.98 : 1)
+            .animation(
+                reduceMotion ? nil : .easeOut(duration: 0.12),
+                value: configuration.isPressed
+            )
     }
 }

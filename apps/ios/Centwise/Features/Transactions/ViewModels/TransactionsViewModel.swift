@@ -26,7 +26,7 @@ public final class TransactionsViewModel: ObservableObject {
     @Published public var allTransactions: [CentwiseTransaction] = []
     @Published public var filteredTransactions: [CentwiseTransaction] = []
     @Published public var searchQuery: String = ""
-    @Published public var selectedPeriod: DatePeriodFilter = .thisMonth
+    @Published public var selectedPeriod: DatePeriodFilter = .allTime
     @Published public var selectedTypeFilter: TransactionType? = nil
     @Published public var selectedCategoryFilter: String? = nil
     @Published public var selectedProviderFilter: FinancialProvider? = nil

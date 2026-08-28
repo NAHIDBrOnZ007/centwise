@@ -2,78 +2,31 @@ import SwiftUI
 
 public struct AppearanceScreen: View {
     @ObservedObject private var themeManager = ThemeManager.shared
-    @Environment(\.colorScheme) private var colorScheme
 
     public init() {}
 
     public var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.lg) {
-                themeModeCard
-                accentColorCard
-                hapticsCard
-            }
-            .padding(.horizontal, CentwiseSpacing.md)
-            .padding(.top, CentwiseSpacing.sm)
-            .padding(.bottom, CentwiseSpacing.xxl)
-        }
-        .background(CentwiseColors.background(for: colorScheme, isAmoled: themeManager.isAmoledActive).ignoresSafeArea())
-        .navigationTitle("Appearance")
-        .navigationBarTitleDisplayMode(.inline)
-    }
-
-    // MARK: - Theme Mode
-
-    private var themeModeCard: some View {
-        CentwiseCard {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.md) {
-                Text("Theme Mode")
-                    .font(CentwiseTypography.headline)
-                    .foregroundColor(.primary)
-
-                Picker("Theme", selection: $themeManager.themeMode) {
+        Form {
+            Section("Theme") {
+                Picker("Theme", selection: baseThemeBinding) {
                     Text("System").tag(ThemeMode.system)
                     Text("Light").tag(ThemeMode.light)
                     Text("Dark").tag(ThemeMode.dark)
                 }
-                .pickerStyle(.segmented)
 
                 if themeManager.themeMode == .dark || themeManager.themeMode == .amoled {
-                    Toggle(isOn: amoledBinding) {
-                        VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
-                            Text("AMOLED Black")
-                                .font(CentwiseTypography.bodyMedium)
-                            Text("Pure black background for OLED displays")
-                                .font(CentwiseTypography.caption1)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .tint(themeManager.accentColor)
+                    Toggle("AMOLED Black", isOn: amoledBinding)
+                    Text("Pure black background for OLED displays.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
 
                 Text("System follows your device settings automatically.")
-                    .font(CentwiseTypography.caption1)
-                    .foregroundColor(.secondary)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
-        }
-    }
 
-    private var amoledBinding: Binding<Bool> {
-        Binding(
-            get: { themeManager.themeMode == .amoled },
-            set: { themeManager.themeMode = $0 ? .amoled : .dark }
-        )
-    }
-
-    // MARK: - Accent Color
-
-    private var accentColorCard: some View {
-        CentwiseCard {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.md) {
-                Text("Accent Color")
-                    .font(CentwiseTypography.headline)
-                    .foregroundColor(.primary)
-
+            Section("Accent Color") {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: CentwiseSpacing.mdLg) {
                         ForEach(AccentChoice.allCases) { choice in
@@ -82,8 +35,45 @@ public struct AppearanceScreen: View {
                     }
                     .padding(.vertical, CentwiseSpacing.xxs)
                 }
+                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+            }
+
+            Section("Haptics") {
+                Toggle("Haptic Feedback", isOn: $themeManager.enableHaptics)
+                Text("Subtle vibration on taps and actions.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
             }
         }
+        .tint(themeManager.accentColor)
+        .formStyle(.grouped)
+        .navigationTitle("Appearance")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var baseThemeBinding: Binding<ThemeMode> {
+        Binding(
+            get: {
+                if themeManager.themeMode == .amoled {
+                    return .dark
+                }
+                return themeManager.themeMode
+            },
+            set: { newMode in
+                if newMode == .dark && themeManager.isAmoledActive {
+                    themeManager.themeMode = .amoled
+                } else {
+                    themeManager.themeMode = newMode
+                }
+            }
+        )
+    }
+
+    private var amoledBinding: Binding<Bool> {
+        Binding(
+            get: { themeManager.themeMode == .amoled },
+            set: { themeManager.themeMode = $0 ? .amoled : .dark }
+        )
     }
 
     private func accentSwatch(_ choice: AccentChoice) -> some View {
@@ -120,23 +110,7 @@ public struct AppearanceScreen: View {
             }
             .frame(width: 72)
         }
-        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
 
-    // MARK: - Haptics
-
-    private var hapticsCard: some View {
-        CentwiseCard {
-            Toggle(isOn: $themeManager.enableHaptics) {
-                VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
-                    Text("Haptic Feedback")
-                        .font(CentwiseTypography.bodyMedium)
-                    Text("Subtle vibration on taps and actions")
-                        .font(CentwiseTypography.caption1)
-                        .foregroundColor(.secondary)
-                }
-            }
-            .tint(themeManager.accentColor)
-        }
-    }
 }

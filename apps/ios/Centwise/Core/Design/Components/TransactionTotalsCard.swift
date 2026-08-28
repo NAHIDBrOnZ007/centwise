@@ -5,9 +5,6 @@ public struct TransactionTotalsCard: View {
     public let expense: Double
     public let net: Double
 
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.isAmoledActive) private var isAmoled
-
     public init(income: Double, expense: Double, net: Double) {
         self.income = income
         self.expense = expense
@@ -15,7 +12,7 @@ public struct TransactionTotalsCard: View {
     }
 
     public var body: some View {
-        HStack(spacing: CentwiseSpacing.xs) {
+        HStack(spacing: 0) {
             TotalColumn(
                 icon: "arrow.down",
                 label: "Income",
@@ -40,9 +37,8 @@ public struct TransactionTotalsCard: View {
         }
         .padding(.vertical, 12)
         .padding(.horizontal, 14)
-        .background(colorScheme == .dark ? Color(white: 0.12) : Color(white: 0.96))
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.2 : 0.04), radius: 6, x: 0, y: 2)
+        .background(Color(uiColor: .secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 }
 
@@ -55,26 +51,27 @@ private struct TotalColumn: View {
 
     var body: some View {
         VStack(spacing: 4) {
-            HStack(spacing: 4) {
+            HStack(spacing: 3) {
                 Image(systemName: icon)
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(color)
                 Text(label)
-                    .font(CentwiseTypography.caption2)
+                    .font(.system(size: 12, weight: .regular))
                     .foregroundColor(.secondary)
             }
 
             Text(formatAmount(amount))
-                .font(.system(size: 14, weight: .bold, design: .rounded))
+                .font(.system(size: 16, weight: .semibold, design: .rounded))
                 .foregroundColor(color)
                 .lineLimit(1)
-                .minimumScaleFactor(0.7)
+                .minimumScaleFactor(0.75)
         }
         .frame(maxWidth: .infinity)
     }
 
     private func formatAmount(_ value: Double) -> String {
         let prefix = (showSign && value > 0) ? "+" : ""
-        return "\(prefix)\(CurrencyFormatter.shared.formatBDT(value, showSign: showSign, compact: true))"
+        return "\(prefix)\(CurrencyFormatter.shared.formatBDT(value, showSign: showSign, compact: true).replacingOccurrences(of: "৳ ", with: "৳"))"
     }
 }
+

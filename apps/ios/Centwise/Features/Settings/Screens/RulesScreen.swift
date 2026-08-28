@@ -11,28 +11,34 @@ public struct RulesScreen: View {
     public init() {}
 
     public var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.lg) {
-                if viewModel.rules.isEmpty {
+        List {
+            if viewModel.rules.isEmpty {
+                Section {
                     emptyState
-                } else {
-                    Text("\(viewModel.rules.count) rule\(viewModel.rules.count == 1 ? "" : "s")")
-                        .font(CentwiseTypography.headline)
-                        .foregroundColor(.primary)
-                        .padding(.horizontal, CentwiseSpacing.md)
+                }
+            } else {
+                Section("\(viewModel.rules.count) rule\(viewModel.rules.count == 1 ? "" : "s")") {
+                    ForEach(viewModel.rules) { rule in
+                        ruleRow(rule)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button {
+                                    editingRule = rule
+                                } label: {
+                                    Label("Edit", systemImage: "pencil")
+                                }
+                                .tint(themeManager.accentColor)
 
-                    VStack(spacing: CentwiseSpacing.xs) {
-                        ForEach(viewModel.rules) { rule in
-                            ruleCard(rule)
-                        }
+                                Button(role: .destructive) {
+                                    viewModel.deleteRule(id: rule.id)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
                     }
-                    .padding(.horizontal, CentwiseSpacing.md)
                 }
             }
-            .padding(.top, CentwiseSpacing.sm)
-            .padding(.bottom, CentwiseSpacing.xxl)
         }
-        .background(CentwiseColors.background(for: colorScheme, isAmoled: themeManager.isAmoledActive).ignoresSafeArea())
+        .listStyle(.insetGrouped)
         .navigationTitle("Smart Rules")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -62,100 +68,71 @@ public struct RulesScreen: View {
 
     // MARK: - Rule Card
 
-    private func ruleCard(_ rule: SmartRule) -> some View {
-        CentwiseCard {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.sm) {
-                HStack(spacing: CentwiseSpacing.mdSm) {
-                    Circle()
-                        .fill(rule.category.color.opacity(0.15))
-                        .frame(width: 38, height: 38)
-                        .overlay(
-                            Image(systemName: rule.category.icon)
-                                .font(.system(size: 15, weight: .semibold))
-                                .foregroundColor(rule.category.color)
-                        )
+    private func ruleRow(_ rule: SmartRule) -> some View {
+        HStack(spacing: CentwiseSpacing.mdSm) {
+            Image(systemName: rule.category.icon)
+                .foregroundStyle(rule.category.color)
+                .frame(width: 28)
 
-                    VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
-                        Text(rule.name)
-                            .font(CentwiseTypography.bodyMedium)
-                            .foregroundColor(.primary)
-
-                        Text(rule.summary)
-                            .font(CentwiseTypography.caption1)
-                            .foregroundColor(.secondary)
-                            .lineLimit(2)
-                    }
-
-                    Spacer()
-
-                    Toggle("", isOn: Binding(
-                        get: { rule.isEnabled },
-                        set: { viewModel.toggleRule(id: rule.id, isEnabled: $0) }
-                    ))
-                    .labelsHidden()
-                    .tint(rule.category.color)
-                }
-
-                HStack(spacing: CentwiseSpacing.sm) {
-                    Label(rule.transactionType.rawValue, systemImage: rule.transactionType.icon)
-                        .font(CentwiseTypography.caption2)
-                        .foregroundColor(rule.transactionType.color)
-
-                    Spacer()
-
-                    Button {
-                        editingRule = rule
-                    } label: {
-                        Image(systemName: "slider.horizontal.3")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(.secondary)
-                    }
-                    .buttonStyle(.plain)
-
-                    Button {
-                        withAnimation {
-                            viewModel.deleteRule(id: rule.id)
-                        }
-                    } label: {
-                        Image(systemName: "trash")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(CentwiseColors.expenseRed)
-                    }
-                    .buttonStyle(.plain)
-                }
+            VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
+                Text(rule.name)
+                    .font(.body)
+                Text(rule.summary)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
             }
+
+            Spacer(minLength: CentwiseSpacing.sm)
+
+            Toggle("Enabled", isOn: Binding(
+                get: { rule.isEnabled },
+                set: { viewModel.toggleRule(id: rule.id, isEnabled: $0) }
+            ))
+            .labelsHidden()
+            .tint(rule.category.color)
         }
+        .padding(.vertical, CentwiseSpacing.xxs)
     }
 
     // MARK: - Empty State
 
     private var emptyState: some View {
-        CentwiseCard {
-            VStack(spacing: CentwiseSpacing.sm) {
-                Image(systemName: "wand.and.stars")
-                    .font(.system(size: 32))
-                    .foregroundColor(themeManager.accentColor)
+        VStack(spacing: 10) {
+            Image(systemName: "wand.and.stars")
+                .font(.system(size: 34))
+                .foregroundColor(themeManager.accentColor)
+                .padding(.bottom, 2)
 
-                Text("No rules yet")
-                    .font(CentwiseTypography.headline)
-                    .foregroundColor(.primary)
+            Text("No rules yet")
+                .font(.headline)
+                .foregroundColor(.primary)
 
-                Text("Rules auto-categorize transactions when the merchant name matches a keyword.")
-                    .font(CentwiseTypography.caption1)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
+            Text("Rules auto-categorize transactions when the merchant name matches a keyword.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 16)
 
-                Button {
-                    showAddSheet = true
-                } label: {
-                    Label("Create Rule", systemImage: "plus")
+            Button {
+                showAddSheet = true
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "plus")
+                        .font(.system(size: 13, weight: .semibold))
+                    Text("Create Rule")
+                        .font(.system(size: 14, weight: .semibold))
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .padding(.top, CentwiseSpacing.xs)
+                .foregroundColor(.white)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 10)
+                .background(themeManager.accentColor)
+                .clipShape(Capsule())
             }
-            .frame(maxWidth: .infinity)
+            .buttonStyle(.plain)
+            .padding(.top, 10)
         }
-        .padding(.horizontal, CentwiseSpacing.md)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 32)
     }
 }

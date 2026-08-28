@@ -33,31 +33,31 @@ public struct TransactionRow: View {
             onTap?()
         }) {
             HStack(spacing: 12) {
-                // Category Icon with Rounded Square
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(colorScheme == .dark ? Color(white: 0.18) : Color(white: 0.92))
-                    .frame(width: 44, height: 44)
-                    .overlay(
-                        Image(systemName: transaction.category.icon)
-                            .font(.system(size: 17, weight: .medium))
-                            .foregroundColor(colorScheme == .dark ? .white : Color(white: 0.35))
-                    )
+                // Category Icon
+                Image(systemName: transaction.category.icon)
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundColor(themeManager.accentColor)
+                    .frame(width: 28, height: 28)
 
                 // Title & Subtitle
                 VStack(alignment: .leading, spacing: 3) {
                     Text(transaction.title)
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.primary)
                         .lineLimit(1)
 
                     HStack(spacing: 4) {
                         Text(transaction.category.name)
-                            .font(.system(size: 13))
+                            .font(.system(size: 12))
                             .foregroundColor(.secondary)
                             .lineLimit(1)
 
+                        Text("•")
+                            .font(.system(size: 10))
+                            .foregroundColor(.secondary)
+
                         Text(transaction.date.formatted(date: .abbreviated, time: .omitted))
-                            .font(.system(size: 13))
+                            .font(.system(size: 12))
                             .foregroundColor(.secondary)
                             .lineLimit(1)
                     }
@@ -68,12 +68,12 @@ public struct TransactionRow: View {
 
                 // Amount
                 Text(formatSignedAmount())
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundColor(transaction.type == .income ? CentwiseColors.incomeGreen : CentwiseColors.expenseRed)
 
                 if showChevron {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundColor(Color(white: 0.7))
                         .padding(.leading, 2)
                 } else if showMenu {
@@ -89,13 +89,13 @@ public struct TransactionRow: View {
                         }
                     } label: {
                         Image(systemName: "ellipsis.circle")
-                            .font(.system(size: 18))
+                            .font(.system(size: 16))
                             .foregroundColor(.secondary)
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.vertical, 6)
+            .padding(.vertical, 4)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

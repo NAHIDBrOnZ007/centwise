@@ -40,14 +40,20 @@ public final class ReviewQueueRepository: ObservableObject {
     public static let shared = ReviewQueueRepository()
 
     @Published public private(set) var items: [ReviewQueueItem] = []
+    private var notificationObservers: [NSObjectProtocol] = []
 
     public init() {
         refresh()
-        NotificationCenter.default.addObserver(
+        notificationObservers.append(NotificationCenter.default.addObserver(
             forName: UIApplication.willEnterForegroundNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in self?.refresh() }
+        )
+    }
+
+    deinit {
+        notificationObservers.forEach { NotificationCenter.default.removeObserver($0) }
     }
 
     public func refresh() {

@@ -173,19 +173,6 @@ public struct SettingsScreen: View {
                         profileManager.setProfile(name: tempName, avatar: tempAvatar)
                     }
                 )
-                .navigationTitle("Edit Profile")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") { showAvatarPicker = false }
-                    }
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Done") {
-                            profileManager.setProfile(name: tempName, avatar: tempAvatar)
-                            showAvatarPicker = false
-                        }
-                    }
-                }
             }
             .presentationDetents([.medium, .large])
         }

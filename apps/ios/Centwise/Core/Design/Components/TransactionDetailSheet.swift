@@ -6,8 +6,6 @@ public struct TransactionDetailSheet: View {
     public var onDelete: (() -> Void)? = nil
 
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
-    @ObservedObject private var themeManager = ThemeManager.shared
     @State private var showDeleteConfirmation = false
 
     public init(
@@ -22,9 +20,8 @@ public struct TransactionDetailSheet: View {
 
     public var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // 1. Hero Amount & Badge
+            List {
+                Section {
                     VStack(spacing: 8) {
                         Text(formatSignedAmount())
                             .font(.system(size: 38, weight: .bold, design: .rounded))
@@ -43,80 +40,39 @@ public struct TransactionDetailSheet: View {
                         .background((transaction.type == .income ? CentwiseColors.incomeGreen : CentwiseColors.expenseRed).opacity(0.12))
                         .cornerRadius(999)
                     }
-                    .padding(.top, 12)
-
-                    // 2. Details Card
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Details")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.secondary)
-                            .padding(.leading, 4)
-
-                        VStack(spacing: 0) {
-                            detailRow(icon: "storefront", title: "Merchant", value: transaction.title)
-                            Divider().padding(.leading, 44)
-                            detailRow(icon: "tag", title: "Category", value: transaction.category.name)
-                            Divider().padding(.leading, 44)
-                            detailRow(icon: "calendar", title: "Date", value: transaction.date.formatted(date: .abbreviated, time: .shortened))
-                            Divider().padding(.leading, 44)
-                            detailRow(icon: "building.columns", title: "Bank", value: transaction.provider.rawValue)
-                            Divider().padding(.leading, 44)
-                            detailRow(icon: "creditcard", title: "Account", value: "••\(transaction.accountId.suffix(4))")
-
-                            if let notes = transaction.notes, !notes.isEmpty {
-                                Divider().padding(.leading, 44)
-                                detailRow(icon: "note.text", title: "Notes", value: notes)
-                            }
-                        }
-                        .background(colorScheme == .dark ? Color(white: 0.12) : Color.white)
-                        .cornerRadius(18)
-                        .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.2 : 0.04), radius: 8, x: 0, y: 2)
-                    }
-                    .padding(.horizontal, 20)
-
-                    // 3. Delete Button Card
-                    Button(action: {
-                        showDeleteConfirmation = true
-                    }) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "trash")
-                                .font(.system(size: 15, weight: .medium))
-                            Text("Delete Transaction")
-                                .font(.system(size: 15, weight: .semibold))
-                        }
-                        .foregroundColor(.red)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(colorScheme == .dark ? Color(white: 0.12) : Color.white)
-                        .cornerRadius(18)
-                        .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.2 : 0.04), radius: 6, x: 0, y: 2)
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .listRowBackground(Color.clear)
                 }
-                .padding(.bottom, 40)
+
+                Section("Details") {
+                    LabeledContent("Merchant", value: transaction.title)
+                    LabeledContent("Category", value: transaction.category.name)
+                    LabeledContent("Date", value: transaction.date.formatted(date: .abbreviated, time: .shortened))
+                    LabeledContent("Bank", value: transaction.provider.rawValue)
+                    LabeledContent("Account", value: "••\(transaction.accountId.suffix(4))")
+
+                    if let notes = transaction.notes, !notes.isEmpty {
+                        LabeledContent("Notes", value: notes)
+                    }
+                }
+
+                Section {
+                    Button("Delete Transaction", role: .destructive) {
+                        showDeleteConfirmation = true
+                    }
+                }
             }
-            .background(colorScheme == .dark ? Color.black : Color(red: 0.97, green: 0.97, blue: 0.98))
+            .listStyle(.insetGrouped)
             .navigationTitle("Details")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(.primary)
-                    }
+                    Button("Close") { dismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        onEdit?()
-                    } label: {
-                        Text("Edit")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundColor(themeManager.accentColor)
+                    if let onEdit {
+                        Button("Edit", action: onEdit)
                     }
                 }
             }

@@ -25,7 +25,6 @@ struct CentwiseApp: App {
                 CentwiseRustBackend.initialize()
                 TransactionRepository.shared.loadFromRust()
                 _ = ReviewQueueRepository.shared
-                CentwiseShortcuts.updateAppShortcutParameters()
                 if appLockManager.appLockEnabled {
                     appLockManager.lockNow()
                 }

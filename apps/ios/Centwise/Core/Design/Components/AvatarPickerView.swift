@@ -24,7 +24,8 @@ public struct AvatarPickerView: View {
     }
 
     public var body: some View {
-        VStack(spacing: CentwiseSpacing.lg) {
+        ScrollView {
+            VStack(spacing: CentwiseSpacing.lg) {
             // Live Selected Avatar Preview
             VStack(spacing: CentwiseSpacing.sm) {
                 ZStack {
@@ -101,18 +102,24 @@ public struct AvatarPickerView: View {
             }
             .padding(.horizontal, CentwiseSpacing.md)
 
-            Spacer()
-
-            if let onSave = onSave {
-                CentwiseButton("Save Profile", variant: .primary, isFullWidth: true) {
-                    onSave()
-                    dismiss()
-                }
-                .padding(.horizontal, CentwiseSpacing.lg)
-                .padding(.bottom, CentwiseSpacing.md)
+                .padding(.bottom, CentwiseSpacing.lg)
             }
         }
-        .padding(.top, CentwiseSpacing.md)
+        .padding(.top, CentwiseSpacing.lg)
         .background(CentwiseColors.background(for: colorScheme, isAmoled: themeManager.isAmoledActive).ignoresSafeArea())
+        .navigationTitle("Edit Profile")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Cancel") { dismiss() }
+            }
+            ToolbarItem(placement: .confirmationAction) {
+                Button("Done") {
+                    onSave?()
+                    dismiss()
+                }
+                .disabled(userName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            }
+        }
     }
 }

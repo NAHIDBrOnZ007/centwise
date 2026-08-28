@@ -27,6 +27,7 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
     @Published public private(set) var budgets: [CategoryBudget] = []
     @Published public private(set) var subscriptions: [RecurringSubscription] = []
     @Published public private(set) var categories: [TransactionCategory] = []
+    private var notificationObservers: [NSObjectProtocol] = []
 
     public init() {
         loadFromRust()
@@ -34,17 +35,23 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
     }
 
     private func setupNotificationObservers() {
-        NotificationCenter.default.addObserver(
+        notificationObservers.append(NotificationCenter.default.addObserver(
             forName: UIApplication.willEnterForegroundNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in self?.loadFromRust() }
+        )
 
-        NotificationCenter.default.addObserver(
+        notificationObservers.append(NotificationCenter.default.addObserver(
             forName: .centwiseTransactionsUpdated,
             object: nil,
             queue: .main
         ) { [weak self] _ in self?.loadFromRust() }
+        )
+    }
+
+    deinit {
+        notificationObservers.forEach { NotificationCenter.default.removeObserver($0) }
     }
 
     public func loadFromRust() {

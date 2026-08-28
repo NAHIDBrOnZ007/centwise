@@ -7,9 +7,7 @@ public struct HomeScreen: View {
     @ObservedObject private var themeManager = ThemeManager.shared
     @ObservedObject private var profileManager = ProfileManager.shared
 
-    @State private var showAddTransaction = false
-    @State private var selectedTransaction: CentwiseTransaction?
-    @State private var editingTransaction: CentwiseTransaction?
+    @State private var presentedSheet: TransactionSheet?
 
     public init(onSeeAllTransactions: (() -> Void)? = nil) {
         self.onSeeAllTransactions = onSeeAllTransactions
@@ -45,27 +43,33 @@ public struct HomeScreen: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    showAddTransaction = true
+                    presentedSheet = .add
                 } label: {
                     Label("Add Transaction", systemImage: "plus")
                 }
             }
         }
-        .sheet(isPresented: $showAddTransaction) {
-            AddEditTransactionView {
-                viewModel.loadHome()
-            }
-        }
-        .sheet(item: $selectedTransaction) { transaction in
-            TransactionDetailSheet(
-                transaction: transaction,
-                onEdit: { editingTransaction = transaction },
-                onDelete: { TransactionRepository.shared.deleteTransaction(id: transaction.id) }
-            )
-        }
-        .sheet(item: $editingTransaction) { transaction in
-            AddEditTransactionView(transactionToEdit: transaction) {
-                viewModel.loadHome()
+        .sheet(item: $presentedSheet) { sheet in
+            switch sheet {
+            case .add:
+                AddEditTransactionView {
+                    viewModel.loadHome()
+                }
+            case .detail(let transaction):
+                TransactionDetailSheet(
+                    transaction: transaction,
+                    onEdit: { presentEdit(afterDismissing: transaction) },
+                    onDelete: {
+                        TransactionRepository.shared.deleteTransaction(id: transaction.id)
+                        presentedSheet = nil
+                    }
+                )
+            case .edit(let transaction):
+                AddEditTransactionView(transactionToEdit: transaction) {
+                    viewModel.loadHome()
+                }
+            case .export:
+                EmptyView()
             }
         }
     }
@@ -122,35 +126,27 @@ public struct HomeScreen: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 28)
             } else {
-                VStack(spacing: 0) {
-                    ForEach(Array(viewModel.recentTransactions.enumerated()), id: \.element.id) { index, transaction in
+                VStack(spacing: 8) {
+                    ForEach(viewModel.recentTransactions) { transaction in
                         TransactionRow(
                             transaction: transaction,
                             showChevron: true,
-                            onTap: { selectedTransaction = transaction }
+                            onTap: { presentedSheet = .detail(transaction) }
                         )
-                        .contextMenu {
-                            Button {
-                                editingTransaction = transaction
-                            } label: {
-                                Label("Edit", systemImage: "pencil")
-                            }
-                            Button(role: .destructive) {
-                                TransactionRepository.shared.deleteTransaction(id: transaction.id)
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
-
-                        if index < viewModel.recentTransactions.count - 1 {
-                            Divider().padding(.leading, 56)
-                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color(uiColor: .secondarySystemGroupedBackground))
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                     }
                 }
-                .padding(.horizontal)
-                .background(Color(uiColor: .secondarySystemGroupedBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
+        }
+    }
+
+    private func presentEdit(afterDismissing transaction: CentwiseTransaction) {
+        presentedSheet = nil
+        DispatchQueue.main.async {
+            presentedSheet = .edit(transaction)
         }
     }
 }

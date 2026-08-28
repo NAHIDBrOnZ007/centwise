@@ -19,15 +19,15 @@ public struct SpendingSummaryCard: View {
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 12) {
             // Label & Hero Amount
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text("Spent this month")
-                    .font(.system(size: 13, weight: .regular))
+                    .font(.system(size: 12, weight: .regular))
                     .foregroundColor(.secondary)
 
                 Text(CurrencyFormatter.shared.formatBDT(monthlyExpense, showSign: false))
-                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
             }
 
@@ -58,9 +58,9 @@ public struct SpendingSummaryCard: View {
                 )
             }
         }
-        .padding(18)
+        .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(colorScheme == .dark ? Color(red: 0.11, green: 0.11, blue: 0.12) : Color(red: 0.97, green: 0.98, blue: 0.98))
         )
     }

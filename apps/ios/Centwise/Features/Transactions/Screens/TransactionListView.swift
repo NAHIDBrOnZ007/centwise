@@ -1,49 +1,76 @@
 import SwiftUI
 
+enum TransactionSheet: Identifiable {
+    case add
+    case detail(CentwiseTransaction)
+    case edit(CentwiseTransaction)
+    case export
+
+    var id: String {
+        switch self {
+        case .add: return "add"
+        case .detail(let transaction): return "detail-\(transaction.id)"
+        case .edit(let transaction): return "edit-\(transaction.id)"
+        case .export: return "export"
+        }
+    }
+}
+
 public struct TransactionListView: View {
     @StateObject private var viewModel = TransactionsViewModel()
     @ObservedObject private var repository = TransactionRepository.shared
     @ObservedObject private var themeManager = ThemeManager.shared
 
-    @State private var showAddTransaction = false
-    @State private var showExportSheet = false
-    @State private var selectedTransaction: CentwiseTransaction?
-    @State private var editingTransaction: CentwiseTransaction?
+    @State private var presentedSheet: TransactionSheet?
 
     public init() {}
 
     public var body: some View {
         List {
-            if !viewModel.filteredTransactions.isEmpty {
-                Section {
-                    TransactionTotalsCard(
-                        income: viewModel.totalIncome,
-                        expense: viewModel.totalExpense,
-                        net: viewModel.totalNet
-                    )
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
-                }
-            }
-
             Section {
-                filterBar
-            }
+                VStack(spacing: 10) {
+                    filterBar
+                    if !viewModel.filteredTransactions.isEmpty {
+                        TransactionTotalsCard(
+                            income: viewModel.totalIncome,
+                            expense: viewModel.totalExpense,
+                            net: viewModel.totalNet
+                        )
+                    }
+                }
+                .listRowInsets(EdgeInsets(top: 6, leading: 0, bottom: 2, trailing: 0))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
 
-            if viewModel.filteredTransactions.isEmpty {
-                Section {
+                if viewModel.filteredTransactions.isEmpty {
                     emptyState
                         .listRowBackground(Color.clear)
-                }
-            } else {
-                ForEach(viewModel.groupedByMonth, id: \.key) { monthGroup in
-                    Section(monthGroup.key) {
+                } else {
+                    ForEach(Array(viewModel.groupedByMonth.enumerated()), id: \.element.key) { index, monthGroup in
+                        Text(monthGroup.key)
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(.secondary)
+                            .textCase(.uppercase)
+                            .padding(.top, index == 0 ? 8 : 14)
+                            .padding(.bottom, 2)
+                            .padding(.leading, 4)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+
                         ForEach(monthGroup.items) { transaction in
                             TransactionRow(
                                 transaction: transaction,
                                 showChevron: true,
-                                onTap: { selectedTransaction = transaction }
+                                onTap: { presentedSheet = .detail(transaction) }
                             )
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .background(Color(uiColor: .secondarySystemGroupedBackground))
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                            .listRowInsets(EdgeInsets(top: 3, leading: 0, bottom: 3, trailing: 0))
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button(role: .destructive) {
                                     viewModel.deleteTransaction(id: transaction.id)
@@ -52,7 +79,7 @@ public struct TransactionListView: View {
                                 }
 
                                 Button {
-                                    editingTransaction = transaction
+                                    presentedSheet = .edit(transaction)
                                 } label: {
                                     Label("Edit", systemImage: "pencil")
                                 }
@@ -76,7 +103,7 @@ public struct TransactionListView: View {
                     }
 
                     Button {
-                        showExportSheet = true
+                        presentedSheet = .export
                     } label: {
                         Label("Export CSV", systemImage: "square.and.arrow.up")
                     }
@@ -86,7 +113,7 @@ public struct TransactionListView: View {
                 }
 
                 Button {
-                    showAddTransaction = true
+                    presentedSheet = .add
                 } label: {
                     Label("Add Transaction", systemImage: "plus")
                 }
@@ -95,30 +122,34 @@ public struct TransactionListView: View {
         .onChange(of: viewModel.sortOrder) { _ in
             viewModel.applyFilters()
         }
-        .sheet(isPresented: $showAddTransaction) {
-            AddEditTransactionView {
-                viewModel.applyFilters()
+        .sheet(item: $presentedSheet) { sheet in
+            switch sheet {
+            case .add:
+                AddEditTransactionView {
+                    viewModel.applyFilters()
+                }
+            case .detail(let transaction):
+                TransactionDetailSheet(
+                    transaction: transaction,
+                    onEdit: { presentEdit(afterDismissing: transaction) },
+                    onDelete: {
+                        viewModel.deleteTransaction(id: transaction.id)
+                        presentedSheet = nil
+                    }
+                )
+            case .edit(let transaction):
+                AddEditTransactionView(transactionToEdit: transaction) {
+                    viewModel.applyFilters()
+                }
+            case .export:
+                CsvExportSheet(transactions: viewModel.filteredTransactions)
             }
-        }
-        .sheet(item: $selectedTransaction) { transaction in
-            TransactionDetailSheet(
-                transaction: transaction,
-                onEdit: { editingTransaction = transaction },
-                onDelete: { viewModel.deleteTransaction(id: transaction.id) }
-            )
-        }
-        .sheet(item: $editingTransaction) { transaction in
-            AddEditTransactionView(transactionToEdit: transaction) {
-                viewModel.applyFilters()
-            }
-        }
-        .sheet(isPresented: $showExportSheet) {
-            CsvExportSheet(transactions: viewModel.filteredTransactions)
         }
     }
 
     private var filterBar: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 8) {
+            // 1. Period Filter
             Menu {
                 Picker("Period", selection: $viewModel.selectedPeriod) {
                     ForEach(DatePeriodFilter.allCases, id: \.self) { period in
@@ -126,9 +157,14 @@ public struct TransactionListView: View {
                     }
                 }
             } label: {
-                Label(viewModel.selectedPeriod.rawValue, systemImage: "calendar")
+                filterChip(
+                    title: viewModel.selectedPeriod.rawValue,
+                    icon: "calendar",
+                    isActive: true
+                )
             }
 
+            // 2. Type Filter
             Menu {
                 Button("All Types") {
                     viewModel.selectedTypeFilter = nil
@@ -141,9 +177,14 @@ public struct TransactionListView: View {
                     }
                 }
             } label: {
-                Label(viewModel.selectedTypeFilter?.rawValue ?? "Type", systemImage: "arrow.up.arrow.down")
+                filterChip(
+                    title: viewModel.selectedTypeFilter?.rawValue ?? "Type",
+                    icon: "line.3.horizontal.decrease",
+                    isActive: viewModel.selectedTypeFilter != nil
+                )
             }
 
+            // 3. Category Filter
             Menu {
                 Button("All Categories") {
                     viewModel.selectedCategoryFilter = nil
@@ -156,12 +197,44 @@ public struct TransactionListView: View {
                     }
                 }
             } label: {
-                Label(selectedCategoryName, systemImage: "square.grid.2x2")
+                filterChip(
+                    title: selectedCategoryName,
+                    icon: "slider.horizontal.3",
+                    isActive: viewModel.selectedCategoryFilter != nil
+                )
             }
         }
-        .font(.subheadline)
-        .buttonStyle(.bordered)
-        .labelStyle(.titleAndIcon)
+        .accessibilityLabel("Transaction filters")
+    }
+
+    private func filterChip(title: String, icon: String, isActive: Bool) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 11, weight: .semibold))
+            Text(title)
+                .font(.system(size: 12, weight: .medium))
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            Image(systemName: "chevron.down")
+                .font(.system(size: 8, weight: .bold))
+                .opacity(0.8)
+        }
+        .foregroundStyle(isActive ? Color.white : Color.primary)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .frame(maxWidth: .infinity)
+        .background(
+            isActive
+                ? themeManager.accentColor
+                : Color(uiColor: .secondarySystemGroupedBackground),
+            in: Capsule()
+        )
+        .overlay {
+            if !isActive {
+                Capsule()
+                    .stroke(Color(uiColor: .separator).opacity(0.45), lineWidth: 1)
+            }
+        }
     }
 
     private var selectedCategoryName: String {
@@ -182,7 +255,7 @@ public struct TransactionListView: View {
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
             Button {
-                showAddTransaction = true
+                presentedSheet = .add
             } label: {
                 Label("Add Transaction", systemImage: "plus")
             }
@@ -192,4 +265,12 @@ public struct TransactionListView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 36)
     }
+
+    private func presentEdit(afterDismissing transaction: CentwiseTransaction) {
+        presentedSheet = nil
+        DispatchQueue.main.async {
+            presentedSheet = .edit(transaction)
+        }
+    }
 }
+

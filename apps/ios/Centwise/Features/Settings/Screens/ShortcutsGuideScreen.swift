@@ -66,17 +66,11 @@ public struct ShortcutsGuideScreen: View {
                             UIApplication.shared.open(url)
                         }
                     }) {
-                        HStack {
-                            Image(systemName: "bolt.fill")
-                            Text("Open Apple Shortcuts App")
-                                .fontWeight(.semibold)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(themeManager.accentColor)
-                        .foregroundColor(.white)
-                        .cornerRadius(14)
+                        Label("Open Apple Shortcuts App", systemImage: "bolt.fill")
                     }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .tint(themeManager.accentColor)
 
                     Text("Tapping above opens Shortcuts directly on your iPhone")
                         .font(CentwiseTypography.caption)
@@ -181,18 +175,14 @@ public struct ShortcutsGuideScreen: View {
                         }
                     }
                 }) {
-                    HStack {
-                        Image(systemName: hasCopiedKeywords ? "checkmark.circle.fill" : "doc.on.doc")
-                        Text(hasCopiedKeywords ? "Copied to Clipboard!" : "Copy All Keywords")
-                            .fontWeight(.semibold)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(hasCopiedKeywords ? CentwiseColors.incomeGreen : themeManager.accentColor.opacity(0.15))
-                    .foregroundColor(hasCopiedKeywords ? .white : themeManager.accentColor)
-                    .cornerRadius(10)
+                    Label(
+                        hasCopiedKeywords ? "Copied to Clipboard!" : "Copy All Keywords",
+                        systemImage: hasCopiedKeywords ? "checkmark.circle.fill" : "doc.on.doc"
+                    )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.bordered)
+                .tint(hasCopiedKeywords ? CentwiseColors.incomeGreen : themeManager.accentColor)
+                .frame(maxWidth: .infinity)
                 .padding(.top, 4)
             }
         }
@@ -252,17 +242,11 @@ public struct ShortcutsGuideScreen: View {
                         testResult = "⚠️ Could not process message."
                     }
                 }) {
-                    HStack {
-                        Image(systemName: "play.circle.fill")
-                        Text("Run Live Test")
-                            .fontWeight(.medium)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(themeManager.accentColor.opacity(0.15))
-                    .foregroundColor(themeManager.accentColor)
-                    .cornerRadius(10)
+                    Label("Run Live Test", systemImage: "play.circle.fill")
                 }
+                .buttonStyle(.bordered)
+                .tint(themeManager.accentColor)
+                .frame(maxWidth: .infinity)
 
                 if let result = testResult {
                     Text(result)

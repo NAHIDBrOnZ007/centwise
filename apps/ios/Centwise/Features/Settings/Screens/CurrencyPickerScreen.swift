@@ -43,25 +43,21 @@ public struct CurrencyPickerScreen: View {
     }
 
     public var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.sm) {
+        List {
+            Section {
                 ForEach(filteredCurrencies) { currency in
                     currencyRow(currency)
                 }
 
                 if filteredCurrencies.isEmpty {
-                    Text("No currencies found")
-                        .font(CentwiseTypography.subheadline)
-                        .foregroundColor(.secondary)
+                    Label("No currencies found", systemImage: "magnifyingglass")
+                        .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity)
-                        .padding(.top, CentwiseSpacing.xl)
+                        .padding(.vertical, CentwiseSpacing.xl)
                 }
             }
-            .padding(.horizontal, CentwiseSpacing.md)
-            .padding(.top, CentwiseSpacing.sm)
-            .padding(.bottom, CentwiseSpacing.xxl)
         }
-        .background(CentwiseColors.background(for: colorScheme, isAmoled: themeManager.isAmoledActive).ignoresSafeArea())
+        .listStyle(.insetGrouped)
         .searchable(text: $searchText, prompt: "Search currency")
         .navigationTitle("Currency")
         .navigationBarTitleDisplayMode(.inline)
@@ -100,19 +96,8 @@ public struct CurrencyPickerScreen: View {
                         .foregroundColor(themeManager.accentColor)
                 }
             }
-            .padding(CentwiseSpacing.mdSm)
-            .background(
-                RoundedRectangle(cornerRadius: CentwiseSpacing.radiusMd, style: .continuous)
-                    .fill(CentwiseColors.surface(for: colorScheme, isAmoled: themeManager.isAmoledActive))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: CentwiseSpacing.radiusMd, style: .continuous)
-                    .strokeBorder(
-                        isSelected ? themeManager.accentColor.opacity(0.5) : CentwiseColors.border(for: colorScheme),
-                        lineWidth: 1
-                    )
-            )
+            .padding(.vertical, CentwiseSpacing.xxs)
         }
-        .buttonStyle(.plain)
+        .tint(themeManager.accentColor)
     }
 }

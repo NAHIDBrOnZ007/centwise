@@ -7,41 +7,13 @@ public struct FAQScreen: View {
     public init() {}
 
     public var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.lg) {
-                faqGroup(
-                    icon: "message.fill",
-                    iconColor: CentwiseColors.transferBlue,
-                    title: "SMS Tracking",
-                    items: smsFAQs
-                )
-
-                faqGroup(
-                    icon: "lock.shield.fill",
-                    iconColor: CentwiseColors.incomeGreen,
-                    title: "Privacy & Data",
-                    items: privacyFAQs
-                )
-
-                faqGroup(
-                    icon: "building.columns.fill",
-                    iconColor: CentwiseColors.rocketPurple,
-                    title: "Accounts & Providers",
-                    items: accountFAQs
-                )
-
-                faqGroup(
-                    icon: "chart.pie.fill",
-                    iconColor: CentwiseColors.nagadOrange,
-                    title: "Budgets & Analytics",
-                    items: budgetFAQs
-                )
-            }
-            .padding(.horizontal, CentwiseSpacing.md)
-            .padding(.top, CentwiseSpacing.sm)
-            .padding(.bottom, CentwiseSpacing.xxl)
+        List {
+            faqSection("SMS Tracking", items: smsFAQs)
+            faqSection("Privacy & Data", items: privacyFAQs)
+            faqSection("Accounts & Providers", items: accountFAQs)
+            faqSection("Budgets & Analytics", items: budgetFAQs)
         }
-        .background(CentwiseColors.background(for: colorScheme, isAmoled: themeManager.isAmoledActive).ignoresSafeArea())
+        .listStyle(.insetGrouped)
         .navigationTitle("FAQ")
         .navigationBarTitleDisplayMode(.inline)
     }
@@ -94,35 +66,16 @@ public struct FAQScreen: View {
 
     // MARK: - Views
 
-    private func faqGroup(icon: String, iconColor: Color, title: String, items: [(String, String)]) -> some View {
-        CentwiseCard {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.sm) {
-                HStack(spacing: CentwiseSpacing.mdSm) {
-                    Image(systemName: icon)
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(iconColor)
-                        .frame(width: 34, height: 34)
-                        .background(Circle().fill(iconColor.opacity(0.12)))
-
-                    Text(title)
-                        .font(CentwiseTypography.headline)
-                        .foregroundColor(.primary)
+    private func faqSection(_ title: String, items: [(String, String)]) -> some View {
+        Section(title) {
+            ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+                DisclosureGroup(item.0) {
+                    Text(item.1)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .padding(.vertical, CentwiseSpacing.xxs)
                 }
-
-                ForEach(Array(items.enumerated()), id: \.offset) { _, item in
-                    DisclosureGroup {
-                        Text(item.1)
-                            .font(CentwiseTypography.subheadline)
-                            .foregroundColor(.secondary)
-                            .padding(.vertical, CentwiseSpacing.xxs)
-                    } label: {
-                        Text(item.0)
-                            .font(CentwiseTypography.bodyMedium)
-                            .foregroundColor(.primary)
-                            .multilineTextAlignment(.leading)
-                    }
-                    .tint(themeManager.accentColor)
-                }
+                .tint(themeManager.accentColor)
             }
         }
     }

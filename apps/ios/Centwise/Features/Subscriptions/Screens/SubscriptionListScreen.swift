@@ -3,17 +3,14 @@ import SwiftUI
 public struct SubscriptionListScreen: View {
     @ObservedObject private var repository = TransactionRepository.shared
     @ObservedObject private var themeManager = ThemeManager.shared
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.isAmoledActive) private var isAmoled
 
     @State private var showAddSubscription = false
 
     public init() {}
 
     public var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.lg) {
-                // Total Monthly Commitments Card
+        List {
+            Section {
                 let totalMonthly = repository.subscriptions.filter { $0.isActive }.reduce(0) { $0 + $1.amount }
 
                 CentwiseCard {
@@ -33,32 +30,25 @@ public struct SubscriptionListScreen: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.vertical, CentwiseSpacing.xs)
                 }
-                .padding(.horizontal, CentwiseSpacing.md)
-                .padding(.top, CentwiseSpacing.xs)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
 
-                // Subscriptions List
-                VStack(alignment: .leading, spacing: CentwiseSpacing.sm) {
-                    HStack {
-                        Text("Your Subscriptions")
-                            .font(CentwiseTypography.headline)
-                            .foregroundColor(.primary)
-                        Spacer()
-                    }
-                    .padding(.horizontal, CentwiseSpacing.md)
+            }
 
-                    CentwiseCard {
-                        ForEach(Array(repository.subscriptions.enumerated()), id: \.element.id) { idx, sub in
-                            HStack(spacing: CentwiseSpacing.mdSm) {
-                                Circle()
-                                    .fill(sub.provider.brandColor.opacity(0.15))
-                                    .frame(width: 40, height: 40)
-                                    .overlay(
-                                        Image(systemName: sub.icon)
-                                            .font(.system(size: 16, weight: .semibold))
-                                            .foregroundColor(sub.provider.brandColor)
-                                    )
+            Section("Your Subscriptions") {
+                ForEach(repository.subscriptions) { sub in
+                    NavigationLink {
+                        AddEditSubscriptionScreen(editingSubscription: sub) { updated in
+                            repository.updateSubscription(updated)
+                        }
+                    } label: {
+                        HStack(spacing: CentwiseSpacing.mdSm) {
+                            Image(systemName: sub.icon)
+                                .font(.system(size: 18, weight: .regular))
+                                .foregroundColor(themeManager.accentColor)
+                                .frame(width: 28, height: 28)
 
-                                VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
+                            VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
                                     Text(sub.name)
                                         .font(CentwiseTypography.bodyMedium)
                                         .foregroundColor(.primary)
@@ -79,20 +69,20 @@ public struct SubscriptionListScreen: View {
                                         .font(CentwiseTypography.caption2)
                                         .foregroundColor(.secondary)
                                 }
-                            }
-                            .padding(.vertical, CentwiseSpacing.xs)
-
-                            if idx < repository.subscriptions.count - 1 {
-                                Divider()
-                            }
+                        }
+                        .padding(.vertical, CentwiseSpacing.xxs)
+                    }
+                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                        Button(role: .destructive) {
+                            repository.deleteSubscription(id: sub.id)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
                         }
                     }
-                    .padding(.horizontal, CentwiseSpacing.md)
                 }
             }
-            .padding(.bottom, 80)
         }
-        .background(CentwiseColors.background(for: colorScheme, isAmoled: isAmoled).ignoresSafeArea())
+        .listStyle(.insetGrouped)
         .navigationTitle("Subscriptions")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

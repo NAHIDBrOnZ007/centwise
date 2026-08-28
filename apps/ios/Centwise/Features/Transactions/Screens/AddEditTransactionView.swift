@@ -19,7 +19,6 @@ public struct AddEditTransactionView: View {
     @State private var selectedProvider: FinancialProvider = .cash
     @State private var date: Date = Date()
     @State private var notes: String = ""
-    @State private var accounts: [FinancialAccount] = TransactionRepository.shared.accounts
     @State private var saveError: String?
 
     public init(
@@ -70,7 +69,7 @@ public struct AddEditTransactionView: View {
 
                 // Basic Details
                 Section(header: Text("Details")) {
-                    TextField("Merchant / Title (e.g. Foodpanda)", text: $title)
+                TextField("Merchant / Title (e.g. Foodpanda)", text: $title)
 
                     Picker("Category", selection: $selectedCategory) {
                         ForEach(repository.categories) { cat in
@@ -85,7 +84,7 @@ public struct AddEditTransactionView: View {
                     Picker("Account / Wallet", selection: $selectedAccountId) {
                         Label("Cash / Unassigned", systemImage: "banknote")
                             .tag("")
-                        ForEach(accounts) { account in
+                        ForEach(repository.accounts) { account in
                             Label(account.name, systemImage: account.type.defaultIcon)
                                 .tag(account.id)
                         }
@@ -133,8 +132,6 @@ public struct AddEditTransactionView: View {
                 }
             }
             .onAppear {
-                accounts = repository.accounts
-
                 if let tx = transactionToEdit {
                     title = tx.title
                     amountString = String(format: "%.2f", tx.amount)
@@ -152,11 +149,23 @@ public struct AddEditTransactionView: View {
     }
 
     private func saveTransaction() {
-        guard let amount = Double(amountString),
-              !title.isEmpty
-        else { return }
+        let normalizedAmount = amountString
+            .replacingOccurrences(of: ",", with: ".")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let amount = Double(normalizedAmount), amount > 0 else {
+            saveError = "Enter an amount greater than zero."
+            return
+        }
+        guard !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            saveError = "Enter a merchant or transaction title."
+            return
+        }
+        guard repository.categories.contains(where: { $0.id == selectedCategory.id }) else {
+            saveError = "Choose a valid category and try again."
+            return
+        }
 
-        let chosenAccount = accounts.first { $0.id == selectedAccountId } ?? FinancialAccount(
+        let chosenAccount = repository.accounts.first { $0.id == selectedAccountId } ?? FinancialAccount(
             id: "",
             name: selectedProvider == .cash ? "Cash / Unassigned" : selectedProvider.rawValue,
             provider: selectedProvider,
@@ -167,6 +176,10 @@ public struct AddEditTransactionView: View {
         let saved: Bool
 
         if let existing = transactionToEdit {
+            guard !chosenAccount.id.isEmpty else {
+                saveError = "Choose an existing account when editing a transaction."
+                return
+            }
             var updated = existing
             updated.title = title
             updated.amount = amount

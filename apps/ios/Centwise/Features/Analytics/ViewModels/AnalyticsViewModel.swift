@@ -190,5 +190,20 @@ public final class AnalyticsViewModel: ObservableObject {
             return TrendPoint(label: formatter.string(from: monthDate), value: monthTotal)
         }
     }
+
+    public func transactions(forCategory categoryId: String) -> [CentwiseTransaction] {
+        let range = selectedPeriod.dateRange
+        return repository.transactions.filter { tx in
+            tx.date >= range.start && tx.date <= range.end && tx.category.id == categoryId
+        }.sorted { $0.date > $1.date }
+    }
+
+    public func transactions(forMerchant merchantName: String) -> [CentwiseTransaction] {
+        let range = selectedPeriod.dateRange
+        return repository.transactions.filter { tx in
+            tx.date >= range.start && tx.date <= range.end &&
+            (tx.title.components(separatedBy: " - ").first ?? tx.title) == merchantName
+        }.sorted { $0.date > $1.date }
+    }
 }
 
