@@ -40,7 +40,7 @@ public struct DataManagementScreen: View {
                 recordRow("Subscriptions", count: repository.subscriptions.count, icon: "arrow.triangle.2.circlepath")
             }
 
-            Section("Data & Backup") {
+            Section {
                 Button {
                     showLoadDemoAlert = true
                 } label: {
@@ -52,6 +52,8 @@ public struct DataManagementScreen: View {
                 } label: {
                     Label("Export Data to CSV", systemImage: "square.and.arrow.up")
                 }
+            } header: {
+                Text("Data & Backup")
             } footer: {
                 Text("Demo data adds sample transactions, accounts, budgets, and subscriptions. Export creates a local CSV file.")
             }
