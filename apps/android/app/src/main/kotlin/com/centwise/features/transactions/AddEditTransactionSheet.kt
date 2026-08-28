@@ -45,7 +45,7 @@ import com.centwise.features.settings.AppearancePrefs
 fun AddEditTransactionSheet(
     initialTransaction: TransactionItem? = null,
     onDismiss: () -> Unit,
-    onSave: (TransactionItem) -> Unit,
+    onSave: (TransactionItem) -> Boolean,
     isDark: Boolean = isSystemInDarkTheme()
 ) {
     var title by remember { mutableStateOf(initialTransaction?.title ?: "") }
@@ -61,7 +61,12 @@ fun AddEditTransactionSheet(
     var selectedPaymentMethod by remember { mutableStateOf(initialTransaction?.paymentMethod ?: "bKash") }
 
     val categories by TransactionRepository.shared.categories.collectAsState()
-    val paymentMethods = listOf("bKash", "Nagad", "Rocket", "BRAC Bank", "City Bank", "Cash")
+    val accounts by TransactionRepository.shared.accounts.collectAsState()
+    val paymentMethods = remember(accounts) {
+        (accounts.filterNot { it.archived }.map { it.name } +
+            listOf("Cash", "bKash", "Nagad", "Rocket", "Upay", "CellFin", "BRAC Bank", "City Bank"))
+            .distinct()
+    }
 
     LaunchedEffect(categories, initialTransaction) {
         if (initialTransaction != null) {
@@ -285,18 +290,21 @@ fun AddEditTransactionSheet(
                 onClick = {
                     val amount = amountText.toDoubleOrNull() ?: 0.0
                     if (amount > 0 && title.isNotBlank()) {
-                        onSave(
+                        val saved = onSave(
                             TransactionItem(
+                                id = initialTransaction?.id ?: java.util.UUID.randomUUID().toString(),
                                 title = title,
                                 amount = amount,
                                 type = selectedType,
                                 category = selectedCategory,
                                 paymentMethod = selectedPaymentMethod,
+                                timestamp = initialTransaction?.timestamp ?: System.currentTimeMillis(),
+                                note = initialTransaction?.note,
                                 reference = initialTransaction?.reference,
                                 rawSms = initialTransaction?.rawSms
                             )
                         )
-                        onDismiss()
+                        if (saved) onDismiss()
                     }
                 },
                 modifier = Modifier
@@ -325,6 +333,6 @@ fun AddEditTransactionSheet(
 fun AddEditTransactionSheetPreview() {
     AddEditTransactionSheet(
         onDismiss = {},
-        onSave = {}
+        onSave = { true }
     )
 }

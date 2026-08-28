@@ -45,8 +45,11 @@ class ReviewQueueRepository private constructor() {
         if (CentwiseRustBackend.dismissReviewQueueItem(id)) refresh()
     }
 
-    fun confirmAsTransaction(item: ReviewQueueItem, transaction: TransactionItem) {
-        if (CentwiseRustBackend.convertReviewQueueItem(item.id, transaction)) refresh()
+    fun confirmAsTransaction(item: ReviewQueueItem, transaction: TransactionItem): Boolean {
+        if (!CentwiseRustBackend.convertReviewQueueItem(item.id, transaction)) return false
+        refresh()
+        TransactionRepository.shared.loadFromRust()
+        return true
     }
 
     companion object {

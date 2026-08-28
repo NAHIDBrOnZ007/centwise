@@ -17,6 +17,7 @@ public struct SpendingTrendsChart: View {
 
     @Environment(\.colorScheme) private var colorScheme
     @ObservedObject private var themeManager = ThemeManager.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var appeared = false
 
     public init(points: [TrendPoint]) {
@@ -75,11 +76,24 @@ public struct SpendingTrendsChart: View {
                 }
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Spending trends")
+        .accessibilityValue(accessibilitySummary)
         .onAppear {
-            withAnimation(.easeOut(duration: 0.6)) {
+            if reduceMotion {
                 appeared = true
+            } else {
+                withAnimation(.easeOut(duration: 0.35)) {
+                    appeared = true
+                }
             }
         }
+    }
+
+    private var accessibilitySummary: String {
+        points.map {
+            "\($0.label): \(CurrencyFormatter.shared.formatBDT($0.value, showSign: false))"
+        }.joined(separator: ", ")
     }
 
     private func barColumn(_ point: TrendPoint) -> some View {

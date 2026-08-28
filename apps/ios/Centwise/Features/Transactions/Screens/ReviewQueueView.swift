@@ -2,30 +2,27 @@ import SwiftUI
 
 public struct ReviewQueueView: View {
     @ObservedObject private var repository = ReviewQueueRepository.shared
-    @Environment(\.colorScheme) private var colorScheme
-    @Environment(\.dismiss) private var dismiss
-    @ObservedObject private var themeManager = ThemeManager.shared
-
     @State private var itemToConvert: ReviewQueueItem?
 
     public init() {}
 
     public var body: some View {
-        ScrollView {
+        List {
             if repository.items.isEmpty {
                 emptyState
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
             } else {
-                LazyVStack(spacing: CentwiseSpacing.md) {
+                Section {
                     ForEach(repository.items) { item in
-                        queueCard(item)
+                        queueRow(item)
                     }
+                } footer: {
+                    Text("Raw SMS stays on this device and is shown only to help you verify the transaction.")
                 }
-                .padding(.horizontal, CentwiseSpacing.md)
-                .padding(.top, CentwiseSpacing.sm)
-                .padding(.bottom, CentwiseSpacing.xxl)
             }
         }
-        .background(CentwiseColors.background(for: colorScheme, isAmoled: themeManager.isAmoledActive).ignoresSafeArea())
+        .listStyle(.insetGrouped)
         .navigationTitle("Review Queue")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -36,14 +33,13 @@ public struct ReviewQueueView: View {
                         .foregroundColor(CentwiseColors.incomeGreen)
                 } else {
                     Text("\(repository.items.count) pending")
-                        .font(CentwiseTypography.caption1)
-                        .foregroundColor(.secondary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
         .sheet(item: $itemToConvert) { item in
-            let defaultAccount = TransactionRepository.shared.accounts.first
-                ?? FinancialAccount(name: item.sender, provider: .bkash, type: .mfs, currentBalance: 0.0)
+            let provider = provider(for: item.sender)
             AddEditTransactionView(
                 transactionToEdit: CentwiseTransaction(
                     title: item.candidateParty ?? "\(item.sender) Transaction",
@@ -51,14 +47,12 @@ public struct ReviewQueueView: View {
                     type: item.candidateType ?? .expense,
                     category: TransactionRepository.shared.category(id: "other"),
                     date: item.timestamp,
-                    accountId: defaultAccount.id,
-                    accountName: defaultAccount.name,
-                    provider: defaultAccount.provider,
+                    accountId: "",
+                    accountName: provider == .cash ? "Cash / Unassigned" : provider.rawValue,
+                    provider: provider,
                     rawSmsBody: item.rawSms,
                     transactionReference: item.reference
                 ),
-                onSave: {
-                },
                 writesToRepository: false,
                 onCommit: { transaction in
                     repository.confirmAsTransaction(item: item, transaction: transaction)
@@ -68,111 +62,80 @@ public struct ReviewQueueView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: CentwiseSpacing.md) {
-            ZStack {
-                Circle()
-                    .fill(CentwiseColors.incomeGreen.opacity(0.12))
-                    .frame(width: 72, height: 72)
-
-                Image(systemName: "tray.fill")
-                    .font(.system(size: 32))
-                    .foregroundColor(CentwiseColors.incomeGreen)
-            }
-            .padding(.top, CentwiseSpacing.xxl)
+        VStack(spacing: 12) {
+            Image(systemName: "checkmark.circle")
+                .font(.largeTitle)
+                .foregroundStyle(CentwiseColors.incomeGreen)
 
             Text("All Caught Up!")
-                .font(CentwiseTypography.title2)
-                .foregroundColor(.primary)
+                .font(.title2.weight(.semibold))
 
             Text("No pending SMS messages in your review queue. Financial SMS messages via Shortcuts or Share sheet are automatically converted into transactions.")
-                .font(CentwiseTypography.subheadline)
-                .foregroundColor(.secondary)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, CentwiseSpacing.xl)
         }
         .frame(maxWidth: .infinity, minHeight: 320)
-        .padding(.vertical, CentwiseSpacing.xxl)
+        .padding(.vertical, 32)
     }
 
-    private func queueCard(_ item: ReviewQueueItem) -> some View {
-        CentwiseCard {
-            VStack(alignment: .leading, spacing: CentwiseSpacing.sm) {
-                // Header
-                HStack {
-                    Text(item.sender)
-                        .font(CentwiseTypography.caption1)
-                        .fontWeight(.semibold)
-                        .foregroundColor(CentwiseColors.primaryEmerald)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(
-                            RoundedRectangle(cornerRadius: 6)
-                                .fill(CentwiseColors.primaryEmerald.opacity(0.12))
-                        )
+    private func queueRow(_ item: ReviewQueueItem) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(item.sender)
+                    .font(.headline)
 
-                    Text(item.timestamp, format: .dateTime.day().month().hour().minute())
-                        .font(CentwiseTypography.caption2)
-                        .foregroundColor(.secondary)
+                Spacer()
 
-                    Spacer()
+                Text(item.timestamp, format: .dateTime.day().month().hour().minute())
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
 
-                    Text(item.reason)
-                        .font(CentwiseTypography.caption2)
-                        .foregroundColor(.secondary)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.primary.opacity(0.05))
-                        )
+            Text(item.reason)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Text(item.rawSms)
+                .font(.system(.caption, design: .monospaced))
+                .textSelection(.enabled)
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color(uiColor: .secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 8))
+                .accessibilityLabel("SMS content")
+
+            HStack {
+                Button("Dismiss", role: .destructive) {
+                    repository.dismissItem(id: item.id)
                 }
+                .buttonStyle(.bordered)
 
-                // Monospace raw message box
-                Text(item.rawSms)
-                    .font(.system(size: 12, weight: .regular, design: .monospaced))
-                    .foregroundColor(.primary)
-                    .padding(10)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(colorScheme == .dark ? Color.white.opacity(0.06) : Color.black.opacity(0.04))
-                    )
+                Spacer()
 
-                // Action Buttons
-                HStack(spacing: CentwiseSpacing.sm) {
-                    Button(action: {
-                        repository.dismissItem(id: item.id)
-                    }) {
-                        Label("Dismiss", systemImage: "xmark")
-                            .font(CentwiseTypography.caption1)
-                            .foregroundColor(.secondary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                            )
-                    }
-                    .buttonStyle(.plain)
-
-                    Button(action: {
-                        itemToConvert = item
-                    }) {
-                        Label("Convert to Tx", systemImage: "square.and.pencil")
-                            .font(CentwiseTypography.caption1)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(CentwiseColors.primaryEmerald)
-                            )
-                    }
-                    .buttonStyle(.plain)
+                Button {
+                    itemToConvert = item
+                } label: {
+                    Label("Convert", systemImage: "square.and.pencil")
                 }
-                .padding(.top, 4)
+                .buttonStyle(.borderedProminent)
+                .tint(CentwiseColors.primaryEmerald)
             }
         }
+        .padding(.vertical, 4)
+    }
+
+    private func provider(for sender: String) -> FinancialProvider {
+        let normalized = sender.lowercased()
+        if normalized.contains("bkash") { return .bkash }
+        if normalized.contains("nagad") { return .nagad }
+        if normalized.contains("rocket") { return .rocket }
+        if normalized.contains("upay") { return .upay }
+        if normalized.contains("cellfin") { return .cellfin }
+        if normalized.contains("dutch") || normalized.contains("dbbl") { return .dutchBangla }
+        if normalized.contains("city") { return .cityBank }
+        if normalized.contains("brac") { return .bracBank }
+        if normalized.contains("eastern") || normalized.contains("ebl") { return .easternBank }
+        if normalized.contains("standard chartered") || normalized.contains("scb") { return .standardChartered }
+        return normalized.contains("cash") ? .cash : .other
     }
 }

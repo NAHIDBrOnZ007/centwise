@@ -70,6 +70,72 @@ impl<'a> Queries<'a> {
         Ok(balance.unwrap_or(0))
     }
 
+    pub fn account_exists(&self, account_id: &str) -> DbResult<bool> {
+        let exists: i64 = self.connection.query_row(
+            "SELECT EXISTS(SELECT 1 FROM accounts WHERE id = ?1)",
+            params![account_id],
+            |row| row.get(0),
+        )?;
+        Ok(exists != 0)
+    }
+
+    /// Reuses one unambiguous active account or creates a deterministic account.
+    /// Callers run this inside the same database write as transaction insertion.
+    pub fn resolve_or_create_account(
+        &self,
+        provider_id: &str,
+        account_last4: Option<&str>,
+        preferred_name: &str,
+    ) -> DbResult<String> {
+        let provider = normalize_account_component(provider_id);
+        let provider = if provider.is_empty() {
+            "cash".to_string()
+        } else {
+            provider
+        };
+        let last_four = account_last4
+            .map(normalize_account_component)
+            .filter(|value| !value.is_empty());
+        let matches = self.find_matching_accounts(&provider, last_four.as_deref())?;
+
+        match matches.as_slice() {
+            [account] => return Ok(account.id.clone()),
+            [] => {}
+            _ => {
+                return Err(DbError::Invalid(format!(
+                    "multiple active {provider} accounts require an explicit account"
+                )))
+            }
+        }
+
+        let id = if provider == "cash" && last_four.is_none() {
+            "system-cash".to_string()
+        } else {
+            format!(
+                "auto-{provider}-{}",
+                last_four.as_deref().unwrap_or("wallet")
+            )
+        };
+
+        if self.account_exists(&id)? {
+            self.connection.execute(
+                "UPDATE accounts SET archived = 0 WHERE id = ?1",
+                params![id],
+            )?;
+            return Ok(id);
+        }
+
+        self.insert_account(&Account {
+            id: id.clone(),
+            name: preferred_name.to_string(),
+            provider,
+            last_four,
+            balance_minor: 0,
+            archived: false,
+        })?;
+        Ok(id)
+    }
+
     /// All accounts, active first, ordered by name.
     pub fn list_accounts(&self) -> DbResult<Vec<AccountSummary>> {
         let mut statement = self.connection.prepare(
@@ -120,4 +186,23 @@ impl<'a> Queries<'a> {
 
         collect(rows)
     }
+}
+
+fn normalize_account_component(value: &str) -> String {
+    let mut normalized = String::new();
+    let mut pending_separator = false;
+
+    for character in value.chars().flat_map(char::to_lowercase) {
+        if character.is_ascii_alphanumeric() {
+            if pending_separator && !normalized.is_empty() {
+                normalized.push('-');
+            }
+            normalized.push(character);
+            pending_separator = false;
+        } else if !normalized.is_empty() {
+            pending_separator = true;
+        }
+    }
+
+    normalized
 }

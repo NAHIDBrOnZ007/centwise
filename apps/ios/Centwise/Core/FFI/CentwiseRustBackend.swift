@@ -243,7 +243,8 @@ enum CentwiseRustBackend {
     }
 
     private static func transactionInput(_ transaction: CentwiseTransaction) -> TransactionInput {
-        TransactionInput(
+        let account = TransactionRepository.shared.accounts.first { $0.id == transaction.accountId }
+        return TransactionInput(
             id: transaction.id,
             title: transaction.title,
             amountMinor: Int64(transaction.amount * 100),
@@ -252,6 +253,9 @@ enum CentwiseRustBackend {
             categoryId: transaction.category.id,
             occurredAtEpochMs: Int64(transaction.date.timeIntervalSince1970 * 1000),
             accountId: transaction.accountId,
+            accountProvider: canonicalProvider(transaction.provider),
+            accountName: transaction.accountName,
+            accountLastFour: account.flatMap(\.lastFourDigits).map { String($0.suffix(4)) },
             reference: transaction.transactionReference,
             balanceAfterMinor: transaction.balanceAfter.map { Int64($0 * 100) },
             feeMinor: nil,
@@ -278,11 +282,15 @@ enum CentwiseRustBackend {
         case .bkash: return "bkash"
         case .nagad: return "nagad"
         case .rocket: return "rocket"
+        case .upay: return "upay"
+        case .cellfin: return "cellfin"
+        case .cash: return "cash"
         case .dutchBangla: return "dbbl"
         case .cityBank: return "city-bank"
         case .bracBank: return "brac-bank"
         case .easternBank: return "ebl"
-        default: return "banks-generic"
+        case .standardChartered: return "standard-chartered"
+        case .other: return "banks-generic"
         }
     }
 }

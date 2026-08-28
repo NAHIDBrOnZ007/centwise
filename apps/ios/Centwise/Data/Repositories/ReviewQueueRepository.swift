@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import UIKit
 
 public struct ReviewQueueItem: Identifiable, Equatable {
     public let id: String
@@ -42,6 +43,11 @@ public final class ReviewQueueRepository: ObservableObject {
 
     public init() {
         refresh()
+        NotificationCenter.default.addObserver(
+            forName: UIApplication.willEnterForegroundNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in self?.refresh() }
     }
 
     public func refresh() {
@@ -80,10 +86,13 @@ public final class ReviewQueueRepository: ObservableObject {
         }
     }
 
-    public func confirmAsTransaction(item: ReviewQueueItem, transaction: CentwiseTransaction) {
-        if CentwiseRustBackend.convertReviewQueueItem(id: item.id, transaction: transaction) {
-            refresh()
-            TransactionRepository.shared.loadFromRust()
+    @discardableResult
+    public func confirmAsTransaction(item: ReviewQueueItem, transaction: CentwiseTransaction) -> Bool {
+        guard CentwiseRustBackend.convertReviewQueueItem(id: item.id, transaction: transaction) else {
+            return false
         }
+        refresh()
+        TransactionRepository.shared.loadFromRust()
+        return true
     }
 }

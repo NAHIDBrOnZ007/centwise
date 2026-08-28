@@ -1,5 +1,5 @@
 [versions]
-agp = "9.2.0"
+agp = "9.3.2"
 kotlin = "2.2.10"
 compose-bom = "2025.01.00"
 core-ktx = "1.15.0"

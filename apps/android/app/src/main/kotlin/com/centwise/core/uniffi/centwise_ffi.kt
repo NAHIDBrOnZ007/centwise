@@ -3060,6 +3060,9 @@ data class TransactionInput (
     val `categoryId`: kotlin.String, 
     val `occurredAtEpochMs`: kotlin.Long, 
     val `accountId`: kotlin.String, 
+    val `accountProvider`: kotlin.String?,
+    val `accountName`: kotlin.String?,
+    val `accountLastFour`: kotlin.String?,
     val `reference`: kotlin.String?, 
     val `balanceAfterMinor`: kotlin.Long?, 
     val `feeMinor`: kotlin.Long?, 
@@ -3086,6 +3089,9 @@ public object FfiConverterTypeTransactionInput: FfiConverterRustBuffer<Transacti
             FfiConverterLong.read(buf),
             FfiConverterString.read(buf),
             FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterOptionalString.read(buf),
             FfiConverterOptionalLong.read(buf),
             FfiConverterOptionalLong.read(buf),
             FfiConverterOptionalString.read(buf),
@@ -3103,6 +3109,9 @@ public object FfiConverterTypeTransactionInput: FfiConverterRustBuffer<Transacti
             FfiConverterString.allocationSize(value.`categoryId`) +
             FfiConverterLong.allocationSize(value.`occurredAtEpochMs`) +
             FfiConverterString.allocationSize(value.`accountId`) +
+            FfiConverterOptionalString.allocationSize(value.`accountProvider`) +
+            FfiConverterOptionalString.allocationSize(value.`accountName`) +
+            FfiConverterOptionalString.allocationSize(value.`accountLastFour`) +
             FfiConverterOptionalString.allocationSize(value.`reference`) +
             FfiConverterOptionalLong.allocationSize(value.`balanceAfterMinor`) +
             FfiConverterOptionalLong.allocationSize(value.`feeMinor`) +
@@ -3120,6 +3129,9 @@ public object FfiConverterTypeTransactionInput: FfiConverterRustBuffer<Transacti
             FfiConverterString.write(value.`categoryId`, buf)
             FfiConverterLong.write(value.`occurredAtEpochMs`, buf)
             FfiConverterString.write(value.`accountId`, buf)
+            FfiConverterOptionalString.write(value.`accountProvider`, buf)
+            FfiConverterOptionalString.write(value.`accountName`, buf)
+            FfiConverterOptionalString.write(value.`accountLastFour`, buf)
             FfiConverterOptionalString.write(value.`reference`, buf)
             FfiConverterOptionalLong.write(value.`balanceAfterMinor`, buf)
             FfiConverterOptionalLong.write(value.`feeMinor`, buf)
@@ -3841,5 +3853,4 @@ public object FfiConverterSequenceTypeTransactionSummaryRecord: FfiConverterRust
     )
     }
     
-
 

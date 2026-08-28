@@ -102,17 +102,23 @@ public struct OnboardingScreen: View {
                         }
 
                         if currentPage < 3 {
-                            CentwiseButton("Continue", variant: .primary, isFullWidth: true) {
+                            Button("Continue") {
                                 themeManager.triggerHapticFeedback(.light)
                                 withAnimation {
                                     currentPage += 1
                                 }
                             }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.large)
+                            .frame(maxWidth: .infinity)
                         } else {
-                            CentwiseButton("Get Started with Centwise", variant: .primary, isFullWidth: true) {
+                            Button("Get Started with Centwise") {
                                 themeManager.triggerHapticFeedback(.success)
                                 saveProfileAndFinish()
                             }
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.large)
+                            .frame(maxWidth: .infinity)
                         }
                     }
                 }

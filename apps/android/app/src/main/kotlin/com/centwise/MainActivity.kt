@@ -364,8 +364,11 @@ fun CentwiseApp(
             AddEditTransactionSheet(
                 onDismiss = { showAddSheet = false },
                 onSave = { tx ->
-                    TransactionRepository.shared.addTransaction(tx)
-                    com.centwise.core.notifications.CentwiseNotifications.notifyNewTransaction(context, tx)
+                    val saved = TransactionRepository.shared.addTransaction(tx)
+                    if (saved) {
+                        com.centwise.core.notifications.CentwiseNotifications.notifyNewTransaction(context, tx)
+                    }
+                    saved
                 },
                 isDark = effectiveDark
             )

@@ -4,7 +4,7 @@ public struct AddEditTransactionView: View {
     public var transactionToEdit: CentwiseTransaction?
     public var onSave: (() -> Void)?
     public var writesToRepository: Bool
-    public var onCommit: ((CentwiseTransaction) -> Void)?
+    public var onCommit: ((CentwiseTransaction) -> Bool)?
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
@@ -15,16 +15,18 @@ public struct AddEditTransactionView: View {
     @State private var selectedType: TransactionType = .expense
     @ObservedObject private var repository = TransactionRepository.shared
     @State private var selectedCategory: TransactionCategory = TransactionRepository.shared.category(id: "food")
-    @State private var selectedAccountIndex: Int = 0
+    @State private var selectedAccountId: String = ""
+    @State private var selectedProvider: FinancialProvider = .cash
     @State private var date: Date = Date()
     @State private var notes: String = ""
     @State private var accounts: [FinancialAccount] = TransactionRepository.shared.accounts
+    @State private var saveError: String?
 
     public init(
         transactionToEdit: CentwiseTransaction? = nil,
         onSave: (() -> Void)? = nil,
         writesToRepository: Bool = true,
-        onCommit: ((CentwiseTransaction) -> Void)? = nil
+        onCommit: ((CentwiseTransaction) -> Bool)? = nil
     ) {
         self.transactionToEdit = transactionToEdit
         self.onSave = onSave
@@ -80,10 +82,20 @@ public struct AddEditTransactionView: View {
                         }
                     }
 
-                    if !accounts.isEmpty {
-                        Picker("Account / Wallet", selection: $selectedAccountIndex) {
-                            ForEach(0..<accounts.count, id: \.self) { idx in
-                                Text(accounts[idx].name).tag(idx)
+                    Picker("Account / Wallet", selection: $selectedAccountId) {
+                        Label("Cash / Unassigned", systemImage: "banknote")
+                            .tag("")
+                        ForEach(accounts) { account in
+                            Label(account.name, systemImage: account.type.defaultIcon)
+                                .tag(account.id)
+                        }
+                    }
+
+                    if selectedAccountId.isEmpty {
+                        Picker("Create Account As", selection: $selectedProvider) {
+                            ForEach(FinancialProvider.allCases) { provider in
+                                Label(provider.rawValue, systemImage: provider.icon)
+                                    .tag(provider)
                             }
                         }
                     }
@@ -94,6 +106,13 @@ public struct AddEditTransactionView: View {
                 // Notes
                 Section(header: Text("Notes (Optional)")) {
                     TextField("Add notes or tags...", text: $notes)
+                }
+
+                if let saveError {
+                    Section {
+                        Label(saveError, systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.red)
+                    }
                 }
             }
             .navigationTitle(transactionToEdit == nil ? "New Transaction" : "Edit Transaction")
@@ -114,6 +133,8 @@ public struct AddEditTransactionView: View {
                 }
             }
             .onAppear {
+                accounts = repository.accounts
+
                 if let tx = transactionToEdit {
                     title = tx.title
                     amountString = String(format: "%.2f", tx.amount)
@@ -121,6 +142,8 @@ public struct AddEditTransactionView: View {
                     selectedCategory = tx.category
                     date = tx.date
                     notes = tx.notes ?? ""
+                    selectedAccountId = tx.accountId
+                    selectedProvider = tx.provider
                 } else if let firstCategory = repository.categories.first {
                     selectedCategory = firstCategory
                 }
@@ -129,23 +152,19 @@ public struct AddEditTransactionView: View {
     }
 
     private func saveTransaction() {
-        guard let amount = Double(amountString), !title.isEmpty else { return }
+        guard let amount = Double(amountString),
+              !title.isEmpty
+        else { return }
 
-        let fallbackAccount = FinancialAccount(
-            id: transactionToEdit?.accountId ?? "default",
-            name: transactionToEdit?.accountName ?? "Cash / Wallet",
-            provider: transactionToEdit?.provider ?? .bkash,
-            type: .mfs,
-            currentBalance: 0.0
+        let chosenAccount = accounts.first { $0.id == selectedAccountId } ?? FinancialAccount(
+            id: "",
+            name: selectedProvider == .cash ? "Cash / Unassigned" : selectedProvider.rawValue,
+            provider: selectedProvider,
+            type: accountType(for: selectedProvider),
+            currentBalance: 0
         )
-        let chosenAccount: FinancialAccount
-        if accounts.indices.contains(selectedAccountIndex) {
-            chosenAccount = accounts[selectedAccountIndex]
-        } else if let first = accounts.first {
-            chosenAccount = first
-        } else {
-            chosenAccount = fallbackAccount
-        }
+
+        let saved: Bool
 
         if let existing = transactionToEdit {
             var updated = existing
@@ -160,9 +179,10 @@ public struct AddEditTransactionView: View {
             updated.notes = notes.isEmpty ? nil : notes
 
             if writesToRepository {
-                TransactionRepository.shared.updateTransaction(updated)
+                saved = TransactionRepository.shared.updateTransaction(updated)
+            } else {
+                saved = onCommit?(updated) ?? false
             }
-            onCommit?(updated)
         } else {
             let newTx = CentwiseTransaction(
                 title: title,
@@ -177,13 +197,29 @@ public struct AddEditTransactionView: View {
                 isAutoTracked: false
             )
             if writesToRepository {
-                TransactionRepository.shared.addTransaction(newTx)
+                saved = TransactionRepository.shared.addTransaction(newTx)
+            } else {
+                saved = onCommit?(newTx) ?? false
             }
-            onCommit?(newTx)
         }
 
+        guard saved else {
+            saveError = "Centwise could not save this transaction. Check the selected account and try again."
+            themeManager.triggerHapticFeedback(.error)
+            return
+        }
+        saveError = nil
         themeManager.triggerHapticFeedback(.success)
         dismiss()
         onSave?()
+    }
+
+    private func accountType(for provider: FinancialProvider) -> AccountType {
+        switch provider {
+        case .bkash, .nagad, .rocket, .upay, .cellfin: return .mfs
+        case .cash: return .cash
+        case .other: return .bank
+        default: return .bank
+        }
     }
 }

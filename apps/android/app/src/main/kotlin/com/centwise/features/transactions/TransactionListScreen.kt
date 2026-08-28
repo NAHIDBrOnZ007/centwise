@@ -13,6 +13,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +43,15 @@ fun TransactionListScreen(
     val totalExpense by viewModel.totalExpense.collectAsState()
     val totalNet by viewModel.totalNet.collectAsState()
     var selectedTransaction by remember { mutableStateOf<TransactionItem?>(null) }
+    var sortDescending by remember { mutableStateOf(true) }
+    val context = LocalContext.current
+    val displayedTransactions = remember(transactions, sortDescending) {
+        if (sortDescending) {
+            transactions.sortedByDescending { it.timestamp }
+        } else {
+            transactions.sortedBy { it.timestamp }
+        }
+    }
 
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
@@ -73,8 +83,8 @@ fun TransactionListScreen(
                     )
                     ActionPillGroup(
                         onAddClick = onAddClick,
-                        onSortClick = {},
-                        onExportClick = {},
+                        onSortClick = { sortDescending = !sortDescending },
+                        onExportClick = { CsvExporter.shareExport(context) },
                         isDark = isDark
                     )
                 }
@@ -142,7 +152,7 @@ fun TransactionListScreen(
             }
 
             // Totals Summary Card (3 Columns: Income, Expenses, Net)
-            if (transactions.isNotEmpty()) {
+            if (displayedTransactions.isNotEmpty()) {
                 item {
                     com.centwise.core.design.components.TransactionTotalsCard(
                         income = totalIncome,
@@ -154,7 +164,7 @@ fun TransactionListScreen(
             }
 
             // Transactions List or Empty State
-            if (transactions.isEmpty()) {
+            if (displayedTransactions.isEmpty()) {
                 item {
                     EmptyStateView(
                         title = "No Transactions Yet",
@@ -165,7 +175,7 @@ fun TransactionListScreen(
                     )
                 }
             } else {
-                val grouped = transactions.groupBy { tx ->
+                val grouped = displayedTransactions.groupBy { tx ->
                     val cal = java.util.Calendar.getInstance()
                     cal.time = java.util.Date(tx.timestamp)
                     val monthFormat = java.text.SimpleDateFormat("MMMM yyyy", java.util.Locale.US)

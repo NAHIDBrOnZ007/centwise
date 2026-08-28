@@ -11,8 +11,8 @@ public protocol TransactionRepositoryProtocol {
     func getAccounts() -> AnyPublisher<[FinancialAccount], Never>
     func getBudgets() -> AnyPublisher<[CategoryBudget], Never>
     func getSubscriptions() -> AnyPublisher<[RecurringSubscription], Never>
-    func addTransaction(_ transaction: CentwiseTransaction)
-    func updateTransaction(_ transaction: CentwiseTransaction)
+    @discardableResult func addTransaction(_ transaction: CentwiseTransaction) -> Bool
+    @discardableResult func updateTransaction(_ transaction: CentwiseTransaction) -> Bool
     func deleteTransaction(id: String)
     func addAccount(_ account: FinancialAccount)
 }
@@ -83,9 +83,11 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
                 isArchived: account.archived
             )
         }
+        let accountsById = Dictionary(uniqueKeysWithValues: accountRecords.map { ($0.id, $0) })
+        let categoriesById = Dictionary(uniqueKeysWithValues: loadedCategories.map { ($0.id, $0) })
         let loadedTransactions = CentwiseRustBackend.listTransactions().map { transaction in
-            let account = accountRecords.first { $0.id == transaction.accountId }
-            let cat = loadedCategories.first { $0.id == transaction.categoryId } ?? TransactionCategory(
+            let account = accountsById[transaction.accountId]
+            let cat = categoriesById[transaction.categoryId] ?? TransactionCategory(
                 id: transaction.categoryId,
                 name: "Other",
                 icon: "square.grid.2x2",
@@ -111,7 +113,7 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
             )
         }
         let loadedBudgets = CentwiseRustBackend.listBudgets().map { budget in
-            let cat = loadedCategories.first { $0.id == budget.categoryId }
+            let cat = categoriesById[budget.categoryId]
             return CategoryBudget(
                 id: budget.id,
                 categoryId: budget.categoryId,
@@ -154,70 +156,63 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
         )
     }
 
-    public func addTransaction(_ transaction: CentwiseTransaction) {
-        guard CentwiseRustBackend.insertTransaction(transaction) else { return }
-        loadFromRust()
+    @discardableResult
+    public func addTransaction(_ transaction: CentwiseTransaction) -> Bool {
+        guard CentwiseRustBackend.insertTransaction(transaction) else { return false }
         CentwiseNotifications.notifyNewTransaction(transaction)
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        return true
     }
 
-    public func updateTransaction(_ transaction: CentwiseTransaction) {
-        guard CentwiseRustBackend.updateTransaction(transaction) else { return }
-        loadFromRust()
+    @discardableResult
+    public func updateTransaction(_ transaction: CentwiseTransaction) -> Bool {
+        guard CentwiseRustBackend.updateTransaction(transaction) else { return false }
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        return true
     }
 
     public func deleteTransaction(id: String) {
         guard CentwiseRustBackend.deleteTransaction(id: id) else { return }
-        loadFromRust()
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
     }
 
     public func addAccount(_ account: FinancialAccount) {
         guard CentwiseRustBackend.insertAccount(account) else { return }
-        loadFromRust()
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
     }
 
     public func updateAccount(_ account: FinancialAccount) {
         guard CentwiseRustBackend.updateAccount(account) else { return }
-        loadFromRust()
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
     }
 
     public func addBudget(_ budget: CategoryBudget) {
         guard CentwiseRustBackend.insertBudget(budget) else { return }
-        loadFromRust()
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
     }
 
     public func updateBudget(_ budget: CategoryBudget) {
         guard CentwiseRustBackend.updateBudget(budget) else { return }
-        loadFromRust()
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
     }
 
     public func deleteBudget(id: String) {
         guard CentwiseRustBackend.deleteBudget(id: id) else { return }
-        loadFromRust()
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
     }
 
     public func addSubscription(_ subscription: RecurringSubscription) {
         guard CentwiseRustBackend.insertSubscription(subscription) else { return }
-        loadFromRust()
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
     }
 
     public func updateSubscription(_ subscription: RecurringSubscription) {
         guard CentwiseRustBackend.updateSubscription(subscription) else { return }
-        loadFromRust()
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
     }
 
     public func deleteSubscription(id: String) {
         guard CentwiseRustBackend.deleteSubscription(id: id) else { return }
-        loadFromRust()
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
     }
 
@@ -240,14 +235,12 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
     @discardableResult
     public func loadSampleDemoData() -> DemoDataSummaryRecord? {
         guard let summary = CentwiseRustBackend.loadDemoData() else { return nil }
-        loadFromRust()
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
         return summary
     }
 
     public func resetToEmptyDatabase() {
         guard CentwiseRustBackend.resetToEmptyDatabase() else { return }
-        loadFromRust()
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
     }
 

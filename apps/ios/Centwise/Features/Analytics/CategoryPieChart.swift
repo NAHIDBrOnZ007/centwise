@@ -47,6 +47,16 @@ public struct CategoryPieChart: View {
                 }
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Category spending breakdown")
+        .accessibilityValue(accessibilitySummary)
+    }
+
+    private var accessibilitySummary: String {
+        guard total > 0 else { return "No category data available" }
+        return slices.map {
+            "\($0.name), \(Int(($0.value / total * 100).rounded())) percent"
+        }.joined(separator: ", ")
     }
 
     // MARK: - Donut

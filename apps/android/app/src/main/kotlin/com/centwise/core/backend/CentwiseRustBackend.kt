@@ -172,13 +172,19 @@ object CentwiseRustBackend {
 
     fun convertReviewQueueItem(itemId: String, transaction: TransactionItem): Boolean {
         val rustCore = core ?: return false
-        val accounts = TransactionRepository.shared.accounts.value.filter { account ->
-            account.providerName.equals(transaction.paymentMethod, ignoreCase = true) ||
-                account.name.equals(transaction.paymentMethod, ignoreCase = true)
+        val allAccounts = TransactionRepository.shared.accounts.value
+        val exactNameMatches = allAccounts.filter { account ->
+            account.name.equals(transaction.paymentMethod, ignoreCase = true)
+        }
+        val providerMatches = allAccounts.filter { account ->
+            account.providerName.equals(transaction.paymentMethod, ignoreCase = true)
         }
         // Do not silently assign a review item to an arbitrary wallet when the
         // user has multiple accounts for the same provider.
-        val account = accounts.singleOrNull() ?: return false
+        val candidates = exactNameMatches.ifEmpty { providerMatches }
+        if (candidates.size > 1) return false
+        val account = candidates.singleOrNull()
+        val providerHint = canonicalProvider(account?.providerName ?: transaction.paymentMethod)
         return try {
             rustCore.convertReviewQueueItem(
                 itemId,
@@ -190,7 +196,12 @@ object CentwiseRustBackend {
                     kind = transaction.type.toRustKind(),
                     categoryId = categoryId(transaction.category),
                     occurredAtEpochMs = transaction.timestamp,
-                    accountId = account.id,
+                    accountId = account?.id.orEmpty(),
+                    accountProvider = providerHint,
+                    accountName = account?.name ?: transaction.paymentMethod.ifBlank { "Cash / Unassigned" },
+                    accountLastFour = account?.accountNumber
+                        ?.takeLast(4)
+                        ?.takeIf { it.all(Char::isDigit) },
                     reference = transaction.reference,
                     balanceAfterMinor = null,
                     feeMinor = null,
@@ -297,10 +308,16 @@ object CentwiseRustBackend {
         provider.contains("bkash", ignoreCase = true) -> "bkash"
         provider.contains("nagad", ignoreCase = true) -> "nagad"
         provider.contains("rocket", ignoreCase = true) -> "rocket"
+        provider.contains("upay", ignoreCase = true) -> "upay"
+        provider.contains("cellfin", ignoreCase = true) -> "cellfin"
+        provider.contains("cash", ignoreCase = true) -> "cash"
         provider.contains("dbbl", ignoreCase = true) -> "dbbl"
+        provider.contains("dutch", ignoreCase = true) -> "dbbl"
         provider.contains("city", ignoreCase = true) -> "city-bank"
         provider.contains("brac", ignoreCase = true) -> "brac-bank"
         provider.contains("ebl", ignoreCase = true) -> "ebl"
+        provider.contains("eastern", ignoreCase = true) -> "ebl"
+        provider.contains("standard chartered", ignoreCase = true) -> "standard-chartered"
         else -> "banks-generic"
     }
 
@@ -327,25 +344,33 @@ object CentwiseRustBackend {
         archived = archived
     )
 
-    private fun com.centwise.data.models.TransactionItem.toRustInput() = TransactionInput(
-        id = id,
-        title = title,
-        amountMinor = (amount * 100).toLong(),
-        currency = "BDT",
-        kind = type.toRustKind(),
-        categoryId = categoryId(category),
-        occurredAtEpochMs = timestamp,
-        accountId = TransactionRepository.shared.accounts.value.firstOrNull {
-            it.name.equals(paymentMethod, ignoreCase = true) ||
-                it.providerName.equals(paymentMethod, ignoreCase = true)
-        }?.id ?: paymentMethod,
-        reference = reference,
-        balanceAfterMinor = null,
-        feeMinor = null,
-        notes = note,
-        rawSms = rawSms,
-        isAutoTracked = rawSms != null
-    )
+    private fun com.centwise.data.models.TransactionItem.toRustInput(): TransactionInput {
+        val account = TransactionRepository.shared.accounts.value.firstOrNull {
+            it.name.equals(paymentMethod, ignoreCase = true)
+        }
+        val providerHint = canonicalProvider(account?.providerName ?: paymentMethod)
+        return TransactionInput(
+            id = id,
+            title = title,
+            amountMinor = (amount * 100).toLong(),
+            currency = "BDT",
+            kind = type.toRustKind(),
+            categoryId = categoryId(category),
+            occurredAtEpochMs = timestamp,
+            accountId = account?.id.orEmpty(),
+            accountProvider = providerHint,
+            accountName = account?.name ?: paymentMethod.ifBlank { "Cash / Unassigned" },
+            accountLastFour = account?.accountNumber
+                ?.takeLast(4)
+                ?.takeIf { value -> value.all(Char::isDigit) },
+            reference = reference,
+            balanceAfterMinor = null,
+            feeMinor = null,
+            notes = note,
+            rawSms = rawSms,
+            isAutoTracked = rawSms != null
+        )
+    }
 
     private fun com.centwise.data.models.BudgetItem.toRustInput() = BudgetInput(
         id = id,

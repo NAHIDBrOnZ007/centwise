@@ -145,9 +145,13 @@ public struct RulesScreen: View {
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
 
-                CentwiseButton("Create Rule", icon: "plus", isFullWidth: true) {
+                Button {
                     showAddSheet = true
+                } label: {
+                    Label("Create Rule", systemImage: "plus")
                 }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
                 .padding(.top, CentwiseSpacing.xs)
             }
             .frame(maxWidth: .infinity)

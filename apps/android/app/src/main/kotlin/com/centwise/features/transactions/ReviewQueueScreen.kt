@@ -171,7 +171,6 @@ fun ReviewQueueScreen(
             onDismiss = { editingItem = null },
             onSave = { transaction ->
                 repository.confirmAsTransaction(item, transaction)
-                editingItem = null
             }
         )
     }

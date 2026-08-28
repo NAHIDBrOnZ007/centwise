@@ -2623,6 +2623,9 @@ public struct TransactionInput {
     public let categoryId: String
     public let occurredAtEpochMs: Int64
     public let accountId: String
+    public let accountProvider: String?
+    public let accountName: String?
+    public let accountLastFour: String?
     public let reference: String?
     public let balanceAfterMinor: Int64?
     public let feeMinor: Int64?
@@ -2632,7 +2635,7 @@ public struct TransactionInput {
 
     // Default memberwise initializers are never public by default, so we
     // declare one manually.
-    public init(id: String, title: String, amountMinor: Int64, currency: String, kind: TransactionKind, categoryId: String, occurredAtEpochMs: Int64, accountId: String, reference: String?, balanceAfterMinor: Int64?, feeMinor: Int64?, notes: String?, rawSms: String?, isAutoTracked: Bool) {
+    public init(id: String, title: String, amountMinor: Int64, currency: String, kind: TransactionKind, categoryId: String, occurredAtEpochMs: Int64, accountId: String, accountProvider: String?, accountName: String?, accountLastFour: String?, reference: String?, balanceAfterMinor: Int64?, feeMinor: Int64?, notes: String?, rawSms: String?, isAutoTracked: Bool) {
         self.id = id
         self.title = title
         self.amountMinor = amountMinor
@@ -2641,6 +2644,9 @@ public struct TransactionInput {
         self.categoryId = categoryId
         self.occurredAtEpochMs = occurredAtEpochMs
         self.accountId = accountId
+        self.accountProvider = accountProvider
+        self.accountName = accountName
+        self.accountLastFour = accountLastFour
         self.reference = reference
         self.balanceAfterMinor = balanceAfterMinor
         self.feeMinor = feeMinor
@@ -2678,6 +2684,15 @@ extension TransactionInput: Equatable, Hashable {
         if lhs.accountId != rhs.accountId {
             return false
         }
+        if lhs.accountProvider != rhs.accountProvider {
+            return false
+        }
+        if lhs.accountName != rhs.accountName {
+            return false
+        }
+        if lhs.accountLastFour != rhs.accountLastFour {
+            return false
+        }
         if lhs.reference != rhs.reference {
             return false
         }
@@ -2708,6 +2723,9 @@ extension TransactionInput: Equatable, Hashable {
         hasher.combine(categoryId)
         hasher.combine(occurredAtEpochMs)
         hasher.combine(accountId)
+        hasher.combine(accountProvider)
+        hasher.combine(accountName)
+        hasher.combine(accountLastFour)
         hasher.combine(reference)
         hasher.combine(balanceAfterMinor)
         hasher.combine(feeMinor)
@@ -2733,6 +2751,9 @@ public struct FfiConverterTypeTransactionInput: FfiConverterRustBuffer {
                 categoryId: FfiConverterString.read(from: &buf), 
                 occurredAtEpochMs: FfiConverterInt64.read(from: &buf), 
                 accountId: FfiConverterString.read(from: &buf), 
+                accountProvider: FfiConverterOptionString.read(from: &buf),
+                accountName: FfiConverterOptionString.read(from: &buf),
+                accountLastFour: FfiConverterOptionString.read(from: &buf),
                 reference: FfiConverterOptionString.read(from: &buf), 
                 balanceAfterMinor: FfiConverterOptionInt64.read(from: &buf), 
                 feeMinor: FfiConverterOptionInt64.read(from: &buf), 
@@ -2751,6 +2772,9 @@ public struct FfiConverterTypeTransactionInput: FfiConverterRustBuffer {
         FfiConverterString.write(value.categoryId, into: &buf)
         FfiConverterInt64.write(value.occurredAtEpochMs, into: &buf)
         FfiConverterString.write(value.accountId, into: &buf)
+        FfiConverterOptionString.write(value.accountProvider, into: &buf)
+        FfiConverterOptionString.write(value.accountName, into: &buf)
+        FfiConverterOptionString.write(value.accountLastFour, into: &buf)
         FfiConverterOptionString.write(value.reference, into: &buf)
         FfiConverterOptionInt64.write(value.balanceAfterMinor, into: &buf)
         FfiConverterOptionInt64.write(value.feeMinor, into: &buf)
