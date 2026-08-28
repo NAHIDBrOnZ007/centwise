@@ -54,10 +54,10 @@ jobs:
             --language swift \
             --config centwise-ffi/uniffi.toml \
             --out-dir "$binding_check_dir/ios"
-          diff -ruw \
+          diff -ruwB \
             ../apps/android/app/src/main/kotlin/com/centwise/core/uniffi \
             "$binding_check_dir/android/com/centwise/core/uniffi"
-          diff -ruw \
+          diff -ruwB \
             ../apps/ios/Centwise/Core/FFI/generated \
             "$binding_check_dir/ios"
 
