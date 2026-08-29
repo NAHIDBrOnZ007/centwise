@@ -36,17 +36,9 @@ public struct BudgetListScreen: View {
                                 .foregroundColor(.secondary)
                         }
 
-                        GeometryReader { geo in
-                            ZStack(alignment: .leading) {
-                                Capsule()
-                                    .fill(Color(uiColor: .systemGray5))
-                                    .frame(height: 4)
-
-                                Capsule()
-                                    .fill(themeManager.accentColor)
-                                    .frame(width: geo.size.width * CGFloat(pct), height: 4)
-                            }
-                        }
+                        ProgressView(value: pct)
+                            .progressViewStyle(.linear)
+                            .tint(themeManager.accentColor)
                         .frame(height: 4)
 
                         HStack {
@@ -211,17 +203,9 @@ public struct BudgetListScreen: View {
                     .padding(.leading, 2)
             }
 
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule()
-                        .fill(Color(uiColor: .systemGray5))
-                        .frame(height: 4)
-
-                    Capsule()
-                        .fill(themeManager.accentColor)
-                        .frame(width: geo.size.width * min(CGFloat(budget.percentage), 1.0), height: 4)
-                }
-            }
+            ProgressView(value: min(max(budget.percentage, 0), 1))
+                .progressViewStyle(.linear)
+                .tint(themeManager.accentColor)
             .frame(height: 4)
 
             HStack {

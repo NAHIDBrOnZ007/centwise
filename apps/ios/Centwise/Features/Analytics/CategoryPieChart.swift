@@ -1,3 +1,4 @@
+import Charts
 import SwiftUI
 
 public struct CategorySlice: Identifiable {
@@ -16,9 +17,6 @@ public struct CategorySlice: Identifiable {
 
 public struct CategoryPieChart: View {
     private let slices: [CategorySlice]
-
-    @Environment(\.colorScheme) private var colorScheme
-    @ObservedObject private var themeManager = ThemeManager.shared
 
     public init(slices: [CategorySlice]) {
         self.slices = slices.sorted { $0.value > $1.value }
@@ -63,25 +61,18 @@ public struct CategoryPieChart: View {
 
     private var donutChart: some View {
         ZStack {
-            Canvas { context, size in
-                let center = CGPoint(x: size.width / 2, y: size.height / 2)
-                let radius = min(size.width, size.height) / 2
-                let innerRadius = radius * 0.62
-                var startAngle = -Double.pi / 2
-
-                for slice in slices {
-                    let sweep = slice.value / total * Double.pi * 2
-                    let endAngle = startAngle + sweep
-
-                    var path = Path()
-                    path.move(to: point(center: center, radius: radius, angle: startAngle))
-                    path.addArc(center: center, radius: radius, startAngle: Angle(radians: startAngle), endAngle: Angle(radians: endAngle), clockwise: false)
-                    path.addArc(center: center, radius: innerRadius, startAngle: Angle(radians: endAngle), endAngle: Angle(radians: startAngle), clockwise: true)
-                    path.closeSubpath()
-
-                    context.fill(path, with: .color(slice.color))
-                    startAngle = endAngle
+            if #available(iOS 17.0, *) {
+                Chart(slices) { slice in
+                    SectorMark(
+                        angle: .value("Amount", slice.value),
+                        innerRadius: .ratio(0.62),
+                        angularInset: 1.5
+                    )
+                    .foregroundStyle(slice.color)
                 }
+                .chartLegend(.hidden)
+            } else {
+                legacyDonutChart
             }
 
             VStack(spacing: CentwiseSpacing.xxs) {
@@ -91,6 +82,29 @@ public struct CategoryPieChart: View {
                 Text("Total")
                     .font(CentwiseTypography.caption2)
                     .foregroundColor(.secondary)
+            }
+        }
+    }
+
+    private var legacyDonutChart: some View {
+        Canvas { context, size in
+            let center = CGPoint(x: size.width / 2, y: size.height / 2)
+            let radius = min(size.width, size.height) / 2
+            let innerRadius = radius * 0.62
+            var startAngle = -Double.pi / 2
+
+            for slice in slices {
+                let sweep = slice.value / total * Double.pi * 2
+                let endAngle = startAngle + sweep
+
+                var path = Path()
+                path.move(to: point(center: center, radius: radius, angle: startAngle))
+                path.addArc(center: center, radius: radius, startAngle: Angle(radians: startAngle), endAngle: Angle(radians: endAngle), clockwise: false)
+                path.addArc(center: center, radius: innerRadius, startAngle: Angle(radians: endAngle), endAngle: Angle(radians: startAngle), clockwise: true)
+                path.closeSubpath()
+
+                context.fill(path, with: .color(slice.color))
+                startAngle = endAngle
             }
         }
     }

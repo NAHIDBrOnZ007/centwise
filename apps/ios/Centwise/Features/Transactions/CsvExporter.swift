@@ -84,16 +84,11 @@ public struct CsvExportSheet: View {
                         .foregroundColor(.secondary)
 
                     ShareLink(item: url) {
-                        Text("Share Export")
-                            .font(CentwiseTypography.bodyMedium)
+                        Label("Share Export", systemImage: "square.and.arrow.up")
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, CentwiseSpacing.mdSm)
-                            .background(
-                                RoundedRectangle(cornerRadius: CentwiseSpacing.radiusMd)
-                                    .fill(CentwiseColors.primaryEmerald)
-                            )
-                            .foregroundColor(.white)
                     }
+                    .buttonStyle(.borderedProminent)
+                    .tint(CentwiseColors.primaryEmerald)
                     .padding(.horizontal, CentwiseSpacing.xl)
                 } else {
                     Image(systemName: "exclamationmark.triangle")

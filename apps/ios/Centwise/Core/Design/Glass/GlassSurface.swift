@@ -7,11 +7,15 @@ public struct GlassCardModifier: ViewModifier {
     public var hasBorder: Bool = true
     public var elevation: CGFloat = 0
 
+    private var backgroundStyle: AnyShapeStyle {
+        isAmoled ? AnyShapeStyle(Color.black) : AnyShapeStyle(.regularMaterial)
+    }
+
     public func body(content: Content) -> some View {
         content
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(CentwiseColors.surface(for: colorScheme, isAmoled: isAmoled))
+                    .fill(backgroundStyle)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)

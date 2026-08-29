@@ -1,3 +1,4 @@
+import Charts
 import SwiftUI
 
 public struct TrendPoint: Identifiable {
@@ -15,17 +16,10 @@ public struct TrendPoint: Identifiable {
 public struct SpendingTrendsChart: View {
     private let points: [TrendPoint]
 
-    @Environment(\.colorScheme) private var colorScheme
     @ObservedObject private var themeManager = ThemeManager.shared
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var appeared = false
 
     public init(points: [TrendPoint]) {
         self.points = points
-    }
-
-    private var maxValue: Double {
-        max(points.map(\.value).max() ?? 0, 1)
     }
 
     private var trendDirection: (icon: String, color: Color)? {
@@ -67,27 +61,33 @@ public struct SpendingTrendsChart: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, CentwiseSpacing.md)
                 } else {
-                    HStack(alignment: .bottom, spacing: CentwiseSpacing.mdSm) {
-                        ForEach(points) { point in
-                            barColumn(point)
-                        }
+                    Chart(points) { point in
+                        BarMark(
+                            x: .value("Period", point.label),
+                            y: .value("Spending", point.value)
+                        )
+                        .foregroundStyle(themeManager.accentColor)
+                        .cornerRadius(6)
                     }
                     .frame(height: 120)
+                    .chartXAxis {
+                        AxisMarks { _ in
+                            AxisGridLine()
+                            AxisValueLabel()
+                        }
+                    }
+                    .chartYAxis {
+                        AxisMarks { _ in
+                            AxisGridLine()
+                            AxisValueLabel()
+                        }
+                    }
                 }
             }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Spending trends")
         .accessibilityValue(accessibilitySummary)
-        .onAppear {
-            if reduceMotion {
-                appeared = true
-            } else {
-                withAnimation(.easeOut(duration: 0.35)) {
-                    appeared = true
-                }
-            }
-        }
     }
 
     private var accessibilitySummary: String {
@@ -96,30 +96,4 @@ public struct SpendingTrendsChart: View {
         }.joined(separator: ", ")
     }
 
-    private func barColumn(_ point: TrendPoint) -> some View {
-        let barHeight = appeared ? 100 * CGFloat(point.value / maxValue) : 0
-
-        return VStack(spacing: CentwiseSpacing.xs) {
-            Text(CurrencyFormatter.shared.formatBDT(point.value, compact: true))
-                .font(CentwiseTypography.caption2)
-                .foregroundColor(.secondary)
-                .lineLimit(1)
-                .minimumScaleFactor(0.5)
-
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [themeManager.accentColor.opacity(0.65), themeManager.accentColor],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .frame(height: max(barHeight, 4))
-
-            Text(point.label)
-                .font(CentwiseTypography.caption2)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-    }
 }

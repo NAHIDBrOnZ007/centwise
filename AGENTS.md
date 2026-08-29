@@ -127,6 +127,23 @@ design independently using Centwise components and assets.
 - Safe-area-aware sheets and navigation
 - Dynamic Type and accessibility support
 
+### iOS Deployment and Change Discipline
+
+- The iOS deployment target is iOS 16.0, defined in `apps/ios/project.yml`.
+- Keep the deployment target at iOS 16.0 unless the user explicitly requests a
+  target change.
+- Before using an Apple API, check its availability against iOS 16. Prefer APIs
+  available on iOS 16 and add a small `#available` fallback for newer APIs.
+- Do not add iOS 15 compatibility work, lower the deployment target, or migrate
+  the project to another UI framework unless the user explicitly asks for it.
+- `.regularMaterial` is an acceptable standard material for this iOS 16 app.
+  Do not replace it with newer-only glass APIs without an availability fallback.
+- Keep native replacements focused on the requested component. Do not rewrite
+  surrounding screens, redesign the visual language, or replace working custom
+  UI just to increase native API usage.
+- After an iOS UI change, report separately what was checked statically and
+  what still needs macOS/Xcode simulator or device verification.
+
 ### Android
 
 - Jetpack Compose

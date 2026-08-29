@@ -5,7 +5,6 @@ public struct BudgetCarousel: View {
     public var onSelectBudget: ((CategoryBudget) -> Void)? = nil
 
     @ObservedObject private var themeManager = ThemeManager.shared
-    @Environment(\.colorScheme) private var colorScheme
 
     public init(
         budgets: [CategoryBudget],
@@ -60,17 +59,9 @@ public struct BudgetCarousel: View {
                 Spacer(minLength: 4)
 
                 // Progress Bar
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(CentwiseColors.surfaceSecondary(for: colorScheme))
-                            .frame(height: 6)
-
-                        Capsule()
-                            .fill(budget.isOverBudget ? CentwiseColors.expenseRed : (Color(hex: budget.categoryColorHex) ?? themeManager.accentColor))
-                            .frame(width: geo.size.width * CGFloat(budget.percentage), height: 6)
-                    }
-                }
+                ProgressView(value: min(max(budget.percentage, 0), 1))
+                    .progressViewStyle(.linear)
+                    .tint(budget.isOverBudget ? CentwiseColors.expenseRed : (Color(hex: budget.categoryColorHex) ?? themeManager.accentColor))
                 .frame(height: 6)
 
                 // Remaining Text
