@@ -3,6 +3,7 @@ package com.centwise.data.repository
 import android.content.Context
 import com.centwise.core.backend.CentwiseRustBackend
 import com.centwise.core.uniffi.TransactionKind
+import com.centwise.core.uniffi.HomeDashboardRecord
 import com.centwise.data.models.AccountItem
 import com.centwise.data.models.BudgetItem
 import com.centwise.data.models.CategoryOption
@@ -12,6 +13,7 @@ import com.centwise.data.models.TransactionType
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.Calendar
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,6 +34,8 @@ class TransactionRepository private constructor() {
     val subscriptions: StateFlow<List<SubscriptionItem>> = _subscriptions.asStateFlow()
     private val _categories = MutableStateFlow<List<CategoryOption>>(emptyList())
     val categories: StateFlow<List<CategoryOption>> = _categories.asStateFlow()
+    private val _homeDashboard = MutableStateFlow<HomeDashboardRecord?>(null)
+    val homeDashboard: StateFlow<HomeDashboardRecord?> = _homeDashboard.asStateFlow()
 
     val totalIncome = _transactions.map { list ->
         list.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
@@ -64,6 +68,18 @@ class TransactionRepository private constructor() {
                 isSystem = category.isSystem
             )
         }
+        val monthStart = Calendar.getInstance().apply {
+            set(Calendar.DAY_OF_MONTH, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val nextMonth = (monthStart.clone() as Calendar).apply { add(Calendar.MONTH, 1) }
+        _homeDashboard.value = CentwiseRustBackend.homeDashboard(
+            monthStart.timeInMillis,
+            nextMonth.timeInMillis
+        )
         val accounts = CentwiseRustBackend.listAccounts()
         _accounts.value = accounts.map { account ->
             AccountItem(
@@ -176,6 +192,7 @@ class TransactionRepository private constructor() {
         _budgets.value = emptyList()
         _subscriptions.value = emptyList()
         _categories.value = emptyList()
+        _homeDashboard.value = null
     }
 
     private fun categoryName(id: String): String =

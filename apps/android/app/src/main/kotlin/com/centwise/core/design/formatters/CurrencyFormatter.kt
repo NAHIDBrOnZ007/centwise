@@ -19,8 +19,9 @@ object CurrencyFormatter {
             groupingSeparator = ','
             decimalSeparator = '.'
         }
-        val pattern = if (amount % 1.0 == 0.0) "#,##0" else "#,##0.00"
-        val df = DecimalFormat(pattern, symbols)
+        // Centwise displays whole BDT only. Minor units remain precise in Rust/database;
+        // this is presentation-only rounding so every screen uses one consistent format.
+        val df = DecimalFormat("#,##0", symbols)
         val formattedNumber = df.format(kotlin.math.abs(amount))
 
         val finalNumber = if (useBengaliNumerals) {

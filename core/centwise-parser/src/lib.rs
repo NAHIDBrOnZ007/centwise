@@ -6,5 +6,7 @@
 pub mod engine;
 pub mod providers;
 
-pub use engine::{parse_sms, ParseOutcome, ParsedTransaction, RejectReason};
+pub use engine::{
+    is_likely_financial_review, parse_sms, ParseOutcome, ParsedTransaction, RejectReason,
+};
 pub use providers::detect_provider;

@@ -15,15 +15,16 @@ object SmsTransactionProcessor {
         context: Context,
         sender: String,
         body: String,
-        timestamp: Long = System.currentTimeMillis()
+        timestamp: Long = System.currentTimeMillis(),
+        notifyUser: Boolean = true
     ): SmsIngestResult? {
         CentwiseRustBackend.initialize(context.applicationContext)
         val result = CentwiseRustBackend.ingestSms(sender, body, timestamp)
 
-        if (result != null && result.status == SmsIngestStatus.INSERTED && result.transactionId != null) {
+        if (notifyUser && result != null && result.status == SmsIngestStatus.INSERTED && result.transactionId != null) {
             // Show transaction notification
             try {
-                val record = CentwiseRustBackend.listTransactions().firstOrNull { it.id == result.transactionId }
+                val record = CentwiseRustBackend.getTransaction(result.transactionId)
                 if (record != null) {
                     com.centwise.core.notifications.CentwiseNotifications.notifyNewTransaction(
                         context = context.applicationContext,
@@ -45,8 +46,10 @@ object SmsTransactionProcessor {
         }
 
         // Notify and refresh UI StateFlows immediately
-        CoroutineScope(Dispatchers.Main).launch {
-            TransactionRepository.shared.loadFromRust()
+        if (notifyUser) {
+            CoroutineScope(Dispatchers.Main).launch {
+                TransactionRepository.shared.loadFromRust()
+            }
         }
 
         return result

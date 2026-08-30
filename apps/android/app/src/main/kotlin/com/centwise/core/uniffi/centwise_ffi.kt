@@ -807,6 +807,10 @@ internal open class UniffiVTableCallbackInterfaceChangeListener(
 
 
 
+
+
+
+
 // A JNA Library to expose the extern-C FFI definitions.
 // This is an implementation detail which will be called internally by the public API.
 
@@ -853,9 +857,13 @@ internal interface UniffiLib : Library {
     ): Byte
     fun uniffi_centwise_ffi_fn_method_centwisecore_dismiss_review_queue_item(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
+    fun uniffi_centwise_ffi_fn_method_centwisecore_get_transaction(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
     fun uniffi_centwise_ffi_fn_method_centwisecore_home_dashboard(`ptr`: Pointer,`startEpochMs`: Long,`endEpochMs`: Long,`recentLimit`: Int,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     fun uniffi_centwise_ffi_fn_method_centwisecore_ingest_sms(`ptr`: Pointer,`body`: RustBuffer.ByValue,`senderHint`: RustBuffer.ByValue,`occurredAtEpochMs`: Long,uniffi_out_err: UniffiRustCallStatus, 
+    ): RustBuffer.ByValue
+    fun uniffi_centwise_ffi_fn_method_centwisecore_ingest_sms_batch(`ptr`: Pointer,`messages`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     fun uniffi_centwise_ffi_fn_method_centwisecore_insert_account(`ptr`: Pointer,`account`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
@@ -1037,9 +1045,13 @@ internal interface UniffiLib : Library {
     ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_dismiss_review_queue_item(
     ): Short
+    fun uniffi_centwise_ffi_checksum_method_centwisecore_get_transaction(
+    ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_home_dashboard(
     ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_ingest_sms(
+    ): Short
+    fun uniffi_centwise_ffi_checksum_method_centwisecore_ingest_sms_batch(
     ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_insert_account(
     ): Short
@@ -1137,10 +1149,16 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_dismiss_review_queue_item() != 57175.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_get_transaction() != 15514.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_home_dashboard() != 34839.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_ingest_sms() != 61328.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_ingest_sms_batch() != 20764.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_insert_account() != 6904.toShort()) {
@@ -1599,6 +1617,8 @@ public interface CentwiseCoreInterface {
     
     fun `dismissReviewQueueItem`(`id`: kotlin.String): kotlin.Boolean
     
+    fun `getTransaction`(`id`: kotlin.String): TransactionRecord?
+    
     /**
      * The single query powering the Home screen.
      */
@@ -1609,6 +1629,13 @@ public interface CentwiseCoreInterface {
      * operation. Native platforms only provide the message and timestamp.
      */
     fun `ingestSms`(`body`: kotlin.String, `senderHint`: kotlin.String?, `occurredAtEpochMs`: kotlin.Long): SmsIngestResult
+    
+    /**
+     * Ingests multiple platform SMS messages through the same Rust parser.
+     * The native bridge crosses once for the whole batch; each message keeps
+     * the existing Rust deduplication and review-queue behavior.
+     */
+    fun `ingestSmsBatch`(`messages`: List<SmsBatchMessage>): List<SmsIngestResult>
     
     fun `insertAccount`(`account`: AccountInput)
     
@@ -1879,6 +1906,19 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     
 
     
+    @Throws(CentwiseException::class)override fun `getTransaction`(`id`: kotlin.String): TransactionRecord? {
+            return FfiConverterOptionalTypeTransactionRecord.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CentwiseException) { _status ->
+    UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_get_transaction(
+        it, FfiConverterString.lower(`id`),_status)
+}
+    }
+    )
+    }
+    
+
+    
     /**
      * The single query powering the Home screen.
      */
@@ -1905,6 +1945,24 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     uniffiRustCallWithError(CentwiseException) { _status ->
     UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_ingest_sms(
         it, FfiConverterString.lower(`body`),FfiConverterOptionalString.lower(`senderHint`),FfiConverterLong.lower(`occurredAtEpochMs`),_status)
+}
+    }
+    )
+    }
+    
+
+    
+    /**
+     * Ingests multiple platform SMS messages through the same Rust parser.
+     * The native bridge crosses once for the whole batch; each message keeps
+     * the existing Rust deduplication and review-queue behavior.
+     */
+    @Throws(CentwiseException::class)override fun `ingestSmsBatch`(`messages`: List<SmsBatchMessage>): List<SmsIngestResult> {
+            return FfiConverterSequenceTypeSmsIngestResult.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CentwiseException) { _status ->
+    UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_ingest_sms_batch(
+        it, FfiConverterSequenceTypeSmsBatchMessage.lower(`messages`),_status)
 }
     }
     )
@@ -2909,6 +2967,45 @@ public object FfiConverterTypeSmartRuleRecord: FfiConverterRustBuffer<SmartRuleR
 
 
 
+/**
+ * An SMS supplied by a native platform to the shared ingestion pipeline.
+ */
+data class SmsBatchMessage (
+    val `body`: kotlin.String, 
+    val `senderHint`: kotlin.String?, 
+    val `occurredAtEpochMs`: kotlin.Long
+) {
+    
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeSmsBatchMessage: FfiConverterRustBuffer<SmsBatchMessage> {
+    override fun read(buf: ByteBuffer): SmsBatchMessage {
+        return SmsBatchMessage(
+            FfiConverterString.read(buf),
+            FfiConverterOptionalString.read(buf),
+            FfiConverterLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: SmsBatchMessage) = (
+            FfiConverterString.allocationSize(value.`body`) +
+            FfiConverterOptionalString.allocationSize(value.`senderHint`) +
+            FfiConverterLong.allocationSize(value.`occurredAtEpochMs`)
+    )
+
+    override fun write(value: SmsBatchMessage, buf: ByteBuffer) {
+            FfiConverterString.write(value.`body`, buf)
+            FfiConverterOptionalString.write(value.`senderHint`, buf)
+            FfiConverterLong.write(value.`occurredAtEpochMs`, buf)
+    }
+}
+
+
+
 data class SmsIngestResult (
     val `status`: SmsIngestStatus, 
     val `transactionId`: kotlin.String?, 
@@ -3060,9 +3157,9 @@ data class TransactionInput (
     val `categoryId`: kotlin.String, 
     val `occurredAtEpochMs`: kotlin.Long, 
     val `accountId`: kotlin.String, 
-    val `accountProvider`: kotlin.String?,
-    val `accountName`: kotlin.String?,
-    val `accountLastFour`: kotlin.String?,
+    val `accountProvider`: kotlin.String?, 
+    val `accountName`: kotlin.String?, 
+    val `accountLastFour`: kotlin.String?, 
     val `reference`: kotlin.String?, 
     val `balanceAfterMinor`: kotlin.Long?, 
     val `feeMinor`: kotlin.Long?, 
@@ -3593,6 +3690,38 @@ public object FfiConverterOptionalString: FfiConverterRustBuffer<kotlin.String?>
 /**
  * @suppress
  */
+public object FfiConverterOptionalTypeTransactionRecord: FfiConverterRustBuffer<TransactionRecord?> {
+    override fun read(buf: ByteBuffer): TransactionRecord? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterTypeTransactionRecord.read(buf)
+    }
+
+    override fun allocationSize(value: TransactionRecord?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterTypeTransactionRecord.allocationSize(value)
+        }
+    }
+
+    override fun write(value: TransactionRecord?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterTypeTransactionRecord.write(value, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterOptionalTypeTransactionKind: FfiConverterRustBuffer<TransactionKind?> {
     override fun read(buf: ByteBuffer): TransactionKind? {
         if (buf.get().toInt() == 0) {
@@ -3765,6 +3894,62 @@ public object FfiConverterSequenceTypeSmartRuleRecord: FfiConverterRustBuffer<Li
 /**
  * @suppress
  */
+public object FfiConverterSequenceTypeSmsBatchMessage: FfiConverterRustBuffer<List<SmsBatchMessage>> {
+    override fun read(buf: ByteBuffer): List<SmsBatchMessage> {
+        val len = buf.getInt()
+        return List<SmsBatchMessage>(len) {
+            FfiConverterTypeSmsBatchMessage.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<SmsBatchMessage>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeSmsBatchMessage.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<SmsBatchMessage>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeSmsBatchMessage.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeSmsIngestResult: FfiConverterRustBuffer<List<SmsIngestResult>> {
+    override fun read(buf: ByteBuffer): List<SmsIngestResult> {
+        val len = buf.getInt()
+        return List<SmsIngestResult>(len) {
+            FfiConverterTypeSmsIngestResult.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<SmsIngestResult>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeSmsIngestResult.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<SmsIngestResult>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeSmsIngestResult.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeSubscriptionRecord: FfiConverterRustBuffer<List<SubscriptionRecord>> {
     override fun read(buf: ByteBuffer): List<SubscriptionRecord> {
         val len = buf.getInt()
@@ -3853,4 +4038,5 @@ public object FfiConverterSequenceTypeTransactionSummaryRecord: FfiConverterRust
     )
     }
     
+
 

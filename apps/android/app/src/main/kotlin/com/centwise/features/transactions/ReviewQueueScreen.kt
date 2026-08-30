@@ -141,17 +141,8 @@ fun ReviewQueueScreen(
                             ) == android.content.pm.PackageManager.PERMISSION_GRANTED
 
                             if (hasReadSms) {
-                                android.widget.Toast.makeText(context, "Scanning SMS inbox...", android.widget.Toast.LENGTH_SHORT).show()
-                                coroutineScope.launch(Dispatchers.IO) {
-                                    val result = com.centwise.core.scanner.HistoricalSmsScanner.scanInbox(context.applicationContext)
-                                    withContext(Dispatchers.Main) {
-                                        android.widget.Toast.makeText(
-                                            context,
-                                            "Scan complete: Found ${result.transactionsImported} transactions",
-                                            android.widget.Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                }
+                                com.centwise.core.scanner.SmsScanWorker.enqueue(context.applicationContext)
+                                android.widget.Toast.makeText(context, "SMS scan started in background", android.widget.Toast.LENGTH_SHORT).show()
                             } else {
                                 val activity = context as? androidx.fragment.app.FragmentActivity
                                 activity?.let {
@@ -278,18 +269,6 @@ private fun ReviewQueueCard(
                 )
             }
 
-            Surface(
-                shape = RoundedCornerShape(6.dp),
-                color = if (isDark) Color(0x1FFFFFFF) else Color(0x0D000000)
-            ) {
-                Text(
-                    text = item.reason,
-                    style = CentwiseTypography.Caption,
-                    color = textSecondary,
-                    fontSize = 11.sp,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                )
-            }
         }
 
         // Raw SMS message

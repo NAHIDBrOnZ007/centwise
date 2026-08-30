@@ -221,6 +221,14 @@ pub struct SmsIngestResult {
     pub reference: Option<String>,
 }
 
+/// An SMS supplied by a native platform to the shared ingestion pipeline.
+#[derive(uniffi::Record)]
+pub struct SmsBatchMessage {
+    pub body: String,
+    pub sender_hint: Option<String>,
+    pub occurred_at_epoch_ms: i64,
+}
+
 /// A review queue row shaped for native review screens.
 #[derive(uniffi::Record)]
 pub struct ReviewQueueRecord {

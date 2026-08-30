@@ -155,6 +155,13 @@ impl CentwiseCore {
             .map_err(CentwiseError::from)
     }
 
+    pub fn get_transaction(&self, id: String) -> Result<Option<TransactionRecord>, CentwiseError> {
+        self.database
+            .get_transaction(&id)
+            .map(|item| item.map(transaction_record))
+            .map_err(CentwiseError::from)
+    }
+
     pub fn list_accounts(&self) -> Result<Vec<AccountRecord>, CentwiseError> {
         self.database
             .list_accounts()
@@ -408,7 +415,12 @@ impl CentwiseCore {
                     }
                 }
                 centwise_parser::ParseOutcome::Rejected(reason) => {
-                    if !matches!(reason, centwise_parser::RejectReason::NoAmountFound) {
+                    if !matches!(reason, centwise_parser::RejectReason::NoAmountFound)
+                        || !centwise_parser::is_likely_financial_review(
+                            &body,
+                            sender_hint.as_deref(),
+                        )
+                    {
                         return Ok(SmsIngestResult {
                             status: SmsIngestStatus::Ignored,
                             transaction_id: None,
@@ -455,10 +467,44 @@ impl CentwiseCore {
             .map_err(CentwiseError::from)
     }
 
+    /// Ingests multiple platform SMS messages through the same Rust parser.
+    /// The native bridge crosses once for the whole batch; each message keeps
+    /// the existing Rust deduplication and review-queue behavior.
+    pub fn ingest_sms_batch(
+        &self,
+        messages: Vec<SmsBatchMessage>,
+    ) -> Result<Vec<SmsIngestResult>, CentwiseError> {
+        messages
+            .into_iter()
+            .map(|message| {
+                self.ingest_sms(
+                    message.body,
+                    message.sender_hint,
+                    message.occurred_at_epoch_ms,
+                )
+            })
+            .collect()
+    }
+
     pub fn list_review_queue(&self, limit: u32) -> Result<Vec<ReviewQueueRecord>, CentwiseError> {
         self.database
-            .list_review_queue(limit)
-            .map(|items| items.into_iter().map(review_queue_record).collect())
+            // Read a wider window before filtering legacy non-financial rows that
+            // were queued by older parser versions, then apply the caller limit.
+            .list_review_queue(10_000)
+            .map(|items| {
+                items
+                    .into_iter()
+                    .filter(|item| {
+                        item.candidate_amount_minor.is_some()
+                            || centwise_parser::is_likely_financial_review(
+                                &item.raw_sms,
+                                item.sender.as_deref(),
+                            )
+                    })
+                    .take(limit as usize)
+                    .map(review_queue_record)
+                    .collect()
+            })
             .map_err(CentwiseError::from)
     }
 

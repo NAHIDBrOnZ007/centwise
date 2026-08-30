@@ -330,19 +330,8 @@ fun DataManagementScreen(
                                             )
                                         }
                                     } else {
-                                        isScanning = true
-                                        Toast.makeText(context, "Scanning SMS inbox for bank & MFS transactions...", Toast.LENGTH_SHORT).show()
-                                        coroutineScope.launch(Dispatchers.IO) {
-                                            val result = com.centwise.core.scanner.HistoricalSmsScanner.scanInbox(context.applicationContext)
-                                            withContext(Dispatchers.Main) {
-                                                isScanning = false
-                                                Toast.makeText(
-                                                    context,
-                                                    "Scan complete: Found ${result.transactionsImported} transactions (${result.totalScanned} scanned)",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
-                                            }
-                                        }
+                                        com.centwise.core.scanner.SmsScanWorker.enqueue(context.applicationContext)
+                                        Toast.makeText(context, "SMS scan started in background", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                                 .padding(horizontal = 16.dp, vertical = 14.dp),

@@ -11,10 +11,12 @@ import com.centwise.core.uniffi.CategoryRecord
 import com.centwise.core.uniffi.CentwiseCore
 import com.centwise.core.uniffi.DemoDataSummaryRecord
 import com.centwise.core.uniffi.ReviewQueueRecord
+import com.centwise.core.uniffi.HomeDashboardRecord
 import com.centwise.core.uniffi.SmartRuleInput
 import com.centwise.core.uniffi.SmartRuleRecord
 import com.centwise.core.uniffi.SmsIngestResult
 import com.centwise.core.uniffi.SmsIngestStatus
+import com.centwise.core.uniffi.SmsBatchMessage
 import com.centwise.core.uniffi.SubscriptionInput
 import com.centwise.core.uniffi.SubscriptionRecord
 import com.centwise.core.uniffi.TransactionInput
@@ -67,6 +69,16 @@ object CentwiseRustBackend {
         }
     }
 
+    fun ingestSmsBatch(messages: List<SmsBatchMessage>): List<SmsIngestResult> {
+        val rustCore = core ?: return emptyList()
+        return try {
+            rustCore.ingestSmsBatch(messages)
+        } catch (error: Throwable) {
+            Log.e(TAG, "Rust SMS batch ingestion failed", error)
+            emptyList()
+        }
+    }
+
     fun loadDemoData(): DemoDataSummaryRecord? {
         val rustCore = core
         return if (rustCore != null) {
@@ -102,6 +114,20 @@ object CentwiseRustBackend {
     } catch (error: Throwable) {
         Log.e(TAG, "Rust transaction read failed, falling back", error)
         fallbackEngine.listTransactions()
+    }
+
+    fun homeDashboard(startEpochMs: Long, endEpochMs: Long): HomeDashboardRecord? = try {
+        core?.homeDashboard(startEpochMs, endEpochMs, 5u)
+    } catch (error: Throwable) {
+        Log.e(TAG, "Rust Home dashboard query failed", error)
+        null
+    }
+
+    fun getTransaction(id: String): TransactionRecord? = try {
+        core?.getTransaction(id) ?: fallbackEngine.listTransactions().firstOrNull { it.id == id }
+    } catch (error: Throwable) {
+        Log.e(TAG, "Rust transaction read failed", error)
+        fallbackEngine.listTransactions().firstOrNull { it.id == id }
     }
 
     fun listAccounts(): List<AccountRecord> = try {
@@ -184,7 +210,7 @@ object CentwiseRustBackend {
     }
 
     fun listReviewQueue(): List<ReviewQueueRecord> = try {
-        core?.listReviewQueue(100u) ?: fallbackEngine.listReviewQueue()
+        core?.listReviewQueue(10_000u) ?: fallbackEngine.listReviewQueue()
     } catch (error: Throwable) {
         Log.e(TAG, "Rust review queue read failed", error)
         fallbackEngine.listReviewQueue()

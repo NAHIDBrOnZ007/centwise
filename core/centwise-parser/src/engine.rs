@@ -123,6 +123,46 @@ pub fn parse_sms(body: &str, sender_hint: Option<&str>) -> ParseOutcome {
     }))
 }
 
+/// A rejected message is reviewable only when it has evidence of being financial.
+/// This prevents ordinary service/travel notifications from filling the queue.
+pub fn is_likely_financial_review(body: &str, sender_hint: Option<&str>) -> bool {
+    let lower = body.to_lowercase();
+    let sender = sender_hint.unwrap_or_default().to_lowercase();
+    let obvious_non_financial = ["uber", "pathao", "foodpanda", "daraz", "mercedes-benz"]
+        .iter()
+        .any(|word| lower.contains(word) || sender.contains(word));
+    if obvious_non_financial {
+        return false;
+    }
+
+    [
+        "bkash",
+        "nagad",
+        "rocket",
+        "bank",
+        "a/c",
+        "account",
+        "balance",
+        "trxid",
+        "txnid",
+        "transaction",
+        "debited",
+        "credited",
+        "cash out",
+        "cash in",
+        "send money",
+        "withdraw",
+        "deposit",
+        "recharge",
+        "payment",
+        "fee",
+        "টাকা",
+        "লেনদেন",
+    ]
+    .iter()
+    .any(|word| lower.contains(word) || sender.contains(word))
+}
+
 // ---------------------------------------------------------------------------
 // Safety Filters
 // ---------------------------------------------------------------------------
@@ -384,7 +424,8 @@ fn resolve_categorization(
 #[cfg(test)]
 mod tests {
     use super::{
-        extract_account_info, extract_balance, extract_fee, extract_party, parse_sms, ParseOutcome,
+        extract_account_info, extract_balance, extract_fee, extract_party,
+        is_likely_financial_review, parse_sms, ParseOutcome,
     };
     use centwise_normalization::normalize_sms_text;
 
@@ -448,5 +489,17 @@ mod tests {
 
         assert_eq!(transaction.amount_minor, 250_000);
         assert_eq!(transaction.balance_after_minor, Some(747_700));
+    }
+
+    #[test]
+    fn does_not_review_ordinary_service_messages() {
+        assert!(!is_likely_financial_review(
+            "Your Uber driver is arriving now. Track: https://uber.com/ride",
+            Some("UBER")
+        ));
+        assert!(is_likely_financial_review(
+            "Your bank account balance is available",
+            Some("BANK")
+        ));
     }
 }

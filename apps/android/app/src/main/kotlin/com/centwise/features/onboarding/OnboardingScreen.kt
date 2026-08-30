@@ -449,11 +449,17 @@ private fun OnboardingPermissionStep(
     }
 
     var isScanning by remember { mutableStateOf(false) }
+    var scannedCount by remember { mutableIntStateOf(0) }
     fun scanSms() {
         if (isScanning) return
         isScanning = true
         scope.launch(Dispatchers.IO) {
-            val result = HistoricalSmsScanner.scanInbox(context.applicationContext)
+            val result = HistoricalSmsScanner.scanInbox(
+                context.applicationContext,
+                onProgress = { scanned, _ ->
+                    scope.launch(Dispatchers.Main) { scannedCount = scanned }
+                }
+            )
             withContext(Dispatchers.Main) {
                 isScanning = false
                 OnboardingPrefs.setCompleted(context)
@@ -520,7 +526,9 @@ private fun OnboardingPermissionStep(
             text = when (stage) {
                 PermissionStage.NOTIFICATIONS -> "Centwise uses notifications to let you know when a transaction is captured."
                 PermissionStage.SMS -> "Centwise reads bank and MFS messages to scan your transactions. Your data stays on this device."
-                PermissionStage.SCAN -> "Centwise is scanning your SMS using the shared Rust engine."
+                PermissionStage.SCAN -> if (isScanning && scannedCount > 0) {
+                    "Centwise is scanning your SMS. $scannedCount messages checked..."
+                } else "Centwise is scanning your SMS using the shared Rust engine."
             },
             style = CentwiseTypography.Subheadline,
             color = textSecondary,

@@ -213,6 +213,21 @@ impl<'a> Queries<'a> {
         Ok(transactions)
     }
 
+    /// Returns one transaction by its stable id without scanning the inbox.
+    pub fn get_transaction(&self, id: &str) -> DbResult<Option<Transaction>> {
+        self.connection
+            .query_row(
+                "SELECT id, title, amount_minor, currency, transaction_type, category_id,
+                        occurred_at_epoch_ms, account_id, reference, balance_after_minor,
+                        notes, raw_sms, fee_minor, is_auto_tracked
+                 FROM transactions WHERE id = ?1",
+                params![id],
+                map_full_row,
+            )
+            .optional()
+            .map_err(Into::into)
+    }
+
     /// Everything the Home screen renders, computed in one pass.
     pub fn home_dashboard(
         &self,

@@ -52,6 +52,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.biometric)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.work.runtime.ktx)
     implementation("net.java.dev.jna:jna:5.16.0@aar")
 
     debugImplementation(libs.androidx.compose.ui.tooling)

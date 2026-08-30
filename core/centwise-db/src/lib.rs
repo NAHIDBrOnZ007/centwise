@@ -118,6 +118,10 @@ impl Database {
         self.read(|queries| queries.list_transactions(limit))
     }
 
+    pub fn get_transaction(&self, id: &str) -> DbResult<Option<Transaction>> {
+        self.read(|queries| queries.get_transaction(id))
+    }
+
     pub fn list_accounts(&self) -> DbResult<Vec<centwise_domain::AccountSummary>> {
         self.read(|queries| queries.list_accounts())
     }
