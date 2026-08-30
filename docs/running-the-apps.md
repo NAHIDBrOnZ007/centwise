@@ -7,6 +7,10 @@ budgets, subscriptions, accounts, demo data, and the review queue. Native
 repositories only adapt Rust records into UI state. The Rust mobile library
 must be built and packaged before launching either app.
 
+See [`docs/rust-mobile-build.md`](rust-mobile-build.md) for the authoritative
+Android `.so` and iOS `.a` packaging checklist. Generated native libraries are
+ignored by Git and must be rebuilt on a new machine or clean checkout.
+
 ## Android (works on this Windows PC)
 
 ### Requirements
