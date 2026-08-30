@@ -1,6 +1,5 @@
 package com.centwise.features.settings
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -11,27 +10,25 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Payments
-import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.centwise.core.design.components.TopBarBackButton
+import com.centwise.core.design.components.iosBounceClick
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
-import com.centwise.R
 
 @Composable
 fun AboutScreen(
@@ -55,18 +52,11 @@ fun AboutScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 10.dp),
+                .padding(horizontal = 14.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                tint = textPrimary,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable { onBackClick() }
-                    .padding(10.dp)
-            )
+            TopBarBackButton(onBackClick = onBackClick, isDark = isDark)
+            Spacer(modifier = Modifier.width(12.dp))
             Text(text = "About", style = CentwiseTypography.Headline, color = textPrimary)
         }
 
@@ -77,7 +67,7 @@ fun AboutScreen(
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // App Identity Card
+            // App Identity Card (Official Centwise Logo matching iOS Image("AppLogo"))
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -85,23 +75,28 @@ fun AboutScreen(
                     .background(cardBg)
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                androidx.compose.foundation.Image(
+                    painter = androidx.compose.ui.res.painterResource(id = com.centwise.R.drawable.app_logo),
                     contentDescription = "Centwise logo",
-                    modifier = Modifier.size(84.dp)
+                    modifier = Modifier
+                        .size(84.dp)
+                        .clip(RoundedCornerShape(18.dp)),
+                    contentScale = androidx.compose.ui.layout.ContentScale.Fit
                 )
-                Text("Centwise", style = CentwiseTypography.Title2, color = textPrimary)
-                Text("Version 1.0", style = CentwiseTypography.Caption, color = textSecondary)
+
+                Text("Centwise", style = CentwiseTypography.Title2, color = textPrimary, fontWeight = FontWeight.Bold)
+                Text("Version 1.0 (1)", style = CentwiseTypography.Caption, color = textSecondary)
                 Text(
                     "Bangladesh-focused expense tracker that turns bank and MFS SMS into insights automatically.",
                     style = CentwiseTypography.Subheadline,
-                    color = textSecondary
+                    color = textSecondary,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
             }
 
-            // Info Card
+            // Info Card (Exact matching iOS LabeledContent)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -109,21 +104,20 @@ fun AboutScreen(
                     .background(cardBg)
                     .padding(horizontal = 16.dp, vertical = 6.dp)
             ) {
-                AboutRow(icon = Icons.Default.Public, tint = CentwiseColors.AccentBlue, title = "Platform", value = "Android", textPrimary = textPrimary, textSecondary = textSecondary, showDivider = true)
-                AboutRow(icon = Icons.Default.Info, tint = CentwiseColors.IncomeGreen, title = "Made for", value = "Bangladesh", textPrimary = textPrimary, textSecondary = textSecondary, showDivider = true)
-                AboutRow(icon = Icons.Default.Lock, tint = CentwiseColors.NagadOrange, title = "Data storage", value = "On-device only", textPrimary = textPrimary, textSecondary = textSecondary, showDivider = true)
-                AboutRow(icon = Icons.Default.Payments, tint = accent, title = "Currency", value = "Bangladeshi Taka (৳)", textPrimary = textPrimary, textSecondary = textSecondary, showDivider = false)
+                AboutLabeledRow(label = "Platform", value = "Android", textPrimary = textPrimary, textSecondary = textSecondary, showDivider = true, isDark = isDark)
+                AboutLabeledRow(label = "Made for", value = "Bangladesh 🇧🇩", textPrimary = textPrimary, textSecondary = textSecondary, showDivider = true, isDark = isDark)
+                AboutLabeledRow(label = "Data storage", value = "On-device only", textPrimary = textPrimary, textSecondary = textSecondary, showDivider = true, isDark = isDark)
+                AboutLabeledRow(label = "Currency", value = "Bangladeshi Taka (৳)", textPrimary = textPrimary, textSecondary = textSecondary, showDivider = false, isDark = isDark)
             }
 
-            // Privacy Card
+            // Privacy Card (Matching iOS Section)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
                     .background(cardBg)
                     .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text("Privacy First", style = CentwiseTypography.Headline, color = textPrimary)
                 Text(
@@ -149,14 +143,13 @@ fun AboutScreen(
 }
 
 @Composable
-private fun AboutRow(
-    icon: ImageVector,
-    tint: Color,
-    title: String,
+private fun AboutLabeledRow(
+    label: String,
     value: String,
     textPrimary: Color,
     textSecondary: Color,
-    showDivider: Boolean
+    showDivider: Boolean,
+    isDark: Boolean
 ) {
     Column {
         Row(
@@ -164,14 +157,13 @@ private fun AboutRow(
                 .fillMaxWidth()
                 .padding(vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Icon(imageVector = icon, contentDescription = null, tint = tint, modifier = Modifier.size(20.dp))
-            Text(title, style = CentwiseTypography.Body, color = textPrimary, modifier = Modifier.weight(1f))
-            Text(value, style = CentwiseTypography.Subheadline, color = textSecondary)
+            Text(label, style = CentwiseTypography.Body, color = textPrimary)
+            Text(value, style = CentwiseTypography.Subheadline, color = textSecondary, fontWeight = FontWeight.Medium)
         }
         if (showDivider) {
-            HorizontalDivider(color = Color(0x0A000000))
+            HorizontalDivider(color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
         }
     }
 }

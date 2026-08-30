@@ -114,6 +114,8 @@ class TransactionRepository private constructor() {
                 isActive = subscription.isActive
             )
         }
+        SmartRulesRepository.shared.refresh()
+        ReviewQueueRepository.shared.refresh()
     }
 
     fun addTransaction(tx: TransactionItem): Boolean =

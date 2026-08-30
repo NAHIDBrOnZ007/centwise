@@ -27,8 +27,12 @@ import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.data.models.TransactionItem
+import com.centwise.data.repository.TransactionRepository
+import com.centwise.core.profile.UserPrefs
 import com.centwise.features.settings.AccentOptions
 import com.centwise.features.settings.AppearancePrefs
+import com.centwise.features.settings.EditProfileSheet
+import com.centwise.features.transactions.AddEditTransactionSheet
 import com.centwise.features.transactions.TransactionDetailSheet
 
 @Composable
@@ -45,7 +49,13 @@ fun HomeScreen(
     val monthlySaved by viewModel.monthlySaved.collectAsState()
     val accounts by viewModel.accounts.collectAsState()
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var currentUserName by remember { mutableStateOf(UserPrefs.getUserName(context)) }
+    var currentUserAvatar by remember { mutableStateOf(UserPrefs.getUserAvatar(context)) }
+    var showEditProfileSheet by remember { mutableStateOf(false) }
+
     var selectedTransaction by remember { mutableStateOf<TransactionItem?>(null) }
+    var editingTransaction by remember { mutableStateOf<TransactionItem?>(null) }
 
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
@@ -73,10 +83,12 @@ fun HomeScreen(
                 )
             }
 
-            // 1. User Greeting Card (with Live User Name, Avatar & Dynamic Greeting)
+            // 1. User Greeting Card (Matching iOS GreetingCard 1:1)
             item {
                 GreetingCard(
-                    onProfileClick = onProfileClick,
+                    userName = currentUserName,
+                    avatarResId = UserPrefs.getAvatarResId(currentUserAvatar),
+                    onProfileClick = { showEditProfileSheet = true },
                     isDark = isDark
                 )
             }
@@ -122,12 +134,12 @@ fun HomeScreen(
                 }
             }
 
-            // 4. Transactions List or Empty State
+            // 5. Transactions List or Empty State
             if (recentTransactions.isEmpty()) {
                 item {
                     EmptyStateView(
                         title = "No transactions yet",
-                        description = "Tap + to add your first transaction",
+                        description = "Add a transaction or configure SMS capture to get started.",
                         isDark = isDark
                     )
                 }
@@ -137,18 +149,18 @@ fun HomeScreen(
                         transaction = tx,
                         onClick = { selectedTransaction = tx },
                         showBackground = true,
-                        showChevron = false,
+                        showChevron = true,
                         isDark = isDark
                     )
                 }
             }
         }
 
-        // Floating Blue Action Button (+)
+        // Floating Action Button (+) with Dynamic Theme Accent
         FloatingActionButton(
             onClick = onAddClick,
             shape = CircleShape,
-            containerColor = CentwiseColors.AccentBlue,
+            containerColor = accent,
             contentColor = Color.White,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -167,7 +179,44 @@ fun HomeScreen(
             TransactionDetailSheet(
                 transaction = tx,
                 onDismiss = { selectedTransaction = null },
-                onDelete = {},
+                onDelete = { id ->
+                    TransactionRepository.shared.deleteTransaction(id)
+                },
+                onEdit = { toEdit ->
+                    selectedTransaction = null
+                    editingTransaction = toEdit
+                },
+                isDark = isDark
+            )
+        }
+
+        // Edit Sheet
+        editingTransaction?.let { tx ->
+            AddEditTransactionSheet(
+                initialTransaction = tx,
+                onDismiss = { editingTransaction = null },
+                onSave = { updatedTx ->
+                    val saved = TransactionRepository.shared.updateTransaction(updatedTx)
+                    if (saved) editingTransaction = null
+                    saved
+                },
+                isDark = isDark
+            )
+        }
+
+        // Edit Profile Sheet (Directly inside Home Tab Matching iOS GreetingCard)
+        if (showEditProfileSheet) {
+            EditProfileSheet(
+                currentName = currentUserName,
+                currentAvatar = currentUserAvatar,
+                onDismiss = { showEditProfileSheet = false },
+                onSave = { newName, newAvatar ->
+                    UserPrefs.setUserName(context, newName)
+                    UserPrefs.setUserAvatar(context, newAvatar)
+                    currentUserName = newName
+                    currentUserAvatar = newAvatar
+                    showEditProfileSheet = false
+                },
                 isDark = isDark
             )
         }

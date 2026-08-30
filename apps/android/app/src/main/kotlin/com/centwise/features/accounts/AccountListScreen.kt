@@ -17,6 +17,7 @@ import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -29,8 +30,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.centwise.core.design.components.TopBarBackButton
+import com.centwise.core.design.components.iosBounceClick
 import com.centwise.core.design.formatters.CurrencyFormatter
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
@@ -85,29 +90,38 @@ fun AccountListScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 10.dp),
+                .padding(horizontal = 14.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                tint = textPrimary,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable { onBackClick() }
-                    .padding(10.dp)
-            )
+            TopBarBackButton(onBackClick = onBackClick, isDark = isDark)
+            Spacer(modifier = Modifier.width(12.dp))
             Text(text = "Accounts & Wallets", style = CentwiseTypography.Headline, color = textPrimary)
             Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = "Add",
-                style = CentwiseTypography.Body,
+            Surface(
+                shape = CircleShape,
                 color = accent,
                 modifier = Modifier
                     .clip(CircleShape)
-                    .clickable { showAddSheet = true }
-                    .padding(10.dp)
-            )
+                    .iosBounceClick { showAddSheet = true }
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add",
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "Add",
+                        style = CentwiseTypography.Headline.copy(fontSize = 13.sp, fontWeight = FontWeight.Bold),
+                        color = Color.White
+                    )
+                }
+            }
         }
 
         LazyColumn(
@@ -146,65 +160,67 @@ fun AccountListScreen(
                 Text("Wallets & Bank Accounts", style = CentwiseTypography.Headline, color = textPrimary)
             }
 
-            item {
-                Column(
+            items(accounts, key = { it.id }) { account ->
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
                         .background(cardBg)
-                        .padding(horizontal = 14.dp, vertical = 6.dp)
+                        .iosBounceClick { onAccountClick(account) }
+                        .padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    accounts.forEachIndexed { index, account ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onAccountClick(account) }
-                                .padding(vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            val tint = providerColor(account.providerName)
-                            Box(
-                                modifier = Modifier
-                                    .size(42.dp)
-                                    .clip(CircleShape)
-                                    .background(tint.copy(alpha = 0.15f)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = providerIcon(account.providerName),
-                                    contentDescription = null,
-                                    tint = tint,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
+                    // Clean unboxed provider icon tinted with theme accent (Matching iOS accountCard)
+                    Box(
+                        modifier = Modifier.size(28.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = providerIcon(account.providerName),
+                            contentDescription = null,
+                            tint = accent,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
 
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(account.name, style = CentwiseTypography.Body, color = textPrimary)
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(account.name, style = CentwiseTypography.Headline.copy(fontSize = 14.sp, fontWeight = FontWeight.SemiBold), color = textPrimary)
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            if (account.accountNumber.isNotBlank()) {
                                 Text(
-                                    text = "${account.type} • •• ${account.accountNumber.takeLast(4)}",
-                                    style = CentwiseTypography.Caption,
+                                    text = "••${account.accountNumber.takeLast(4)}",
+                                    style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
                                     color = textSecondary
                                 )
                             }
-
-                            Text(
-                                text = CurrencyFormatter.formatBDT(account.balance, compact = true),
-                                style = CentwiseTypography.AmountMedium,
-                                color = textPrimary
-                            )
-
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = null,
-                                tint = textSecondary
-                            )
-                        }
-
-                        if (index < accounts.lastIndex) {
-                            HorizontalDivider(color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
+                            Surface(
+                                shape = CircleShape,
+                                color = if (isDark) Color(0x1FFFFFFF) else Color(0x0F000000)
+                            ) {
+                                Text(
+                                    text = account.type,
+                                    style = CentwiseTypography.Caption.copy(fontSize = 10.sp, fontWeight = FontWeight.Medium),
+                                    color = textSecondary,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
                         }
                     }
+
+                    Text(
+                        text = CurrencyFormatter.formatBDT(account.balance, compact = true),
+                        style = CentwiseTypography.Headline.copy(fontSize = 14.sp, fontWeight = FontWeight.Bold),
+                        color = textPrimary
+                    )
+
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = textSecondary.copy(alpha = 0.5f),
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
             }
         }

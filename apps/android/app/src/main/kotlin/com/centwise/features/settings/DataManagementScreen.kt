@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,15 +22,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.centwise.core.backend.CentwiseRustBackend
+import com.centwise.core.design.components.TopBarBackButton
+import com.centwise.core.design.components.iosBounceClick
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
-import com.centwise.core.backend.CentwiseRustBackend
 import com.centwise.data.repository.TransactionRepository
-import java.io.File
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+/**
+ * Idiomatic Jetpack Compose Data & Storage Screen matching iOS DataManagementScreen 1:1.
+ * Features clean inset-grouped sections for Local Storage, Current Records, Data & Backup, and Destructive Reset.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DataManagementScreen(
@@ -38,6 +49,7 @@ fun DataManagementScreen(
 ) {
     val context = LocalContext.current
     val repository = TransactionRepository.shared
+    val coroutineScope = rememberCoroutineScope()
 
     val transactions by repository.transactions.collectAsState()
     val accounts by repository.accounts.collectAsState()
@@ -52,6 +64,7 @@ fun DataManagementScreen(
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
+    val dividerColor = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000)
 
     val dbFile = context.noBackupFilesDir.resolve("centwise.db")
     val dbSizeString = if (dbFile.exists()) {
@@ -63,309 +76,422 @@ fun DataManagementScreen(
     if (showLoadDemoDialog) {
         AlertDialog(
             onDismissRequest = { showLoadDemoDialog = false },
-            title = { Text("Load Demo Sample Data?", color = textPrimary) },
+            title = { Text("Load Demo Sample Data?", style = CentwiseTypography.Headline, color = textPrimary) },
             text = {
                 Text(
                     "This will populate your database with realistic sample transactions, accounts, budgets, and subscriptions for previewing Centwise.",
+                    style = CentwiseTypography.Body,
                     color = textSecondary
                 )
             },
             confirmButton = {
-                Button(
+                TextButton(
                     onClick = {
                         showLoadDemoDialog = false
                         val summary = CentwiseRustBackend.loadDemoData()
-                        val message = if (summary != null) {
+                        if (summary != null) {
                             repository.clearLegacyStorage()
                             repository.loadFromRust()
-                            "Rust demo data loaded: ${summary.transactions} transactions"
+                            Toast.makeText(context, "Sample data loaded (${summary.transactions} transactions)", Toast.LENGTH_SHORT).show()
                         } else {
-                            "Rust core is unavailable; demo data was not loaded"
+                            Toast.makeText(context, "Could not load demo data", Toast.LENGTH_SHORT).show()
                         }
-                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = accent)
+                    }
                 ) {
-                    Text("Load Demo Data", color = Color.White)
+                    Text("Load Demo Data", color = accent, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showLoadDemoDialog = false }) {
                     Text("Cancel", color = textSecondary)
                 }
-            }
+            },
+            containerColor = cardBg
         )
     }
 
     if (showResetDialog) {
         AlertDialog(
             onDismissRequest = { showResetDialog = false },
-            title = { Text("Wipe Database & Reset?", color = textPrimary) },
+            title = { Text("Wipe Database & Reset?", style = CentwiseTypography.Headline, color = textPrimary) },
             text = {
                 Text(
                     "Are you sure you want to delete all transactions, budgets, and subscriptions? This action cannot be undone.",
+                    style = CentwiseTypography.Body,
                     color = textSecondary
                 )
             },
             confirmButton = {
-                Button(
+                TextButton(
                     onClick = {
                         showResetDialog = false
                         repository.resetToEmptyDatabase()
-                        Toast.makeText(context, "Database wiped. Starting clean.", Toast.LENGTH_SHORT).show()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
+                        Toast.makeText(context, "Database wiped. Starting completely clean.", Toast.LENGTH_SHORT).show()
+                    }
                 ) {
-                    Text("Wipe Everything", color = Color.White)
+                    Text("Wipe Everything", color = CentwiseColors.ExpenseRed, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showResetDialog = false }) {
                     Text("Cancel", color = textSecondary)
                 }
-            }
+            },
+            containerColor = cardBg
         )
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Data & Storage", color = textPrimary) },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = textPrimary
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = bg)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(bg)
+            .statusBarsPadding()
+    ) {
+        // Top Navigation Bar
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TopBarBackButton(onBackClick = onBackClick, isDark = isDark)
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = "Data & Storage",
+                style = CentwiseTypography.Headline,
+                color = textPrimary
             )
-        },
-        containerColor = bg
-    ) { padding ->
+        }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = CentwiseSpacing.ScreenPadding),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 20.dp),
+            contentPadding = PaddingValues(top = 10.dp, bottom = 40.dp),
+            verticalArrangement = Arrangement.spacedBy(22.dp)
         ) {
-            // Database Overview Card
+            // Section 1: Local Storage
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge),
-                    colors = CardDefaults.cardColors(containerColor = cardBg)
-                ) {
-                    Row(
+                Column {
+                    Text(
+                        text = "Local Storage",
+                        style = CentwiseTypography.Headline.copy(fontSize = 14.sp),
+                        color = textSecondary,
+                        modifier = Modifier.padding(start = 6.dp, bottom = 8.dp)
+                    )
+
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
+                            .background(cardBg)
                     ) {
-                        Box(
+                        // Database Row
+                        Row(
                             modifier = Modifier
-                                .size(44.dp)
-                                .clip(CircleShape)
-                                .background(CentwiseColors.IncomeGreen.copy(alpha = 0.15f)),
-                            contentAlignment = Alignment.Center
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Storage,
-                                contentDescription = "Database",
-                                tint = CentwiseColors.IncomeGreen,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "Local Storage",
-                                    style = CentwiseTypography.Headline,
-                                    color = textPrimary
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Box(
-                                    modifier = Modifier
-                                        .size(8.dp)
-                                        .clip(CircleShape)
-                                        .background(CentwiseColors.IncomeGreen)
-                                )
-                            }
                             Text(
-                                text = "Encrypted On-Device Database",
-                                style = CentwiseTypography.Caption,
+                                text = "Database",
+                                style = CentwiseTypography.Body,
+                                color = textPrimary
+                            )
+                            Text(
+                                text = dbSizeString,
+                                style = CentwiseTypography.Body.copy(fontWeight = FontWeight.Medium),
                                 color = textSecondary
                             )
                         }
 
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = textSecondary.copy(alpha = 0.12f)
+                        HorizontalDivider(color = dividerColor, modifier = Modifier.padding(start = 16.dp))
+
+                        // Encrypted notice row
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
+                            Icon(
+                                imageVector = Icons.Default.Security,
+                                contentDescription = null,
+                                tint = textSecondary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = dbSizeString,
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                                style = CentwiseTypography.Caption.copy(fontWeight = FontWeight.SemiBold),
-                                color = textPrimary
+                                text = "Encrypted on this device",
+                                style = CentwiseTypography.Body,
+                                color = textSecondary
                             )
                         }
                     }
                 }
             }
 
-            // Data Records Breakdown
+            // Section 2: Current Records
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge),
-                    colors = CardDefaults.cardColors(containerColor = cardBg)
-                ) {
+                Column {
+                    Text(
+                        text = "Current Records",
+                        style = CentwiseTypography.Headline.copy(fontSize = 14.sp),
+                        color = textSecondary,
+                        modifier = Modifier.padding(start = 6.dp, bottom = 8.dp)
+                    )
+
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
+                            .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
+                            .background(cardBg)
                     ) {
-                        Text(
-                            text = "CURRENT DATABASE RECORDS",
-                            style = CentwiseTypography.Caption.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 11.sp
-                            ),
-                            color = textSecondary
+                        RecordRow(
+                            icon = Icons.AutoMirrored.Filled.ReceiptLong,
+                            iconColor = accent,
+                            title = "Transactions",
+                            count = transactions.size,
+                            showDivider = true,
+                            dividerColor = dividerColor,
+                            textPrimary = textPrimary,
+                            textSecondary = textSecondary
                         )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            MetricPill(
-                                modifier = Modifier.weight(1f),
-                                title = "Transactions",
-                                count = "${transactions.size}",
-                                icon = Icons.Default.ReceiptLong,
-                                color = CentwiseColors.PrimaryEmerald,
-                                textPrimary = textPrimary,
-                                textSecondary = textSecondary
-                            )
-                            MetricPill(
-                                modifier = Modifier.weight(1f),
-                                title = "Accounts",
-                                count = "${accounts.size}",
-                                icon = Icons.Default.AccountBalance,
-                                color = Color(0xFF007AFF),
-                                textPrimary = textPrimary,
-                                textSecondary = textSecondary
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            MetricPill(
-                                modifier = Modifier.weight(1f),
-                                title = "Budgets",
-                                count = "${budgets.size}",
-                                icon = Icons.Default.PieChart,
-                                color = Color(0xFFFF9500),
-                                textPrimary = textPrimary,
-                                textSecondary = textSecondary
-                            )
-                            MetricPill(
-                                modifier = Modifier.weight(1f),
-                                title = "Subscriptions",
-                                count = "${subscriptions.size}",
-                                icon = Icons.Default.Subscriptions,
-                                color = Color(0xFF5856D6),
-                                textPrimary = textPrimary,
-                                textSecondary = textSecondary
-                            )
-                        }
+                        RecordRow(
+                            icon = Icons.Default.AccountBalance,
+                            iconColor = accent,
+                            title = "Accounts",
+                            count = accounts.size,
+                            showDivider = true,
+                            dividerColor = dividerColor,
+                            textPrimary = textPrimary,
+                            textSecondary = textSecondary
+                        )
+                        RecordRow(
+                            icon = Icons.Default.PieChart,
+                            iconColor = accent,
+                            title = "Budgets",
+                            count = budgets.size,
+                            showDivider = true,
+                            dividerColor = dividerColor,
+                            textPrimary = textPrimary,
+                            textSecondary = textSecondary
+                        )
+                        RecordRow(
+                            icon = Icons.Default.Autorenew,
+                            iconColor = accent,
+                            title = "Subscriptions",
+                            count = subscriptions.size,
+                            showDivider = false,
+                            dividerColor = dividerColor,
+                            textPrimary = textPrimary,
+                            textSecondary = textSecondary
+                        )
                     }
                 }
             }
 
-            // Actions Section
+            // Section 3: Data & Backup
             item {
-                Text(
-                    text = "DATA & BACKUP OPTIONS",
-                    style = CentwiseTypography.Caption.copy(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 11.sp
-                    ),
-                    color = textSecondary,
-                    modifier = Modifier.padding(start = 6.dp)
-                )
-            }
-
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
-                        .background(cardBg)
-                ) {
-                    ActionRow(
-                        icon = Icons.Default.AutoAwesome,
-                        iconColor = accent,
-                        title = "Load Demo Sample Data",
-                        subtitle = "Populate realistic transactions for testing",
-                        onClick = { showLoadDemoDialog = true },
-                        textPrimary = textPrimary,
-                        textSecondary = textSecondary
+                Column {
+                    Text(
+                        text = "Data & Backup",
+                        style = CentwiseTypography.Headline.copy(fontSize = 14.sp),
+                        color = textSecondary,
+                        modifier = Modifier.padding(start = 6.dp, bottom = 8.dp)
                     )
 
-                    HorizontalDivider(color = textSecondary.copy(alpha = 0.12f), modifier = Modifier.padding(start = 56.dp))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
+                            .background(cardBg)
+                    ) {
+                        // Scan SMS Inbox (Manual SMS Trigger)
+                        var isScanning by remember { mutableStateOf(false) }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .iosBounceClick {
+                                    if (isScanning) return@iosBounceClick
+                                    val hasReadSms = androidx.core.content.ContextCompat.checkSelfPermission(
+                                        context,
+                                        android.Manifest.permission.READ_SMS
+                                    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
 
-                    ActionRow(
-                        icon = Icons.Default.Share,
-                        iconColor = Color(0xFF007AFF),
-                        title = "Export Data to CSV",
-                        subtitle = "Share spreadsheet with all records",
-                        onClick = {
-                            com.centwise.features.transactions.CsvExporter.shareExport(context)
-                        },
-                        textPrimary = textPrimary,
-                        textSecondary = textSecondary
-                    )
+                                    if (!hasReadSms) {
+                                        val activity = context as? androidx.fragment.app.FragmentActivity
+                                        activity?.let {
+                                            androidx.core.app.ActivityCompat.requestPermissions(
+                                                it,
+                                                arrayOf(android.Manifest.permission.READ_SMS, android.Manifest.permission.RECEIVE_SMS),
+                                                1001
+                                            )
+                                        }
+                                    } else {
+                                        isScanning = true
+                                        Toast.makeText(context, "Scanning SMS inbox for bank & MFS transactions...", Toast.LENGTH_SHORT).show()
+                                        coroutineScope.launch(Dispatchers.IO) {
+                                            val result = com.centwise.core.scanner.HistoricalSmsScanner.scanInbox(context.applicationContext)
+                                            withContext(Dispatchers.Main) {
+                                                isScanning = false
+                                                Toast.makeText(
+                                                    context,
+                                                    "Scan complete: Found ${result.transactionsImported} transactions (${result.totalScanned} scanned)",
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                            }
+                                        }
+                                    }
+                                }
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Sms,
+                                contentDescription = null,
+                                tint = accent,
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(14.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = if (isScanning) "Scanning SMS Inbox..." else "Scan SMS Inbox",
+                                    style = CentwiseTypography.Headline.copy(fontSize = 15.sp),
+                                    color = textPrimary
+                                )
+                                Text(
+                                    text = "Auto-detect bank & MFS transactions from your messages",
+                                    style = CentwiseTypography.Caption,
+                                    color = textSecondary
+                                )
+                            }
+                            if (isScanning) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    strokeWidth = 2.dp,
+                                    color = accent
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                    contentDescription = null,
+                                    tint = Color(0xFFC7C7CC),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
 
-                    HorizontalDivider(color = textSecondary.copy(alpha = 0.12f), modifier = Modifier.padding(start = 56.dp))
+                        HorizontalDivider(color = dividerColor, modifier = Modifier.padding(start = 52.dp))
 
-                    ActionRow(
-                        icon = Icons.Default.DeleteForever,
-                        iconColor = Color.Red,
-                        title = "Reset Database (Start Clean)",
-                        subtitle = "Permanently wipe all transactions and start fresh",
-                        onClick = { showResetDialog = true },
-                        textPrimary = Color.Red,
-                        textSecondary = textSecondary
+                        // Load Demo Sample Data
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .iosBounceClick { showLoadDemoDialog = true }
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = null,
+                                tint = accent,
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(14.dp))
+                            Text(
+                                text = "Load Demo Sample Data",
+                                style = CentwiseTypography.Headline.copy(fontSize = 15.sp),
+                                color = textPrimary,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = Color(0xFFC7C7CC),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        HorizontalDivider(color = dividerColor, modifier = Modifier.padding(start = 52.dp))
+
+                        // Export Data to CSV
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .iosBounceClick {
+                                    com.centwise.features.transactions.CsvExporter.shareExport(context)
+                                }
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = null,
+                                tint = accent,
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(14.dp))
+                            Text(
+                                text = "Export Data to CSV",
+                                style = CentwiseTypography.Headline.copy(fontSize = 15.sp),
+                                color = textPrimary,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = Color(0xFFC7C7CC),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = "Demo data adds sample transactions, accounts, budgets, and subscriptions. Export creates a local CSV file.",
+                        style = CentwiseTypography.Caption,
+                        color = textSecondary,
+                        modifier = Modifier.padding(horizontal = 6.dp)
                     )
                 }
             }
 
-            // Security notice
+            // Section 4: Destructive Action (Reset Database)
             item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 6.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Security,
-                        contentDescription = "Security",
-                        tint = CentwiseColors.PrimaryEmerald,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Surface(
+                        shape = RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge),
+                        color = cardBg,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
+                            .iosBounceClick { showResetDialog = true }
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 14.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Reset Database",
+                                style = CentwiseTypography.Headline.copy(fontSize = 15.sp),
+                                color = CentwiseColors.ExpenseRed,
+                                fontWeight = FontWeight.Normal
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
                     Text(
-                        text = "All transactions and accounts are stored 100% locally on your device in your private SQLite database. No financial data ever leaves your phone.",
+                        text = "Reset permanently deletes all transactions, budgets, and subscriptions from this device.",
                         style = CentwiseTypography.Caption,
-                        color = textSecondary
+                        color = textSecondary,
+                        modifier = Modifier.padding(horizontal = 6.dp)
                     )
                 }
             }
@@ -374,104 +500,56 @@ fun DataManagementScreen(
 }
 
 @Composable
-private fun MetricPill(
-    modifier: Modifier = Modifier,
-    title: String,
-    count: String,
+private fun RecordRow(
     icon: ImageVector,
-    color: Color,
+    iconColor: Color,
+    title: String,
+    count: Int,
+    showDivider: Boolean,
+    dividerColor: Color,
     textPrimary: Color,
     textSecondary: Color
 ) {
-    Surface(
-        modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
-        color = textSecondary.copy(alpha = 0.06f)
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp),
+                .padding(horizontal = 16.dp, vertical = 13.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(color.copy(alpha = 0.12f)),
-                contentAlignment = Alignment.Center
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = title,
-                    tint = color,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.width(10.dp))
-
-            Column {
-                Text(
-                    text = count,
-                    style = CentwiseTypography.Headline,
-                    color = textPrimary
+                    tint = iconColor,
+                    modifier = Modifier.size(22.dp)
                 )
                 Text(
                     text = title,
-                    style = CentwiseTypography.Caption,
-                    color = textSecondary
+                    style = CentwiseTypography.Body,
+                    color = textPrimary
                 )
             }
-        }
-    }
-}
 
-@Composable
-private fun ActionRow(
-    icon: ImageVector,
-    iconColor: Color,
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit,
-    textPrimary: Color,
-    textSecondary: Color
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = title,
-            tint = iconColor,
-            modifier = Modifier.size(24.dp)
-        )
-
-        Spacer(modifier = Modifier.width(14.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = title,
-                style = CentwiseTypography.Body.copy(fontWeight = FontWeight.SemiBold),
-                color = textPrimary
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = subtitle,
-                style = CentwiseTypography.Caption,
+                text = "$count",
+                style = CentwiseTypography.Body.copy(fontWeight = FontWeight.Medium),
                 color = textSecondary
             )
         }
 
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-            contentDescription = "Navigate",
-            tint = textSecondary.copy(alpha = 0.5f),
-            modifier = Modifier.size(20.dp)
-        )
+        if (showDivider) {
+            HorizontalDivider(color = dividerColor, modifier = Modifier.padding(start = 52.dp))
+        }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun DataManagementScreenPreview() {
+    DataManagementScreen()
 }

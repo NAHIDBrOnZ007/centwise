@@ -14,12 +14,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.content.ContextCompat
+import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.launch
 import com.centwise.core.design.components.CentwiseTab
 import com.centwise.core.design.components.FloatingTabBar
 import com.centwise.core.design.theme.CentwiseColors
@@ -67,6 +67,31 @@ sealed class SubScreen {
 }
 
 class MainActivity : FragmentActivity() {
+    private var onboardingPermissionCallback: ((Map<String, Boolean>) -> Unit)? = null
+
+    fun requestOnboardingPermissions(
+        permissions: Array<String>,
+        callback: (Map<String, Boolean>) -> Unit
+    ) {
+        onboardingPermissionCallback = callback
+        requestPermissions(permissions, ONBOARDING_PERMISSION_REQUEST_CODE)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == ONBOARDING_PERMISSION_REQUEST_CODE) {
+            val result = permissions.mapIndexed { index, permission ->
+                permission to (grantResults.getOrNull(index) == android.content.pm.PackageManager.PERMISSION_GRANTED)
+            }.toMap()
+            onboardingPermissionCallback?.invoke(result)
+            onboardingPermissionCallback = null
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         com.centwise.data.repository.TransactionRepository.shared.init(this)
@@ -79,25 +104,9 @@ class MainActivity : FragmentActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1001) {
-            val anySmsGranted = permissions.indices.any { i ->
-                (permissions[i] == android.Manifest.permission.RECEIVE_SMS || permissions[i] == android.Manifest.permission.READ_SMS) &&
-                        grantResults.getOrNull(i) == android.content.pm.PackageManager.PERMISSION_GRANTED
-            }
-            if (anySmsGranted) {
-                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
-                    com.centwise.core.scanner.HistoricalSmsScanner.scanInbox(applicationContext)
-                }
-            }
-        }
-    }
 }
+
+private const val ONBOARDING_PERMISSION_REQUEST_CODE = 4201
 
 @Composable
 fun CentwiseApp(
@@ -115,23 +124,6 @@ fun CentwiseApp(
         // Register notification channels
         com.centwise.core.notifications.CentwiseNotifications.ensureChannels(context)
 
-        // Request SMS & Notification runtime permissions
-        val permissionsToRequest = mutableListOf<String>()
-        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.RECEIVE_SMS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            permissionsToRequest.add(android.Manifest.permission.RECEIVE_SMS)
-        }
-        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.READ_SMS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-            permissionsToRequest.add(android.Manifest.permission.READ_SMS)
-        }
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU &&
-            ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED
-        ) {
-            permissionsToRequest.add(android.Manifest.permission.POST_NOTIFICATIONS)
-        }
-
-        if (permissionsToRequest.isNotEmpty() && activity != null) {
-            androidx.core.app.ActivityCompat.requestPermissions(activity, permissionsToRequest.toTypedArray(), 1001)
-        }
     }
 
     // Lock/unlock on background/foreground transitions
@@ -156,11 +148,8 @@ fun CentwiseApp(
     var currentTab by remember { mutableStateOf(CentwiseTab.HOME) }
     var subScreen by remember { mutableStateOf<SubScreen?>(null) }
     var showAddSheet by remember { mutableStateOf(false) }
-    var showOnboarding by remember { mutableStateOf(false) }
-
-    // First-run onboarding gate
-    LaunchedEffect(Unit) {
-        showOnboarding = !com.centwise.features.onboarding.OnboardingPrefs.isCompleted(context)
+    var showOnboarding by remember {
+        mutableStateOf(!com.centwise.features.onboarding.OnboardingPrefs.isCompleted(context))
     }
 
     val homeViewModel: HomeViewModel = viewModel()
@@ -349,11 +338,14 @@ fun CentwiseApp(
                     }
                 }
 
-                // Floating Pill Bottom Tab Bar
+                // Floating Pill Bottom Tab Bar (With Safe Navigation Bars Padding)
                 FloatingTabBar(
                     selectedTab = currentTab,
                     onTabSelected = { currentTab = it },
-                    modifier = Modifier.align(Alignment.BottomCenter),
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .navigationBarsPadding()
+                        .padding(bottom = 8.dp),
                     isDark = effectiveDark
                 )
             }

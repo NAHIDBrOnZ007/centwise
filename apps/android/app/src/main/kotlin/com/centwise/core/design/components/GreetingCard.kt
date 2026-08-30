@@ -2,6 +2,7 @@ package com.centwise.core.design.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -60,7 +61,7 @@ fun GreetingCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
             .background(cardBg)
-            .clickable { onProfileClick() }
+            .iosBounceClick { onProfileClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -69,7 +70,8 @@ fun GreetingCard(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(accent.copy(alpha = 0.15f)),
+                .background(accent.copy(alpha = 0.15f))
+                .border(2.dp, accent, CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Image(
@@ -96,31 +98,13 @@ fun GreetingCard(
             )
         }
 
-        // Small Edit Profile button/icon pill
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(10.dp))
-                .background(if (isDark) Color(0x1AFFFFFF) else Color(0x0A000000))
-                .padding(horizontal = 8.dp, vertical = 6.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit Profile",
-                    tint = accent,
-                    modifier = Modifier.size(14.dp)
-                )
-                Text(
-                    text = "Edit",
-                    style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
-                    color = accent
-                )
-            }
-        }
+        // Trailing Edit Icon Matching iOS pencil.circle
+        Icon(
+            imageVector = Icons.Default.Edit,
+            contentDescription = "Edit Profile",
+            tint = textSecondary.copy(alpha = 0.6f),
+            modifier = Modifier.size(20.dp)
+        )
     }
 }
 

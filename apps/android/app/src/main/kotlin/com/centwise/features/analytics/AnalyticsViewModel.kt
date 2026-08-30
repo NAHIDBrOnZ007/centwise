@@ -29,50 +29,56 @@ class AnalyticsViewModel(
     val selectedPeriod = MutableStateFlow("This Month")
     val selectedType = MutableStateFlow("All")
 
-    private val periodRange: Flow<Pair<Date, Date>> = selectedPeriod.map { period ->
-        val cal = Calendar.getInstance()
-        val now = Date()
-        cal.time = now
-        val endOfToday = now
+    companion object {
+        fun getPeriodDateRange(period: String): Pair<Date, Date> {
+            val cal = Calendar.getInstance()
+            val now = Date()
+            cal.time = now
+            val endOfToday = now
 
-        when (period) {
-            "This Month" -> {
-                cal.set(Calendar.DAY_OF_MONTH, 1)
-                cal.set(Calendar.HOUR_OF_DAY, 0)
-                cal.set(Calendar.MINUTE, 0)
-                cal.set(Calendar.SECOND, 0)
-                Pair(cal.time, endOfToday)
-            }
-            "Last Month" -> {
-                cal.set(Calendar.DAY_OF_MONTH, 1)
-                cal.set(Calendar.HOUR_OF_DAY, 0)
-                cal.set(Calendar.MINUTE, 0)
-                cal.set(Calendar.SECOND, 0)
-                cal.add(Calendar.MONTH, -1)
-                val start = cal.time
+            return when (period) {
+                "This Month" -> {
+                    cal.set(Calendar.DAY_OF_MONTH, 1)
+                    cal.set(Calendar.HOUR_OF_DAY, 0)
+                    cal.set(Calendar.MINUTE, 0)
+                    cal.set(Calendar.SECOND, 0)
+                    Pair(cal.time, endOfToday)
+                }
+                "Last Month" -> {
+                    cal.set(Calendar.DAY_OF_MONTH, 1)
+                    cal.set(Calendar.HOUR_OF_DAY, 0)
+                    cal.set(Calendar.MINUTE, 0)
+                    cal.set(Calendar.SECOND, 0)
+                    cal.add(Calendar.MONTH, -1)
+                    val start = cal.time
 
-                val calEnd = Calendar.getInstance()
-                calEnd.time = now
-                calEnd.set(Calendar.DAY_OF_MONTH, 1)
-                calEnd.set(Calendar.HOUR_OF_DAY, 0)
-                calEnd.set(Calendar.MINUTE, 0)
-                calEnd.set(Calendar.SECOND, 0)
-                calEnd.add(Calendar.SECOND, -1)
-                Pair(start, calEnd.time)
-            }
-            "3 Months" -> {
-                cal.add(Calendar.MONTH, -3)
-                Pair(cal.time, endOfToday)
-            }
-            "6 Months" -> {
-                cal.add(Calendar.MONTH, -6)
-                Pair(cal.time, endOfToday)
-            }
-            else -> {
-                cal.time = Date(0)
-                Pair(cal.time, endOfToday)
+                    val calEnd = Calendar.getInstance()
+                    calEnd.time = now
+                    calEnd.set(Calendar.DAY_OF_MONTH, 1)
+                    calEnd.set(Calendar.HOUR_OF_DAY, 0)
+                    calEnd.set(Calendar.MINUTE, 0)
+                    calEnd.set(Calendar.SECOND, 0)
+                    calEnd.add(Calendar.SECOND, -1)
+                    Pair(start, calEnd.time)
+                }
+                "3 Months" -> {
+                    cal.add(Calendar.MONTH, -3)
+                    Pair(cal.time, endOfToday)
+                }
+                "6 Months" -> {
+                    cal.add(Calendar.MONTH, -6)
+                    Pair(cal.time, endOfToday)
+                }
+                else -> {
+                    cal.time = Date(0)
+                    Pair(cal.time, endOfToday)
+                }
             }
         }
+    }
+
+    private val periodRange: Flow<Pair<Date, Date>> = selectedPeriod.map { period ->
+        getPeriodDateRange(period)
     }
 
     private val periodTransactions: Flow<List<TransactionItem>> = combine(
@@ -132,6 +138,36 @@ class AnalyticsViewModel(
             .take(5)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+    fun transactionsForCategory(category: String): List<TransactionItem> {
+        val range = getPeriodDateRange(selectedPeriod.value)
+        val type = selectedType.value
+        return repository.transactions.value.filter { tx ->
+            val inRange = tx.date.time >= range.first.time && tx.date.time <= range.second.time
+            val matchesCategory = tx.category.equals(category, ignoreCase = true)
+            val matchesType = when (type) {
+                "Debit" -> tx.type == TransactionType.EXPENSE
+                "Credit" -> tx.type == TransactionType.INCOME
+                else -> true
+            }
+            inRange && matchesCategory && matchesType
+        }.sortedByDescending { it.timestamp }
+    }
+
+    fun transactionsForMerchant(merchantName: String): List<TransactionItem> {
+        val range = getPeriodDateRange(selectedPeriod.value)
+        val type = selectedType.value
+        return repository.transactions.value.filter { tx ->
+            val inRange = tx.date.time >= range.first.time && tx.date.time <= range.second.time
+            val matchesMerchant = tx.title.substringBefore(" - ").equals(merchantName, ignoreCase = true)
+            val matchesType = when (type) {
+                "Debit" -> tx.type == TransactionType.EXPENSE
+                "Credit" -> tx.type == TransactionType.INCOME
+                else -> true
+            }
+            inRange && matchesMerchant && matchesType
+        }.sortedByDescending { it.timestamp }
+    }
+
     fun setPeriod(period: String) {
         selectedPeriod.value = period
     }
@@ -140,5 +176,3 @@ class AnalyticsViewModel(
         selectedType.value = type
     }
 }
-
-

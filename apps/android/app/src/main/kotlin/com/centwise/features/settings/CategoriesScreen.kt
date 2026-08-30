@@ -10,19 +10,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.centwise.core.design.components.CategoryIconHelper
+import com.centwise.core.design.components.TopBarBackButton
+import com.centwise.core.design.components.iosBounceClick
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
@@ -57,29 +62,38 @@ fun CategoriesScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 10.dp),
+                .padding(horizontal = 14.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                tint = textPrimary,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable { onBackClick() }
-                    .padding(10.dp)
-            )
+            TopBarBackButton(onBackClick = onBackClick, isDark = isDark)
+            Spacer(modifier = Modifier.width(12.dp))
             Text(text = "Categories", style = CentwiseTypography.Headline, color = textPrimary)
             Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = "Add",
-                style = CentwiseTypography.Body,
+            Surface(
+                shape = CircleShape,
                 color = accent,
                 modifier = Modifier
                     .clip(CircleShape)
-                    .clickable { showAddSheet = true }
-                    .padding(10.dp)
-            )
+                    .iosBounceClick { showAddSheet = true }
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add",
+                        tint = Color.White,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "Add",
+                        style = CentwiseTypography.Headline.copy(fontSize = 13.sp, fontWeight = FontWeight.Bold),
+                        color = Color.White
+                    )
+                }
+            }
         }
 
         LazyColumn(
@@ -109,9 +123,10 @@ fun CategoriesScreen(
                         CategoryRow(
                             category = category,
                             badge = "Default",
-                            tint = category.color,
+                            tint = accent,
                             textPrimary = textPrimary,
-                            textSecondary = textSecondary
+                            textSecondary = textSecondary,
+                            isDark = isDark
                         )
                         if (index < systemCategories.lastIndex) {
                             HorizontalDivider(color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
@@ -144,6 +159,7 @@ fun CategoriesScreen(
                                 tint = accent,
                                 textPrimary = textPrimary,
                                 textSecondary = textSecondary,
+                                isDark = isDark,
                                 onClick = { editingCategory = category }
                             )
                             if (index < customCategories.lastIndex) {
@@ -159,10 +175,11 @@ fun CategoriesScreen(
     if (showAddSheet) {
         AddEditCategorySheet(
             onDismiss = { showAddSheet = false },
-            onSave = { newCategory ->
-                TransactionRepository.shared.insertCategory(newCategory)
+            onSave = { category ->
+                TransactionRepository.shared.insertCategory(category)
                 showAddSheet = false
-            }
+            },
+            isDark = isDark
         )
     }
 
@@ -173,7 +190,12 @@ fun CategoriesScreen(
             onSave = { updated ->
                 TransactionRepository.shared.updateCategory(updated)
                 editingCategory = null
-            }
+            },
+            onDelete = {
+                TransactionRepository.shared.deleteCategory(category.id)
+                editingCategory = null
+            },
+            isDark = isDark
         )
     }
 }
@@ -185,38 +207,55 @@ private fun CategoryRow(
     tint: Color,
     textPrimary: Color,
     textSecondary: Color,
+    isDark: Boolean,
     onClick: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
-            .padding(vertical = 8.dp),
+            .then(if (onClick != null) Modifier.iosBounceClick { onClick() } else Modifier)
+            .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // Clean unboxed category icon (width 28, height 28) matching iOS CategoriesScreen
         Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(tint.copy(alpha = 0.15f)),
+            modifier = Modifier.size(28.dp),
             contentAlignment = Alignment.Center
         ) {
-            Text(text = category.name.take(1), style = CentwiseTypography.Body, color = tint)
+            Icon(
+                imageVector = CategoryIconHelper.iconFor(category.name, category.icon),
+                contentDescription = category.name,
+                tint = tint,
+                modifier = Modifier.size(20.dp)
+            )
         }
 
         Text(
             text = category.name,
-            style = CentwiseTypography.Body,
+            style = CentwiseTypography.Body.copy(fontWeight = FontWeight.Medium),
             color = textPrimary,
             modifier = Modifier.weight(1f)
         )
 
         if (badge != null) {
-            Text(
-                text = badge,
-                style = CentwiseTypography.Caption,
-                color = textSecondary
+            Surface(
+                shape = CircleShape,
+                color = if (isDark) Color(0x1FFFFFFF) else Color(0x0F000000)
+            ) {
+                Text(
+                    text = badge,
+                    style = CentwiseTypography.Caption.copy(fontSize = 11.sp),
+                    color = textSecondary,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                )
+            }
+        } else {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = Color(0xFFC7C7CC),
+                modifier = Modifier.size(16.dp)
             )
         }
     }

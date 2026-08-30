@@ -13,8 +13,10 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -26,9 +28,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.centwise.core.design.components.CategoryIconHelper
+import com.centwise.core.design.components.TopBarBackButton
 import com.centwise.core.design.components.TransactionRow
+import com.centwise.core.design.components.iosBounceClick
 import com.centwise.core.design.formatters.CurrencyFormatter
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
@@ -46,10 +54,14 @@ fun BudgetDetailScreen(
     isDark: Boolean = isSystemInDarkTheme()
 ) {
     val repository = TransactionRepository.shared
+    val budgets by repository.budgets.collectAsState()
     val transactions by repository.transactions.collectAsState()
+
+    val currentBudget = budgets.firstOrNull { it.id == budget.id } ?: budget
 
     var showEditSheet by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var selectedTransaction by remember { mutableStateOf<com.centwise.data.models.TransactionItem?>(null) }
 
     val accent = AccentOptions.byName(AppearancePrefs.accentName).color
 
@@ -59,15 +71,15 @@ fun BudgetDetailScreen(
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
     val trackBg = if (isDark) CentwiseColors.DarkSearchBg else CentwiseColors.LightSearchBg
 
-    val pct = if (budget.allocatedAmount > 0) {
-        (budget.spentAmount / budget.allocatedAmount).toFloat()
+    val pct = if (currentBudget.allocatedAmount > 0) {
+        (currentBudget.spentAmount / currentBudget.allocatedAmount).toFloat()
     } else 0f
-    val isOverBudget = budget.spentAmount > budget.allocatedAmount
+    val isOverBudget = currentBudget.spentAmount > currentBudget.allocatedAmount
 
     val categoryTransactions = transactions.filter {
-        it.category.equals(budget.categoryName, ignoreCase = true) &&
+        it.category.equals(currentBudget.categoryName, ignoreCase = true) &&
                 it.type == com.centwise.data.models.TransactionType.EXPENSE
-    }
+    }.sortedByDescending { it.timestamp }
 
     val daysLeft = run {
         val calendar = Calendar.getInstance()
@@ -75,7 +87,7 @@ fun BudgetDetailScreen(
         val daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH)
         daysInMonth - today + 1
     }
-    val remaining = maxOf(budget.allocatedAmount - budget.spentAmount, 0.0)
+    val remaining = maxOf(currentBudget.allocatedAmount - currentBudget.spentAmount, 0.0)
     val dailyAllowance = remaining / maxOf(daysLeft, 1)
 
     Column(
@@ -84,38 +96,47 @@ fun BudgetDetailScreen(
             .background(bg)
             .statusBarsPadding()
     ) {
-        // Top Bar
+        // 1. Navigation Top Bar (Back, Title, Edit Pill Button)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 10.dp),
+                .padding(horizontal = 14.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                tint = textPrimary,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable { onBackClick() }
-                    .padding(10.dp)
-            )
+            TopBarBackButton(onBackClick = onBackClick, isDark = isDark)
+            Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = budget.categoryName,
+                text = currentBudget.categoryName,
                 style = CentwiseTypography.Headline,
                 color = textPrimary,
                 maxLines = 1,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier
+                    .weight(1f)
             )
-            IconButton(onClick = { showEditSheet = true }) {
-                Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit", tint = textPrimary)
-            }
-            IconButton(onClick = { showDeleteDialog = true }) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Delete",
-                    tint = CentwiseColors.ExpenseRed
-                )
+            Surface(
+                shape = CircleShape,
+                color = accent,
+                modifier = Modifier
+                    .clip(CircleShape)
+                    .iosBounceClick { showEditSheet = true }
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit",
+                        tint = Color.White,
+                        modifier = Modifier.size(15.dp)
+                    )
+                    Text(
+                        text = "Edit",
+                        style = CentwiseTypography.Headline.copy(fontSize = 13.sp, fontWeight = FontWeight.Bold),
+                        color = Color.White
+                    )
+                }
             }
         }
 
@@ -123,43 +144,83 @@ fun BudgetDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp),
-            contentPadding = PaddingValues(bottom = 32.dp),
+            contentPadding = PaddingValues(bottom = 40.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Progress Card
+            // 1. Unified Progress & Daily Allowance Hero Card (Matching iOS BudgetDetailScreen 1:1)
             item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
                         .background(cardBg)
-                        .padding(18.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text(
-                        text = if (isOverBudget) "Over budget" else "On track",
-                        style = CentwiseTypography.Caption,
-                        color = if (isOverBudget) CentwiseColors.ExpenseRed else CentwiseColors.IncomeGreen
-                    )
+                    // Header: Category Icon, Name & Status Badge
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.size(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = CategoryIconHelper.iconFor(currentBudget.categoryName),
+                                contentDescription = currentBudget.categoryName,
+                                tint = accent,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
 
-                    Row(verticalAlignment = Alignment.Bottom) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = currentBudget.categoryName,
+                                style = CentwiseTypography.Headline.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
+                                color = textPrimary
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Surface(
+                                shape = CircleShape,
+                                color = if (isDark) Color(0x1FFFFFFF) else Color(0x0F000000)
+                            ) {
+                                Text(
+                                    text = if (isOverBudget) "Over budget" else "On track",
+                                    style = CentwiseTypography.Caption.copy(fontSize = 11.sp, fontWeight = FontWeight.Medium),
+                                    color = if (isOverBudget) CentwiseColors.ExpenseRed else textSecondary,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    HorizontalDivider(color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
+
+                    // Spending & Limit
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.Bottom
+                    ) {
                         Text(
-                            text = CurrencyFormatter.formatBDT(budget.spentAmount),
-                            style = CentwiseTypography.HeroAmount,
+                            text = CurrencyFormatter.formatBDT(currentBudget.spentAmount),
+                            style = CentwiseTypography.LargeTitle.copy(fontWeight = FontWeight.Bold),
                             color = textPrimary
                         )
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
-                            "of ${CurrencyFormatter.formatBDT(budget.allocatedAmount, compact = true)}",
+                            text = "of ${CurrencyFormatter.formatBDT(currentBudget.allocatedAmount, compact = true)}",
                             style = CentwiseTypography.Body,
                             color = textSecondary
                         )
                     }
 
+                    // Progress Bar
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(10.dp)
+                            .height(4.dp)
                             .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusCapsule))
                             .background(trackBg)
                     ) {
@@ -173,47 +234,64 @@ fun BudgetDetailScreen(
                     }
 
                     Row(modifier = Modifier.fillMaxWidth()) {
-                        Text("${(pct * 100).toInt()}% used", style = CentwiseTypography.Caption, color = textSecondary)
+                        Text(
+                            text = "${(pct * 100).toInt()}% used",
+                            style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
+                            color = textSecondary
+                        )
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
-                            "${CurrencyFormatter.formatBDT(remaining, compact = true)} remaining",
-                            style = CentwiseTypography.Caption,
-                            color = if (isOverBudget) CentwiseColors.ExpenseRed else CentwiseColors.IncomeGreen
+                            text = "${CurrencyFormatter.formatBDT(remaining, compact = true)} ${if (isOverBudget) "over budget" else "remaining"}",
+                            style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
+                            color = if (isOverBudget) CentwiseColors.ExpenseRed else textSecondary
+                        )
+                    }
+
+                    HorizontalDivider(color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
+
+                    // 3-Column Daily Allowance Stats Bar
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        DetailStat(
+                            title = "Daily Allowance",
+                            value = CurrencyFormatter.formatBDT(dailyAllowance, compact = true),
+                            modifier = Modifier.weight(1f)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .width(1.dp)
+                                .height(32.dp)
+                                .background(if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
+                        )
+                        DetailStat(
+                            title = "Days Left",
+                            value = "$daysLeft",
+                            modifier = Modifier.weight(1f)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .width(1.dp)
+                                .height(32.dp)
+                                .background(if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
+                        )
+                        DetailStat(
+                            title = "Spent",
+                            value = CurrencyFormatter.formatBDT(currentBudget.spentAmount, compact = true),
+                            modifier = Modifier.weight(1f)
                         )
                     }
                 }
             }
 
-            // Daily Allowance Card
+            // 2. Transactions Section Header
             item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
-                        .background(cardBg)
-                        .padding(16.dp)
-                ) {
-                    DetailStat(
-                        title = "Daily Allowance",
-                        value = CurrencyFormatter.formatBDT(dailyAllowance, compact = true),
-                        modifier = Modifier.weight(1f)
-                    )
-                    DetailStat(
-                        title = "Days Left",
-                        value = "$daysLeft",
-                        modifier = Modifier.weight(1f)
-                    )
-                    DetailStat(
-                        title = "Spent",
-                        value = CurrencyFormatter.formatBDT(budget.spentAmount, compact = true),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-
-            // Transactions
-            item {
-                Text("Spending in this Category", style = CentwiseTypography.Headline, color = textPrimary)
+                Text(
+                    text = "Spending in this Category (${categoryTransactions.size})",
+                    style = CentwiseTypography.Headline,
+                    color = textPrimary
+                )
             }
 
             if (categoryTransactions.isEmpty()) {
@@ -229,8 +307,40 @@ fun BudgetDetailScreen(
                     )
                 }
             } else {
-                items(categoryTransactions.take(10)) { transaction ->
-                    TransactionRow(transaction = transaction, isDark = isDark)
+                items(categoryTransactions, key = { it.id }) { transaction ->
+                    TransactionRow(
+                        transaction = transaction,
+                        onClick = { selectedTransaction = transaction },
+                        showBackground = true,
+                        showChevron = true,
+                        isDark = isDark
+                    )
+                }
+            }
+
+            // 4. Destructive Action Section (Matching iOS Delete Budget Card)
+            item {
+                androidx.compose.material3.Surface(
+                    shape = RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge),
+                    color = cardBg,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
+                        .iosBounceClick { showDeleteDialog = true }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 14.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Delete Budget",
+                            style = CentwiseTypography.Headline.copy(fontSize = 15.sp),
+                            color = CentwiseColors.ExpenseRed,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                        )
+                    }
                 }
             }
         }
@@ -238,7 +348,7 @@ fun BudgetDetailScreen(
 
     if (showEditSheet) {
         AddEditBudgetSheet(
-            editingBudget = budget,
+            editingBudget = currentBudget,
             onDismiss = { showEditSheet = false },
             onSave = { updated ->
                 TransactionRepository.shared.updateBudget(updated)
@@ -247,11 +357,24 @@ fun BudgetDetailScreen(
         )
     }
 
+    if (selectedTransaction != null) {
+        com.centwise.features.transactions.TransactionDetailSheet(
+            transaction = selectedTransaction!!,
+            onDismiss = { selectedTransaction = null },
+            onEdit = null,
+            onDelete = { txId ->
+                TransactionRepository.shared.deleteTransaction(txId)
+                selectedTransaction = null
+            },
+            isDark = isDark
+        )
+    }
+
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Budget?") },
-            text = { Text("This will permanently delete this budget. Transactions are not affected.") },
+            title = { Text("Delete Budget?", style = CentwiseTypography.Headline) },
+            text = { Text("This will permanently delete this budget. Transactions are not affected.", style = CentwiseTypography.Body) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -260,12 +383,12 @@ fun BudgetDetailScreen(
                         onBackClick()
                     }
                 ) {
-                    Text("Delete", color = CentwiseColors.ExpenseRed)
+                    Text("Delete", color = CentwiseColors.ExpenseRed, fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text("Cancel", color = textSecondary)
                 }
             }
         )
@@ -274,12 +397,13 @@ fun BudgetDetailScreen(
 
 @Composable
 private fun DetailStat(title: String, value: String, modifier: Modifier = Modifier) {
+    val accent = AccentOptions.byName(AppearancePrefs.accentName).color
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Text(value, style = CentwiseTypography.AmountMedium, color = CentwiseColors.AccentBlue, maxLines = 1)
+        Text(value, style = CentwiseTypography.AmountMedium, color = accent, maxLines = 1)
         Text(title, style = CentwiseTypography.Caption, color = CentwiseColors.LightTextSecondary)
     }
 }

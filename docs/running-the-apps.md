@@ -50,6 +50,12 @@ cd apps/android
 - Light + dark theme (Settings → Appearance actually switches)
 - Bengali strings (device language → বাংলা)
 - Onboarding flow (first run), biometric app lock
+
+Android first run is intentionally sequenced: welcome, profile, privacy,
+budgets and insights, notification permission, SMS permissions, then a
+historical inbox scan before opening Home. SMS parsing, categorization,
+deduplication, persistence, and review-queue decisions remain in the Rust core;
+the Android layer only captures SMS and adapts the result for the UI.
 - All screens: Home, Transactions, Analytics, Budgets, Subscriptions,
   Accounts, Settings sub-pages
 - CSV export share sheet, home-screen widget

@@ -1,51 +1,38 @@
 package com.centwise.features.settings
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.centwise.core.design.components.iosBounceClick
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
-
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.TextButton
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import com.centwise.core.profile.UserPrefs
 
 @Composable
@@ -69,110 +56,26 @@ fun SettingsScreen(
 
     var currentUserName by remember { mutableStateOf(UserPrefs.getUserName(context)) }
     var currentUserAvatar by remember { mutableStateOf(UserPrefs.getUserAvatar(context)) }
-    var showEditProfileDialog by remember { mutableStateOf(false) }
-
-    var editNameInput by remember { mutableStateOf(currentUserName) }
-    var editAvatarSelected by remember { mutableStateOf(currentUserAvatar) }
+    var showEditProfileSheet by remember { mutableStateOf(false) }
 
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
 
-    if (showEditProfileDialog) {
-        AlertDialog(
-            onDismissRequest = { showEditProfileDialog = false },
-            title = { Text("Edit Profile", color = textPrimary) },
-            text = {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        modifier = Modifier
-                            .size(70.dp)
-                            .clip(CircleShape)
-                            .background(accent.copy(alpha = 0.15f))
-                            .border(2.5.dp, accent, CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = UserPrefs.getAvatarResId(editAvatarSelected)),
-                            contentDescription = "Selected Avatar",
-                            modifier = Modifier.size(52.dp),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    OutlinedTextField(
-                        value = editNameInput,
-                        onValueChange = { editNameInput = it },
-                        label = { Text("Name") },
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = accent,
-                            focusedTextColor = textPrimary,
-                            unfocusedTextColor = textPrimary
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Text("Pick an Avatar", style = CentwiseTypography.Caption, color = textSecondary)
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(44.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(110.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        items(UserPrefs.AVAILABLE_AVATARS) { avatarName ->
-                            val isSelected = editAvatarSelected == avatarName
-                            Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(CircleShape)
-                                    .background(if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
-                                    .then(if (isSelected) Modifier.border(2.dp, accent, CircleShape) else Modifier)
-                                    .clickable { editAvatarSelected = avatarName },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Image(
-                                    painter = painterResource(id = UserPrefs.getAvatarResId(avatarName)),
-                                    contentDescription = avatarName,
-                                    modifier = Modifier.size(34.dp),
-                                    contentScale = ContentScale.Fit
-                                )
-                            }
-                        }
-                    }
-                }
+    if (showEditProfileSheet) {
+        EditProfileSheet(
+            currentName = currentUserName,
+            currentAvatar = currentUserAvatar,
+            onDismiss = { showEditProfileSheet = false },
+            onSave = { newName, newAvatar ->
+                UserPrefs.setUserName(context, newName)
+                UserPrefs.setUserAvatar(context, newAvatar)
+                currentUserName = newName
+                currentUserAvatar = newAvatar
+                showEditProfileSheet = false
             },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        val finalName = if (editNameInput.trim().isEmpty()) "User" else editNameInput.trim()
-                        UserPrefs.setUserName(context, finalName)
-                        UserPrefs.setUserAvatar(context, editAvatarSelected)
-                        currentUserName = finalName
-                        currentUserAvatar = editAvatarSelected
-                        showEditProfileDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = accent)
-                ) {
-                    Text("Save")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showEditProfileDialog = false }) {
-                    Text("Cancel", color = textSecondary)
-                }
-            },
-            containerColor = cardBg
+            isDark = isDark
         )
     }
 
@@ -181,7 +84,7 @@ fun SettingsScreen(
             .fillMaxSize()
             .background(bg)
             .padding(horizontal = 20.dp),
-        contentPadding = PaddingValues(top = 16.dp, bottom = 100.dp),
+        contentPadding = PaddingValues(top = 16.dp, bottom = 140.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         // Header
@@ -200,10 +103,8 @@ fun SettingsScreen(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
                     .background(cardBg)
-                    .clickable {
-                        editNameInput = currentUserName
-                        editAvatarSelected = currentUserAvatar
-                        showEditProfileDialog = true
+                    .iosBounceClick {
+                        showEditProfileSheet = true
                     }
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -249,7 +150,7 @@ fun SettingsScreen(
             }
         }
 
-        // Section 1: Personalization (Matching Screenshot ios ui 1.jpeg)
+        // Section 1: Personalization (Exact matching iOS SettingsScreen)
         item {
             Column {
                 Text(
@@ -267,18 +168,18 @@ fun SettingsScreen(
                 ) {
                     SettingsRow(
                         icon = Icons.Default.Palette,
-                        iconColor = Color(0xFFFF9500),
+                        iconColor = accent,
                         title = "Appearance",
-                        subtitle = "Theme, accent color, dark mode",
+                        subtitle = "Theme and accent color",
                         onClick = onAppearanceClick,
                         showDivider = true,
                         isDark = isDark
                     )
                     SettingsRow(
                         icon = Icons.Default.Paid,
-                        iconColor = Color(0xFF34C759),
+                        iconColor = accent,
                         title = "Currency",
-                        subtitle = "Default currency for totals and new entries",
+                        subtitle = "Currency for totals and new entries",
                         onClick = onCurrencyClick,
                         showDivider = false,
                         isDark = isDark
@@ -287,11 +188,11 @@ fun SettingsScreen(
             }
         }
 
-        // Section 2: Data Management (Matching Screenshot ios ui 1.jpeg)
+        // Section 2: Money & Automation (Exact matching iOS SettingsScreen)
         item {
             Column {
                 Text(
-                    text = "Data Management",
+                    text = "Money & Automation",
                     style = CentwiseTypography.Headline.copy(fontSize = 14.sp),
                     color = textSecondary,
                     modifier = Modifier.padding(start = 6.dp, bottom = 8.dp)
@@ -304,64 +205,86 @@ fun SettingsScreen(
                         .background(cardBg)
                 ) {
                     SettingsRow(
+                        icon = Icons.Default.AccountBalance,
+                        iconColor = accent,
+                        title = "Accounts",
+                        subtitle = "Bank, card, mobile wallet, and Cash accounts",
+                        onClick = onAccountsClick,
+                        showDivider = true,
+                        isDark = isDark
+                    )
+                    SettingsRow(
                         icon = Icons.Default.GridView,
-                        iconColor = Color(0xFFAF52DE),
+                        iconColor = accent,
                         title = "Categories",
-                        subtitle = "Manage expense and income categories",
+                        subtitle = "Expense and income categories",
                         onClick = onCategoriesClick,
                         showDivider = true,
                         isDark = isDark
                     )
                     SettingsRow(
                         icon = Icons.Default.PieChart,
-                        iconColor = Color(0xFF34C759),
+                        iconColor = accent,
                         title = "Budgets",
-                        subtitle = "Set spending limits by category",
+                        subtitle = "Category spending limits",
                         onClick = onBudgetsClick,
                         showDivider = true,
                         isDark = isDark
                     )
                     SettingsRow(
-                        icon = Icons.Default.AccountBalance,
-                        iconColor = Color(0xFF007AFF),
-                        title = "Accounts",
-                        subtitle = "Manage bank accounts and cards",
-                        onClick = onAccountsClick,
-                        showDivider = true,
-                        isDark = isDark
-                    )
-                    SettingsRow(
                         icon = Icons.Default.Subscriptions,
-                        iconColor = Color(0xFF5856D6),
+                        iconColor = accent,
                         title = "Subscriptions",
-                        subtitle = "Track recurring payments",
+                        subtitle = "Recurring payments",
                         onClick = onSubscriptionsClick,
                         showDivider = true,
                         isDark = isDark
                     )
                     SettingsRow(
                         icon = Icons.Default.AutoAwesome,
-                        iconColor = Color(0xFFFF2D55),
+                        iconColor = accent,
                         title = "Smart Rules",
-                        subtitle = "Auto-categorize transactions",
+                        subtitle = "Automatic transaction categorization",
                         onClick = onSmartRulesClick,
                         showDivider = true,
                         isDark = isDark
                     )
                     SettingsRow(
                         icon = Icons.Default.MarkEmailRead,
-                        iconColor = Color(0xFF007AFF),
+                        iconColor = accent,
                         title = "Review Queue",
-                        subtitle = if (reviewQueueItems.isNotEmpty()) "${reviewQueueItems.size} pending SMS messages" else "Review unclassified SMS messages",
+                        subtitle = if (reviewQueueItems.isNotEmpty()) "${reviewQueueItems.size} pending SMS messages" else "Resolve ambiguous financial messages",
                         onClick = onReviewQueueClick,
-                        showDivider = true,
+                        showDivider = false,
                         isDark = isDark
                     )
+                }
+            }
+        }
+
+        // Section 3: Privacy & Data (Exact matching iOS SettingsScreen)
+        item {
+            Column {
+                Text(
+                    text = "Privacy & Data",
+                    style = CentwiseTypography.Headline.copy(fontSize = 14.sp),
+                    color = textSecondary,
+                    modifier = Modifier.padding(start = 6.dp, bottom = 8.dp)
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
+                        .background(cardBg)
+                ) {
+                    AppLockRow(accent = accent, isDark = isDark)
+
                     SettingsRow(
                         icon = Icons.Default.Storage,
-                        iconColor = CentwiseColors.PrimaryEmerald,
-                        title = "Data & Storage Management",
-                        subtitle = "Database status, load demo data, reset & export",
+                        iconColor = accent,
+                        title = "Data Management",
+                        subtitle = "Export, demo data, and reset",
                         onClick = onDataManagementClick,
                         showDivider = false,
                         isDark = isDark
@@ -370,11 +293,11 @@ fun SettingsScreen(
             }
         }
 
-        // Section 3: Support & About
+        // Section 4: Support (Exact matching iOS SettingsScreen)
         item {
             Column {
                 Text(
-                    text = "Support & About",
+                    text = "Support",
                     style = CentwiseTypography.Headline.copy(fontSize = 14.sp),
                     color = textSecondary,
                     modifier = Modifier.padding(start = 6.dp, bottom = 8.dp)
@@ -386,20 +309,18 @@ fun SettingsScreen(
                         .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
                         .background(cardBg)
                 ) {
-                    AppLockRow(isDark = isDark)
-
                     SettingsRow(
-                        icon = Icons.Default.HelpOutline,
-                        iconColor = Color(0xFF007AFF),
-                        title = "FAQ",
-                        subtitle = "Common questions and answers",
+                        icon = Icons.AutoMirrored.Filled.HelpOutline,
+                        iconColor = accent,
+                        title = "Frequently Asked Questions",
+                        subtitle = "Help using Centwise",
                         onClick = onFAQClick,
                         showDivider = true,
                         isDark = isDark
                     )
                     SettingsRow(
                         icon = Icons.Default.Info,
-                        iconColor = Color(0xFF8E8E93),
+                        iconColor = accent,
                         title = "About Centwise",
                         subtitle = "Version, privacy, and credits",
                         onClick = onAboutClick,
@@ -413,13 +334,12 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun AppLockRow(isDark: Boolean) {
+private fun AppLockRow(accent: Color, isDark: Boolean) {
     val context = androidx.compose.ui.platform.LocalContext.current
     var lockEnabled by remember { mutableStateOf(AppLockManager.isLockEnabled) }
 
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
-    val accent = AccentOptions.byName(AppearancePrefs.accentName).color
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -431,7 +351,7 @@ private fun AppLockRow(isDark: Boolean) {
             Icon(
                 imageVector = if (lockEnabled) Icons.Default.Lock else Icons.Default.LockOpen,
                 contentDescription = "App Lock",
-                tint = Color(0xFF34C759),
+                tint = accent,
                 modifier = Modifier.size(24.dp)
             )
 
@@ -458,7 +378,10 @@ private fun AppLockRow(isDark: Boolean) {
                     lockEnabled = enabled
                     AppLockManager.setLockEnabled(context, enabled)
                 },
-                colors = SwitchDefaults.colors(checkedTrackColor = accent)
+                colors = SwitchDefaults.colors(
+                    checkedTrackColor = accent,
+                    checkedThumbColor = Color.White
+                )
             )
         }
 
@@ -488,11 +411,10 @@ private fun SettingsRow(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { onClick() }
+                .iosBounceClick { onClick() }
                 .padding(horizontal = 16.dp, vertical = 13.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Bare Icon without background box (Screenshot ios ui 1.jpeg)
             Icon(
                 imageVector = icon,
                 contentDescription = title,

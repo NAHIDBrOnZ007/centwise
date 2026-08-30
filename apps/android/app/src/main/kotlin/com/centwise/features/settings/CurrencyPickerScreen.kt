@@ -24,6 +24,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.centwise.core.design.components.TopBarBackButton
+import com.centwise.core.design.components.iosBounceClick
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
@@ -98,18 +100,11 @@ fun CurrencyPickerScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 10.dp),
+                .padding(horizontal = 14.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
-                tint = textPrimary,
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .clickable { onBackClick() }
-                    .padding(10.dp)
-            )
+            TopBarBackButton(onBackClick = onBackClick, isDark = isDark)
+            Spacer(modifier = Modifier.width(12.dp))
             Text(text = "Currency", style = CentwiseTypography.Headline, color = textPrimary)
         }
 
@@ -159,7 +154,7 @@ fun CurrencyPickerScreen(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusMedium))
                         .background(cardBg)
-                        .clickable {
+                        .iosBounceClick {
                             selectedCode = currency.code
                             CurrencyPrefs.setSelectedCode(context, currency.code)
                         }

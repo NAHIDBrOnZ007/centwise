@@ -357,4 +357,3 @@ pub mod default_rules;
 
 pub use default_categories::default_categories;
 pub use default_rules::default_rules;
-

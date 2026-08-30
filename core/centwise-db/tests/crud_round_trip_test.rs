@@ -158,11 +158,19 @@ fn crud_round_trips_for_accounts_transactions_budgets_and_subscriptions() {
         .expect("repeat subscription delete"));
 
     let tx_for_acct1 = transaction("acct-1");
-    database.insert_transaction(&tx_for_acct1).expect("insert transaction for acct-1");
+    database
+        .insert_transaction(&tx_for_acct1)
+        .expect("insert transaction for acct-1");
     assert_eq!(database.list_transactions(10).expect("list tx").len(), 1);
 
     assert!(database.delete_account("acct-1").expect("delete account"));
-    assert_eq!(database.list_transactions(10).expect("list tx after account delete").len(), 0);
+    assert_eq!(
+        database
+            .list_transactions(10)
+            .expect("list tx after account delete")
+            .len(),
+        0
+    );
     assert!(database.delete_account("acct-2").expect("delete account"));
     assert!(!database
         .delete_account("acct-2")

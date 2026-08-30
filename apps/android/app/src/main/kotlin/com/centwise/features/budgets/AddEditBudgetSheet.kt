@@ -1,36 +1,45 @@
 package com.centwise.features.budgets
 
+import kotlinx.coroutines.launch
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.centwise.core.design.components.CategoryIconHelper
+import com.centwise.core.design.formatters.CurrencyFormatter
 import com.centwise.core.design.theme.CentwiseColors
+import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.data.models.BudgetItem
 import com.centwise.data.repository.TransactionRepository
 import com.centwise.features.settings.AccentOptions
 import com.centwise.features.settings.AppearancePrefs
+
+private val budgetPeriods = listOf("Monthly", "Weekly", "Yearly")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,176 +59,292 @@ fun AddEditBudgetSheet(
             } ?: ""
         )
     }
+    var selectedPeriod by remember { mutableStateOf(editingBudget?.period ?: "Monthly") }
+    var showCategoryMenu by remember { mutableStateOf(false) }
 
     val categories by TransactionRepository.shared.categories.collectAsState()
     LaunchedEffect(categories, editingBudget) {
         if (editingBudget != null) {
             selectedCategoryName = editingBudget.categoryName
         } else if (selectedCategoryName.isEmpty()) {
-            selectedCategoryName = categories.firstOrNull()?.name.orEmpty()
+            selectedCategoryName = categories.firstOrNull()?.name ?: "Food & Dining"
         }
     }
 
     val accent = AccentOptions.byName(AppearancePrefs.accentName).color
-
-    val sheetBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
+    val bg = if (isDark) CentwiseColors.DarkBackground else Color(0xFFF2F2F7)
+    val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
-    val fieldBg = if (isDark) Color(0x1FFFFFFF) else Color(0x0A000000)
+    val menuBg = if (isDark) Color(0xFF2C2C2E) else Color.White
+    val menuBorder = BorderStroke(1.dp, if (isDark) Color(0x26FFFFFF) else Color(0x0F000000))
 
-    val isValid = limitText.toDoubleOrNull() != null && limitText.toDoubleOrNull()!! > 0
+    val parsedLimit = limitText.toDoubleOrNull() ?: 0.0
+    val isValid = parsedLimit > 0 && selectedCategoryName.isNotBlank()
+
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
+
+    val dismissWithAnimation: (postAction: () -> Unit) -> Unit = { postAction ->
+        scope.launch {
+            sheetState.hide()
+        }.invokeOnCompletion {
+            if (!sheetState.isVisible) {
+                postAction()
+                onDismiss()
+            }
+        }
+    }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = sheetBg,
-        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+        containerColor = bg,
         dragHandle = { BottomSheetDefaults.DragHandle() }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = 16.dp)
                 .padding(bottom = 36.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = if (editingBudget == null) "New Budget" else "Edit Budget",
-                style = CentwiseTypography.Title2,
-                color = textPrimary
-            )
-
-            // 1. Hero Limit Input Box
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(fieldBg)
-                    .padding(vertical = 16.dp, horizontal = 20.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "MONTHLY LIMIT (BDT)",
-                    style = CentwiseTypography.Caption,
-                    color = textSecondary,
-                    fontWeight = FontWeight.SemiBold,
-                    letterSpacing = 1.sp
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "৳ ",
-                        style = CentwiseTypography.LargeTitle.copy(fontSize = 32.sp),
-                        color = accent,
-                        fontWeight = FontWeight.Bold
-                    )
-                    BasicTextField(
-                        value = limitText,
-                        onValueChange = { limitText = it },
-                        textStyle = CentwiseTypography.LargeTitle.copy(
-                            fontSize = 32.sp,
-                            color = textPrimary,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Start
-                        ),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        singleLine = true,
-                        cursorBrush = SolidColor(accent),
-                        decorationBox = { innerTextField ->
-                            if (limitText.isEmpty()) {
-                                Text(
-                                    text = "0.00",
-                                    style = CentwiseTypography.LargeTitle.copy(
-                                        fontSize = 32.sp,
-                                        color = textSecondary.copy(alpha = 0.4f),
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
-                            }
-                            innerTextField()
-                        }
-                    )
-                }
-            }
-
-            // 2. Category Selector Chips
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(text = "Target Category", style = CentwiseTypography.Headline.copy(fontSize = 13.sp), color = textSecondary)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    categories.forEach { cat ->
-                        val isSelected = selectedCategoryName == cat.name
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = if (isSelected) accent else fieldBg,
-                            modifier = Modifier.clickable { selectedCategoryName = cat.name }
-                        ) {
-                            Text(
-                                text = cat.name,
-                                style = CentwiseTypography.Subheadline,
-                                color = if (isSelected) Color.White else textPrimary,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            Text(
-                "Spending in this category will be tracked against this limit automatically in real-time.",
-                style = CentwiseTypography.Caption,
-                color = textSecondary
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // 3. Save Button
-            Button(
-                onClick = {
-                    val limit = limitText.toDoubleOrNull() ?: 0.0
-                    if (limit > 0) {
-                        onSave(
-                            editingBudget?.copy(
-                                categoryName = selectedCategoryName,
-                                allocatedAmount = limit
-                            ) ?: BudgetItem(
-                                categoryName = selectedCategoryName,
-                                allocatedAmount = limit,
-                                spentAmount = 0.0
-                            )
+            // 1. Navigation Top Bar (Rounded Pill Buttons for Cancel & Save)
+            com.centwise.core.design.components.ModalSheetTopBar(
+                title = if (editingBudget == null) "New Budget" else "Edit Budget",
+                onCancel = { dismissWithAnimation {} },
+                onSave = {
+                    if (isValid) {
+                        val newBudget = editingBudget?.copy(
+                            categoryName = selectedCategoryName,
+                            allocatedAmount = parsedLimit,
+                            period = selectedPeriod
+                        ) ?: BudgetItem(
+                            categoryName = selectedCategoryName,
+                            allocatedAmount = parsedLimit,
+                            spentAmount = 0.0,
+                            period = selectedPeriod
                         )
-                        onDismiss()
+                        dismissWithAnimation {
+                            onSave(newBudget)
+                        }
                     }
                 },
-                enabled = isValid,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(54.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = accent,
-                    contentColor = Color.White,
-                    disabledContainerColor = fieldBg
-                )
-            ) {
-                Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(modifier = Modifier.width(8.dp))
+                saveEnabled = isValid,
+                accent = accent,
+                textPrimary = textPrimary,
+                textSecondary = textSecondary,
+                isDark = isDark
+            )
+
+            // 2. Budget Info Form Card
+            Column {
                 Text(
-                    text = if (editingBudget == null) "Set Budget" else "Update Budget",
-                    style = CentwiseTypography.Headline,
-                    fontWeight = FontWeight.Bold
+                    text = "BUDGET INFO",
+                    style = CentwiseTypography.Caption,
+                    color = textSecondary,
+                    modifier = Modifier.padding(start = 8.dp, bottom = 6.dp)
                 )
+
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = cardBg,
+                    shadowElevation = if (isDark) 4.dp else 1.dp
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                        // Category Picker Row
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { showCategoryMenu = true }
+                                    .padding(vertical = 14.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("Category", style = CentwiseTypography.Body, color = textPrimary, fontSize = 15.sp)
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = CategoryIconHelper.iconFor(selectedCategoryName),
+                                        contentDescription = null,
+                                        tint = accent,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Text(
+                                        text = selectedCategoryName,
+                                        style = CentwiseTypography.Body,
+                                        color = textSecondary,
+                                        fontSize = 15.sp
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowDown,
+                                        contentDescription = null,
+                                        tint = textSecondary.copy(alpha = 0.6f),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+
+                            DropdownMenu(
+                                expanded = showCategoryMenu,
+                                onDismissRequest = { showCategoryMenu = false },
+                                offset = DpOffset(0.dp, 6.dp),
+                                shape = RoundedCornerShape(16.dp),
+                                containerColor = menuBg,
+                                shadowElevation = 8.dp,
+                                border = menuBorder
+                            ) {
+                                categories.forEach { cat ->
+                                    val isSelected = selectedCategoryName == cat.name
+                                    DropdownMenuItem(
+                                        text = {
+                                            Row(
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(
+                                                    imageVector = CategoryIconHelper.iconFor(cat.name, cat.icon),
+                                                    contentDescription = null,
+                                                    tint = accent,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                                Text(
+                                                    text = cat.name,
+                                                    style = CentwiseTypography.Body,
+                                                    color = textPrimary,
+                                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                                                )
+                                            }
+                                        },
+                                        trailingIcon = {
+                                            if (isSelected) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    tint = accent,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+                                        },
+                                        onClick = {
+                                            selectedCategoryName = cat.name
+                                            showCategoryMenu = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        HorizontalDivider(color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
+
+                        // Limit Input
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Monthly limit (৳)", style = CentwiseTypography.Body, color = textPrimary, fontSize = 15.sp)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            TextField(
+                                value = limitText,
+                                onValueChange = { limitText = it },
+                                placeholder = { Text("0.00", color = textSecondary.copy(alpha = 0.5f), fontSize = 15.sp) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                singleLine = true,
+                                colors = TextFieldDefaults.colors(
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedIndicatorColor = Color.Transparent,
+                                    unfocusedIndicatorColor = Color.Transparent,
+                                    focusedTextColor = textPrimary,
+                                    unfocusedTextColor = textPrimary
+                                ),
+                                modifier = Modifier.weight(1f),
+                                textStyle = CentwiseTypography.Body.copy(
+                                    fontSize = 15.sp,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.End
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 3. Period Segmented Control
+            Column {
+                Text(
+                    text = "PERIOD",
+                    style = CentwiseTypography.Caption,
+                    color = textSecondary,
+                    modifier = Modifier.padding(start = 8.dp, bottom = 6.dp)
+                )
+
+                com.centwise.core.design.components.CentwiseSegmentedControl(
+                    items = budgetPeriods,
+                    selectedItem = selectedPeriod,
+                    onItemSelected = { selectedPeriod = it },
+                    itemLabel = { it },
+                    modifier = Modifier.height(34.dp),
+                    accent = accent,
+                    isDark = isDark
+                )
+            }
+
+            // 4. Preview Section Card
+            Column {
+                Text(
+                    text = "PREVIEW",
+                    style = CentwiseTypography.Caption,
+                    color = textSecondary,
+                    modifier = Modifier.padding(start = 8.dp, bottom = 6.dp)
+                )
+
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = cardBg,
+                    shadowElevation = if (isDark) 4.dp else 1.dp
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(42.dp)
+                                .clip(CircleShape)
+                                .background(accent.copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = CategoryIconHelper.iconFor(selectedCategoryName),
+                                contentDescription = null,
+                                tint = accent,
+                                modifier = Modifier.size(22.dp)
+                            )
+                        }
+
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(
+                                text = selectedCategoryName,
+                                style = CentwiseTypography.Body,
+                                color = textPrimary,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "$selectedPeriod limit: ${CurrencyFormatter.formatBDT(parsedLimit)}",
+                                style = CentwiseTypography.Caption,
+                                color = textSecondary
+                            )
+                        }
+                    }
+                }
             }
         }
     }

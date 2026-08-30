@@ -41,8 +41,10 @@ impl<'a> Queries<'a> {
     }
 
     pub fn delete_account(&self, id: &str) -> DbResult<bool> {
-        self.connection
-            .execute("DELETE FROM transactions WHERE account_id = ?1", params![id])?;
+        self.connection.execute(
+            "DELETE FROM transactions WHERE account_id = ?1",
+            params![id],
+        )?;
         Ok(self
             .connection
             .execute("DELETE FROM accounts WHERE id = ?1", params![id])?

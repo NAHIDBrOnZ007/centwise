@@ -14,7 +14,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +24,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.centwise.core.design.components.CategoryIconHelper
+import com.centwise.core.design.components.TopBarBackButton
+import com.centwise.core.design.components.iosBounceClick
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
@@ -62,9 +64,7 @@ fun RulesScreen(
         }
     }
 
-    // Group rules by category
     val groupedRules = remember(filteredRules, categories) {
-        val catMap = categories.associateBy { it.name.lowercase() }
         filteredRules.groupBy { it.categoryName }.toList()
     }
 
@@ -78,16 +78,11 @@ fun RulesScreen(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 6.dp),
+                .padding(horizontal = 14.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = textPrimary
-                )
-            }
+            TopBarBackButton(onBackClick = onBackClick, isDark = isDark)
+            Spacer(modifier = Modifier.width(12.dp))
             Text(
                 text = "Smart Rules",
                 style = CentwiseTypography.Headline,
@@ -96,12 +91,30 @@ fun RulesScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             Box {
-                IconButton(onClick = { showMenu = true }) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Menu",
-                        tint = accent
-                    )
+                Surface(
+                    shape = CircleShape,
+                    color = accent,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .iosBounceClick { showMenu = true }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Add",
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = "Add",
+                            style = CentwiseTypography.Headline.copy(fontSize = 13.sp, fontWeight = FontWeight.Bold),
+                            color = Color.White
+                        )
+                    }
                 }
 
                 DropdownMenu(
@@ -224,10 +237,9 @@ fun RulesScreen(
                 groupedRules.forEach { (categoryName, rulesInSection) ->
                     item {
                         Text(
-                            text = categoryName.uppercase(),
-                            style = CentwiseTypography.Caption.copy(
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 12.sp
+                            text = categoryName,
+                            style = CentwiseTypography.Headline.copy(
+                                fontSize = 14.sp
                             ),
                             color = textSecondary,
                             modifier = Modifier.padding(start = 4.dp, top = 4.dp)
@@ -302,17 +314,23 @@ private fun SmartRuleRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onClick() }
+            .iosBounceClick { onClick() }
             .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Icon(
-            imageVector = Icons.Default.Tag,
-            contentDescription = null,
-            tint = accent,
-            modifier = Modifier.size(24.dp)
-        )
+        // Clean unboxed category icon matching iOS RulesScreen
+        Box(
+            modifier = Modifier.size(28.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = CategoryIconHelper.iconFor(rule.categoryName),
+                contentDescription = rule.categoryName,
+                tint = accent,
+                modifier = Modifier.size(20.dp)
+            )
+        }
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -321,7 +339,7 @@ private fun SmartRuleRow(
                 color = textPrimary
             )
             Text(
-                text = "${rule.categoryName} • Keyword: ${rule.keyword}",
+                text = "Keyword: ${rule.keyword}",
                 style = CentwiseTypography.Caption,
                 color = textSecondary
             )
