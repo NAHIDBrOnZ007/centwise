@@ -164,6 +164,12 @@ enum CentwiseRustBackend {
         return (try? core.updateAccount(account: accountInput(account))) ?? false
     }
 
+    static func deleteAccount(id: String) -> Bool {
+        initialize()
+        guard let core else { return false }
+        return (try? core.deleteAccount(id: id)) ?? false
+    }
+
     static func insertBudget(_ budget: CategoryBudget) -> Bool {
         initialize()
         guard let core else { return false }

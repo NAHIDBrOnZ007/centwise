@@ -210,11 +210,12 @@ public struct TransactionListView: View {
                 )
             }
         }
+        .padding(.horizontal, 2)
         .accessibilityLabel("Transaction filters")
     }
 
     private func filterChip(title: String, icon: String, isActive: Bool) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 5) {
             Image(systemName: icon)
                 .font(.system(size: 11, weight: .semibold))
             Text(title)
@@ -226,18 +227,18 @@ public struct TransactionListView: View {
                 .opacity(0.8)
         }
         .foregroundStyle(isActive ? Color.white : Color.primary)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 6)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
         .frame(maxWidth: .infinity)
         .background(
             isActive
                 ? themeManager.accentColor
-                : Color(uiColor: .secondarySystemGroupedBackground),
-            in: Capsule()
+                : Color(uiColor: .secondarySystemGroupedBackground)
         )
+        .clipShape(Capsule(style: .continuous))
         .overlay {
             if !isActive {
-                Capsule()
+                Capsule(style: .continuous)
                     .stroke(Color(uiColor: .separator).opacity(0.45), lineWidth: 1)
             }
         }

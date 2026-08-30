@@ -4,6 +4,7 @@ public struct CategoriesScreen: View {
     @StateObject private var viewModel = CategoriesViewModel()
     @State private var showAddSheet = false
     @State private var editingCategory: TransactionCategory?
+    @State private var toastItem: ToastItem?
 
     @Environment(\.colorScheme) private var colorScheme
     @ObservedObject private var themeManager = ThemeManager.shared
@@ -18,19 +19,14 @@ public struct CategoriesScreen: View {
                 }
             }
 
-            Section("Custom Categories") {
-                if viewModel.customCategories.isEmpty {
-                    Label("No custom categories yet", systemImage: "tag")
-                        .foregroundStyle(.secondary)
-                    Text("Tap + to create your own category.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                } else {
+            if !viewModel.customCategories.isEmpty {
+                Section("Custom Categories") {
                     ForEach(viewModel.customCategories) { category in
                         categoryRow(category, allowEditing: true)
                             .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                                 Button(role: .destructive) {
                                     viewModel.deleteCategory(id: category.id)
+                                    toastItem = ToastItem("Category deleted", style: .success)
                                 } label: {
                                     Label("Delete", systemImage: "trash")
                                 }
@@ -51,10 +47,12 @@ public struct CategoriesScreen: View {
                 }
             }
         }
+        .toast(item: $toastItem)
         .sheet(isPresented: $showAddSheet) {
             NavigationStack {
                 AddEditCategoryScreen { newCategory in
                     viewModel.addCategory(newCategory)
+                    toastItem = ToastItem("Category created successfully", style: .success)
                 }
             }
         }
@@ -62,6 +60,7 @@ public struct CategoriesScreen: View {
             NavigationStack {
                 AddEditCategoryScreen(editingCategory: category) { updated in
                     viewModel.updateCategory(updated)
+                    toastItem = ToastItem("Category updated successfully", style: .success)
                 }
             }
         }

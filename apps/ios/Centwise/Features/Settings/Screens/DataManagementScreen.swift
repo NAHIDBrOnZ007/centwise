@@ -7,7 +7,7 @@ public struct DataManagementScreen: View {
     @State private var showLoadDemoAlert = false
     @State private var showResetAlert = false
     @State private var showExportSheet = false
-    @State private var toastMessage: String?
+    @State private var toastItem: ToastItem?
 
     public init() {}
 
@@ -69,13 +69,7 @@ public struct DataManagementScreen: View {
         .listStyle(.insetGrouped)
         .navigationTitle("Data & Storage")
         .navigationBarTitleDisplayMode(.inline)
-        .overlay(alignment: .bottom) {
-            if let toast = toastMessage {
-                toastBanner(toast)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-                    .padding(.bottom, 24)
-            }
-        }
+        .toast(item: $toastItem)
         .sheet(isPresented: $showExportSheet) {
             CsvExportSheet(transactions: repository.transactions)
         }
@@ -85,9 +79,9 @@ public struct DataManagementScreen: View {
                 let summary = repository.loadSampleDemoData()
                 themeManager.triggerHapticFeedback(.success)
                 if let summary {
-                    showToast("Sample demo data loaded (\(summary.transactions) transactions)")
+                    toastItem = ToastItem("Sample data loaded (\(summary.transactions) transactions)", style: .success)
                 } else {
-                    showToast("Could not load demo data")
+                    toastItem = ToastItem("Could not load demo data", style: .error)
                 }
             }
         } message: {
@@ -98,7 +92,7 @@ public struct DataManagementScreen: View {
             Button("Wipe Everything", role: .destructive) {
                 repository.resetToEmptyDatabase()
                 themeManager.triggerHapticFeedback(.warning)
-                showToast("Database wiped. Starting completely clean.")
+                toastItem = ToastItem("Database wiped. Starting completely clean.", style: .info)
             }
         } message: {
             Text("Are you sure you want to delete all transactions, budgets, and subscriptions? This action cannot be undone.")
@@ -113,34 +107,5 @@ public struct DataManagementScreen: View {
         } label: {
             Label(title, systemImage: icon)
         }
-    }
-
-    private func showToast(_ message: String) {
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
-            toastMessage = message
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
-            withAnimation {
-                toastMessage = nil
-            }
-        }
-    }
-
-    private func toastBanner(_ message: String) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundColor(CentwiseColors.incomeGreen)
-
-            Text(message)
-                .font(CentwiseTypography.subheadline)
-                .foregroundColor(.white)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(
-            Capsule()
-                .fill(Color(white: 0.15))
-                .shadow(color: .black.opacity(0.3), radius: 10, y: 5)
-        )
     }
 }

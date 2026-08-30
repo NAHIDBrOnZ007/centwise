@@ -68,7 +68,7 @@ fn fresh_install_creates_latest_schema_and_seeds_categories() {
     assert_eq!(balance, 0);
 
     let starter_rules = database.list_rules().expect("rules queryable");
-    assert_eq!(starter_rules.len(), 5);
+    assert_eq!(starter_rules.len(), centwise_domain::default_rules().len());
 }
 
 #[test]

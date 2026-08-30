@@ -68,18 +68,20 @@ fun TransactionRow(
         modifier = rowModifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Icon Badge (Rounded square style)
+        val accent = com.centwise.features.settings.AccentOptions.byName(com.centwise.features.settings.AppearancePrefs.accentName).color
+
+        // Icon Badge (Theme accent style matching iOS)
         Box(
             modifier = Modifier
-                .size(42.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(if (isDark) Color(0xFF2C2C2E) else Color(0xFFEBEBEB)),
+                .size(38.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(accent.copy(alpha = 0.12f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = typeIcon,
                 contentDescription = null,
-                tint = if (isDark) Color.White else Color(0xFF555555),
+                tint = accent,
                 modifier = Modifier.size(20.dp)
             )
         }

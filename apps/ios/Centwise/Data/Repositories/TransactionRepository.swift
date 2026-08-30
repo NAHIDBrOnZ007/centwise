@@ -193,6 +193,11 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
     }
 
+    public func deleteAccount(id: String) {
+        guard CentwiseRustBackend.deleteAccount(id: id) else { return }
+        NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+    }
+
     public func addBudget(_ budget: CategoryBudget) {
         guard CentwiseRustBackend.insertBudget(budget) else { return }
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)

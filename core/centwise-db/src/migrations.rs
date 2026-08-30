@@ -160,40 +160,35 @@ pub fn run(connection: &Connection) -> DbResult<()> {
         transaction.commit()?;
     }
 
-    if current == 0 {
-        seed_system_data(connection)?;
-    }
-    if current < 3 {
-        seed_default_rules(connection)?;
-    }
+    seed_system_data(connection)?;
+    seed_default_rules(connection)?;
 
     Ok(())
 }
 
-/// Seeds the same useful starter rules on a fresh install or the first build
-/// that introduced Rust-owned rules. These are ordinary editable rows, so a
-/// user can change or delete them and they will not be recreated afterwards.
 fn seed_default_rules(connection: &Connection) -> DbResult<()> {
-    let defaults = [
-        ("rule-foodpanda", "Foodpanda is Food", "Foodpanda", "food"),
-        ("rule-pathao", "Pathao is Transport", "Pathao", "transport"),
-        ("rule-daraz", "Daraz is Shopping", "Daraz", "shopping"),
-        ("rule-chaldal", "Chaldal is Food", "Chaldal", "food"),
-        (
-            "rule-skitto",
-            "Skitto is Mobile Recharge",
-            "Skitto",
-            "recharge",
-        ),
-    ];
-    for (sort_order, (id, name, keyword, category_id)) in defaults.into_iter().enumerate() {
-        connection.execute(
-            "INSERT OR IGNORE INTO rules
-                (id, name, keyword, match_type, category_id, transaction_type,
-                 is_enabled, sort_order)
-             VALUES (?1, ?2, ?3, 'contains', ?4, 'expense', 1, ?5)",
-            rusqlite::params![id, name, keyword, category_id, sort_order as i64],
-        )?;
+    let count: i64 = connection
+        .query_row("SELECT COUNT(*) FROM rules", [], |row| row.get(0))
+        .unwrap_or(0);
+    if count > 0 {
+        return Ok(());
+    }
+
+    let mut statement = connection.prepare(
+        "INSERT OR IGNORE INTO rules
+            (id, name, keyword, match_type, category_id, transaction_type,
+             is_enabled, sort_order)
+         VALUES (?1, ?2, ?3, 'contains', ?4, 'expense', 1, ?5)",
+    )?;
+
+    for (sort_order, rule) in centwise_domain::default_rules().into_iter().enumerate() {
+        statement.execute(rusqlite::params![
+            rule.id,
+            rule.name,
+            rule.keyword,
+            rule.category_id,
+            sort_order as i64
+        ])?;
     }
     Ok(())
 }

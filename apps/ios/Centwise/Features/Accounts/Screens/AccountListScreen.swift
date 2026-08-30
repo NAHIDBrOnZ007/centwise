@@ -6,6 +6,8 @@ public struct AccountListScreen: View {
 
     @State private var showAddAccount = false
     @State private var editingAccount: FinancialAccount?
+    @State private var accountToDelete: FinancialAccount?
+    @State private var toastItem: ToastItem?
 
     public init() {}
 
@@ -76,11 +78,24 @@ public struct AccountListScreen: View {
                         .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                accountToDelete = account
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                         .contextMenu {
                             Button {
                                 editingAccount = account
                             } label: {
                                 Label("Edit", systemImage: "pencil")
+                            }
+
+                            Button(role: .destructive) {
+                                accountToDelete = account
+                            } label: {
+                                Label("Delete Account", systemImage: "trash")
                             }
                         }
                     }
@@ -107,11 +122,37 @@ public struct AccountListScreen: View {
                 }
             }
         }
+        .toast(item: $toastItem)
         .sheet(isPresented: $showAddAccount) {
-            AddEditAccountScreen()
+            AddEditAccountScreen(onSave: {
+                toastItem = ToastItem("Account added successfully", style: .success)
+            })
         }
         .sheet(item: $editingAccount) { account in
-            AddEditAccountScreen(accountToEdit: account)
+            AddEditAccountScreen(accountToEdit: account, onSave: {
+                toastItem = ToastItem("Account updated successfully", style: .success)
+            })
+        }
+        .alert("Delete Account?", isPresented: Binding(
+            get: { accountToDelete != nil },
+            set: { if !$0 { accountToDelete = nil } }
+        )) {
+            Button("Delete", role: .destructive) {
+                if let acct = accountToDelete {
+                    TransactionRepository.shared.deleteAccount(id: acct.id)
+                    accountToDelete = nil
+                    toastItem = ToastItem("Account deleted", style: .success)
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                accountToDelete = nil
+            }
+        } message: {
+            if let acct = accountToDelete {
+                Text("Are you sure you want to remove \(acct.name) and all its transactions?")
+            } else {
+                Text("Are you sure you want to remove this account?")
+            }
         }
     }
 

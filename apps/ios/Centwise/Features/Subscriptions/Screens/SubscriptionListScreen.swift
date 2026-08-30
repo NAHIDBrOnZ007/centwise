@@ -5,6 +5,8 @@ public struct SubscriptionListScreen: View {
     @ObservedObject private var themeManager = ThemeManager.shared
 
     @State private var showAddSubscription = false
+    @State private var editingSubscription: RecurringSubscription?
+    @State private var toastItem: ToastItem?
 
     public init() {}
 
@@ -37,10 +39,9 @@ public struct SubscriptionListScreen: View {
 
             Section("Your Subscriptions") {
                 ForEach(repository.subscriptions) { sub in
-                    NavigationLink {
-                        AddEditSubscriptionScreen(editingSubscription: sub) { updated in
-                            repository.updateSubscription(updated)
-                        }
+                    Button {
+                        themeManager.triggerHapticFeedback(.light)
+                        editingSubscription = sub
                     } label: {
                         HStack(spacing: CentwiseSpacing.mdSm) {
                             Image(systemName: sub.icon)
@@ -49,32 +50,38 @@ public struct SubscriptionListScreen: View {
                                 .frame(width: 28, height: 28)
 
                             VStack(alignment: .leading, spacing: CentwiseSpacing.xxs) {
-                                    Text(sub.name)
-                                        .font(CentwiseTypography.bodyMedium)
-                                        .foregroundColor(.primary)
+                                Text(sub.name)
+                                    .font(CentwiseTypography.bodyMedium)
+                                    .foregroundColor(.primary)
 
-                                    Text("Due on " + DateFormatterHelper.shared.formatRelativeOrDate(sub.nextDueDate))
-                                        .font(CentwiseTypography.caption2)
-                                        .foregroundColor(.secondary)
-                                }
+                                Text("Due on " + DateFormatterHelper.shared.formatRelativeOrDate(sub.nextDueDate))
+                                    .font(CentwiseTypography.caption2)
+                                    .foregroundColor(.secondary)
+                            }
 
-                                Spacer()
+                            Spacer()
 
-                                VStack(alignment: .trailing, spacing: CentwiseSpacing.xxs) {
-                                    Text(CurrencyFormatter.shared.formatBDT(sub.amount, compact: true))
-                                        .font(CentwiseTypography.amountMedium)
-                                        .foregroundColor(.primary)
+                            VStack(alignment: .trailing, spacing: CentwiseSpacing.xxs) {
+                                Text(CurrencyFormatter.shared.formatBDT(sub.amount, compact: true))
+                                    .font(CentwiseTypography.amountMedium)
+                                    .foregroundColor(.primary)
 
-                                    Text(sub.billingCycle)
-                                        .font(CentwiseTypography.caption2)
-                                        .foregroundColor(.secondary)
-                                }
+                                Text(sub.billingCycle)
+                                    .font(CentwiseTypography.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(Color(uiColor: .tertiaryLabel))
                         }
                         .padding(.vertical, CentwiseSpacing.xxs)
                     }
+                    .tint(.primary)
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                         Button(role: .destructive) {
                             repository.deleteSubscription(id: sub.id)
+                            toastItem = ToastItem("Subscription deleted", style: .success)
                         } label: {
                             Label("Delete", systemImage: "trash")
                         }
@@ -97,10 +104,20 @@ public struct SubscriptionListScreen: View {
                 }
             }
         }
+        .toast(item: $toastItem)
         .sheet(isPresented: $showAddSubscription) {
             NavigationStack {
                 AddEditSubscriptionScreen { sub in
                     repository.addSubscription(sub)
+                    toastItem = ToastItem("Subscription added successfully", style: .success)
+                }
+            }
+        }
+        .sheet(item: $editingSubscription) { sub in
+            NavigationStack {
+                AddEditSubscriptionScreen(editingSubscription: sub) { updated in
+                    repository.updateSubscription(updated)
+                    toastItem = ToastItem("Subscription updated successfully", style: .success)
                 }
             }
         }

@@ -34,7 +34,7 @@ fn custom_categories_and_rules_persist_and_support_crud() {
         .expect("insert rule");
 
     let rules = database.list_rules().expect("list rules");
-    assert_eq!(rules.len(), 6);
+    assert_eq!(rules.len(), centwise_domain::default_rules().len() + 1);
     assert_eq!(
         rules
             .iter()
@@ -54,7 +54,10 @@ fn custom_categories_and_rules_persist_and_support_crud() {
 
     assert!(database.delete_rule("rule-coffee").expect("delete rule"));
     assert!(database.delete_category("coffee").expect("delete category"));
-    assert_eq!(database.list_rules().expect("list rules").len(), 5);
+    assert_eq!(
+        database.list_rules().expect("list rules").len(),
+        centwise_domain::default_rules().len()
+    );
 }
 
 #[test]

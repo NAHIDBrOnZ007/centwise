@@ -97,10 +97,10 @@ fun FilterCapsulePill(
 
     Row(
         modifier = modifier
-            .clip(RoundedCornerShape(10.dp))
+            .clip(CircleShape)
             .background(bg)
             .clickable { onClick() }
-            .padding(horizontal = 6.dp, vertical = 8.dp),
+            .padding(horizontal = 8.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
@@ -110,7 +110,7 @@ fun FilterCapsulePill(
             tint = contentColor,
             modifier = Modifier.size(12.dp)
         )
-        Spacer(modifier = Modifier.width(3.dp))
+        Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = text,
             style = CentwiseTypography.Caption.copy(
@@ -121,7 +121,7 @@ fun FilterCapsulePill(
             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
             color = contentColor
         )
-        Spacer(modifier = Modifier.width(2.dp))
+        Spacer(modifier = Modifier.width(3.dp))
         Icon(
             imageVector = Icons.Default.KeyboardArrowDown,
             contentDescription = null,

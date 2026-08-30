@@ -9,14 +9,62 @@ public enum ThemeMode: String, CaseIterable, Identifiable {
     public var id: String { rawValue }
 }
 
+public enum AccentCategory: String, CaseIterable, Identifiable {
+    case bangladesh = "Bangladesh Providers"
+    case aesthetic = "Aesthetic Vibes"
+    case modern = "Modern & Minimal"
+
+    public var id: String { rawValue }
+}
+
 public enum AccentChoice: String, CaseIterable, Identifiable {
+    // Bangladesh / Financial Brands
     case emerald = "Emerald Green"
     case bKash = "bKash Pink"
     case nagad = "Nagad Orange"
     case rocket = "Rocket Violet"
+    case upay = "Upay Blue"
+    case cellfin = "Cellfin Green"
+    case cityBank = "City Bank Red"
+    case easternBank = "EBL Gold"
     case sapphire = "Sapphire Blue"
 
+    // Aesthetic & Neon Vibes
+    case cyan = "Cyber Cyan"
+    case indigo = "Electric Indigo"
+    case lavender = "Velvet Lavender"
+    case ruby = "Crimson Ruby"
+    case sakura = "Sakura Bloom"
+    case amethyst = "Midnight Amethyst"
+    case coral = "Neon Coral"
+    case aurora = "Aurora Teal"
+    case nordicSky = "Nordic Sky"
+
+    // Modern & Minimal Palettes
+    case amber = "Sunburst Amber"
+    case mint = "Mint Breeze"
+    case matcha = "Matcha Green"
+    case champagne = "Warm Champagne"
+    case roseGold = "Rose Gold"
+    case slate = "Graphite Slate"
+    case obsidian = "Obsidian Noir"
+
     public var id: String { rawValue }
+
+    public static var featuredCases: [AccentChoice] {
+        [.emerald, .bKash, .nagad, .rocket, .sapphire, .cyan, .lavender, .sakura, .aurora, .ruby]
+    }
+
+    public var category: AccentCategory {
+        switch self {
+        case .emerald, .bKash, .nagad, .rocket, .upay, .cellfin, .cityBank, .easternBank, .sapphire:
+            return .bangladesh
+        case .cyan, .indigo, .lavender, .ruby, .sakura, .amethyst, .coral, .aurora, .nordicSky:
+            return .aesthetic
+        case .amber, .mint, .matcha, .champagne, .roseGold, .slate, .obsidian:
+            return .modern
+        }
+    }
 
     public var color: Color {
         switch self {
@@ -24,7 +72,57 @@ public enum AccentChoice: String, CaseIterable, Identifiable {
         case .bKash: return CentwiseColors.bKashPink
         case .nagad: return CentwiseColors.nagadOrange
         case .rocket: return CentwiseColors.rocketPurple
+        case .upay: return CentwiseColors.upayBlue
+        case .cellfin: return CentwiseColors.cellfinGreen
+        case .cityBank: return CentwiseColors.cityBankRed
+        case .easternBank: return CentwiseColors.easternBankGold
         case .sapphire: return CentwiseColors.transferBlue
+        case .cyan: return CentwiseColors.cyberCyan
+        case .indigo: return CentwiseColors.electricIndigo
+        case .lavender: return CentwiseColors.aestheticLavender
+        case .ruby: return CentwiseColors.crimsonRuby
+        case .sakura: return CentwiseColors.sakuraBloom
+        case .amethyst: return CentwiseColors.midnightAmethyst
+        case .coral: return CentwiseColors.neonCoral
+        case .aurora: return CentwiseColors.auroraTeal
+        case .nordicSky: return CentwiseColors.nordicSky
+        case .amber: return CentwiseColors.sunsetAmber
+        case .mint: return CentwiseColors.mintBreeze
+        case .matcha: return CentwiseColors.matchaGreen
+        case .champagne: return CentwiseColors.warmChampagne
+        case .roseGold: return CentwiseColors.roseGold
+        case .slate: return CentwiseColors.graphiteSlate
+        case .obsidian: return CentwiseColors.obsidianCharcoal
+        }
+    }
+
+    public var subtitle: String {
+        switch self {
+        case .emerald: return "Signature Centwise"
+        case .bKash: return "Vibrant Magenta"
+        case .nagad: return "Warm Sunset"
+        case .rocket: return "Royal Purple"
+        case .upay: return "Dynamic Blue"
+        case .cellfin: return "Islamic Emerald"
+        case .cityBank: return "Signature Crimson"
+        case .easternBank: return "Eastern Gold"
+        case .sapphire: return "Deep Cobalt"
+        case .cyan: return "Electric Neon"
+        case .indigo: return "Aesthetic Iris"
+        case .lavender: return "Pastel Dream"
+        case .ruby: return "Luxury Velvet"
+        case .sakura: return "Cherry Blossom"
+        case .amethyst: return "Deep Royal Violet"
+        case .coral: return "Sunset Peach Glow"
+        case .aurora: return "Northern Lights"
+        case .nordicSky: return "Crisp Azure"
+        case .amber: return "Golden Glow"
+        case .mint: return "Fresh Neo Mint"
+        case .matcha: return "Zen Matcha"
+        case .champagne: return "Refined Amber"
+        case .roseGold: return "Soft Metallic"
+        case .slate: return "Pure Minimalist"
+        case .obsidian: return "Deep Slate Noir"
         }
     }
 }

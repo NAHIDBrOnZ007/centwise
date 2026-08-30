@@ -16,6 +16,24 @@ public enum CentwiseColors {
     public static let bracBankBlue = Color(red: 0.05, green: 0.25, blue: 0.60)
     public static let easternBankGold = Color(red: 0.80, green: 0.60, blue: 0.10)
 
+    // MARK: - Modern Aesthetic Accents
+    public static let cyberCyan = Color(red: 0.02, green: 0.71, blue: 0.83)        // #06B6D4
+    public static let electricIndigo = Color(red: 0.39, green: 0.40, blue: 0.95)   // #6366F1
+    public static let aestheticLavender = Color(red: 0.65, green: 0.42, blue: 0.96)// #A855F7
+    public static let crimsonRuby = Color(red: 0.88, green: 0.11, blue: 0.28)      // #E11D48
+    public static let sunsetAmber = Color(red: 0.96, green: 0.62, blue: 0.04)      // #F59E0B
+    public static let mintBreeze = Color(red: 0.06, green: 0.73, blue: 0.51)       // #10B981
+    public static let roseGold = Color(red: 0.98, green: 0.44, blue: 0.52)         // #FB7185
+    public static let graphiteSlate = Color(red: 0.39, green: 0.45, blue: 0.55)    // #64748B
+    public static let nordicSky = Color(red: 0.08, green: 0.53, blue: 0.89)        // #1488E0
+    public static let sakuraBloom = Color(red: 0.96, green: 0.45, blue: 0.71)      // #F472B6
+    public static let midnightAmethyst = Color(red: 0.49, green: 0.23, blue: 0.93) // #7C3AED
+    public static let neonCoral = Color(red: 0.99, green: 0.45, blue: 0.40)        // #FD7266
+    public static let auroraTeal = Color(red: 0.08, green: 0.72, blue: 0.65)       // #14B8A6
+    public static let matchaGreen = Color(red: 0.52, green: 0.80, blue: 0.09)      // #84CC16
+    public static let warmChampagne = Color(red: 0.85, green: 0.47, blue: 0.02)    // #D97706
+    public static let obsidianCharcoal = Color(red: 0.20, green: 0.25, blue: 0.33) // #334155
+
     // MARK: - Financial Semantics
     public static let incomeGreen = Color(red: 0.13, green: 0.77, blue: 0.36) // #22C55E
     public static let expenseRed = Color(red: 0.94, green: 0.27, blue: 0.27)  // #EF4444

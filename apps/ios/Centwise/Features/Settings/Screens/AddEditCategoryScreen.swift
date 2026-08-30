@@ -19,9 +19,9 @@ public struct AddEditCategoryScreen: View {
     ]
 
     private static let colorChoices = [
-        "#00A86B", "#F97316", "#06B6D4", "#EC4899", "#EAB308",
-        "#8B5CF6", "#10B981", "#3B82F6", "#EF4444", "#6366F1",
-        "#14B8A6", "#64748B"
+        "#00A86B", "#F7941D", "#E2136E", "#8C3494", "#06B6D4", "#6366F1",
+        "#A855F7", "#E11D48", "#10B981", "#3B82F6", "#F59E0B", "#FB7185",
+        "#14B8A6", "#84CC16", "#F472B6", "#7C3AED", "#64748B", "#334155"
     ]
 
     public init(

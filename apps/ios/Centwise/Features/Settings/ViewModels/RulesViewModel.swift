@@ -4,13 +4,31 @@ import Combine
 /// Rust-backed Smart Rules view model. Published values are a UI cache only.
 public final class RulesViewModel: ObservableObject {
     @Published public private(set) var rules: [SmartRule] = []
+    private var observers: [NSObjectProtocol] = []
 
     public init() {
         loadRules()
+        setupObservers()
+    }
+
+    private func setupObservers() {
+        observers.append(
+            NotificationCenter.default.addObserver(
+                forName: .centwiseTransactionsUpdated,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                self?.loadRules()
+            }
+        )
+    }
+
+    deinit {
+        observers.forEach { NotificationCenter.default.removeObserver($0) }
     }
 
     public func loadRules() {
-        rules = CentwiseRustBackend.listRules().map { record in
+        let loaded = CentwiseRustBackend.listRules().map { record in
             SmartRule(
                 id: record.id,
                 name: record.name,
@@ -21,6 +39,31 @@ public final class RulesViewModel: ObservableObject {
                 isEnabled: record.isEnabled
             )
         }
+        if loaded.isEmpty {
+            for rule in Self.builtInDefaultRules {
+                _ = CentwiseRustBackend.insertRule(rule)
+            }
+            rules = CentwiseRustBackend.listRules().map { record in
+                SmartRule(
+                    id: record.id,
+                    name: record.name,
+                    keyword: record.keyword,
+                    matchType: matchType(record.matchType),
+                    category: TransactionRepository.shared.category(id: record.categoryId),
+                    transactionType: transactionType(record.kind),
+                    isEnabled: record.isEnabled
+                )
+            }
+        } else {
+            rules = loaded
+        }
+    }
+
+    public func restoreDefaultRules() {
+        for rule in Self.builtInDefaultRules {
+            _ = CentwiseRustBackend.insertRule(rule)
+        }
+        loadRules()
     }
 
     public func addRule(_ rule: SmartRule) {
@@ -43,6 +86,44 @@ public final class RulesViewModel: ObservableObject {
         rule.isEnabled = isEnabled
         updateRule(rule)
     }
+
+    public var groupedRules: [(category: TransactionCategory, rules: [SmartRule])] {
+        let categories = TransactionRepository.shared.categories
+        var result: [(category: TransactionCategory, rules: [SmartRule])] = []
+        for cat in categories {
+            let catRules = rules.filter { $0.category.id == cat.id }
+            if !catRules.isEmpty {
+                result.append((category: cat, rules: catRules))
+            }
+        }
+        let knownCatIds = Set(categories.map { $0.id })
+        let otherRules = rules.filter { !knownCatIds.contains($0.category.id) }
+        if !otherRules.isEmpty {
+            let otherCat = TransactionCategory(id: "other", name: "Other", icon: "square.grid.2x2", colorHex: "#64748B")
+            result.append((category: otherCat, rules: otherRules))
+        }
+        return result
+    }
+
+    public static let builtInDefaultRules: [SmartRule] = [
+        SmartRule(id: "rule-foodpanda", name: "Foodpanda", keyword: "Foodpanda", matchType: .contains, category: TransactionRepository.shared.category(id: "food"), transactionType: .expense, isEnabled: true),
+        SmartRule(id: "rule-chaldal", name: "Chaldal", keyword: "Chaldal", matchType: .contains, category: TransactionRepository.shared.category(id: "food"), transactionType: .expense, isEnabled: true),
+        SmartRule(id: "rule-shwapno", name: "Shwapno", keyword: "Shwapno", matchType: .contains, category: TransactionRepository.shared.category(id: "food"), transactionType: .expense, isEnabled: true),
+        SmartRule(id: "rule-daraz", name: "Daraz", keyword: "Daraz", matchType: .contains, category: TransactionRepository.shared.category(id: "shopping"), transactionType: .expense, isEnabled: true),
+        SmartRule(id: "rule-aarong", name: "Aarong", keyword: "Aarong", matchType: .contains, category: TransactionRepository.shared.category(id: "shopping"), transactionType: .expense, isEnabled: true),
+        SmartRule(id: "rule-pathao", name: "Pathao", keyword: "Pathao", matchType: .contains, category: TransactionRepository.shared.category(id: "transport"), transactionType: .expense, isEnabled: true),
+        SmartRule(id: "rule-shohoz", name: "Shohoz", keyword: "Shohoz", matchType: .contains, category: TransactionRepository.shared.category(id: "transport"), transactionType: .expense, isEnabled: true),
+        SmartRule(id: "rule-metro-rail", name: "Metro Rail", keyword: "Metro Rail", matchType: .contains, category: TransactionRepository.shared.category(id: "transport"), transactionType: .expense, isEnabled: true),
+        SmartRule(id: "rule-grameenphone", name: "Grameenphone", keyword: "Grameenphone", matchType: .contains, category: TransactionRepository.shared.category(id: "recharge"), transactionType: .expense, isEnabled: true),
+        SmartRule(id: "rule-robi", name: "Robi", keyword: "Robi", matchType: .contains, category: TransactionRepository.shared.category(id: "recharge"), transactionType: .expense, isEnabled: true),
+        SmartRule(id: "rule-banglalink", name: "Banglalink", keyword: "Banglalink", matchType: .contains, category: TransactionRepository.shared.category(id: "recharge"), transactionType: .expense, isEnabled: true),
+        SmartRule(id: "rule-skitto", name: "Skitto", keyword: "Skitto", matchType: .contains, category: TransactionRepository.shared.category(id: "recharge"), transactionType: .expense, isEnabled: true),
+        SmartRule(id: "rule-dpdc", name: "DPDC", keyword: "DPDC", matchType: .contains, category: TransactionRepository.shared.category(id: "bills"), transactionType: .expense, isEnabled: true),
+        SmartRule(id: "rule-desco", name: "DESCO", keyword: "DESCO", matchType: .contains, category: TransactionRepository.shared.category(id: "bills"), transactionType: .expense, isEnabled: true),
+        SmartRule(id: "rule-wasa", name: "Dhaka WASA", keyword: "WASA", matchType: .contains, category: TransactionRepository.shared.category(id: "bills"), transactionType: .expense, isEnabled: true),
+        SmartRule(id: "rule-lazz-pharma", name: "Lazz Pharma", keyword: "Lazz Pharma", matchType: .contains, category: TransactionRepository.shared.category(id: "health"), transactionType: .expense, isEnabled: true),
+        SmartRule(id: "rule-10ms", name: "10 Minute School", keyword: "10 Minute School", matchType: .contains, category: TransactionRepository.shared.category(id: "education"), transactionType: .expense, isEnabled: true),
+    ]
 
     private func matchType(_ value: String) -> RuleMatchType {
         switch value {

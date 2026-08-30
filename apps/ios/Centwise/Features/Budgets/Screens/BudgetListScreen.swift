@@ -7,6 +7,7 @@ public struct BudgetListScreen: View {
 
     @State private var showAddBudget = false
     @State private var editingBudget: CategoryBudget?
+    @State private var toastItem: ToastItem?
 
     public init() {}
 
@@ -120,6 +121,7 @@ public struct BudgetListScreen: View {
                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                             Button(role: .destructive) {
                                 repository.deleteBudget(id: budget.id)
+                                toastItem = ToastItem("Budget deleted", style: .success)
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
@@ -133,6 +135,7 @@ public struct BudgetListScreen: View {
 
                             Button(role: .destructive) {
                                 repository.deleteBudget(id: budget.id)
+                                toastItem = ToastItem("Budget deleted", style: .success)
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
@@ -163,10 +166,12 @@ public struct BudgetListScreen: View {
                 }
             }
         }
+        .toast(item: $toastItem)
         .sheet(isPresented: $showAddBudget) {
             NavigationStack {
                 AddEditBudgetScreen { budget in
                     repository.addBudget(budget)
+                    toastItem = ToastItem("Budget created successfully", style: .success)
                 }
             }
         }
@@ -174,6 +179,7 @@ public struct BudgetListScreen: View {
             NavigationStack {
                 AddEditBudgetScreen(editingBudget: budget) { updated in
                     repository.updateBudget(updated)
+                    toastItem = ToastItem("Budget updated successfully", style: .success)
                 }
             }
         }

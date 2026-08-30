@@ -41,16 +41,8 @@ impl<'a> Queries<'a> {
     }
 
     pub fn delete_account(&self, id: &str) -> DbResult<bool> {
-        let transaction_count: i64 = self.connection.query_row(
-            "SELECT COUNT(*) FROM transactions WHERE account_id = ?1",
-            params![id],
-            |row| row.get(0),
-        )?;
-        if transaction_count > 0 {
-            return Err(DbError::Invalid(
-                "account is still used by transactions".into(),
-            ));
-        }
+        self.connection
+            .execute("DELETE FROM transactions WHERE account_id = ?1", params![id])?;
         Ok(self
             .connection
             .execute("DELETE FROM accounts WHERE id = ?1", params![id])?

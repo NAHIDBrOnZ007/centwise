@@ -150,6 +150,10 @@ pub(crate) fn populate(queries: &Queries<'_>, now_epoch_ms: i64) -> DbResult<Dem
         })?;
     }
 
+    for rule in centwise_domain::default_rules() {
+        queries.insert_rule(&rule)?;
+    }
+
     Ok(DemoDataSummary {
         accounts: accounts.len() as u32,
         transactions: transaction_count,

@@ -3,6 +3,7 @@ import SwiftUI
 public struct ReviewQueueView: View {
     @ObservedObject private var repository = ReviewQueueRepository.shared
     @State private var itemToConvert: ReviewQueueItem?
+    @State private var toastItem: ToastItem?
 
     public init() {}
 
@@ -38,6 +39,7 @@ public struct ReviewQueueView: View {
                 }
             }
         }
+        .toast(item: $toastItem)
         .sheet(item: $itemToConvert) { item in
             let provider = provider(for: item.sender)
             AddEditTransactionView(
@@ -55,7 +57,11 @@ public struct ReviewQueueView: View {
                 ),
                 writesToRepository: false,
                 onCommit: { transaction in
-                    repository.confirmAsTransaction(item: item, transaction: transaction)
+                    let success = repository.confirmAsTransaction(item: item, transaction: transaction)
+                    if success {
+                        toastItem = ToastItem("Transaction confirmed successfully", style: .success)
+                    }
+                    return success
                 }
             )
         }
@@ -107,6 +113,7 @@ public struct ReviewQueueView: View {
             HStack {
                 Button("Dismiss", role: .destructive) {
                     repository.dismissItem(id: item.id)
+                    toastItem = ToastItem("Item dismissed", style: .info)
                 }
                 .buttonStyle(.bordered)
 

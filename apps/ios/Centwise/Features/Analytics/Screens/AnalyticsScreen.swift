@@ -108,11 +108,12 @@ public struct AnalyticsScreen: View {
                 )
             }
         }
+        .padding(.horizontal, 2)
         .accessibilityLabel("Analytics filters")
     }
 
     private func filterChip(title: String, icon: String, isActive: Bool) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 5) {
             Image(systemName: icon)
                 .font(.system(size: 11, weight: .semibold))
             Text(title)
@@ -130,12 +131,12 @@ public struct AnalyticsScreen: View {
         .background(
             isActive
                 ? themeManager.accentColor
-                : Color(uiColor: .secondarySystemGroupedBackground),
-            in: Capsule()
+                : Color(uiColor: .secondarySystemGroupedBackground)
         )
+        .clipShape(Capsule(style: .continuous))
         .overlay {
             if !isActive {
-                Capsule()
+                Capsule(style: .continuous)
                     .stroke(Color(uiColor: .separator).opacity(0.45), lineWidth: 1)
             }
         }
@@ -176,6 +177,7 @@ public struct AnalyticsScreen: View {
 public struct AnalyticsDrillDownSheet: View {
     public let drill: AnalyticsDrillDown
     @State private var selectedTransaction: CentwiseTransaction?
+    @State private var toastItem: ToastItem?
     @Environment(\.dismiss) private var dismiss
 
     public init(drill: AnalyticsDrillDown) {
@@ -207,6 +209,14 @@ public struct AnalyticsDrillDownSheet: View {
                             .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    TransactionRepository.shared.deleteTransaction(id: transaction.id)
+                                    toastItem = ToastItem("Transaction deleted", style: .success)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
                         }
                     } header: {
                         Text("\(drill.transactions.count) Transactions")
@@ -226,8 +236,16 @@ public struct AnalyticsDrillDownSheet: View {
                     }
                 }
             }
+            .toast(item: $toastItem)
             .sheet(item: $selectedTransaction) { tx in
-                TransactionDetailSheet(transaction: tx)
+                TransactionDetailSheet(
+                    transaction: tx,
+                    onDelete: {
+                        TransactionRepository.shared.deleteTransaction(id: tx.id)
+                        selectedTransaction = nil
+                        toastItem = ToastItem("Transaction deleted", style: .success)
+                    }
+                )
             }
         }
     }

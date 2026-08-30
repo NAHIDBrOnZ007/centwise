@@ -5,8 +5,10 @@ public struct AccountDetailScreen: View {
 
     @ObservedObject private var repository = TransactionRepository.shared
     @State private var selectedTransaction: CentwiseTransaction?
+    @State private var editingTransaction: CentwiseTransaction?
     @State private var showEditSheet = false
     @State private var showingDeleteAlert = false
+    @State private var toastItem: ToastItem?
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
@@ -72,6 +74,14 @@ public struct AccountDetailScreen: View {
                         .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                repository.deleteTransaction(id: transaction.id)
+                                toastItem = ToastItem("Transaction deleted", style: .success)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
                     }
                 }
             } header: {
@@ -110,22 +120,44 @@ public struct AccountDetailScreen: View {
                 }
             }
         }
+        .toast(item: $toastItem)
         .sheet(item: $selectedTransaction) { transaction in
-            TransactionDetailSheet(transaction: transaction)
+            TransactionDetailSheet(
+                transaction: transaction,
+                onEdit: {
+                    let tx = transaction
+                    selectedTransaction = nil
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        editingTransaction = tx
+                    }
+                },
+                onDelete: {
+                    repository.deleteTransaction(id: transaction.id)
+                    selectedTransaction = nil
+                    toastItem = ToastItem("Transaction deleted", style: .success)
+                }
+            )
+        }
+        .sheet(item: $editingTransaction) { transaction in
+            AddEditTransactionView(transactionToEdit: transaction) {
+                toastItem = ToastItem("Transaction updated successfully", style: .success)
+            }
         }
         .sheet(isPresented: $showEditSheet) {
             if let account = account {
-                AddEditAccountScreen(accountToEdit: account)
+                AddEditAccountScreen(accountToEdit: account, onSave: {
+                    toastItem = ToastItem("Account updated successfully", style: .success)
+                })
             }
         }
         .alert("Delete Account?", isPresented: $showingDeleteAlert) {
             Button("Delete", role: .destructive) {
-                // Delete logic
+                repository.deleteAccount(id: accountId)
                 dismiss()
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("Are you sure you want to remove this account?")
+            Text("Are you sure you want to remove this account and all its transactions?")
         }
     }
 

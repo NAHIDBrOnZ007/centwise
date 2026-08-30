@@ -7,6 +7,7 @@ public struct BudgetDetailScreen: View {
     @State private var showingEditSheet = false
     @State private var showingDeleteAlert = false
     @State private var selectedTransaction: CentwiseTransaction?
+    @State private var toastItem: ToastItem?
 
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
@@ -74,6 +75,14 @@ public struct BudgetDetailScreen: View {
                             .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
                             .listRowBackground(Color.clear)
                             .listRowSeparator(.hidden)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    repository.deleteTransaction(id: transaction.id)
+                                    toastItem = ToastItem("Transaction deleted", style: .success)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
                         }
                     }
                 } header: {
@@ -128,14 +137,23 @@ public struct BudgetDetailScreen: View {
                 }
             }
         }
+        .toast(item: $toastItem)
         .sheet(item: $selectedTransaction) { transaction in
-            TransactionDetailSheet(transaction: transaction)
+            TransactionDetailSheet(
+                transaction: transaction,
+                onDelete: {
+                    repository.deleteTransaction(id: transaction.id)
+                    selectedTransaction = nil
+                    toastItem = ToastItem("Transaction deleted", style: .success)
+                }
+            )
         }
         .sheet(isPresented: $showingEditSheet) {
             NavigationStack {
                 if let budget = budget {
                     AddEditBudgetScreen(editingBudget: budget) { updated in
                         updateBudget(updated)
+                        toastItem = ToastItem("Budget updated successfully", style: .success)
                     }
                 }
             }

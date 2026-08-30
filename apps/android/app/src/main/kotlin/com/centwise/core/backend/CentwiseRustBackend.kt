@@ -38,7 +38,7 @@ object CentwiseRustBackend {
         try {
             val databasePath = context.noBackupFilesDir.resolve("centwise.db").absolutePath
             core = CentwiseCore.open(databasePath)
-        } catch (error: Exception) {
+        } catch (error: Throwable) {
             Log.e(TAG, "Rust core is unavailable; data features are disabled", error)
         }
     }
@@ -47,7 +47,7 @@ object CentwiseRustBackend {
         val rustCore = core ?: return null
         return try {
             rustCore.ingestSms(body, sender, timestamp)
-        } catch (error: Exception) {
+        } catch (error: Throwable) {
             Log.e(TAG, "Rust SMS ingestion failed", error)
             null
         }
@@ -57,7 +57,7 @@ object CentwiseRustBackend {
 
     fun loadDemoData(): DemoDataSummaryRecord? = try {
         core?.loadDemoData()
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust demo data load failed", error)
         null
     }
@@ -65,42 +65,42 @@ object CentwiseRustBackend {
     fun resetToEmptyDatabase(): Boolean = try {
         core?.resetToEmptyDatabase()
         core != null
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust database reset failed", error)
         false
     }
 
     fun listTransactions(): List<TransactionRecord> = try {
         core?.listTransactions(10_000u).orEmpty()
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust transaction read failed", error)
         emptyList()
     }
 
     fun listAccounts(): List<AccountRecord> = try {
         core?.listAccounts().orEmpty()
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust account read failed", error)
         emptyList()
     }
 
     fun listBudgets(): List<BudgetRecord> = try {
         core?.listBudgets().orEmpty()
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust budget read failed", error)
         emptyList()
     }
 
     fun listSubscriptions(): List<SubscriptionRecord> = try {
         core?.listSubscriptions().orEmpty()
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust subscription read failed", error)
         emptyList()
     }
 
     fun listCategories(): List<CategoryRecord> = try {
         core?.listCategories().orEmpty()
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust category read failed", error)
         emptyList()
     }
@@ -108,28 +108,28 @@ object CentwiseRustBackend {
     fun insertCategory(input: CategoryInput): Boolean = try {
         core?.insertCategory(input)
         core != null
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust category insert failed", error)
         false
     }
 
     fun updateCategory(input: CategoryInput): Boolean = try {
         core?.updateCategory(input) == true
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust category update failed", error)
         false
     }
 
     fun deleteCategory(id: String): Boolean = try {
         core?.deleteCategory(id) == true
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust category delete failed", error)
         false
     }
 
     fun listRules(): List<SmartRuleRecord> = try {
         core?.listRules().orEmpty()
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust rule read failed", error)
         emptyList()
     }
@@ -137,35 +137,35 @@ object CentwiseRustBackend {
     fun insertRule(input: SmartRuleInput): Boolean = try {
         core?.insertRule(input)
         core != null
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust rule insert failed", error)
         false
     }
 
     fun updateRule(input: SmartRuleInput): Boolean = try {
         core?.updateRule(input) == true
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust rule update failed", error)
         false
     }
 
     fun deleteRule(id: String): Boolean = try {
         core?.deleteRule(id) == true
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust rule delete failed", error)
         false
     }
 
     fun listReviewQueue(): List<ReviewQueueRecord> = try {
         core?.listReviewQueue(100u).orEmpty()
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust review queue read failed", error)
         emptyList()
     }
 
     fun dismissReviewQueueItem(id: String): Boolean = try {
         core?.dismissReviewQueueItem(id) == true
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust review queue dismissal failed", error)
         false
     }
@@ -210,7 +210,7 @@ object CentwiseRustBackend {
                     isAutoTracked = false
                 )
             )
-        } catch (error: Exception) {
+        } catch (error: Throwable) {
             Log.e(TAG, "Rust review conversion failed", error)
             false
         }
@@ -219,21 +219,21 @@ object CentwiseRustBackend {
     fun insertAccount(account: com.centwise.data.models.AccountItem): Boolean = try {
         core?.insertAccount(account.toRustInput())
         core != null
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust account insert failed", error)
         false
     }
 
     fun updateAccount(account: com.centwise.data.models.AccountItem): Boolean = try {
         core?.updateAccount(account.toRustInput()) == true
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust account update failed", error)
         false
     }
 
     fun deleteAccount(id: String): Boolean = try {
         core?.deleteAccount(id) == true
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust account delete failed", error)
         false
     }
@@ -241,21 +241,21 @@ object CentwiseRustBackend {
     fun insertTransaction(transaction: TransactionItem): Boolean = try {
         core?.insertTransaction(transaction.toRustInput())
         core != null
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust transaction insert failed", error)
         false
     }
 
     fun updateTransaction(transaction: TransactionItem): Boolean = try {
         core?.updateTransaction(transaction.toRustInput()) == true
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust transaction update failed", error)
         false
     }
 
     fun deleteTransaction(id: String): Boolean = try {
         core?.deleteTransaction(id) == true
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust transaction delete failed", error)
         false
     }
@@ -263,21 +263,21 @@ object CentwiseRustBackend {
     fun insertBudget(budget: com.centwise.data.models.BudgetItem): Boolean = try {
         core?.insertBudget(budget.toRustInput())
         core != null
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust budget insert failed", error)
         false
     }
 
     fun updateBudget(budget: com.centwise.data.models.BudgetItem): Boolean = try {
         core?.updateBudget(budget.toRustInput()) == true
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust budget update failed", error)
         false
     }
 
     fun deleteBudget(id: String): Boolean = try {
         core?.deleteBudget(id) == true
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust budget delete failed", error)
         false
     }
@@ -285,21 +285,21 @@ object CentwiseRustBackend {
     fun insertSubscription(subscription: com.centwise.data.models.SubscriptionItem): Boolean = try {
         core?.insertSubscription(subscription.toRustInput())
         core != null
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust subscription insert failed", error)
         false
     }
 
     fun updateSubscription(subscription: com.centwise.data.models.SubscriptionItem): Boolean = try {
         core?.updateSubscription(subscription.toRustInput()) == true
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust subscription update failed", error)
         false
     }
 
     fun deleteSubscription(id: String): Boolean = try {
         core?.deleteSubscription(id) == true
-    } catch (error: Exception) {
+    } catch (error: Throwable) {
         Log.e(TAG, "Rust subscription delete failed", error)
         false
     }

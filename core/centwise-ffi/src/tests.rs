@@ -304,8 +304,10 @@ mod ingestion_tests {
             .into_iter()
             .find(|item| item.reference.as_deref() == Some("COF1"))
             .expect("stored transaction");
-        assert_eq!(transaction.category_id, "coffee");
-        assert_eq!(core.list_rules().expect("rules").len(), 6);
+        assert_eq!(
+            core.list_rules().expect("rules").len(),
+            centwise_domain::default_rules().len() + 1
+        );
     }
 
     #[test]

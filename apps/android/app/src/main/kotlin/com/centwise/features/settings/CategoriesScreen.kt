@@ -120,55 +120,35 @@ fun CategoriesScreen(
                 }
             }
 
-            item {
-                Text(
-                    "Custom Categories",
-                    style = CentwiseTypography.Headline,
-                    color = textPrimary
-                )
-            }
+            if (customCategories.isNotEmpty()) {
+                item {
+                    Text(
+                        "Custom Categories",
+                        style = CentwiseTypography.Headline,
+                        color = textPrimary
+                    )
+                }
 
-            if (customCategories.isEmpty()) {
                 item {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
                             .background(cardBg)
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                            .padding(horizontal = 14.dp, vertical = 6.dp)
                     ) {
-                        Text(
-                            "No custom categories yet",
-                            style = CentwiseTypography.Subheadline,
-                            color = textSecondary
-                        )
-                        Text(
-                            "Tap Add to create your own category",
-                            style = CentwiseTypography.Caption,
-                            color = textSecondary
-                        )
-                    }
-                }
-            } else {
-                items(customCategories) { category ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
-                            .background(cardBg)
-                            .clickable { editingCategory = category }
-                            .padding(horizontal = 14.dp, vertical = 10.dp)
-                    ) {
-                        CategoryRow(
-                            category = category,
-                            badge = null,
-                            tint = category.color,
-                            textPrimary = textPrimary,
-                            textSecondary = textSecondary
-                        )
-                        IconButton(onClick = { TransactionRepository.shared.deleteCategory(category.id) }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Delete", tint = CentwiseColors.ExpenseRed)
+                        customCategories.forEachIndexed { index, category ->
+                            CategoryRow(
+                                category = category,
+                                badge = null,
+                                tint = accent,
+                                textPrimary = textPrimary,
+                                textSecondary = textSecondary,
+                                onClick = { editingCategory = category }
+                            )
+                            if (index < customCategories.lastIndex) {
+                                HorizontalDivider(color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
+                            }
                         }
                     }
                 }
@@ -204,11 +184,13 @@ private fun CategoryRow(
     badge: String?,
     tint: Color,
     textPrimary: Color,
-    textSecondary: Color
+    textSecondary: Color,
+    onClick: (() -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier)
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
