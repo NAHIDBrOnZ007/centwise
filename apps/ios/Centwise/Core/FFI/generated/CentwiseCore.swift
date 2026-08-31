@@ -541,6 +541,8 @@ public protocol CentwiseCoreProtocol : AnyObject {
     
     func dismissReviewQueueItem(id: String) throws  -> Bool
     
+    func getTransaction(id: String) throws  -> TransactionRecord?
+    
     /**
      * The single query powering the Home screen.
      */
@@ -551,6 +553,13 @@ public protocol CentwiseCoreProtocol : AnyObject {
      * operation. Native platforms only provide the message and timestamp.
      */
     func ingestSms(body: String, senderHint: String?, occurredAtEpochMs: Int64) throws  -> SmsIngestResult
+    
+    /**
+     * Ingests multiple platform SMS messages through the same Rust parser.
+     * The native bridge crosses once for the whole batch; each message keeps
+     * the existing Rust deduplication and review-queue behavior.
+     */
+    func ingestSmsBatch(messages: [SmsBatchMessage]) throws  -> [SmsIngestResult]
     
     func insertAccount(account: AccountInput) throws 
     
@@ -752,6 +761,14 @@ open func dismissReviewQueueItem(id: String)throws  -> Bool {
 })
 }
     
+open func getTransaction(id: String)throws  -> TransactionRecord? {
+    return try  FfiConverterOptionTypeTransactionRecord.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
+    uniffi_centwise_ffi_fn_method_centwisecore_get_transaction(self.uniffiClonePointer(),
+        FfiConverterString.lower(id),$0
+    )
+})
+}
+    
     /**
      * The single query powering the Home screen.
      */
@@ -775,6 +792,19 @@ open func ingestSms(body: String, senderHint: String?, occurredAtEpochMs: Int64)
         FfiConverterString.lower(body),
         FfiConverterOptionString.lower(senderHint),
         FfiConverterInt64.lower(occurredAtEpochMs),$0
+    )
+})
+}
+    
+    /**
+     * Ingests multiple platform SMS messages through the same Rust parser.
+     * The native bridge crosses once for the whole batch; each message keeps
+     * the existing Rust deduplication and review-queue behavior.
+     */
+open func ingestSmsBatch(messages: [SmsBatchMessage])throws  -> [SmsIngestResult] {
+    return try  FfiConverterSequenceTypeSmsIngestResult.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
+    uniffi_centwise_ffi_fn_method_centwisecore_ingest_sms_batch(self.uniffiClonePointer(),
+        FfiConverterSequenceTypeSmsBatchMessage.lower(messages),$0
     )
 })
 }
@@ -2330,6 +2360,83 @@ public func FfiConverterTypeSmartRuleRecord_lower(_ value: SmartRuleRecord) -> R
 }
 
 
+/**
+ * An SMS supplied by a native platform to the shared ingestion pipeline.
+ */
+public struct SmsBatchMessage {
+    public let body: String
+    public let senderHint: String?
+    public let occurredAtEpochMs: Int64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(body: String, senderHint: String?, occurredAtEpochMs: Int64) {
+        self.body = body
+        self.senderHint = senderHint
+        self.occurredAtEpochMs = occurredAtEpochMs
+    }
+}
+
+
+
+extension SmsBatchMessage: Equatable, Hashable {
+    public static func ==(lhs: SmsBatchMessage, rhs: SmsBatchMessage) -> Bool {
+        if lhs.body != rhs.body {
+            return false
+        }
+        if lhs.senderHint != rhs.senderHint {
+            return false
+        }
+        if lhs.occurredAtEpochMs != rhs.occurredAtEpochMs {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(body)
+        hasher.combine(senderHint)
+        hasher.combine(occurredAtEpochMs)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeSmsBatchMessage: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SmsBatchMessage {
+        return
+            try SmsBatchMessage(
+                body: FfiConverterString.read(from: &buf), 
+                senderHint: FfiConverterOptionString.read(from: &buf), 
+                occurredAtEpochMs: FfiConverterInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: SmsBatchMessage, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.body, into: &buf)
+        FfiConverterOptionString.write(value.senderHint, into: &buf)
+        FfiConverterInt64.write(value.occurredAtEpochMs, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSmsBatchMessage_lift(_ buf: RustBuffer) throws -> SmsBatchMessage {
+    return try FfiConverterTypeSmsBatchMessage.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeSmsBatchMessage_lower(_ value: SmsBatchMessage) -> RustBuffer {
+    return FfiConverterTypeSmsBatchMessage.lower(value)
+}
+
+
 public struct SmsIngestResult {
     public let status: SmsIngestStatus
     public let transactionId: String?
@@ -2751,9 +2858,9 @@ public struct FfiConverterTypeTransactionInput: FfiConverterRustBuffer {
                 categoryId: FfiConverterString.read(from: &buf), 
                 occurredAtEpochMs: FfiConverterInt64.read(from: &buf), 
                 accountId: FfiConverterString.read(from: &buf), 
-                accountProvider: FfiConverterOptionString.read(from: &buf),
-                accountName: FfiConverterOptionString.read(from: &buf),
-                accountLastFour: FfiConverterOptionString.read(from: &buf),
+                accountProvider: FfiConverterOptionString.read(from: &buf), 
+                accountName: FfiConverterOptionString.read(from: &buf), 
+                accountLastFour: FfiConverterOptionString.read(from: &buf), 
                 reference: FfiConverterOptionString.read(from: &buf), 
                 balanceAfterMinor: FfiConverterOptionInt64.read(from: &buf), 
                 feeMinor: FfiConverterOptionInt64.read(from: &buf), 
@@ -3473,6 +3580,30 @@ fileprivate struct FfiConverterOptionString: FfiConverterRustBuffer {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterOptionTypeTransactionRecord: FfiConverterRustBuffer {
+    typealias SwiftType = TransactionRecord?
+
+    public static func write(_ value: SwiftType, into buf: inout [UInt8]) {
+        guard let value = value else {
+            writeInt(&buf, Int8(0))
+            return
+        }
+        writeInt(&buf, Int8(1))
+        FfiConverterTypeTransactionRecord.write(value, into: &buf)
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> SwiftType {
+        switch try readInt(&buf) as Int8 {
+        case 0: return nil
+        case 1: return try FfiConverterTypeTransactionRecord.read(from: &buf)
+        default: throw UniffiInternalError.unexpectedOptionalTag
+        }
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterOptionTypeTransactionKind: FfiConverterRustBuffer {
     typealias SwiftType = TransactionKind?
 
@@ -3622,6 +3753,56 @@ fileprivate struct FfiConverterSequenceTypeSmartRuleRecord: FfiConverterRustBuff
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeSmsBatchMessage: FfiConverterRustBuffer {
+    typealias SwiftType = [SmsBatchMessage]
+
+    public static func write(_ value: [SmsBatchMessage], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeSmsBatchMessage.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [SmsBatchMessage] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [SmsBatchMessage]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeSmsBatchMessage.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeSmsIngestResult: FfiConverterRustBuffer {
+    typealias SwiftType = [SmsIngestResult]
+
+    public static func write(_ value: [SmsIngestResult], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeSmsIngestResult.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [SmsIngestResult] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [SmsIngestResult]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeSmsIngestResult.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeSubscriptionRecord: FfiConverterRustBuffer {
     typealias SwiftType = [SubscriptionRecord]
 
@@ -3753,10 +3934,16 @@ private var initializationResult: InitializationResult = {
     if (uniffi_centwise_ffi_checksum_method_centwisecore_dismiss_review_queue_item() != 57175) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_centwise_ffi_checksum_method_centwisecore_get_transaction() != 15514) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_centwise_ffi_checksum_method_centwisecore_home_dashboard() != 34839) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_centwise_ffi_checksum_method_centwisecore_ingest_sms() != 61328) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_centwise_ffi_checksum_method_centwisecore_ingest_sms_batch() != 20764) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_centwise_ffi_checksum_method_centwisecore_insert_account() != 6904) {

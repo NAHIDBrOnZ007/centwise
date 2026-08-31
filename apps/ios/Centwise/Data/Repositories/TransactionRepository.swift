@@ -286,10 +286,14 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
         case "bkash": return .bkash
         case "nagad": return .nagad
         case "rocket": return .rocket
+        case "upay": return .upay
+        case "cellfin": return .cellfin
+        case "cash": return .cash
+        case "dbbl": return .dutchBangla
         case "city-bank": return .cityBank
         case "brac-bank": return .bracBank
-        case "dbbl": return .dutchBangla
         case "ebl": return .easternBank
+        case "standard-chartered": return .standardChartered
         default: return .other
         }
     }

@@ -44,6 +44,11 @@ enum CentwiseRustBackend {
         )
     }
 
+    static func ingestSMSBatch(messages: [SmsBatchMessage]) -> [SmsIngestResult] {
+        initialize()
+        return (try? core?.ingestSmsBatch(messages: messages)) ?? []
+    }
+
     @discardableResult
     static func loadDemoData() -> DemoDataSummaryRecord? {
         initialize()
@@ -59,6 +64,25 @@ enum CentwiseRustBackend {
     static func listTransactions() -> [TransactionRecord] {
         initialize()
         return (try? core?.listTransactions(limit: 10_000)) ?? []
+    }
+
+    static func getTransaction(id: String) -> TransactionRecord? {
+        initialize()
+        return try? core?.getTransaction(id: id)
+    }
+
+    static func accountBalance(accountId: String) -> Int64? {
+        initialize()
+        return try? core?.accountBalance(accountId: accountId)
+    }
+
+    static func homeDashboard(start: Date, end: Date, recentLimit: UInt32 = 10) -> HomeDashboardRecord? {
+        initialize()
+        return try? core?.homeDashboard(
+            startEpochMs: Int64(start.timeIntervalSince1970 * 1000),
+            endEpochMs: Int64(end.timeIntervalSince1970 * 1000),
+            recentLimit: recentLimit
+        )
     }
 
     static func listAccounts() -> [AccountRecord] {
