@@ -55,105 +55,101 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
     }
 
     public func loadFromRust() {
-        guard CentwiseRustBackend.isAvailable() else {
-            let clearAction = {
-                self.transactions = []
-                self.accounts = []
-                self.budgets = []
-                self.subscriptions = []
-                self.categories = []
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+            guard CentwiseRustBackend.isAvailable() else {
+                DispatchQueue.main.async {
+                    self.transactions = []
+                    self.accounts = []
+                    self.budgets = []
+                    self.subscriptions = []
+                    self.categories = []
+                }
+                return
             }
-            if Thread.isMainThread { clearAction() } else { DispatchQueue.main.async(execute: clearAction) }
-            return
-        }
 
-        let categoryRecords = CentwiseRustBackend.listCategories()
-        let loadedCategories = categoryRecords.map { record in
-            TransactionCategory(
-                id: record.id,
-                name: record.name,
-                icon: record.icon,
-                colorHex: record.colorHex,
-                isSystem: record.isSystem
-            )
-        }
-        let accountRecords = CentwiseRustBackend.listAccounts()
-        let loadedAccounts = accountRecords.map { account in
-            let providerValue = provider(account.provider)
-            return FinancialAccount(
-                id: account.id,
-                name: account.name,
-                provider: providerValue,
-                type: accountType(providerValue),
-                lastFourDigits: account.lastFour,
-                currentBalance: Double(account.balanceMinor) / 100,
-                isArchived: account.archived
-            )
-        }
-        let accountsById = Dictionary(uniqueKeysWithValues: accountRecords.map { ($0.id, $0) })
-        let categoriesById = Dictionary(uniqueKeysWithValues: loadedCategories.map { ($0.id, $0) })
-        let loadedTransactions = CentwiseRustBackend.listTransactions().map { transaction in
-            let account = accountsById[transaction.accountId]
-            let cat = categoriesById[transaction.categoryId] ?? TransactionCategory(
-                id: transaction.categoryId,
-                name: "Other",
-                icon: "square.grid.2x2",
-                colorHex: "#6B7280",
-                isSystem: true
-            )
-            return CentwiseTransaction(
-                id: transaction.id,
-                title: transaction.title,
-                amount: Double(transaction.amountMinor) / 100,
-                currency: transaction.currency,
-                type: transactionType(transaction.kind),
-                category: cat,
-                date: Date(timeIntervalSince1970: TimeInterval(transaction.occurredAtEpochMs) / 1000),
-                accountId: transaction.accountId,
-                accountName: account?.name ?? "Unknown account",
-                provider: provider(account?.provider),
-                rawSmsBody: transaction.rawSms,
-                transactionReference: transaction.reference,
-                balanceAfter: transaction.balanceAfterMinor.map { Double($0) / 100 },
-                notes: transaction.notes,
-                isAutoTracked: transaction.isAutoTracked
-            )
-        }
-        let loadedBudgets = CentwiseRustBackend.listBudgets().map { budget in
-            let cat = categoriesById[budget.categoryId]
-            return CategoryBudget(
-                id: budget.id,
-                categoryId: budget.categoryId,
-                categoryName: budget.categoryName,
-                categoryIcon: cat?.icon ?? "square.grid.2x2",
-                categoryColorHex: cat?.colorHex ?? "#6B7280",
-                budgetLimit: Double(budget.limitMinor) / 100,
-                currentSpent: Double(budget.spentMinor) / 100
-            )
-        }
-        let loadedSubscriptions = CentwiseRustBackend.listSubscriptions().map { subscription in
-            RecurringSubscription(
-                id: subscription.id,
-                name: subscription.name,
-                amount: Double(subscription.amountMinor) / 100,
-                billingCycle: subscription.billingCycle,
-                nextDueDate: Date(timeIntervalSince1970: TimeInterval(subscription.nextDueEpochMs) / 1000),
-                isActive: subscription.isActive
-            )
-        }
+            let categoryRecords = CentwiseRustBackend.listCategories()
+            let loadedCategories = categoryRecords.map { record in
+                TransactionCategory(
+                    id: record.id,
+                    name: record.name,
+                    icon: record.icon,
+                    colorHex: record.colorHex,
+                    isSystem: record.isSystem
+                )
+            }
+            let accountRecords = CentwiseRustBackend.listAccounts()
+            let loadedAccounts = accountRecords.map { account in
+                let providerValue = self.provider(account.provider)
+                return FinancialAccount(
+                    id: account.id,
+                    name: account.name,
+                    provider: providerValue,
+                    type: self.accountType(providerValue),
+                    lastFourDigits: account.lastFour,
+                    currentBalance: Double(account.balanceMinor) / 100,
+                    isArchived: account.archived
+                )
+            }
+            let accountsById = Dictionary(uniqueKeysWithValues: accountRecords.map { ($0.id, $0) })
+            let categoriesById = Dictionary(uniqueKeysWithValues: loadedCategories.map { ($0.id, $0) })
+            let loadedTransactions = CentwiseRustBackend.listTransactions().map { transaction in
+                let account = accountsById[transaction.accountId]
+                let cat = categoriesById[transaction.categoryId] ?? TransactionCategory(
+                    id: transaction.categoryId,
+                    name: "Other",
+                    icon: "square.grid.2x2",
+                    colorHex: "#6B7280",
+                    isSystem: true
+                )
+                return CentwiseTransaction(
+                    id: transaction.id,
+                    title: transaction.title,
+                    amount: Double(transaction.amountMinor) / 100,
+                    currency: transaction.currency,
+                    type: self.transactionType(transaction.kind),
+                    category: cat,
+                    date: Date(timeIntervalSince1970: TimeInterval(transaction.occurredAtEpochMs) / 1000),
+                    accountId: transaction.accountId,
+                    accountName: account?.name ?? "Unknown account",
+                    provider: self.provider(account?.provider),
+                    rawSmsBody: transaction.rawSms,
+                    transactionReference: transaction.reference,
+                    balanceAfter: transaction.balanceAfterMinor.map { Double($0) / 100 },
+                    notes: transaction.notes,
+                    isAutoTracked: transaction.isAutoTracked
+                )
+            }
+            let loadedBudgets = CentwiseRustBackend.listBudgets().map { budget in
+                let cat = categoriesById[budget.categoryId]
+                return CategoryBudget(
+                    id: budget.id,
+                    categoryId: budget.categoryId,
+                    categoryName: budget.categoryName,
+                    categoryIcon: cat?.icon ?? "square.grid.2x2",
+                    categoryColorHex: cat?.colorHex ?? "#6B7280",
+                    budgetLimit: Double(budget.limitMinor) / 100,
+                    currentSpent: Double(budget.spentMinor) / 100
+                )
+            }
+            let loadedSubscriptions = CentwiseRustBackend.listSubscriptions().map { subscription in
+                RecurringSubscription(
+                    id: subscription.id,
+                    name: subscription.name,
+                    amount: Double(subscription.amountMinor) / 100,
+                    billingCycle: subscription.billingCycle,
+                    nextDueDate: Date(timeIntervalSince1970: TimeInterval(subscription.nextDueEpochMs) / 1000),
+                    isActive: subscription.isActive
+                )
+            }
 
-        let updateAction = {
-            self.categories = loadedCategories
-            self.accounts = loadedAccounts
-            self.transactions = loadedTransactions
-            self.budgets = loadedBudgets
-            self.subscriptions = loadedSubscriptions
-        }
-
-        if Thread.isMainThread {
-            updateAction()
-        } else {
-            DispatchQueue.main.async(execute: updateAction)
+            DispatchQueue.main.async {
+                self.categories = loadedCategories
+                self.accounts = loadedAccounts
+                self.transactions = loadedTransactions
+                self.budgets = loadedBudgets
+                self.subscriptions = loadedSubscriptions
+            }
         }
     }
 

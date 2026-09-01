@@ -27,28 +27,39 @@ public struct ShortcutsGuideScreen: View {
                 .padding(.horizontal, CentwiseSpacing.md)
                 .padding(.top, CentwiseSpacing.xs)
 
-                // 3 Step Guide
+                // Simple 2 Step Guide
                 VStack(spacing: CentwiseSpacing.md) {
                     stepCard(
                         stepNumber: 1,
-                        title: "Open Apple Shortcuts",
-                        description: "Open the built-in Shortcuts app on your iPhone and tap on the 'Automation' tab at the bottom.",
-                        icon: "square.stack.3d.up.fill"
-                    )
-
-                    stepCard(
-                        stepNumber: 2,
-                        title: "Create 'Message' Automation",
-                        description: "Select 'Message', set Message Contains to 'Tk' (or paste the full keyword list below), and toggle 'Run Immediately' ON.",
+                        title: "Create Message Automation",
+                        description: "Open Shortcuts app → 'Automation' tab → tap '+' → select 'Message'. Set 'Message Contains' to 'Tk'. Toggle 'Run Immediately' ON. Tap Next.",
                         icon: "message.fill"
                     )
 
                     stepCard(
-                        stepNumber: 3,
-                        title: "Add Centwise Action",
-                        description: "Tap 'Centwise' from the apps list, choose 'Log Transaction', and set Message Text to 'Shortcut Input'.",
-                        icon: "bolt.fill"
+                        stepNumber: 2,
+                        title: "Add 'Open URL' Action",
+                        description: "Tap 'New Blank Automation' → 'Add Action' → search 'URL'. Add 'URL' action, then add 'Open URL' action below it. In the URL field, type: centwise://parse-sms?body=  then tap the end of the text and insert 'Shortcut Input' variable. Tap Done!",
+                        icon: "link.circle.fill"
                     )
+                }
+                .padding(.horizontal, CentwiseSpacing.md)
+
+                // Alternative: Use Centwise App Intent
+                CentwiseCard {
+                    VStack(alignment: .leading, spacing: CentwiseSpacing.xs) {
+                        HStack {
+                            Image(systemName: "star.fill")
+                                .foregroundColor(.orange)
+                            Text("Alternative: Use Centwise Action")
+                                .font(CentwiseTypography.headline)
+                                .foregroundColor(.primary)
+                        }
+
+                        Text("In Step 2, instead of 'Open URL', you can: search 'Centwise' → tap 'Log Transaction' → tap 'Message Text' field → select 'Shortcut Input'.")
+                            .font(CentwiseTypography.footnote)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 .padding(.horizontal, CentwiseSpacing.md)
 
