@@ -61,6 +61,7 @@ fun AnalyticsScreen(
     val categories by TransactionRepository.shared.categories.collectAsState()
 
     val allTransactions by TransactionRepository.shared.transactions.collectAsState()
+    val trendPoints by viewModel.monthlyTrends.collectAsState()
     var drillDownTitle by remember { mutableStateOf<String?>(null) }
     var drillDownTransactions by remember { mutableStateOf<List<com.centwise.data.models.TransactionItem>>(emptyList()) }
     var selectedTransaction by remember { mutableStateOf<com.centwise.data.models.TransactionItem?>(null) }
@@ -315,8 +316,7 @@ fun AnalyticsScreen(
 
         // 3. Spending Trends (Last 6 Months with Dynamic Accent Bars)
         item {
-            val txs by TransactionRepository.shared.transactions.collectAsState()
-            SpendingTrendsChart(points = monthlyTrendPoints(txs), isDark = isDark)
+            SpendingTrendsChart(points = trendPoints, isDark = isDark)
         }
 
         // 4. Category Pie / Donut Chart (Matching iOS CategoryPieChart 1:1)
@@ -687,30 +687,4 @@ private object CategorySliceColors {
         Color(0xFF007AFF),
         Color(0xFFEF4444)
     )
-}
-
-private fun monthlyTrendPoints(
-    transactions: List<com.centwise.data.models.TransactionItem>
-): List<TrendPoint> {
-    val monthLabels = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
-    val now = java.util.Calendar.getInstance()
-
-    return (5 downTo 0).map { monthsBack ->
-        val monthDate = (now.clone() as java.util.Calendar).apply {
-            add(java.util.Calendar.MONTH, -monthsBack)
-        }
-
-        val total = transactions
-            .filter { transaction ->
-                if (transaction.type != TransactionType.EXPENSE) return@filter false
-                val txCalendar = java.util.Calendar.getInstance().apply {
-                    timeInMillis = transaction.timestamp
-                }
-                txCalendar.get(java.util.Calendar.MONTH) == monthDate.get(java.util.Calendar.MONTH) &&
-                        txCalendar.get(java.util.Calendar.YEAR) == monthDate.get(java.util.Calendar.YEAR)
-            }
-            .sumOf { it.amount }
-
-        TrendPoint(label = monthLabels[monthDate.get(java.util.Calendar.MONTH)], value = total)
-    }
 }

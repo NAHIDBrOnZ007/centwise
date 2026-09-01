@@ -38,6 +38,7 @@ public final class TransactionsViewModel: ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
     private let repository: TransactionRepository
+    private var cachedGroupedByMonth: [(key: String, items: [CentwiseTransaction])] = []
 
     public init(repository: TransactionRepository = .shared) {
         self.repository = repository
@@ -130,6 +131,7 @@ public final class TransactionsViewModel: ObservableObject {
         self.totalIncome = income
         self.totalExpense = expense
         self.totalNet = income - expense
+        rebuildMonthGroups()
     }
 
     public func deleteTransaction(id: String) {
@@ -138,6 +140,10 @@ public final class TransactionsViewModel: ObservableObject {
 
     /// Groups transactions by Month (e.g. "AUGUST 2026")
     public var groupedByMonth: [(key: String, items: [CentwiseTransaction])] {
+        cachedGroupedByMonth
+    }
+
+    private func rebuildMonthGroups() {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM yyyy"
 
@@ -153,6 +159,6 @@ public final class TransactionsViewModel: ObservableObject {
             groups[monthKey]?.append(item)
         }
 
-        return order.map { (key: $0, items: groups[$0] ?? []) }
+        cachedGroupedByMonth = order.map { (key: $0, items: groups[$0] ?? []) }
     }
 }

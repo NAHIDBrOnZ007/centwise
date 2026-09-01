@@ -5,7 +5,9 @@ import androidx.lifecycle.viewModelScope
 import com.centwise.data.repository.TransactionRepository
 import com.centwise.data.models.TransactionItem
 import com.centwise.data.models.TransactionType
+import com.centwise.core.backend.CentwiseRustBackend
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.Dispatchers
 import java.util.Calendar
 import java.util.Date
 
@@ -22,6 +24,7 @@ data class MerchantSpendItem(
     val transactionCount: Int
 )
 
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class AnalyticsViewModel(
     private val repository: TransactionRepository = TransactionRepository.shared
 ) : ViewModel() {
@@ -77,65 +80,41 @@ class AnalyticsViewModel(
         }
     }
 
-    private val periodRange: Flow<Pair<Date, Date>> = selectedPeriod.map { period ->
-        getPeriodDateRange(period)
-    }
+    private val snapshot = combine(repository.transactions, selectedPeriod, selectedType) { _, period, type ->
+        period to type
+    }.mapLatest { (period, type) ->
+        val range = getPeriodDateRange(period)
+        CentwiseRustBackend.analyticsSnapshot(
+            range.first.time,
+            range.second.time + 1,
+            if (period == "3 Months") 3u else 6u,
+            when (type) {
+                "Debit" -> "debit"
+                "Credit" -> "credit"
+                else -> "all"
+            }
+        )
+    }.flowOn(Dispatchers.IO)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
 
-    private val periodTransactions: Flow<List<TransactionItem>> = combine(
-        repository.transactions,
-        periodRange
-    ) { list, range ->
-        list.filter { it.date.time >= range.first.time && it.date.time <= range.second.time }
-    }
-
-    val totalIncome: StateFlow<Double> = periodTransactions.map { list ->
-        list.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
-
-    val totalExpense: StateFlow<Double> = periodTransactions.map { list ->
-        list.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
-
-    private val filteredTypedTransactions: Flow<List<TransactionItem>> = combine(
-        periodTransactions,
-        selectedType
-    ) { list, type ->
-        when (type) {
-            "Debit" -> list.filter { it.type == TransactionType.EXPENSE }
-            "Credit" -> list.filter { it.type == TransactionType.INCOME }
-            else -> list
-        }
-    }
-
-    val transactionCount: StateFlow<Int> = filteredTypedTransactions.map { it.size }
+    val totalIncome: StateFlow<Double> = snapshot.map { it?.totalIncomeMinor?.div(100.0) ?: 0.0 }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+    val totalExpense: StateFlow<Double> = snapshot.map { it?.totalExpenseMinor?.div(100.0) ?: 0.0 }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0.0)
+    val transactionCount: StateFlow<Int> = snapshot.map { it?.transactionCount?.toInt() ?: 0 }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-
-    val categoryBreakdown: StateFlow<List<CategorySpendItem>> = filteredTypedTransactions.map { list ->
-        val total = maxOf(list.sumOf { it.amount }, 1.0)
-        list.groupBy { it.category }
-            .map { (cat, items) ->
-                val amt = items.sumOf { it.amount }
-                CategorySpendItem(
-                    category = cat,
-                    totalAmount = amt,
-                    percentage = amt / total,
-                    count = items.size
-                )
-            }
-            .sortedByDescending { it.totalAmount }
+    val categoryBreakdown: StateFlow<List<CategorySpendItem>> = snapshot.map { value ->
+        val total = maxOf(value?.categoryBreakdown?.sumOf { it.totalMinor }?.div(100.0) ?: 0.0, 1.0)
+        value?.categoryBreakdown?.map {
+            CategorySpendItem(it.categoryName, it.totalMinor / 100.0, it.totalMinor / 100.0 / total, it.transactionCount.toInt())
+        } ?: emptyList()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-
-    val topMerchants: StateFlow<List<MerchantSpendItem>> = filteredTypedTransactions.map { list ->
-        list.groupBy { it.title.substringBefore(" - ") }
-            .map { (name, items) ->
-                MerchantSpendItem(
-                    merchantName = name,
-                    totalAmount = items.sumOf { it.amount },
-                    transactionCount = items.size
-                )
-            }
-            .sortedByDescending { it.totalAmount }
-            .take(5)
+    val topMerchants: StateFlow<List<MerchantSpendItem>> = snapshot.map { value ->
+        value?.topMerchants?.map { MerchantSpendItem(it.merchant, it.totalMinor / 100.0, it.transactionCount.toInt()) }
+            ?: emptyList()
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    val monthlyTrends: StateFlow<List<TrendPoint>> = snapshot.map { value ->
+        value?.monthlyTrends?.map { TrendPoint("${it.month}/${it.year}", it.totalExpenseMinor / 100.0) } ?: emptyList()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun transactionsForCategory(category: String): List<TransactionItem> {

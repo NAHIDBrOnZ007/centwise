@@ -18,12 +18,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * Android's thin view-model-facing adapter over the Rust-owned database.
  * It never opens SQLite and never maintains a second persistence fallback.
  */
 class TransactionRepository private constructor() {
+    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val refreshMutex = Mutex()
     private val _transactions = MutableStateFlow<List<TransactionItem>>(emptyList())
     val transactions: StateFlow<List<TransactionItem>> = _transactions.asStateFlow()
     private val _accounts = MutableStateFlow<List<AccountItem>>(emptyList())
@@ -49,11 +57,21 @@ class TransactionRepository private constructor() {
     }
 
     fun init(context: Context) {
-        CentwiseRustBackend.initialize(context.applicationContext)
-        loadFromRust()
+        repositoryScope.launch {
+            refreshMutex.withLock {
+                CentwiseRustBackend.initialize(context.applicationContext)
+                refreshFromRust()
+            }
+        }
     }
 
     fun loadFromRust() {
+        repositoryScope.launch {
+            refreshMutex.withLock { refreshFromRust() }
+        }
+    }
+
+    private fun refreshFromRust() {
         if (!CentwiseRustBackend.isAvailable()) {
             clearLoadedState()
             return

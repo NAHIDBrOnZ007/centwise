@@ -293,6 +293,17 @@ pub struct MonthlySpend {
     pub total_expense_minor: i64,
 }
 
+/// Everything needed to render Analytics for one period and type filter.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AnalyticsSnapshot {
+    pub total_income_minor: i64,
+    pub total_expense_minor: i64,
+    pub transaction_count: i64,
+    pub category_breakdown: Vec<CategorySpendSummary>,
+    pub top_merchants: Vec<MerchantSpendSummary>,
+    pub monthly_trends: Vec<MonthlySpend>,
+}
+
 /// Account row for lists.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AccountSummary {

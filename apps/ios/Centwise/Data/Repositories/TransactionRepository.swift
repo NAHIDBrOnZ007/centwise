@@ -28,6 +28,9 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
     @Published public private(set) var subscriptions: [RecurringSubscription] = []
     @Published public private(set) var categories: [TransactionCategory] = []
     private var notificationObservers: [NSObjectProtocol] = []
+    private let loadQueue = DispatchQueue(label: "com.centwise.repository-load", qos: .userInitiated)
+    private var isLoading = false
+    private var refreshPending = false
 
     public init() {
         loadFromRust()
@@ -55,8 +58,13 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
     }
 
     public func loadFromRust() {
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self = self else { return }
+        loadQueue.async { [weak self] in
+            guard let self else { return }
+            guard !self.isLoading else {
+                self.refreshPending = true
+                return
+            }
+            self.isLoading = true
             guard CentwiseRustBackend.isAvailable() else {
                 DispatchQueue.main.async {
                     self.transactions = []
@@ -65,6 +73,7 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
                     self.subscriptions = []
                     self.categories = []
                 }
+                self.finishLoad()
                 return
             }
 
@@ -150,7 +159,16 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
                 self.budgets = loadedBudgets
                 self.subscriptions = loadedSubscriptions
             }
+            self.finishLoad()
         }
+    }
+
+    /// Runs on `loadQueue`; coalesces notifications received during a refresh.
+    private func finishLoad() {
+        isLoading = false
+        guard refreshPending else { return }
+        refreshPending = false
+        loadFromRust()
     }
 
     public func category(id: String) -> TransactionCategory {
@@ -247,9 +265,30 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
         return summary
     }
 
+    public func loadSampleDemoDataAsync(completion: @escaping (DemoDataSummaryRecord?) -> Void) {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let summary = self?.loadSampleDemoData()
+            DispatchQueue.main.async {
+                completion(summary)
+            }
+        }
+    }
+
     public func resetToEmptyDatabase() {
         guard CentwiseRustBackend.resetToEmptyDatabase() else { return }
         NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+    }
+
+    public func resetToEmptyDatabaseAsync(completion: @escaping (Bool) -> Void) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let succeeded = CentwiseRustBackend.resetToEmptyDatabase()
+            if succeeded {
+                NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+            }
+            DispatchQueue.main.async {
+                completion(succeeded)
+            }
+        }
     }
 
     public func getTransactions() -> AnyPublisher<[CentwiseTransaction], Never> {

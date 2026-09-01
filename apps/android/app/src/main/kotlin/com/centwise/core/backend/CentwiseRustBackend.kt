@@ -22,6 +22,7 @@ import com.centwise.core.uniffi.SubscriptionRecord
 import com.centwise.core.uniffi.TransactionInput
 import com.centwise.core.uniffi.TransactionKind
 import com.centwise.core.uniffi.TransactionRecord
+import com.centwise.core.uniffi.AnalyticsSnapshotRecord
 import com.centwise.data.models.TransactionItem
 import com.centwise.data.repository.TransactionRepository
 import java.text.SimpleDateFormat
@@ -120,6 +121,18 @@ object CentwiseRustBackend {
         core?.homeDashboard(startEpochMs, endEpochMs, 5u)
     } catch (error: Throwable) {
         Log.e(TAG, "Rust Home dashboard query failed", error)
+        null
+    }
+
+    fun analyticsSnapshot(
+        startEpochMs: Long,
+        endEpochMs: Long,
+        monthsBack: UInt,
+        typeFilter: String
+    ): AnalyticsSnapshotRecord? = try {
+        core?.analyticsSnapshot(startEpochMs, endEpochMs, monthsBack, typeFilter)
+    } catch (error: Throwable) {
+        Log.e(TAG, "Rust Analytics query failed", error)
         null
     }
 

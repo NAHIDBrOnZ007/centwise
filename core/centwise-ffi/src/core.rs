@@ -593,6 +593,60 @@ impl CentwiseCore {
             })
             .map_err(CentwiseError::from)
     }
+
+    /// Computes the complete Analytics screen result in Rust in one database read.
+    pub fn analytics_snapshot(
+        &self,
+        start_epoch_ms: i64,
+        end_epoch_ms: i64,
+        months_back: u32,
+        type_filter: String,
+    ) -> Result<AnalyticsSnapshotRecord, CentwiseError> {
+        let filter = match type_filter.as_str() {
+            "all" | "debit" | "credit" => type_filter.as_str(),
+            _ => "all",
+        };
+        self.database
+            .read(|queries| {
+                queries.analytics_snapshot(start_epoch_ms, end_epoch_ms, months_back, filter)
+            })
+            .map(|snapshot| AnalyticsSnapshotRecord {
+                total_income_minor: snapshot.total_income_minor,
+                total_expense_minor: snapshot.total_expense_minor,
+                transaction_count: snapshot.transaction_count,
+                category_breakdown: snapshot
+                    .category_breakdown
+                    .into_iter()
+                    .map(|item| AnalyticsCategoryRecord {
+                        category_id: item.category_id,
+                        category_name: item.category_name,
+                        category_icon: item.category_icon,
+                        category_color_hex: item.category_color_hex,
+                        total_minor: item.total_minor,
+                        transaction_count: item.transaction_count,
+                    })
+                    .collect(),
+                top_merchants: snapshot
+                    .top_merchants
+                    .into_iter()
+                    .map(|item| AnalyticsMerchantRecord {
+                        merchant: item.merchant,
+                        total_minor: item.total_minor,
+                        transaction_count: item.transaction_count,
+                    })
+                    .collect(),
+                monthly_trends: snapshot
+                    .monthly_trends
+                    .into_iter()
+                    .map(|item| AnalyticsMonthlyRecord {
+                        year: item.year,
+                        month: item.month,
+                        total_expense_minor: item.total_expense_minor,
+                    })
+                    .collect(),
+            })
+            .map_err(CentwiseError::from)
+    }
 }
 
 fn default_account_name(provider: &str) -> &str {

@@ -77,6 +77,8 @@ public final class AnalyticsViewModel: ObservableObject {
 
     private var cancellables = Set<AnyCancellable>()
     private let repository: TransactionRepository
+    private let analyticsQueue = DispatchQueue(label: "com.centwise.analytics", qos: .userInitiated)
+    private var calculationID = 0
 
     public init(repository: TransactionRepository = .shared) {
         self.repository = repository
@@ -104,90 +106,76 @@ public final class AnalyticsViewModel: ObservableObject {
 
     public func recalculateAnalytics() {
         let range = selectedPeriod.dateRange
-        let allTxs = repository.transactions.filter { tx in
-            tx.date >= range.start && tx.date <= range.end
+        let typeFilter: String = switch selectedTypeFilter {
+        case .all: "all"
+        case .debit: "debit"
+        case .credit: "credit"
         }
+        let monthsBack: UInt32 = selectedPeriod == .threeMonths ? 3 : 6
+        calculationID += 1
+        let requestID = calculationID
 
-        // Compute overall period totals
-        var income = 0.0
-        var expense = 0.0
-        for tx in allTxs {
-            if tx.type == .income {
-                income += tx.amount
-            } else if tx.type == .expense {
-                expense += tx.amount
-            }
-        }
-
-        self.totalIncome = income
-        self.totalExpense = expense
-
-        // Filter transactions according to selected type (Debit / Credit / All)
-        let filteredTxs: [CentwiseTransaction]
-        switch selectedTypeFilter {
-        case .all:
-            filteredTxs = allTxs
-        case .debit:
-            filteredTxs = allTxs.filter { $0.type == .expense }
-        case .credit:
-            filteredTxs = allTxs.filter { $0.type == .income }
-        }
-
-        self.transactionCount = filteredTxs.count
-        self.dailyAverage = expense / Double(selectedPeriod.daysCount)
-
-        // Category breakdown
-        var categoryTotals: [TransactionCategory: (amount: Double, count: Int)] = [:]
-        var merchantTotals: [String: (amount: Double, count: Int)] = [:]
-
-        for tx in filteredTxs {
-            var catTuple = categoryTotals[tx.category, default: (0.0, 0)]
-            catTuple.amount += tx.amount
-            catTuple.count += 1
-            categoryTotals[tx.category] = catTuple
-
-            let m = tx.title.components(separatedBy: " - ").first ?? tx.title
-            var mercTuple = merchantTotals[m, default: (0.0, 0)]
-            mercTuple.amount += tx.amount
-            mercTuple.count += 1
-            merchantTotals[m] = mercTuple
-        }
-
-        let totalBase = max(filteredTxs.reduce(0.0) { $0 + $1.amount }, 1.0)
-        self.categoryBreakdown = categoryTotals.map { cat, tuple in
-            CategorySpendSummary(
-                category: cat,
-                totalAmount: tuple.amount,
-                percentage: tuple.amount / totalBase,
-                count: tuple.count
+        analyticsQueue.async { [weak self] in
+            let snapshot = CentwiseRustBackend.analyticsSnapshot(
+                start: range.start,
+                end: range.end.addingTimeInterval(1),
+                monthsBack: monthsBack,
+                typeFilter: typeFilter
             )
-        }.sorted { $0.totalAmount > $1.totalAmount }
-
-        self.topCategoryName = self.categoryBreakdown.first?.category.name
-
-        self.topMerchants = merchantTotals.map { name, tuple in
-            MerchantSpendSummary(merchantName: name, totalAmount: tuple.amount, transactionCount: tuple.count)
-        }.sorted { $0.totalAmount > $1.totalAmount }
-
-        // Monthly trends
-        let calendar = Calendar.current
-        let monthsBackCount = (selectedPeriod == .threeMonths) ? 3 : ((selectedPeriod == .sixMonths) ? 6 : 6)
-        let now = Date()
-
-        self.trendPoints = (0..<monthsBackCount).reversed().compactMap { mBack in
-            guard let monthDate = calendar.date(byAdding: .month, value: -mBack, to: now) else {
-                return nil
+            DispatchQueue.main.async {
+                guard let self, requestID == self.calculationID else { return }
+                self.apply(snapshot: snapshot)
             }
-            let monthTotal = repository.transactions
-                .filter { tx in
-                    tx.type == .expense &&
-                    calendar.isDate(tx.date, equalTo: monthDate, toGranularity: .month)
-                }
-                .reduce(0.0) { $0 + $1.amount }
+        }
+    }
 
-            let formatter = DateFormatter()
-            formatter.dateFormat = "MMM"
-            return TrendPoint(label: formatter.string(from: monthDate), value: monthTotal)
+    private func apply(snapshot: AnalyticsSnapshotRecord?) {
+        guard let snapshot else {
+            totalIncome = 0
+            totalExpense = 0
+            transactionCount = 0
+            dailyAverage = 0
+            categoryBreakdown = []
+            topCategoryName = nil
+            topMerchants = []
+            trendPoints = []
+            return
+        }
+        totalIncome = Double(snapshot.totalIncomeMinor) / 100
+        totalExpense = Double(snapshot.totalExpenseMinor) / 100
+        transactionCount = Int(snapshot.transactionCount)
+        dailyAverage = totalExpense / Double(selectedPeriod.daysCount)
+        let totalBase = max(snapshot.categoryBreakdown.reduce(0.0) { $0 + Double($1.totalMinor) / 100 }, 1)
+        categoryBreakdown = snapshot.categoryBreakdown.map { item in
+            CategorySpendSummary(
+                category: TransactionCategory(
+                    id: item.categoryId,
+                    name: item.categoryName,
+                    icon: item.categoryIcon,
+                    colorHex: item.categoryColorHex,
+                    isSystem: true
+                ),
+                totalAmount: Double(item.totalMinor) / 100,
+                percentage: Double(item.totalMinor) / 100 / totalBase,
+                count: Int(item.transactionCount)
+            )
+        }
+        topCategoryName = categoryBreakdown.first?.category.name
+        topMerchants = snapshot.topMerchants.map {
+            MerchantSpendSummary(
+                merchantName: $0.merchant,
+                totalAmount: Double($0.totalMinor) / 100,
+                transactionCount: Int($0.transactionCount)
+            )
+        }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM"
+        trendPoints = snapshot.monthlyTrends.compactMap { item in
+            var components = DateComponents()
+            components.year = Int(item.year)
+            components.month = Int(item.month)
+            guard let date = Calendar.current.date(from: components) else { return nil }
+            return TrendPoint(label: formatter.string(from: date), value: Double(item.totalExpenseMinor) / 100)
         }
     }
 
@@ -206,4 +194,3 @@ public final class AnalyticsViewModel: ObservableObject {
         }.sorted { $0.date > $1.date }
     }
 }
-

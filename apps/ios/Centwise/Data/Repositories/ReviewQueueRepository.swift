@@ -57,29 +57,28 @@ public final class ReviewQueueRepository: ObservableObject {
     }
 
     public func refresh() {
-        let loaded = CentwiseRustBackend.listReviewQueue().map { item in
-            ReviewQueueItem(
-                id: item.id,
-                sender: item.sender ?? "Financial SMS",
-                rawSms: item.rawSms,
-                timestamp: Date(timeIntervalSince1970: TimeInterval(item.receivedAtEpochMs) / 1000),
-                candidateAmount: item.candidateAmountMinor.map { Double($0) / 100 },
-                candidateParty: item.party ?? item.merchant,
-                candidateType: item.candidateKind.map { kind in
-                    switch kind {
-                    case .expense: return .expense
-                    case .income: return .income
-                    case .transfer: return .transfer
-                    case .refund: return .refund
-                    }
-                },
-                reference: item.reference,
-                reason: item.reason
-            )
-        }
-        if Thread.isMainThread {
-            self.items = loaded
-        } else {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self else { return }
+            let loaded = CentwiseRustBackend.listReviewQueue().map { item in
+                ReviewQueueItem(
+                    id: item.id,
+                    sender: item.sender ?? "Financial SMS",
+                    rawSms: item.rawSms,
+                    timestamp: Date(timeIntervalSince1970: TimeInterval(item.receivedAtEpochMs) / 1000),
+                    candidateAmount: item.candidateAmountMinor.map { Double($0) / 100 },
+                    candidateParty: item.party ?? item.merchant,
+                    candidateType: item.candidateKind.map { kind in
+                        switch kind {
+                        case .expense: return .expense
+                        case .income: return .income
+                        case .transfer: return .transfer
+                        case .refund: return .refund
+                        }
+                    },
+                    reference: item.reference,
+                    reason: item.reason
+                )
+            }
             DispatchQueue.main.async {
                 self.items = loaded
             }

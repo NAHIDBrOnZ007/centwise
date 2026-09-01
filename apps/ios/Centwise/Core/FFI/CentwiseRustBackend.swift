@@ -85,6 +85,21 @@ enum CentwiseRustBackend {
         )
     }
 
+    static func analyticsSnapshot(
+        start: Date,
+        end: Date,
+        monthsBack: UInt32,
+        typeFilter: String
+    ) -> AnalyticsSnapshotRecord? {
+        initialize()
+        return try? core?.analyticsSnapshot(
+            startEpochMs: Int64(start.timeIntervalSince1970 * 1000),
+            endEpochMs: Int64(end.timeIntervalSince1970 * 1000),
+            monthsBack: monthsBack,
+            typeFilter: typeFilter
+        )
+    }
+
     static func listAccounts() -> [AccountRecord] {
         initialize()
         return (try? core?.listAccounts()) ?? []
