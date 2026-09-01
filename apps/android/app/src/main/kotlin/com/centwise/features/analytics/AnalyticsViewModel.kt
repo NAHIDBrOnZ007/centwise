@@ -80,9 +80,10 @@ class AnalyticsViewModel(
         }
     }
 
-    private val snapshot = combine(repository.transactions, selectedPeriod, selectedType) { _, period, type ->
-        period to type
-    }.mapLatest { (period, type) ->
+    private val snapshot = combine(repository.isReady, repository.transactions, selectedPeriod, selectedType) { ready, _, period, type ->
+        ready to (period to type)
+    }.filter { (ready, _) -> ready }.mapLatest { (_, selection) ->
+        val (period, type) = selection
         val range = getPeriodDateRange(period)
         CentwiseRustBackend.analyticsSnapshot(
             range.first.time,

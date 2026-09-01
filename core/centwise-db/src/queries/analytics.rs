@@ -107,8 +107,8 @@ impl<'a> Queries<'a> {
                 "SELECT
                     COALESCE(SUM(CASE WHEN transaction_type = 'income' THEN amount_minor ELSE 0 END), 0),
                     COALESCE(SUM(CASE WHEN transaction_type = 'expense' THEN amount_minor ELSE 0 END), 0),
-                    SUM(CASE WHEN (?3 = 'all' OR (?3 = 'debit' AND transaction_type = 'expense')
-                               OR (?3 = 'credit' AND transaction_type = 'income')) THEN 1 ELSE 0 END)
+                    COALESCE(SUM(CASE WHEN (?3 = 'all' OR (?3 = 'debit' AND transaction_type = 'expense')
+                               OR (?3 = 'credit' AND transaction_type = 'income')) THEN 1 ELSE 0 END), 0)
                  FROM transactions
                  WHERE occurred_at_epoch_ms >= ?1 AND occurred_at_epoch_ms < ?2",
                 params![start_epoch_ms, end_epoch_ms, type_filter],

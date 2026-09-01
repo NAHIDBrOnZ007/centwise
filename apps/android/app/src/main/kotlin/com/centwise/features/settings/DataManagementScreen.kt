@@ -90,7 +90,7 @@ fun DataManagementScreen(
                         showLoadDemoDialog = false
                         coroutineScope.launch(Dispatchers.IO) {
                             val summary = CentwiseRustBackend.loadDemoData()
-                            if (summary != null) repository.loadFromRust()
+                            if (summary != null) repository.refreshNow()
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(
                                     context,
@@ -131,7 +131,7 @@ fun DataManagementScreen(
                         showResetDialog = false
                         coroutineScope.launch(Dispatchers.IO) {
                             val succeeded = CentwiseRustBackend.resetToEmptyDatabase()
-                            if (succeeded) repository.loadFromRust()
+                            if (succeeded) repository.refreshNow()
                             withContext(Dispatchers.Main) {
                                 Toast.makeText(
                                     context,

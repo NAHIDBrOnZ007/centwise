@@ -60,7 +60,6 @@ fun AnalyticsScreen(
     val topMerchants by viewModel.topMerchants.collectAsState()
     val categories by TransactionRepository.shared.categories.collectAsState()
 
-    val allTransactions by TransactionRepository.shared.transactions.collectAsState()
     val trendPoints by viewModel.monthlyTrends.collectAsState()
     var drillDownTitle by remember { mutableStateOf<String?>(null) }
     var drillDownTransactions by remember { mutableStateOf<List<com.centwise.data.models.TransactionItem>>(emptyList()) }

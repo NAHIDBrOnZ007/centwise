@@ -44,6 +44,8 @@ class TransactionRepository private constructor() {
     val categories: StateFlow<List<CategoryOption>> = _categories.asStateFlow()
     private val _homeDashboard = MutableStateFlow<HomeDashboardRecord?>(null)
     val homeDashboard: StateFlow<HomeDashboardRecord?> = _homeDashboard.asStateFlow()
+    private val _isReady = MutableStateFlow(false)
+    val isReady: StateFlow<Boolean> = _isReady.asStateFlow()
 
     val totalIncome = _transactions.map { list ->
         list.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
@@ -59,8 +61,10 @@ class TransactionRepository private constructor() {
     fun init(context: Context) {
         repositoryScope.launch {
             refreshMutex.withLock {
+                _isReady.value = false
                 CentwiseRustBackend.initialize(context.applicationContext)
                 refreshFromRust()
+                _isReady.value = true
             }
         }
     }
@@ -69,6 +73,11 @@ class TransactionRepository private constructor() {
         repositoryScope.launch {
             refreshMutex.withLock { refreshFromRust() }
         }
+    }
+
+    /** Refreshes state in the caller's IO coroutine, avoiding a second queued refresh. */
+    suspend fun refreshNow() {
+        refreshMutex.withLock { refreshFromRust() }
     }
 
     private fun refreshFromRust() {

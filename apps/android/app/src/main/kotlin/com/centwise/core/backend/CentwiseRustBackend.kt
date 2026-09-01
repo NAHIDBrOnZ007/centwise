@@ -28,15 +28,12 @@ import com.centwise.data.repository.TransactionRepository
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-/** Owns the process-wide Rust core handle and non-SMS debug fallback data. */
+/** Owns the process-wide Rust core handle and Rust-owned database access. */
 object CentwiseRustBackend {
     private const val TAG = "CentwiseRustBackend"
 
     @Volatile
     private var core: CentwiseCore? = null
-
-    // In-process fallback engine used when Rust JNI shared library is unavailable in debug/emulator
-    private val fallbackEngine = FallbackBackend()
 
     @Synchronized
     fun initialize(context: Context) {
@@ -47,8 +44,7 @@ object CentwiseRustBackend {
             core = CentwiseCore.open(databasePath)
             Log.i(TAG, "Rust core initialized successfully at $databasePath")
         } catch (error: Throwable) {
-            Log.w(TAG, "Rust native library unavailable (${error.message}); utilizing full in-process backend", error)
-            fallbackEngine.seedDefaults()
+            Log.e(TAG, "Rust native library unavailable; database features are disabled", error)
         }
     }
 
@@ -89,9 +85,7 @@ object CentwiseRustBackend {
                 Log.e(TAG, "Rust demo data load failed", error)
                 null
             }
-        } else {
-            fallbackEngine.loadDemoData()
-        }
+        } else null
     }
 
     fun resetToEmptyDatabase(): Boolean {
@@ -104,17 +98,14 @@ object CentwiseRustBackend {
                 Log.e(TAG, "Rust database reset failed", error)
                 false
             }
-        } else {
-            fallbackEngine.resetToEmpty()
-            true
-        }
+        } else false
     }
 
     fun listTransactions(): List<TransactionRecord> = try {
-        core?.listTransactions(10_000u) ?: fallbackEngine.listTransactions()
+        core?.listTransactions(10_000u) ?: emptyList()
     } catch (error: Throwable) {
-        Log.e(TAG, "Rust transaction read failed, falling back", error)
-        fallbackEngine.listTransactions()
+        Log.e(TAG, "Rust transaction read failed", error)
+        emptyList()
     }
 
     fun homeDashboard(startEpochMs: Long, endEpochMs: Long): HomeDashboardRecord? = try {
@@ -137,109 +128,111 @@ object CentwiseRustBackend {
     }
 
     fun getTransaction(id: String): TransactionRecord? = try {
-        core?.getTransaction(id) ?: fallbackEngine.listTransactions().firstOrNull { it.id == id }
+        core?.getTransaction(id)
     } catch (error: Throwable) {
         Log.e(TAG, "Rust transaction read failed", error)
-        fallbackEngine.listTransactions().firstOrNull { it.id == id }
+        null
     }
 
     fun listAccounts(): List<AccountRecord> = try {
-        core?.listAccounts() ?: fallbackEngine.listAccounts()
+        core?.listAccounts() ?: emptyList()
     } catch (error: Throwable) {
-        Log.e(TAG, "Rust account read failed, falling back", error)
-        fallbackEngine.listAccounts()
+        Log.e(TAG, "Rust account read failed", error)
+        emptyList()
     }
 
     fun listBudgets(): List<BudgetRecord> = try {
-        core?.listBudgets() ?: fallbackEngine.listBudgets()
+        core?.listBudgets() ?: emptyList()
     } catch (error: Throwable) {
-        Log.e(TAG, "Rust budget read failed, falling back", error)
-        fallbackEngine.listBudgets()
+        Log.e(TAG, "Rust budget read failed", error)
+        emptyList()
     }
 
     fun listSubscriptions(): List<SubscriptionRecord> = try {
-        core?.listSubscriptions() ?: fallbackEngine.listSubscriptions()
+        core?.listSubscriptions() ?: emptyList()
     } catch (error: Throwable) {
-        Log.e(TAG, "Rust subscription read failed, falling back", error)
-        fallbackEngine.listSubscriptions()
+        Log.e(TAG, "Rust subscription read failed", error)
+        emptyList()
     }
 
     fun listCategories(): List<CategoryRecord> = try {
-        core?.listCategories() ?: fallbackEngine.listCategories()
+        core?.listCategories() ?: emptyList()
     } catch (error: Throwable) {
-        Log.e(TAG, "Rust category read failed, falling back", error)
-        fallbackEngine.listCategories()
+        Log.e(TAG, "Rust category read failed", error)
+        emptyList()
     }
 
     fun insertCategory(input: CategoryInput): Boolean = try {
-        core?.insertCategory(input) ?: fallbackEngine.insertCategory(input)
+        val rustCore = core ?: return false
+        rustCore.insertCategory(input)
         true
     } catch (error: Throwable) {
         Log.e(TAG, "Rust category insert failed", error)
-        fallbackEngine.insertCategory(input)
+        false
     }
 
     fun updateCategory(input: CategoryInput): Boolean = try {
-        core?.updateCategory(input) ?: fallbackEngine.updateCategory(input)
+        core?.updateCategory(input) ?: false
     } catch (error: Throwable) {
         Log.e(TAG, "Rust category update failed", error)
-        fallbackEngine.updateCategory(input)
+        false
     }
 
     fun deleteCategory(id: String): Boolean = try {
-        core?.deleteCategory(id) ?: fallbackEngine.deleteCategory(id)
+        core?.deleteCategory(id) ?: false
     } catch (error: Throwable) {
         Log.e(TAG, "Rust category delete failed", error)
-        fallbackEngine.deleteCategory(id)
+        false
     }
 
     fun listRules(): List<SmartRuleRecord> = try {
-        core?.listRules() ?: fallbackEngine.listRules()
+        core?.listRules() ?: emptyList()
     } catch (error: Throwable) {
-        Log.e(TAG, "Rust rule read failed, falling back", error)
-        fallbackEngine.listRules()
+        Log.e(TAG, "Rust rule read failed", error)
+        emptyList()
     }
 
     fun insertRule(input: SmartRuleInput): Boolean = try {
-        core?.insertRule(input) ?: fallbackEngine.insertRule(input)
+        val rustCore = core ?: return false
+        rustCore.insertRule(input)
         true
     } catch (error: Throwable) {
         Log.e(TAG, "Rust rule insert failed", error)
-        fallbackEngine.insertRule(input)
+        false
     }
 
     fun updateRule(input: SmartRuleInput): Boolean = try {
-        core?.updateRule(input) ?: fallbackEngine.updateRule(input)
+        core?.updateRule(input) ?: false
     } catch (error: Throwable) {
         Log.e(TAG, "Rust rule update failed", error)
-        fallbackEngine.updateRule(input)
+        false
     }
 
     fun deleteRule(id: String): Boolean = try {
-        core?.deleteRule(id) ?: fallbackEngine.deleteRule(id)
+        core?.deleteRule(id) ?: false
     } catch (error: Throwable) {
         Log.e(TAG, "Rust rule delete failed", error)
-        fallbackEngine.deleteRule(id)
+        false
     }
 
     fun listReviewQueue(): List<ReviewQueueRecord> = try {
-        core?.listReviewQueue(10_000u) ?: fallbackEngine.listReviewQueue()
+        core?.listReviewQueue(10_000u) ?: emptyList()
     } catch (error: Throwable) {
         Log.e(TAG, "Rust review queue read failed", error)
-        fallbackEngine.listReviewQueue()
+        emptyList()
     }
 
     fun dismissReviewQueueItem(id: String): Boolean = try {
-        core?.dismissReviewQueueItem(id) ?: fallbackEngine.dismissReviewQueueItem(id)
+        core?.dismissReviewQueueItem(id) ?: false
     } catch (error: Throwable) {
         Log.e(TAG, "Rust review queue dismissal failed", error)
-        fallbackEngine.dismissReviewQueueItem(id)
+        false
     }
 
     fun convertReviewQueueItem(itemId: String, transaction: TransactionItem): Boolean {
         val rustCore = core
         if (rustCore == null) {
-            return fallbackEngine.convertReviewQueueItem(itemId, transaction)
+            return false
         }
         val allAccounts = TransactionRepository.shared.accounts.value
         val exactNameMatches = allAccounts.filter { account ->
@@ -284,91 +277,95 @@ object CentwiseRustBackend {
     }
 
     fun insertAccount(account: com.centwise.data.models.AccountItem): Boolean = try {
-        core?.insertAccount(account.toRustInput()) ?: fallbackEngine.insertAccount(account.toRustInput())
+        val rustCore = core ?: return false
+        rustCore.insertAccount(account.toRustInput())
         true
     } catch (error: Throwable) {
         Log.e(TAG, "Rust account insert failed", error)
-        fallbackEngine.insertAccount(account.toRustInput())
+        false
     }
 
     fun updateAccount(account: com.centwise.data.models.AccountItem): Boolean = try {
-        core?.updateAccount(account.toRustInput()) ?: fallbackEngine.updateAccount(account.toRustInput())
+        core?.updateAccount(account.toRustInput()) ?: false
     } catch (error: Throwable) {
         Log.e(TAG, "Rust account update failed", error)
-        fallbackEngine.updateAccount(account.toRustInput())
+        false
     }
 
     fun deleteAccount(id: String): Boolean = try {
-        core?.deleteAccount(id) ?: fallbackEngine.deleteAccount(id)
+        core?.deleteAccount(id) ?: false
     } catch (error: Throwable) {
         Log.e(TAG, "Rust account delete failed", error)
-        fallbackEngine.deleteAccount(id)
+        false
     }
 
     fun insertTransaction(transaction: TransactionItem): Boolean = try {
-        core?.insertTransaction(transaction.toRustInput()) ?: fallbackEngine.insertTransaction(transaction.toRustInput())
+        val rustCore = core ?: return false
+        rustCore.insertTransaction(transaction.toRustInput())
         true
     } catch (error: Throwable) {
         Log.e(TAG, "Rust transaction insert failed", error)
-        fallbackEngine.insertTransaction(transaction.toRustInput())
+        false
     }
 
     fun updateTransaction(transaction: TransactionItem): Boolean = try {
-        core?.updateTransaction(transaction.toRustInput()) ?: fallbackEngine.updateTransaction(transaction.toRustInput())
+        core?.updateTransaction(transaction.toRustInput()) ?: false
     } catch (error: Throwable) {
         Log.e(TAG, "Rust transaction update failed", error)
-        fallbackEngine.updateTransaction(transaction.toRustInput())
+        false
     }
 
     fun deleteTransaction(id: String): Boolean = try {
-        core?.deleteTransaction(id) ?: fallbackEngine.deleteTransaction(id)
+        core?.deleteTransaction(id) ?: false
     } catch (error: Throwable) {
         Log.e(TAG, "Rust transaction delete failed", error)
-        fallbackEngine.deleteTransaction(id)
+        false
     }
 
     fun insertBudget(budget: com.centwise.data.models.BudgetItem): Boolean = try {
-        core?.insertBudget(budget.toRustInput()) ?: fallbackEngine.insertBudget(budget.toRustInput())
+        val rustCore = core ?: return false
+        rustCore.insertBudget(budget.toRustInput())
         true
     } catch (error: Throwable) {
         Log.e(TAG, "Rust budget insert failed", error)
-        fallbackEngine.insertBudget(budget.toRustInput())
+        false
     }
 
     fun updateBudget(budget: com.centwise.data.models.BudgetItem): Boolean = try {
-        core?.updateBudget(budget.toRustInput()) ?: fallbackEngine.updateBudget(budget.toRustInput())
+        core?.updateBudget(budget.toRustInput()) ?: false
     } catch (error: Throwable) {
         Log.e(TAG, "Rust budget update failed", error)
-        fallbackEngine.updateBudget(budget.toRustInput())
+        false
     }
 
     fun deleteBudget(id: String): Boolean = try {
-        core?.deleteBudget(id) ?: fallbackEngine.deleteBudget(id)
+        core?.deleteBudget(id) ?: false
     } catch (error: Throwable) {
         Log.e(TAG, "Rust budget delete failed", error)
-        fallbackEngine.deleteBudget(id)
+        false
     }
 
     fun insertSubscription(subscription: com.centwise.data.models.SubscriptionItem): Boolean = try {
-        core?.insertSubscription(subscription.toRustInput()) ?: fallbackEngine.insertSubscription(subscription.toRustInput())
+        val rustCore = core ?: return false
+        rustCore.insertSubscription(subscription.toRustInput())
         true
     } catch (error: Throwable) {
         Log.e(TAG, "Rust subscription insert failed", error)
-        fallbackEngine.insertSubscription(subscription.toRustInput())
+        false
     }
 
     fun updateSubscription(subscription: com.centwise.data.models.SubscriptionItem): Boolean = try {
-        core?.updateSubscription(subscription.toRustInput()) ?: fallbackEngine.updateSubscription(subscription.toRustInput())
+        core?.updateSubscription(subscription.toRustInput()) ?: false
     } catch (error: Throwable) {
         Log.e(TAG, "Rust subscription update failed", error)
-        fallbackEngine.updateSubscription(subscription.toRustInput())
+        false
     }
 
     fun deleteSubscription(id: String): Boolean = try {
-        core?.deleteSubscription(id) ?: fallbackEngine.deleteSubscription(id)
+        core?.deleteSubscription(id) ?: false
     } catch (error: Throwable) {
         Log.e(TAG, "Rust subscription delete failed", error)
-        fallbackEngine.deleteSubscription(id)
+        false
     }
 
     fun canonicalProvider(provider: String): String = when {
