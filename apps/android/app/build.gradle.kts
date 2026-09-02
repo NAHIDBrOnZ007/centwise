@@ -7,6 +7,38 @@ android {
     namespace = "com.centwise"
     compileSdk = 35
 
+    val releaseKeystoreFile = System.getenv("CENTWISE_KEYSTORE_FILE")
+    val releaseKeystorePassword = System.getenv("CENTWISE_KEYSTORE_PASSWORD")
+    val releaseKeyAlias = System.getenv("CENTWISE_KEY_ALIAS")
+    val releaseKeyPassword = System.getenv("CENTWISE_KEY_PASSWORD")
+    val releaseSigningConfigured = listOf(
+        releaseKeystoreFile,
+        releaseKeystorePassword,
+        releaseKeyAlias,
+        releaseKeyPassword
+    ).all { !it.isNullOrBlank() }
+
+    if (gradle.startParameter.taskNames.any { it.contains("release", ignoreCase = true) } &&
+        !releaseSigningConfigured
+    ) {
+        throw GradleException(
+            "Release signing is not configured. Set CENTWISE_KEYSTORE_FILE, " +
+                "CENTWISE_KEYSTORE_PASSWORD, CENTWISE_KEY_ALIAS, and " +
+                "CENTWISE_KEY_PASSWORD."
+        )
+    }
+
+    signingConfigs {
+        if (releaseSigningConfigured) {
+            create("release") {
+                storeFile = file(releaseKeystoreFile!!)
+                storePassword = releaseKeystorePassword
+                keyAlias = releaseKeyAlias
+                keyPassword = releaseKeyPassword
+            }
+        }
+    }
+
     defaultConfig {
         applicationId = "com.centwise"
         minSdk = 26
@@ -20,6 +52,9 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (releaseSigningConfigured) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
