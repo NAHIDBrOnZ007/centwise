@@ -3,6 +3,8 @@
 //! Maps extracted merchant strings and transaction types to stable category IDs
 //! per `docs/architecture/parser-design.md`.
 
+use centwise_domain::TransactionType;
+
 /// Represents a detected category with its standard slug.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CategorizationResult {
@@ -10,124 +12,15 @@ pub struct CategorizationResult {
     pub matched_merchant: Option<String>,
 }
 
-/// Known merchants with their associated category slug.
-const MERCHANT_RULES: &[(&[&str], &str)] = &[
-    (
-        &[
-            "foodpanda",
-            "hungerstation",
-            "sultan's dine",
-            "sultans dine",
-            "kacchi bhai",
-            "pizza hut",
-            "kfc",
-            "domino's",
-            "dominos",
-            "burger king",
-            "chillox",
-            "madchef",
-            "takeout",
-            "bfc",
-            "herfy",
-            "gloria jean",
-            "secret recipe",
-        ],
-        "food",
-    ),
-    (
-        &[
-            "pathao",
-            "uber",
-            "obhai",
-            "shohoz",
-            "cng",
-            "rail sheba",
-            "jatri",
-            "biman",
-            "us-bangla",
-            "novoair",
-        ],
-        "transport",
-    ),
-    (
-        &[
-            "daraz",
-            "pickaboo",
-            "unimart",
-            "swapno",
-            "shwapno",
-            "meena bazar",
-            "agora",
-            "aarong",
-            "apex",
-            "bata",
-            "chaldal",
-            "sailor",
-            "cats eye",
-            "yellow",
-            "artisan",
-            "almas",
-            "lotto",
-        ],
-        "shopping",
-    ),
-    (
-        &[
-            "airtel",
-            "grameenphone",
-            "gp",
-            "robi",
-            "banglalink",
-            "teletalk",
-            "skitto",
-        ],
-        "recharge",
-    ),
-    (
-        &[
-            "netflix",
-            "spotify",
-            "hoichoi",
-            "chorki",
-            "star cineplex",
-            "blockbuster",
-            "toffee",
-            "sony liv",
-        ],
-        "entertainment",
-    ),
-    (
-        &[
-            "desco",
-            "dpdc",
-            "nesco",
-            "wasa",
-            "titas",
-            "bakhrabad",
-            "karnaphuli",
-            "palli bidyut",
-            "btcl",
-            "link3",
-            "amberit",
-            "carnival",
-            "dot internet",
-            "sam online",
-        ],
-        "bills",
-    ),
-];
-
 /// Attempt to categorize by looking for known merchant keywords in text.
 pub fn categorize_by_merchant(party_or_merchant: &str) -> Option<CategorizationResult> {
     let lower = party_or_merchant.to_lowercase();
-    for (keywords, category_id) in MERCHANT_RULES {
-        for &keyword in *keywords {
+    for rule in centwise_domain::default_merchant_categories() {
+        for &keyword in rule.keywords {
             if lower.contains(keyword) {
-                // Return matched keyword with appropriate capitalization from rule or original slice
-                let matched_name = capitalize_merchant(keyword);
                 return Some(CategorizationResult {
-                    category_id: (*category_id).to_string(),
-                    matched_merchant: Some(matched_name),
+                    category_id: rule.category_id.to_string(),
+                    matched_merchant: Some(rule.name.to_string()),
                 });
             }
         }
@@ -136,58 +29,92 @@ pub fn categorize_by_merchant(party_or_merchant: &str) -> Option<CategorizationR
 }
 
 /// Fallback category inference from transaction type and keywords.
-pub fn categorize_by_type_or_keywords(text: &str, is_income: bool) -> Option<String> {
+pub fn categorize_by_type_or_keywords(
+    text: &str,
+    transaction_type: TransactionType,
+) -> Option<String> {
     let lower = text.to_lowercase();
 
+    if transaction_type == TransactionType::Refund
+        || contains_any(&lower, &["refund", "reversal", "reversed", "ফেরত"])
+    {
+        return Some("refunds".to_string());
+    }
+    if contains_any(&lower, &["cashback", "cash back", "ক্যাশব্যাক"]) {
+        return Some("cashback".to_string());
+    }
+    if contains_any(
+        &lower,
+        &[
+            "interest",
+            "mudaraba profit",
+            "profit credited",
+            "মুনাফা",
+            "সুদ",
+        ],
+    ) {
+        return Some("interest-profit".to_string());
+    }
+    if contains_any(&lower, &["dividend", "লভ্যাংশ"]) {
+        return Some("dividends".to_string());
+    }
+    if contains_any(&lower, &["salary", "payroll", "wages", "বেতন"]) {
+        return Some("salary".to_string());
+    }
     if lower.contains("recharge") {
         return Some("recharge".to_string());
     }
-    if lower.contains("atm") || lower.contains("cash withdrawal") {
+    if contains_any(
+        &lower,
+        &["atm", "cash withdrawal", "cash out", "নগদ উত্তোলন"],
+    ) {
         return Some("cash-withdrawal".to_string());
     }
     if lower.contains("emi") || lower.contains("loan") || lower.contains("bill") {
         return Some("bills".to_string());
     }
-    if is_income {
-        if lower.contains("salary") {
-            return Some("salary".to_string());
-        }
-        if lower.contains("interest") || lower.contains("cashback") {
-            return Some("income".to_string());
-        }
+    if is_fee_transaction(&lower) {
+        return Some("fees".to_string());
     }
 
-    None
+    Some(
+        match transaction_type {
+            TransactionType::Income => "income",
+            TransactionType::Refund => "refunds",
+            TransactionType::Transfer => "transfer",
+            TransactionType::Expense => "other",
+        }
+        .to_string(),
+    )
 }
 
-fn capitalize_merchant(keyword: &str) -> String {
-    match keyword {
-        "foodpanda" => "Foodpanda".to_string(),
-        "pathao" => "Pathao".to_string(),
-        "uber" => "Uber".to_string(),
-        "daraz" => "Daraz".to_string(),
-        "gp" | "grameenphone" => "GP".to_string(),
-        "airtel" => "Airtel".to_string(),
-        "robi" => "Robi".to_string(),
-        "banglalink" => "Banglalink".to_string(),
-        "teletalk" => "Teletalk".to_string(),
-        "shohoz" => "Shohoz".to_string(),
-        "unimart" => "Unimart".to_string(),
-        "shwapno" | "swapno" => "Shwapno".to_string(),
-        "aarong" => "Aarong".to_string(),
-        _ => {
-            let mut c = keyword.chars();
-            match c.next() {
-                None => String::new(),
-                Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
-            }
-        }
-    }
+fn contains_any(text: &str, needles: &[&str]) -> bool {
+    needles.iter().any(|needle| text.contains(needle))
+}
+
+fn is_fee_transaction(text: &str) -> bool {
+    let has_fee_action = contains_any(
+        text,
+        &[
+            "fee charged",
+            "charge debited",
+            "service charge",
+            "annual fee",
+            "চার্জ কাটা",
+            "সার্ভিস চার্জ",
+        ],
+    );
+    let has_primary_action = contains_any(
+        text,
+        &["payment", "purchase", "recharge", "cash out", "withdrawal"],
+    );
+    has_fee_action && !has_primary_action
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use centwise_domain::TransactionType;
 
     #[test]
     fn categorizes_known_merchants() {
@@ -207,16 +134,66 @@ mod tests {
     #[test]
     fn fallback_by_keywords() {
         assert_eq!(
-            categorize_by_type_or_keywords("Mobile Recharge Tk 100", false),
+            categorize_by_type_or_keywords("Mobile Recharge Tk 100", TransactionType::Expense),
             Some("recharge".to_string())
         );
         assert_eq!(
-            categorize_by_type_or_keywords("ATM Cash Withdrawal", false),
+            categorize_by_type_or_keywords("ATM Cash Withdrawal", TransactionType::Expense),
             Some("cash-withdrawal".to_string())
         );
         assert_eq!(
-            categorize_by_type_or_keywords("EMI of Tk 8500", false),
+            categorize_by_type_or_keywords("EMI of Tk 8500", TransactionType::Expense),
             Some("bills".to_string())
+        );
+    }
+
+    #[test]
+    fn income_is_salary_only_with_a_strong_salary_signal() {
+        assert_eq!(
+            categorize_by_type_or_keywords(
+                "Your account was credited with Tk 25,000",
+                TransactionType::Income,
+            ),
+            Some("income".to_string())
+        );
+        assert_eq!(
+            categorize_by_type_or_keywords(
+                "Monthly salary credited to your account",
+                TransactionType::Income,
+            ),
+            Some("salary".to_string())
+        );
+        assert_eq!(
+            categorize_by_type_or_keywords("বেতন বাবদ ২৫,০০০ টাকা জমা হয়েছে", TransactionType::Income,),
+            Some("salary".to_string())
+        );
+    }
+
+    #[test]
+    fn special_credits_remain_separate() {
+        assert_eq!(
+            categorize_by_type_or_keywords("Purchase refund credited", TransactionType::Refund),
+            Some("refunds".to_string())
+        );
+        assert_eq!(
+            categorize_by_type_or_keywords("Cashback credited", TransactionType::Income),
+            Some("cashback".to_string())
+        );
+        assert_eq!(
+            categorize_by_type_or_keywords("Mudaraba profit credited", TransactionType::Income),
+            Some("interest-profit".to_string())
+        );
+        assert_eq!(
+            categorize_by_type_or_keywords("Dividend credited", TransactionType::Income),
+            Some("dividends".to_string())
+        );
+    }
+
+    #[test]
+    fn unknown_expense_uses_other_without_an_unknown_category() {
+        assert_eq!(
+            categorize_by_type_or_keywords("Card purchase", TransactionType::Expense),
+            Some("other".to_string())
         );
     }
 }

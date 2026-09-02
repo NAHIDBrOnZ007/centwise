@@ -107,13 +107,14 @@ impl<'a> Queries<'a> {
                 (SELECT COUNT(*) FROM transactions WHERE category_id = ?1) +
                 (SELECT COUNT(*) FROM budgets WHERE category_id = ?1) +
                 (SELECT COUNT(*) FROM rules WHERE category_id = ?1) +
+                (SELECT COUNT(*) FROM merchant_category_mappings WHERE category_id = ?1) +
                 (SELECT COUNT(*) FROM review_queue WHERE category_id = ?1 AND status = 'pending')",
             params![id],
             |row| row.get(0),
         )?;
         if reference_count > 0 {
             return Err(DbError::Invalid(
-                "category is still used by transactions, budgets, or rules".into(),
+                "category is still used by transactions, budgets, rules, or mappings".into(),
             ));
         }
 

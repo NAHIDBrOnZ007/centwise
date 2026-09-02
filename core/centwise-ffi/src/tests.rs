@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod ingestion_tests {
     use crate::{
-        AccountInput, CategoryInput, CentwiseCore, SmartRuleInput, SmsIngestStatus,
-        TransactionInput, TransactionKind,
+        AccountInput, CategoryInput, CentwiseCore, SmartRuleInput, SmsBatchMessage,
+        SmsIngestStatus, TransactionInput, TransactionKind,
     };
 
     fn manual_transaction(
@@ -212,6 +212,22 @@ mod ingestion_tests {
     }
 
     #[test]
+    fn financial_message_with_amount_but_uncertain_direction_is_reviewed() {
+        let core = CentwiseCore::open(":memory:".into()).expect("open core");
+        let result = core
+            .ingest_sms(
+                "Your bank account transaction of Tk 500.00 needs attention.".into(),
+                Some("BANK".into()),
+                1_700_000_000_000,
+            )
+            .expect("ingest");
+
+        assert_eq!(result.status, SmsIngestStatus::QueuedForReview);
+        assert_eq!(core.list_review_queue(10).expect("review").len(), 1);
+        assert!(core.list_transactions(10).expect("transactions").is_empty());
+    }
+
+    #[test]
     fn ingest_sms_queues_when_account_is_ambiguous() {
         let core = CentwiseCore::open(":memory:".into()).expect("open core");
         for id in ["acct-1", "acct-2"] {
@@ -335,9 +351,156 @@ mod ingestion_tests {
 
         let categories = core.list_categories().expect("categories");
 
-        assert_eq!(categories.len(), 11);
+        assert_eq!(categories.len(), 20);
         assert_eq!(categories[0].id, "food");
+        assert!(categories.iter().any(|category| category.id == "income"));
+        assert!(categories.iter().any(|category| category.id == "refunds"));
         assert!(categories.iter().all(|category| category.is_system));
+    }
+
+    #[test]
+    fn no_reference_dedup_normalizes_message_but_keeps_senders_distinct() {
+        let core = CentwiseCore::open(":memory:".into()).expect("open core");
+        let first = core
+            .ingest_sms(
+                "Payment of Tk 12.00 to Coffee Shop successful.".into(),
+                Some("bKash".into()),
+                1_700_000_000_000,
+            )
+            .expect("first");
+        assert_eq!(first.status, SmsIngestStatus::Inserted);
+
+        let duplicate = core
+            .ingest_sms(
+                "  payment  OF tk 12.00 TO coffee shop SUCCESSFUL. ".into(),
+                Some("BKASH".into()),
+                1_700_000_000_001,
+            )
+            .expect("normalized duplicate");
+        assert_eq!(duplicate.status, SmsIngestStatus::Duplicate);
+
+        let different_sender = core
+            .ingest_sms(
+                "Payment of Tk 12.00 to Coffee Shop successful.".into(),
+                Some("Nagad".into()),
+                1_700_000_000_002,
+            )
+            .expect("different sender");
+        assert_eq!(different_sender.status, SmsIngestStatus::Inserted);
+    }
+
+    #[test]
+    fn batch_ingestion_preserves_order_and_per_message_results() {
+        let core = core_with_account();
+        let results = core
+            .ingest_sms_batch(vec![
+                SmsBatchMessage {
+                    body: "Payment Tk 20.00 to Foodpanda successful. Ref: BATCH1.".into(),
+                    sender_hint: Some("bKash".into()),
+                    occurred_at_epoch_ms: 1_700_000_000_000,
+                },
+                SmsBatchMessage {
+                    body: "Your OTP is 123456. Do not share it.".into(),
+                    sender_hint: Some("bKash".into()),
+                    occurred_at_epoch_ms: 1_700_000_000_001,
+                },
+                SmsBatchMessage {
+                    body: "Your A/C was credited with Tk 50.00. Ref: BATCH2.".into(),
+                    sender_hint: Some("bKash".into()),
+                    occurred_at_epoch_ms: 1_700_000_000_002,
+                },
+            ])
+            .expect("batch");
+
+        assert_eq!(results[0].status, SmsIngestStatus::Inserted);
+        assert_eq!(results[1].status, SmsIngestStatus::Ignored);
+        assert_eq!(results[2].status, SmsIngestStatus::Inserted);
+        assert_eq!(core.list_transactions(10).expect("transactions").len(), 2);
+    }
+
+    #[test]
+    fn ordinary_credit_uses_income_and_only_salary_signals_use_salary() {
+        let core = core_with_account();
+        core.ingest_sms(
+            "Your account was credited with Tk 5,000. Ref: CREDIT1.".into(),
+            Some("bKash".into()),
+            1_700_000_000_000,
+        )
+        .expect("ordinary credit");
+        core.ingest_sms(
+            "Monthly salary of Tk 25,000 credited. Ref: SALARY1.".into(),
+            Some("bKash".into()),
+            1_700_000_000_001,
+        )
+        .expect("salary credit");
+
+        let transactions = core.list_transactions(10).expect("transactions");
+        assert_eq!(
+            transactions
+                .iter()
+                .find(|item| item.reference.as_deref() == Some("CREDIT1"))
+                .expect("ordinary credit")
+                .category_id,
+            "income"
+        );
+        assert_eq!(
+            transactions
+                .iter()
+                .find(|item| item.reference.as_deref() == Some("SALARY1"))
+                .expect("salary")
+                .category_id,
+            "salary"
+        );
+    }
+
+    #[test]
+    fn correcting_auto_tracked_merchant_teaches_future_transactions_and_preserves_sms_metadata() {
+        let core = core_with_account();
+        core.ingest_sms(
+            "Payment Tk 120.00 to Cafe Dhaka successful. Fee Tk 2.00. Balance Tk 878.00. Ref: CAFE1.".into(),
+            Some("bKash".into()),
+            1_700_000_000_000,
+        )
+        .expect("first ingest");
+        let stored = core
+            .list_transactions(10)
+            .expect("transactions")
+            .into_iter()
+            .next()
+            .expect("first transaction");
+        assert_eq!(stored.category_id, "other");
+
+        let mut correction = manual_transaction(&stored.id, &stored.account_id, None, None);
+        correction.title = stored.title.clone();
+        correction.amount_minor = stored.amount_minor;
+        correction.occurred_at_epoch_ms = stored.occurred_at_epoch_ms;
+        correction.category_id = "food".into();
+        core.update_transaction(correction)
+            .expect("category correction");
+
+        let corrected = core
+            .get_transaction(stored.id)
+            .expect("get")
+            .expect("corrected");
+        assert_eq!(corrected.reference.as_deref(), Some("CAFE1"));
+        assert_eq!(corrected.fee_minor, Some(200));
+        assert_eq!(corrected.balance_after_minor, Some(87_800));
+        assert!(corrected.raw_sms.is_some());
+        assert!(corrected.is_auto_tracked);
+
+        core.ingest_sms(
+            "Payment Tk 50.00 to Cafe Dhaka successful. Ref: CAFE2.".into(),
+            Some("bKash".into()),
+            1_700_000_000_001,
+        )
+        .expect("second ingest");
+        let learned = core
+            .list_transactions(10)
+            .expect("transactions")
+            .into_iter()
+            .find(|item| item.reference.as_deref() == Some("CAFE2"))
+            .expect("learned transaction");
+        assert_eq!(learned.category_id, "food");
     }
 
     #[test]

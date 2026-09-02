@@ -84,11 +84,33 @@ fn system_categories_are_protected_and_reset_removes_user_categories_and_rules()
     ));
 
     database.reset_to_empty().expect("reset");
-    assert_eq!(database.list_categories().expect("categories").len(), 11);
+    assert_eq!(database.list_categories().expect("categories").len(), 20);
     assert!(database.list_rules().expect("rules").is_empty());
     assert!(database
         .list_categories()
         .expect("categories")
         .iter()
         .all(|item| item.is_system));
+}
+
+#[test]
+fn category_used_by_a_learned_mapping_cannot_be_deleted() {
+    let database = Database::open_in_memory().expect("open database");
+    database
+        .insert_category(&category("coffee"))
+        .expect("insert category");
+    database
+        .write(|queries| {
+            queries.upsert_merchant_category_mapping(
+                "Cafe Dhaka",
+                TransactionType::Expense,
+                "coffee",
+            )
+        })
+        .expect("mapping");
+
+    assert!(matches!(
+        database.delete_category("coffee"),
+        Err(DbError::Invalid(message)) if message.contains("still used")
+    ));
 }

@@ -49,7 +49,7 @@ fn reset_to_empty_keeps_system_categories_but_removes_demo_records() {
         .list_subscriptions()
         .expect("subscriptions")
         .is_empty());
-    assert_eq!(database.category_count().expect("categories"), 11);
+    assert_eq!(database.category_count().expect("categories"), 20);
 }
 
 #[test]
@@ -58,7 +58,7 @@ fn system_categories_are_read_from_rust_in_stable_order() {
 
     let categories = database.list_categories().expect("categories");
 
-    assert_eq!(categories.len(), 11);
+    assert_eq!(categories.len(), 20);
     assert!(categories.iter().all(|category| category.is_system));
     assert_eq!(categories[0].id, "food");
     assert_eq!(categories[0].name, "Food & Dining");

@@ -13,6 +13,7 @@ name = "centwise_ffi"
 centwise-domain = { workspace = true }
 centwise-db = { workspace = true }
 centwise-parser = { path = "../centwise-parser" }
+centwise-normalization = { path = "../centwise-normalization" }
 uniffi = { workspace = true }
 
 [build-dependencies]

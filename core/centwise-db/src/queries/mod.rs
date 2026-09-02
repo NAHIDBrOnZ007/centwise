@@ -2,6 +2,7 @@ pub mod accounts;
 pub mod analytics;
 pub mod budgets;
 pub mod categories;
+pub mod merchant_mappings;
 pub mod review_queue;
 pub mod rules;
 pub mod subscriptions;
@@ -26,6 +27,7 @@ impl<'a> Queries<'a> {
         self.connection.execute_batch(
             "DELETE FROM review_queue;
              DELETE FROM transactions;
+             DELETE FROM merchant_category_mappings;
              DELETE FROM budgets;
              DELETE FROM subscriptions;
              DELETE FROM accounts;

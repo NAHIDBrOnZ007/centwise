@@ -144,3 +144,71 @@ fn negative_amount_is_rejected() {
     let result = database.insert_transaction(&tx("bad", -1, TransactionType::Expense, 0));
     assert!(result.is_err());
 }
+
+#[test]
+fn refund_increases_balance_and_update_delete_reverse_the_effect() {
+    let database = Database::open_in_memory().expect("open");
+    seed_account(&database);
+
+    let refund = tx("refund", 50_000, TransactionType::Refund, 100);
+    database.insert_transaction(&refund).expect("insert refund");
+    assert_eq!(database.account_balance("acct-1").expect("balance"), 50_000);
+
+    let updated = tx("refund", 75_000, TransactionType::Refund, 100);
+    database
+        .update_transaction(&updated)
+        .expect("update refund");
+    assert_eq!(database.account_balance("acct-1").expect("balance"), 75_000);
+
+    database
+        .delete_transaction("refund")
+        .expect("delete refund");
+    assert_eq!(database.account_balance("acct-1").expect("balance"), 0);
+}
+
+#[test]
+fn fees_affect_the_ledger_when_no_reported_balance_is_available() {
+    let database = Database::open_in_memory().expect("open");
+    seed_account(&database);
+    let mut expense = tx("cash-out", 100_000, TransactionType::Expense, 100);
+    expense.fee_minor = Some(1_850);
+
+    database.insert_transaction(&expense).expect("cash out");
+
+    assert_eq!(
+        database.account_balance("acct-1").expect("balance"),
+        -101_850
+    );
+}
+
+#[test]
+fn newest_reported_balance_is_anchor_for_out_of_order_imports() {
+    let database = Database::open_in_memory().expect("open");
+    seed_account(&database);
+
+    let mut newest = tx("newest", 50_000, TransactionType::Income, 200);
+    newest.balance_after_minor = Some(500_000);
+    database.insert_transaction(&newest).expect("newest anchor");
+    assert_eq!(
+        database.account_balance("acct-1").expect("balance"),
+        500_000
+    );
+
+    let mut older = tx("older", 100_000, TransactionType::Expense, 100);
+    older.balance_after_minor = Some(900_000);
+    database.insert_transaction(&older).expect("older import");
+    assert_eq!(
+        database.account_balance("acct-1").expect("balance"),
+        500_000,
+        "an older reported balance must not overwrite the newest account state"
+    );
+
+    let newer_expense = tx("after-anchor", 25_000, TransactionType::Expense, 300);
+    database
+        .insert_transaction(&newer_expense)
+        .expect("newer expense");
+    assert_eq!(
+        database.account_balance("acct-1").expect("balance"),
+        475_000
+    );
+}

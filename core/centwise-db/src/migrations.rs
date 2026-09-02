@@ -134,6 +134,26 @@ CREATE INDEX idx_transactions_reference
         name: "default smart rules",
         sql: r#"-- Default rules are seeded after category migrations run."#,
     },
+    Migration {
+        version: 4,
+        name: "sms category mappings and provenance",
+        sql: r#"
+ALTER TABLE transactions ADD COLUMN category_source TEXT;
+
+CREATE TABLE merchant_category_mappings (
+    normalized_merchant TEXT NOT NULL,
+    transaction_type TEXT NOT NULL,
+    category_id TEXT NOT NULL,
+    created_at_epoch_ms INTEGER NOT NULL,
+    updated_at_epoch_ms INTEGER NOT NULL,
+    PRIMARY KEY (normalized_merchant, transaction_type),
+    FOREIGN KEY (category_id) REFERENCES categories(id)
+);
+
+CREATE INDEX idx_merchant_category_mappings_category
+    ON merchant_category_mappings(category_id);
+"#,
+    },
 ];
 
 /// Latest schema version available in this build.
@@ -195,14 +215,8 @@ fn seed_default_rules(connection: &Connection) -> DbResult<()> {
 
 /// Inserts the default categories when the table is empty.
 fn seed_system_data(connection: &Connection) -> DbResult<()> {
-    let count: i64 =
-        connection.query_row("SELECT COUNT(*) FROM categories", [], |row| row.get(0))?;
-    if count > 0 {
-        return Ok(());
-    }
-
     let mut statement = connection.prepare(
-        "INSERT INTO categories (id, name, icon, color_hex, is_system, sort_order)
+        "INSERT OR IGNORE INTO categories (id, name, icon, color_hex, is_system, sort_order)
          VALUES (?1, ?2, ?3, ?4, 1, ?5)",
     )?;
 

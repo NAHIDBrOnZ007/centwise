@@ -83,6 +83,7 @@ fn test_fixture_file(relative_path: &str) {
                         "income" => TransactionType::Income,
                         "expense" => TransactionType::Expense,
                         "transfer" => TransactionType::Transfer,
+                        "refund" => TransactionType::Refund,
                         _ => panic!("Unknown expected type: {}", expected_type),
                     };
                     assert_eq!(
@@ -217,4 +218,9 @@ fn test_rocket_fixtures() {
 #[test]
 fn test_banks_generic_fixtures() {
     test_fixture_file("fixtures/sms/banks-generic.json");
+}
+
+#[test]
+fn test_bangla_fixtures() {
+    test_fixture_file("fixtures/sms/bangla.json");
 }

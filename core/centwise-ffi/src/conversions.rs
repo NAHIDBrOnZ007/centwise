@@ -184,12 +184,23 @@ pub(crate) fn smart_rule_record(
     }
 }
 
-pub(crate) fn sms_transaction_id(reference: Option<&str>, body: &str) -> String {
+pub(crate) fn sms_transaction_id(
+    reference: Option<&str>,
+    body: &str,
+    sender_hint: Option<&str>,
+) -> String {
     if let Some(reference) = reference.filter(|value| !value.trim().is_empty()) {
-        return format!("sms-{reference}");
+        return format!("sms-{}", reference.trim().to_uppercase());
     }
 
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
-    body.hash(&mut hasher);
+    sender_hint
+        .unwrap_or_default()
+        .trim()
+        .to_lowercase()
+        .hash(&mut hasher);
+    centwise_normalization::normalize_sms_text(body)
+        .to_lowercase()
+        .hash(&mut hasher);
     format!("sms-{:016x}", hasher.finish())
 }

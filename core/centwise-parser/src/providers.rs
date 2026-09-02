@@ -9,49 +9,13 @@ pub const PROVIDER_BANKS_GENERIC: &str = "banks-generic";
 /// Detects the canonical provider identifier from sender hint and message body.
 pub fn detect_provider(sender_hint: Option<&str>, body: &str) -> String {
     if let Some(sender) = sender_hint {
-        let s = sender.trim().to_lowercase();
-        if s.contains("bkash") {
-            return PROVIDER_BKASH.to_string();
-        }
-        if s.contains("nagad") {
-            return PROVIDER_NAGAD.to_string();
-        }
-        if s.contains("rocket") || s.contains("16216") {
-            return PROVIDER_ROCKET.to_string();
-        }
-        if s.contains("dbbl") {
+        let s = normalize_sender(sender);
+        if let Some(provider) = provider_for_sender(&s) {
             // If sender is DBBL but body mentions Rocket / 16216, it's rocket
-            if body.to_lowercase().contains("rocket") {
+            if provider == "dbbl" && body.to_lowercase().contains("rocket") {
                 return PROVIDER_ROCKET.to_string();
             }
-            return "dbbl".to_string();
-        }
-        if s.contains("city") {
-            return "city-bank".to_string();
-        }
-        if s.contains("brac") {
-            return "brac-bank".to_string();
-        }
-        if s.contains("ebl") || s.contains("eastern") {
-            return "ebl".to_string();
-        }
-        if s.contains("sonali") {
-            return "sonali-bank".to_string();
-        }
-        if s.contains("islami") || s.contains("ibbl") {
-            return "islami-bank".to_string();
-        }
-        if s.contains("pubali") {
-            return "pubali-bank".to_string();
-        }
-        if s.contains("ucb") {
-            return "ucb".to_string();
-        }
-        if s.contains("prime") {
-            return "prime-bank".to_string();
-        }
-        if s.contains("agrani") {
-            return "agrani-bank".to_string();
+            return provider.to_string();
         }
     }
 
@@ -72,12 +36,70 @@ pub fn detect_provider(sender_hint: Option<&str>, body: &str) -> String {
     if body_lower.contains("upay") {
         return "upay".to_string();
     }
-    if body_lower.contains("trxid") || body_lower.contains("txnid") {
-        return PROVIDER_BKASH.to_string();
-    }
     if body.contains("[Bank Name]") || body_lower.contains("a/c xxxx") {
         return PROVIDER_BANKS_GENERIC.to_string();
     }
 
     PROVIDER_BANKS_GENERIC.to_string()
+}
+
+fn normalize_sender(sender: &str) -> String {
+    sender
+        .trim()
+        .to_lowercase()
+        .chars()
+        .filter(|character| character.is_alphanumeric())
+        .collect()
+}
+
+fn provider_for_sender(sender: &str) -> Option<&'static str> {
+    match sender {
+        "bkash" | "bkashbd" => Some(PROVIDER_BKASH),
+        "nagad" | "nagadbd" => Some(PROVIDER_NAGAD),
+        "rocket" | "dbblrocket" | "16216" => Some(PROVIDER_ROCKET),
+        "dbbl" | "dutchbanglabank" | "dutchbanglabankplc" => Some("dbbl"),
+        "citybank" | "thecitybank" | "citybankplc" => Some("city-bank"),
+        "bracbank" | "bracbankplc" => Some("brac-bank"),
+        "ebl" | "easternbank" | "easternbankplc" => Some("ebl"),
+        "sonalibank" => Some("sonali-bank"),
+        "ibbl" | "islamibank" | "islamibankbangladesh" => Some("islami-bank"),
+        "pubalibank" => Some("pubali-bank"),
+        "ucb" | "ucbbank" => Some("ucb"),
+        "primebank" | "primebankplc" => Some("prime-bank"),
+        "agranibank" => Some("agrani-bank"),
+        _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn broad_commercial_sender_words_do_not_impersonate_banks() {
+        assert_eq!(
+            detect_provider(Some("City Mart"), "Payment Tk 100"),
+            PROVIDER_BANKS_GENERIC
+        );
+        assert_eq!(
+            detect_provider(Some("Prime Deals"), "Payment Tk 100"),
+            PROVIDER_BANKS_GENERIC
+        );
+    }
+
+    #[test]
+    fn normalized_known_sender_aliases_resolve_exactly() {
+        assert_eq!(detect_provider(Some("CITY BANK"), ""), "city-bank");
+        assert_eq!(detect_provider(Some("BRAC-BANK"), ""), "brac-bank");
+        assert_eq!(detect_provider(Some("DBBL"), ""), "dbbl");
+        assert_eq!(detect_provider(Some("bKash"), ""), PROVIDER_BKASH);
+    }
+
+    #[test]
+    fn generic_transaction_id_without_provider_evidence_stays_generic() {
+        assert_eq!(
+            detect_provider(None, "TxnID ABC123. Payment Tk 100."),
+            PROVIDER_BANKS_GENERIC
+        );
+    }
 }

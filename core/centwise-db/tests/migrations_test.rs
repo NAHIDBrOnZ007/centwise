@@ -5,6 +5,29 @@ use centwise_db::notify::DataObserver;
 use centwise_db::Database;
 use centwise_domain::{Account, NewTransaction, TransactionType};
 
+const EXPECTED_SYSTEM_CATEGORY_IDS: &[&str] = &[
+    "food",
+    "transport",
+    "shopping",
+    "bills",
+    "recharge",
+    "salary",
+    "income",
+    "refunds",
+    "cashback",
+    "interest-profit",
+    "dividends",
+    "fees",
+    "cash-withdrawal",
+    "housing",
+    "travel",
+    "transfer",
+    "health",
+    "entertainment",
+    "education",
+    "other",
+];
+
 struct CountingObserver {
     count: AtomicUsize,
 }
@@ -69,6 +92,66 @@ fn fresh_install_creates_latest_schema_and_seeds_categories() {
 
     let starter_rules = database.list_rules().expect("rules queryable");
     assert_eq!(starter_rules.len(), centwise_domain::default_rules().len());
+
+    let category_ids: Vec<_> = database
+        .list_categories()
+        .expect("categories")
+        .into_iter()
+        .map(|category| category.id)
+        .collect();
+    assert_eq!(category_ids, EXPECTED_SYSTEM_CATEGORY_IDS);
+}
+
+#[test]
+fn version_three_database_gains_internal_sms_intelligence_schema_without_data_loss() {
+    let file = tempfile::NamedTempFile::new().expect("temp file");
+    {
+        let connection = rusqlite::Connection::open(file.path()).expect("open legacy database");
+        connection
+            .execute_batch(include_str!("../schemas/v3.sql"))
+            .expect("install v3 schema");
+        connection
+            .pragma_update(None, "user_version", 3)
+            .expect("mark v3");
+        connection
+            .execute(
+                "INSERT INTO categories (id, name, icon, color_hex, is_system, sort_order)
+                 VALUES ('custom', 'Custom', 'star', '#000000', 0, 0)",
+                [],
+            )
+            .expect("custom category");
+    }
+
+    let database = Database::open(file.path()).expect("migrate");
+    let categories = database.list_categories().expect("categories");
+    assert!(categories.iter().any(|category| category.id == "custom"));
+    for expected in EXPECTED_SYSTEM_CATEGORY_IDS {
+        assert!(
+            categories.iter().any(|category| category.id == *expected),
+            "missing system category {expected}"
+        );
+    }
+    drop(database);
+
+    let connection = rusqlite::Connection::open(file.path()).expect("inspect migrated database");
+    let mapping_table_count: i64 = connection
+        .query_row(
+            "SELECT COUNT(*) FROM sqlite_master
+             WHERE type = 'table' AND name = 'merchant_category_mappings'",
+            [],
+            |row| row.get(0),
+        )
+        .expect("mapping table query");
+    assert_eq!(mapping_table_count, 1);
+
+    let has_category_source = connection
+        .prepare("PRAGMA table_info(transactions)")
+        .expect("transaction columns")
+        .query_map([], |row| row.get::<_, String>(1))
+        .expect("column rows")
+        .filter_map(Result::ok)
+        .any(|column| column == "category_source");
+    assert!(has_category_source);
 }
 
 #[test]
@@ -122,6 +205,30 @@ fn insert_updates_account_balance_atomically() {
         .read(|queries| queries.account_balance("acct-1"))
         .expect("balance");
     assert_eq!(balance, 75_000);
+}
+
+#[test]
+fn category_provenance_is_stored_and_can_be_updated_internally() {
+    let database = Database::open_in_memory().expect("open");
+    database
+        .write(|queries| {
+            queries.insert_account(&test_account())?;
+            queries.insert_transaction_with_category_source(
+                &test_transaction("tx-source", 1_000, TransactionType::Expense),
+                Some("system"),
+            )?;
+            assert_eq!(
+                queries.transaction_category_source("tx-source")?,
+                Some("system".into())
+            );
+            queries.set_transaction_category_source("tx-source", "user_correction")?;
+            assert_eq!(
+                queries.transaction_category_source("tx-source")?,
+                Some("user_correction".into())
+            );
+            Ok(())
+        })
+        .expect("provenance");
 }
 
 #[test]

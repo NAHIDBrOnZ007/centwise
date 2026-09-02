@@ -7,8 +7,35 @@ use crate::error::{DbError, DbResult};
 use crate::queries::{now_epoch_ms, Queries};
 
 impl<'a> Queries<'a> {
+    pub fn transaction_category_source(&self, id: &str) -> DbResult<Option<String>> {
+        self.connection
+            .query_row(
+                "SELECT category_source FROM transactions WHERE id = ?1",
+                params![id],
+                |row| row.get(0),
+            )
+            .optional()
+            .map(|source| source.flatten())
+            .map_err(Into::into)
+    }
+
+    pub fn set_transaction_category_source(&self, id: &str, source: &str) -> DbResult<bool> {
+        Ok(self.connection.execute(
+            "UPDATE transactions SET category_source = ?1 WHERE id = ?2",
+            params![source, id],
+        )? == 1)
+    }
+
     /// Inserts a transaction and updates the account balance in one atomic step.
     pub fn insert_transaction(&self, transaction: &NewTransaction) -> DbResult<()> {
+        self.insert_transaction_with_category_source(transaction, None)
+    }
+
+    pub fn insert_transaction_with_category_source(
+        &self,
+        transaction: &NewTransaction,
+        category_source: Option<&str>,
+    ) -> DbResult<()> {
         if transaction.amount_minor < 0 {
             return Err(DbError::Invalid("amount_minor must not be negative".into()));
         }
@@ -28,13 +55,15 @@ impl<'a> Queries<'a> {
             }
         }
 
+        let latest_reported_at = self.latest_reported_balance_at(&transaction.account_id)?;
         let now = now_epoch_ms();
         let affected = self.connection.execute(
             "INSERT INTO transactions (
                 id, title, amount_minor, currency, transaction_type, category_id,
                 occurred_at_epoch_ms, account_id, reference, balance_after_minor,
-                notes, raw_sms, fee_minor, is_auto_tracked, created_at_epoch_ms
-            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)",
+                notes, raw_sms, fee_minor, is_auto_tracked, created_at_epoch_ms,
+                category_source
+            ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)",
             params![
                 transaction.id,
                 transaction.title,
@@ -50,7 +79,8 @@ impl<'a> Queries<'a> {
                 transaction.raw_sms,
                 transaction.fee_minor,
                 transaction.is_auto_tracked as i64,
-                now
+                now,
+                category_source
             ],
         )?;
 
@@ -58,14 +88,20 @@ impl<'a> Queries<'a> {
             return Err(DbError::Sqlite("insert affected no rows".into()));
         }
 
-        // Adjust account balance in the same connection transaction context.
-        let delta = match transaction.transaction_type {
-            TransactionType::Income => transaction.amount_minor,
-            TransactionType::Expense | TransactionType::Refund => -transaction.amount_minor,
-            TransactionType::Transfer => 0,
-        };
-
-        if delta != 0 {
+        if transaction.balance_after_minor.is_some()
+            && latest_reported_at.is_none_or(|latest| transaction.occurred_at_epoch_ms >= latest)
+        {
+            self.connection.execute(
+                "UPDATE accounts SET balance_minor = ?1 WHERE id = ?2",
+                params![transaction.balance_after_minor, transaction.account_id],
+            )?;
+        } else if latest_reported_at.is_none_or(|latest| transaction.occurred_at_epoch_ms > latest)
+        {
+            let delta = transaction_balance_delta(
+                transaction.transaction_type,
+                transaction.amount_minor,
+                transaction.fee_minor,
+            );
             self.connection.execute(
                 "UPDATE accounts SET balance_minor = balance_minor + ?1 WHERE id = ?2",
                 params![delta, transaction.account_id],
@@ -80,16 +116,16 @@ impl<'a> Queries<'a> {
             return Err(DbError::Invalid("amount_minor must not be negative".into()));
         }
 
-        let stored: Option<(i64, String, String)> = self
+        let stored: Option<(i64, String, String, Option<i64>)> = self
             .connection
             .query_row(
-                "SELECT amount_minor, transaction_type, account_id
+                "SELECT amount_minor, transaction_type, account_id, fee_minor
                  FROM transactions WHERE id = ?1",
                 params![transaction.id],
-                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
             )
             .optional()?;
-        let Some((old_amount, old_type, old_account_id)) = stored else {
+        let Some((old_amount, old_type, old_account_id, old_fee)) = stored else {
             return Ok(false);
         };
 
@@ -107,8 +143,12 @@ impl<'a> Queries<'a> {
 
         let old_type = TransactionType::from_str_value(&old_type)
             .ok_or_else(|| DbError::Corrupt(format!("unknown transaction type: {old_type}")))?;
-        let old_delta = balance_delta(old_type, old_amount);
-        let new_delta = balance_delta(transaction.transaction_type, transaction.amount_minor);
+        let old_delta = transaction_balance_delta(old_type, old_amount, old_fee);
+        let new_delta = transaction_balance_delta(
+            transaction.transaction_type,
+            transaction.amount_minor,
+            transaction.fee_minor,
+        );
 
         let changed = self.connection.execute(
             "UPDATE transactions SET title = ?1, amount_minor = ?2, currency = ?3,
@@ -158,27 +198,24 @@ impl<'a> Queries<'a> {
 
     /// Deletes a transaction and reverses its balance effect.
     pub fn delete_transaction(&self, id: &str) -> DbResult<bool> {
-        let stored: Option<(i64, String, String)> = self
+        let stored: Option<(i64, String, String, Option<i64>)> = self
             .connection
             .query_row(
-                "SELECT amount_minor, transaction_type, account_id FROM transactions WHERE id = ?1",
+                "SELECT amount_minor, transaction_type, account_id, fee_minor
+                 FROM transactions WHERE id = ?1",
                 params![id],
-                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
             )
             .optional()?;
 
-        let Some((amount_minor, type_value, account_id)) = stored else {
+        let Some((amount_minor, type_value, account_id, fee_minor)) = stored else {
             return Ok(false);
         };
 
         let transaction_type = TransactionType::from_str_value(&type_value)
             .ok_or_else(|| DbError::Corrupt(format!("unknown transaction type: {type_value}")))?;
 
-        let delta = match transaction_type {
-            TransactionType::Income => -amount_minor,
-            TransactionType::Expense | TransactionType::Refund => amount_minor,
-            TransactionType::Transfer => 0,
-        };
+        let delta = -transaction_balance_delta(transaction_type, amount_minor, fee_minor);
 
         self.connection
             .execute("DELETE FROM transactions WHERE id = ?1", params![id])?;
@@ -298,13 +335,29 @@ impl<'a> Queries<'a> {
         }
         Ok(summaries)
     }
+
+    fn latest_reported_balance_at(&self, account_id: &str) -> DbResult<Option<i64>> {
+        self.connection
+            .query_row(
+                "SELECT MAX(occurred_at_epoch_ms) FROM transactions
+                 WHERE account_id = ?1 AND balance_after_minor IS NOT NULL",
+                params![account_id],
+                |row| row.get(0),
+            )
+            .map_err(Into::into)
+    }
 }
 
-pub(crate) fn balance_delta(transaction_type: TransactionType, amount_minor: i64) -> i64 {
+fn transaction_balance_delta(
+    transaction_type: TransactionType,
+    amount_minor: i64,
+    fee_minor: Option<i64>,
+) -> i64 {
+    let fee = fee_minor.unwrap_or(0);
     match transaction_type {
-        TransactionType::Income => amount_minor,
-        TransactionType::Expense | TransactionType::Refund => -amount_minor,
-        TransactionType::Transfer => 0,
+        TransactionType::Income | TransactionType::Refund => amount_minor - fee,
+        TransactionType::Expense => -amount_minor - fee,
+        TransactionType::Transfer => -fee,
     }
 }
 

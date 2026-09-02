@@ -228,6 +228,7 @@ version = "0.1.0"
 dependencies = [
  "centwise-db",
  "centwise-domain",
+ "centwise-normalization",
  "centwise-parser",
  "uniffi",
 ]

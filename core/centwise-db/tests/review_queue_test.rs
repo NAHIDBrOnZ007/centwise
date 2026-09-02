@@ -99,7 +99,7 @@ fn converting_review_item_is_atomic_and_updates_balance() {
         .is_empty());
     assert_eq!(
         database.account_balance("acct-1").expect("balance"),
-        -65_000
+        1_425_000
     );
     let transactions = database.list_transactions(10).expect("transactions");
     assert_eq!(transactions, vec![transaction().into_stored()]);

@@ -130,6 +130,22 @@ impl CentwiseCore {
 
         self.database
             .write(|queries| {
+                let stored = queries.get_transaction(&transaction.id)?;
+                if let Some(stored) = stored.as_ref().filter(|stored| stored.is_auto_tracked) {
+                    transaction.reference = transaction
+                        .reference
+                        .take()
+                        .or_else(|| stored.reference.clone());
+                    transaction.balance_after_minor = transaction
+                        .balance_after_minor
+                        .or(stored.balance_after_minor);
+                    transaction.fee_minor = transaction.fee_minor.or(stored.fee_minor);
+                    transaction.raw_sms = transaction
+                        .raw_sms
+                        .take()
+                        .or_else(|| stored.raw_sms.clone());
+                    transaction.is_auto_tracked = true;
+                }
                 if transaction.account_id.trim().is_empty()
                     || !queries.account_exists(&transaction.account_id)?
                 {
@@ -143,7 +159,34 @@ impl CentwiseCore {
                         account_name,
                     )?;
                 }
-                queries.update_transaction(&transaction)
+                let category_changed = stored
+                    .as_ref()
+                    .is_some_and(|stored| stored.category_id != transaction.category_id);
+                let updated = queries.update_transaction(&transaction)?;
+                if updated && category_changed && transaction.is_auto_tracked {
+                    queries.set_transaction_category_source(&transaction.id, "user_correction")?;
+                    if let Some(raw_sms) = transaction.raw_sms.as_deref() {
+                        if let centwise_parser::ParseOutcome::Parsed(parsed) =
+                            centwise_parser::parse_sms(raw_sms, None)
+                        {
+                            if let Some(merchant) = parsed
+                                .merchant
+                                .as_deref()
+                                .or(parsed.party.as_deref())
+                                .filter(|merchant| {
+                                    is_learnable_merchant(merchant, &parsed.provider_id)
+                                })
+                            {
+                                queries.upsert_merchant_category_mapping(
+                                    merchant,
+                                    transaction.transaction_type,
+                                    &transaction.category_id,
+                                )?;
+                            }
+                        }
+                    }
+                }
+                Ok(updated)
             })
             .map_err(CentwiseError::from)
     }
@@ -309,17 +352,29 @@ impl CentwiseCore {
                         .as_deref()
                         .or(parsed.party.as_deref())
                         .unwrap_or_default();
+                    let mapped_category_id = queries
+                        .matching_merchant_category(merchant_or_party, parsed.transaction_type)?;
                     let rule_category_id = queries
                         .matching_rule(merchant_or_party, parsed.transaction_type)?
                         .map(|rule| rule.category_id);
-                    let category_id = rule_category_id
-                        .clone()
-                        .or_else(|| parsed.category_id.clone())
+                    let (category_id, category_source) = mapped_category_id
+                        .map(|category| (category, "learned_mapping"))
+                        .or_else(|| {
+                            rule_category_id
+                                .clone()
+                                .map(|category| (category, "smart_rule"))
+                        })
+                        .or_else(|| {
+                            parsed
+                                .category_id
+                                .clone()
+                                .map(|category| (category, "system"))
+                        })
                         .unwrap_or_else(|| {
                             if parsed.transaction_type == domain::TransactionType::Income {
-                                "salary".into()
+                                ("income".into(), "fallback")
                             } else {
-                                "other".into()
+                                ("other".into(), "fallback")
                             }
                         });
 
@@ -336,7 +391,8 @@ impl CentwiseCore {
                     };
 
                     if let Some(account_id) = target_account_id {
-                        let transaction_id = sms_transaction_id(reference.as_deref(), &body);
+                        let transaction_id =
+                            sms_transaction_id(reference.as_deref(), &body, sender_hint.as_deref());
                         let transaction = domain::NewTransaction {
                             id: transaction_id.clone(),
                             title: parsed
@@ -358,7 +414,10 @@ impl CentwiseCore {
                             is_auto_tracked: true,
                         };
 
-                        match queries.insert_transaction(&transaction) {
+                        match queries.insert_transaction_with_category_source(
+                            &transaction,
+                            Some(category_source),
+                        ) {
                             Ok(()) => Ok(SmsIngestResult {
                                 status: SmsIngestStatus::Inserted,
                                 transaction_id: Some(transaction_id),
@@ -377,8 +436,10 @@ impl CentwiseCore {
                             Err(error) => Err(error),
                         }
                     } else {
-                        let review_id =
-                            format!("review-{}", sms_transaction_id(reference.as_deref(), &body));
+                        let review_id = format!(
+                            "review-{}",
+                            sms_transaction_id(reference.as_deref(), &body, sender_hint.as_deref(),)
+                        );
                         let item = domain::ReviewQueueItem {
                             id: review_id.clone(),
                             sender: sender_hint.clone(),
@@ -415,12 +476,15 @@ impl CentwiseCore {
                     }
                 }
                 centwise_parser::ParseOutcome::Rejected(reason) => {
-                    if !matches!(reason, centwise_parser::RejectReason::NoAmountFound)
-                        || !centwise_parser::is_likely_financial_review(
-                            &body,
-                            sender_hint.as_deref(),
-                        )
-                    {
+                    if !matches!(
+                        reason,
+                        centwise_parser::RejectReason::NoAmountFound
+                            | centwise_parser::RejectReason::NotATransaction
+                            | centwise_parser::RejectReason::UnsupportedProvider
+                    ) || !centwise_parser::is_likely_financial_review(
+                        &body,
+                        sender_hint.as_deref(),
+                    ) {
                         return Ok(SmsIngestResult {
                             status: SmsIngestStatus::Ignored,
                             transaction_id: None,
@@ -429,7 +493,10 @@ impl CentwiseCore {
                         });
                     }
 
-                    let review_id = format!("review-{}", sms_transaction_id(None, &body));
+                    let review_id = format!(
+                        "review-{}",
+                        sms_transaction_id(None, &body, sender_hint.as_deref())
+                    );
                     let item = domain::ReviewQueueItem {
                         id: review_id.clone(),
                         sender: sender_hint.clone(),
@@ -474,16 +541,38 @@ impl CentwiseCore {
         &self,
         messages: Vec<SmsBatchMessage>,
     ) -> Result<Vec<SmsIngestResult>, CentwiseError> {
-        messages
+        let parsed = messages
             .into_iter()
             .map(|message| {
-                self.ingest_sms(
+                let outcome =
+                    centwise_parser::parse_sms(&message.body, message.sender_hint.as_deref());
+                (
                     message.body,
                     message.sender_hint,
                     message.occurred_at_epoch_ms,
+                    outcome,
                 )
             })
-            .collect()
+            .collect::<Vec<_>>();
+
+        self.database
+            .write(|queries| {
+                let rules = queries.list_rules()?;
+                parsed
+                    .into_iter()
+                    .map(|(body, sender_hint, occurred_at_epoch_ms, outcome)| {
+                        crate::ingestion::ingest_sms_in_transaction(
+                            queries,
+                            body,
+                            sender_hint,
+                            occurred_at_epoch_ms,
+                            outcome,
+                            &rules,
+                        )
+                    })
+                    .collect()
+            })
+            .map_err(CentwiseError::from)
     }
 
     pub fn list_review_queue(&self, limit: u32) -> Result<Vec<ReviewQueueRecord>, CentwiseError> {
@@ -649,7 +738,7 @@ impl CentwiseCore {
     }
 }
 
-fn default_account_name(provider: &str) -> &str {
+pub(crate) fn default_account_name(provider: &str) -> &str {
     match provider {
         "bkash" => "bKash",
         "nagad" => "Nagad",
@@ -663,4 +752,24 @@ fn default_account_name(provider: &str) -> &str {
         "cash" => "Cash / Unassigned",
         _ => "Primary Account",
     }
+}
+
+fn is_learnable_merchant(merchant: &str, provider_id: &str) -> bool {
+    let normalized: String = merchant
+        .trim()
+        .to_lowercase()
+        .chars()
+        .filter(|character| character.is_alphanumeric())
+        .collect();
+    let provider: String = provider_id
+        .chars()
+        .filter(|character| character.is_alphanumeric())
+        .collect();
+    normalized.len() >= 3
+        && normalized.chars().any(char::is_alphabetic)
+        && normalized != provider
+        && !matches!(
+            normalized.as_str(),
+            "bkash" | "nagad" | "rocket" | "upay" | "cellfin" | "merchant"
+        )
 }

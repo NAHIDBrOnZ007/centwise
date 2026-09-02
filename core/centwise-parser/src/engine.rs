@@ -8,6 +8,51 @@ use centwise_domain::TransactionType;
 use centwise_normalization::{normalize_sms_text, parse_amount_minor};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use std::sync::LazyLock;
+
+static REFERENCE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\b(?:TrxID|TxnID|Ref|Txn\s*ID)[:\s]+([A-Za-z0-9]+)")
+        .expect("valid reference regex")
+});
+static FEE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\b(?:Fee|Charge)(?:\s*(?:Tk|৳|BDT|[:]))?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)")
+        .expect("valid fee regex")
+});
+static BALANCE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        r"(?i)(?:Available\s+Balance|Avail(?:\.|\s+)?Bal(?:ance)?|Balance|ব্যালেন্স)(?:\s*[:\-])?\s*(?:Tk|৳|BDT)?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)",
+    )
+    .expect("valid balance regex")
+});
+static VERB_AMOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        r"(?i)(?:Cash\s+In|Cash\s+Out|Send\s+Money|Payment|Recharge|Withdrawal|credited\s+with|debited\s+with|EMI\s+of|Cashback(?:/Interest)?\s+of|received|credited\s+to|deposited|transferred)\s+(?:of\s+)?(?:Tk\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)",
+    )
+    .expect("valid verb amount regex")
+});
+static CURRENCY_AMOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)(?:Tk|৳|BDT)\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)")
+        .expect("valid currency amount regex")
+});
+static TO_SUCCESS_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\bto\s+([0-9A-Za-z\s'.-]+?)\s+successful")
+        .expect("valid successful party regex")
+});
+static FROM_SUCCESS_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\bfrom\s+([0-9A-Za-z\s'.-]+?)(?:\s+successful|\s*[.,])")
+        .expect("valid source party regex")
+});
+static TO_GENERAL_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\bto\s+([0-9A-Za-z\s'.-]+?)(?:\s+on|\.|\,|Fee|Balance|TrxID)")
+        .expect("valid general party regex")
+});
+static BANK_ACCOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\bA/C\s*(?:[:\s])?\s*([A-Za-z0-9]{4,15})\b").expect("valid account regex")
+});
+static DATE_TIME_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"([0-9]{2}/[0-9]{2}/[0-9]{4}(?:\s+[0-9]{2}:[0-9]{2}(?::[0-9]{2})?)?)")
+        .expect("valid date regex")
+});
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ParsedTransaction {
@@ -101,11 +146,8 @@ pub fn parse_sms(body: &str, sender_hint: Option<&str>) -> ParseOutcome {
     let raw_date = extract_date_time(trimmed);
 
     // 10. Resolve Merchant and Category
-    let (merchant, category_id) = resolve_categorization(
-        party.as_deref(),
-        trimmed,
-        transaction_type == TransactionType::Income,
-    );
+    let (merchant, category_id) =
+        resolve_categorization(party.as_deref(), trimmed, transaction_type);
 
     ParseOutcome::Parsed(Box::new(ParsedTransaction {
         provider_id: provider,
@@ -205,8 +247,7 @@ fn is_promotional_or_non_transaction(text: &str) -> bool {
 // ---------------------------------------------------------------------------
 
 fn extract_reference(text: &str) -> Option<String> {
-    let re = Regex::new(r"(?i)\b(?:TrxID|TxnID|Ref|Txn\s*ID)[:\s]+([A-Za-z0-9]+)").ok()?;
-    for cap in re.captures_iter(text) {
+    for cap in REFERENCE_RE.captures_iter(text) {
         if let Some(m) = cap.get(1) {
             let val = m.as_str().trim();
             if val.eq_ignore_ascii_case("not") || val.eq_ignore_ascii_case("na") {
@@ -219,11 +260,7 @@ fn extract_reference(text: &str) -> Option<String> {
 }
 
 fn extract_fee(text: &str) -> Option<i64> {
-    let re = Regex::new(
-        r"(?i)\b(?:Fee|Charge)(?:\s*(?:Tk|tk|TK|৳|BDT|[:]))?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)",
-    )
-    .ok()?;
-    if let Some(cap) = re.captures(text) {
+    if let Some(cap) = FEE_RE.captures(text) {
         if let Some(amt_match) = cap.get(1) {
             return parse_amount_minor(amt_match.as_str());
         }
@@ -232,11 +269,7 @@ fn extract_fee(text: &str) -> Option<i64> {
 }
 
 fn extract_balance(text: &str) -> Option<i64> {
-    let re = Regex::new(
-        r"(?i)\b(?:Available\s+Balance|Avail(?:\.|\s+)?Bal(?:ance)?|Balance)(?:\s*[:\-])?\s*(?:Tk|tk|TK|৳|BDT)?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)",
-    )
-    .ok()?;
-    if let Some(cap) = re.captures(text) {
+    if let Some(cap) = BALANCE_RE.captures(text) {
         if let Some(amt_match) = cap.get(1) {
             return parse_amount_minor(amt_match.as_str());
         }
@@ -246,11 +279,7 @@ fn extract_balance(text: &str) -> Option<i64> {
 
 fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -> Option<i64> {
     // 1. First priority: Look for amount directly attached to transaction verbs
-    let verb_regex = Regex::new(
-        r"(?i)(?:Cash\s+In|Cash\s+Out|Send\s+Money|Payment|Recharge|Withdrawal|credited\s+with|debited\s+with|EMI\s+of|Cashback(?:/Interest)?\s+of|received|credited\s+to|deposited|transferred)\s+(?:of\s+)?(?:Tk\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)"
-    ).ok()?;
-
-    if let Some(cap) = verb_regex.captures(text) {
+    if let Some(cap) = VERB_AMOUNT_RE.captures(text) {
         if let Some(amt_match) = cap.get(1) {
             if let Some(val) = parse_amount_minor(amt_match.as_str()) {
                 if val > 0 {
@@ -261,9 +290,7 @@ fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -> Op
     }
 
     // 2. Second priority: Look for amounts starting with Tk / ৳ / BDT
-    let tk_regex =
-        Regex::new(r"(?i)\b(?:Tk|tk|TK|৳|BDT)\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)").ok()?;
-    for cap in tk_regex.captures_iter(text) {
+    for cap in CURRENCY_AMOUNT_RE.captures_iter(text) {
         if let Some(m) = cap.get(1) {
             if let Some(val) = parse_amount_minor(m.as_str()) {
                 // If this is the fee or balance, skip
@@ -284,13 +311,33 @@ fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -> Op
 }
 
 fn is_near_keyword(text: &str, pos: usize, keyword: &str) -> bool {
-    let start = pos.saturating_sub(20);
+    let mut start = pos.saturating_sub(20);
+    while start < pos && !text.is_char_boundary(start) {
+        start += 1;
+    }
     let slice = &text[start..pos];
     slice.to_lowercase().contains(keyword)
 }
 
 fn detect_transaction_type(text: &str) -> Option<TransactionType> {
     let lower = text.to_lowercase();
+
+    if lower.contains("refund")
+        || lower.contains("reversal")
+        || lower.contains("reversed")
+        || lower.contains("ফেরত")
+    {
+        return Some(TransactionType::Refund);
+    }
+
+    if lower.contains("between your own accounts")
+        || lower.contains("between own accounts")
+        || lower.contains("fund transfer")
+        || lower.contains("transferred")
+        || lower.contains("স্থানান্তর")
+    {
+        return Some(TransactionType::Transfer);
+    }
 
     // Income keywords
     if lower.contains("cash in")
@@ -301,6 +348,8 @@ fn detect_transaction_type(text: &str) -> Option<TransactionType> {
         || lower.contains("interest")
         || lower.contains("salary")
         || lower.contains("deposit")
+        || lower.contains("জমা হয়েছে")
+        || lower.contains("পেয়েছেন")
     {
         return Some(TransactionType::Income);
     }
@@ -316,6 +365,8 @@ fn detect_transaction_type(text: &str) -> Option<TransactionType> {
         || lower.contains("deducted")
         || lower.contains("purchase")
         || lower.contains("bill pay")
+        || lower.contains("খরচ")
+        || lower.contains("কাটা হয়েছে")
     {
         return Some(TransactionType::Expense);
     }
@@ -325,8 +376,7 @@ fn detect_transaction_type(text: &str) -> Option<TransactionType> {
 
 fn extract_party(text: &str) -> Option<String> {
     // bKash / Nagad pattern: "to <party> successful" or "from <party> successful"
-    let re_to_success = Regex::new(r"(?i)\bto\s+([0-9A-Za-z\s'.-]+?)\s+successful").ok()?;
-    if let Some(cap) = re_to_success.captures(text) {
+    if let Some(cap) = TO_SUCCESS_RE.captures(text) {
         if let Some(m) = cap.get(1) {
             let s = m.as_str().trim();
             if !s.is_empty() && !s.eq_ignore_ascii_case("your a/c") {
@@ -335,9 +385,7 @@ fn extract_party(text: &str) -> Option<String> {
         }
     }
 
-    let re_from_success =
-        Regex::new(r"(?i)\bfrom\s+([0-9A-Za-z\s'.-]+?)(?:\s+successful|\s*[.,])").ok()?;
-    if let Some(cap) = re_from_success.captures(text) {
+    if let Some(cap) = FROM_SUCCESS_RE.captures(text) {
         if let Some(m) = cap.get(1) {
             let s = m.as_str().trim();
             if !s.is_empty() && !s.to_lowercase().starts_with("a/c") {
@@ -347,9 +395,7 @@ fn extract_party(text: &str) -> Option<String> {
     }
 
     // Fallback: "to <party>." or "to <party> on"
-    let re_to_general =
-        Regex::new(r"(?i)\bto\s+([0-9A-Za-z\s'.-]+?)(?:\s+on|\.|\,|Fee|Balance|TrxID)").ok()?;
-    if let Some(cap) = re_to_general.captures(text) {
+    if let Some(cap) = TO_GENERAL_RE.captures(text) {
         if let Some(m) = cap.get(1) {
             let s = m.as_str().trim();
             if !s.is_empty()
@@ -366,22 +412,19 @@ fn extract_party(text: &str) -> Option<String> {
 
 fn extract_account_info(text: &str) -> (Option<String>, Option<String>) {
     // Check for "A/C XXXX1234", "A/C: XXXX1234", or a masked wallet number.
-    let re_bank_ac = Regex::new(r"(?i)\bA/C\s*(?:[:\s])?\s*([A-Za-z0-9]{4,15})\b").ok();
-    if let Some(re) = re_bank_ac {
-        if let Some(cap) = re.captures(text) {
-            if let Some(m) = cap.get(1) {
-                let account = m.as_str().trim();
-                let last_four = account.strip_prefix("XXXX").unwrap_or(account);
-                if last_four.len() == 4
-                    && last_four
-                        .chars()
-                        .all(|character| character.is_ascii_digit())
-                {
-                    return (Some(last_four.to_string()), None);
-                }
-                // Could be a masked wallet number (e.g. Rocket 017XXXXXXXXX).
-                return (None, Some(account.to_string()));
+    if let Some(cap) = BANK_ACCOUNT_RE.captures(text) {
+        if let Some(m) = cap.get(1) {
+            let account = m.as_str().trim();
+            let last_four = account.strip_prefix("XXXX").unwrap_or(account);
+            if last_four.len() == 4
+                && last_four
+                    .chars()
+                    .all(|character| character.is_ascii_digit())
+            {
+                return (Some(last_four.to_string()), None);
             }
+            // Could be a masked wallet number (e.g. Rocket 017XXXXXXXXX).
+            return (None, Some(account.to_string()));
         }
     }
 
@@ -389,9 +432,7 @@ fn extract_account_info(text: &str) -> (Option<String>, Option<String>) {
 }
 
 fn extract_date_time(text: &str) -> Option<String> {
-    let re =
-        Regex::new(r"([0-9]{2}/[0-9]{2}/[0-9]{4}(?:\s+[0-9]{2}:[0-9]{2}(?::[0-9]{2})?)?)").ok()?;
-    if let Some(cap) = re.captures(text) {
+    if let Some(cap) = DATE_TIME_RE.captures(text) {
         if let Some(m) = cap.get(1) {
             return Some(m.as_str().trim().to_string());
         }
@@ -402,7 +443,7 @@ fn extract_date_time(text: &str) -> Option<String> {
 fn resolve_categorization(
     party: Option<&str>,
     body: &str,
-    is_income: bool,
+    transaction_type: TransactionType,
 ) -> (Option<String>, Option<String>) {
     // 1. If party has a known merchant
     if let Some(p) = party {
@@ -417,16 +458,17 @@ fn resolve_categorization(
     }
 
     // 3. Fallback to keyword / type based categorization
-    let category = categorize_by_type_or_keywords(body, is_income);
+    let category = categorize_by_type_or_keywords(body, transaction_type);
     (None, category)
 }
 
 #[cfg(test)]
 mod tests {
     use super::{
-        extract_account_info, extract_balance, extract_fee, extract_party,
+        detect_transaction_type, extract_account_info, extract_balance, extract_fee, extract_party,
         is_likely_financial_review, parse_sms, ParseOutcome,
     };
+    use centwise_domain::TransactionType;
     use centwise_normalization::normalize_sms_text;
 
     #[test]
@@ -501,5 +543,29 @@ mod tests {
             "Your bank account balance is available",
             Some("BANK")
         ));
+    }
+
+    #[test]
+    fn detects_refunds_before_generic_credits() {
+        assert_eq!(
+            detect_transaction_type("Purchase refund of Tk 500 credited to your A/C"),
+            Some(TransactionType::Refund)
+        );
+        assert_eq!(
+            detect_transaction_type("Tk 500 ফেরত দেওয়া হয়েছে"),
+            Some(TransactionType::Refund)
+        );
+    }
+
+    #[test]
+    fn detects_explicit_transfers_without_treating_send_money_as_transfer() {
+        assert_eq!(
+            detect_transaction_type("Transferred Tk 5,000 between your own accounts"),
+            Some(TransactionType::Transfer)
+        );
+        assert_eq!(
+            detect_transaction_type("Send Money Tk 500 to 017XXXXXXXX successful"),
+            Some(TransactionType::Expense)
+        );
     }
 }
