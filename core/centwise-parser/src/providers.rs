@@ -63,8 +63,17 @@ pub fn detect_provider(sender_hint: Option<&str>, body: &str) -> String {
     if body_lower.contains("nagad") {
         return PROVIDER_NAGAD.to_string();
     }
-    if body_lower.contains("rocket") {
+    if body_lower.contains("rocket") || body_lower.contains("16216") {
         return PROVIDER_ROCKET.to_string();
+    }
+    if body_lower.contains("cellfin") {
+        return "cellfin".to_string();
+    }
+    if body_lower.contains("upay") {
+        return "upay".to_string();
+    }
+    if body_lower.contains("trxid") || body_lower.contains("txnid") {
+        return PROVIDER_BKASH.to_string();
     }
     if body.contains("[Bank Name]") || body_lower.contains("a/c xxxx") {
         return PROVIDER_BANKS_GENERIC.to_string();

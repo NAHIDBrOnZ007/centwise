@@ -204,6 +204,40 @@ pub struct HomeDashboardRecord {
     pub recent_transactions: Vec<TransactionSummaryRecord>,
 }
 
+#[derive(uniffi::Record)]
+pub struct AnalyticsCategoryRecord {
+    pub category_id: String,
+    pub category_name: String,
+    pub category_icon: String,
+    pub category_color_hex: String,
+    pub total_minor: i64,
+    pub transaction_count: i64,
+}
+
+#[derive(uniffi::Record)]
+pub struct AnalyticsMerchantRecord {
+    pub merchant: String,
+    pub total_minor: i64,
+    pub transaction_count: i64,
+}
+
+#[derive(uniffi::Record)]
+pub struct AnalyticsMonthlyRecord {
+    pub year: i32,
+    pub month: u32,
+    pub total_expense_minor: i64,
+}
+
+#[derive(uniffi::Record)]
+pub struct AnalyticsSnapshotRecord {
+    pub total_income_minor: i64,
+    pub total_expense_minor: i64,
+    pub transaction_count: i64,
+    pub category_breakdown: Vec<AnalyticsCategoryRecord>,
+    pub top_merchants: Vec<AnalyticsMerchantRecord>,
+    pub monthly_trends: Vec<AnalyticsMonthlyRecord>,
+}
+
 /// Outcome of the Rust-owned SMS ingestion pipeline.
 #[derive(Debug, PartialEq, Eq, uniffi::Enum)]
 pub enum SmsIngestStatus {

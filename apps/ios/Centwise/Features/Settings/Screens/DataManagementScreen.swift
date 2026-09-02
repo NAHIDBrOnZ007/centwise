@@ -8,6 +8,7 @@ public struct DataManagementScreen: View {
     @State private var showResetAlert = false
     @State private var showExportSheet = false
     @State private var toastItem: ToastItem?
+    @State private var isDatabaseOperationInProgress = false
 
     public init() {}
 
@@ -76,24 +77,35 @@ public struct DataManagementScreen: View {
         .alert("Load Demo Sample Data?", isPresented: $showLoadDemoAlert) {
             Button("Cancel", role: .cancel) {}
             Button("Load Demo Data") {
-                let summary = repository.loadSampleDemoData()
-                themeManager.triggerHapticFeedback(.success)
-                if let summary {
-                    toastItem = ToastItem("Sample data loaded (\(summary.transactions) transactions)", style: .success)
-                } else {
-                    toastItem = ToastItem("Could not load demo data", style: .error)
+                isDatabaseOperationInProgress = true
+                repository.loadSampleDemoDataAsync { summary in
+                    isDatabaseOperationInProgress = false
+                    themeManager.triggerHapticFeedback(summary == nil ? .warning : .success)
+                    if let summary {
+                        toastItem = ToastItem("Sample data loaded (\(summary.transactions) transactions)", style: .success)
+                    } else {
+                        toastItem = ToastItem("Could not load demo data", style: .error)
+                    }
                 }
             }
+            .disabled(isDatabaseOperationInProgress)
         } message: {
             Text("This will populate your database with realistic sample transactions, accounts, budgets, and subscriptions for previewing Centwise.")
         }
         .alert("Wipe Database & Reset?", isPresented: $showResetAlert) {
             Button("Cancel", role: .cancel) {}
             Button("Wipe Everything", role: .destructive) {
-                repository.resetToEmptyDatabase()
-                themeManager.triggerHapticFeedback(.warning)
-                toastItem = ToastItem("Database wiped. Starting completely clean.", style: .info)
+                isDatabaseOperationInProgress = true
+                repository.resetToEmptyDatabaseAsync { succeeded in
+                    isDatabaseOperationInProgress = false
+                    themeManager.triggerHapticFeedback(succeeded ? .warning : .error)
+                    toastItem = ToastItem(
+                        succeeded ? "Database wiped. Starting completely clean." : "Could not reset database",
+                        style: succeeded ? .info : .error
+                    )
+                }
             }
+            .disabled(isDatabaseOperationInProgress)
         } message: {
             Text("Are you sure you want to delete all transactions, budgets, and subscriptions? This action cannot be undone.")
         }

@@ -26,6 +26,25 @@ public enum CentwiseNotifications {
         UNUserNotificationCenter.current().add(request)
     }
 
+    /// Shows a notification for a background SMS tracked transaction.
+    public static func notifyIngestedTransaction(title: String, amountMinor: Int64, isIncome: Bool, categoryName: String, id: String) {
+        let content = UNMutableNotificationContent()
+        content.title = "Transaction Tracked"
+
+        let sign = isIncome ? "+" : "-"
+        let amount = Double(amountMinor) / 100.0
+        content.body = "\(title) — \(categoryName) • \(sign)\(CurrencyFormatter.shared.formatBDT(amount))"
+        content.sound = .default
+
+        let request = UNNotificationRequest(
+            identifier: "centwise-transaction-\(id)",
+            content: content,
+            trigger: nil
+        )
+
+        UNUserNotificationCenter.current().add(request)
+    }
+
     /// Shows a budget warning notification when spending crosses a threshold.
     public static func notifyBudgetWarning(categoryName: String, usedPercent: Double) {
         let content = UNMutableNotificationContent()

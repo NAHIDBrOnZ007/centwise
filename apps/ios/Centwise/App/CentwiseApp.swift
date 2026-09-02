@@ -22,8 +22,8 @@ struct CentwiseApp: App {
             .preferredColorScheme(themeManager.colorScheme)
             .environment(\.isAmoledActive, themeManager.isAmoledActive)
             .onAppear {
-                CentwiseRustBackend.initialize()
-                TransactionRepository.shared.loadFromRust()
+                // Repository initialization owns the first background refresh.
+                _ = TransactionRepository.shared
                 _ = ReviewQueueRepository.shared
                 if appLockManager.appLockEnabled {
                     appLockManager.lockNow()

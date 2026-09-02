@@ -123,6 +123,21 @@ fn category_breakdown_groups_and_orders_expenses() {
 }
 
 #[test]
+fn analytics_snapshot_is_zeroed_for_an_empty_period() {
+    let database = Database::open_in_memory().expect("open");
+
+    let snapshot = database
+        .read(|queries| queries.analytics_snapshot(0, 1, 6, "all"))
+        .expect("empty snapshot");
+
+    assert_eq!(snapshot.total_income_minor, 0);
+    assert_eq!(snapshot.total_expense_minor, 0);
+    assert_eq!(snapshot.transaction_count, 0);
+    assert!(snapshot.category_breakdown.is_empty());
+    assert!(snapshot.top_merchants.is_empty());
+}
+
+#[test]
 fn top_merchants_groups_by_title() {
     let database = seeded_database();
     let jan = month_start(2026, 1);

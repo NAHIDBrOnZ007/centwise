@@ -84,19 +84,27 @@ the Android layer only captures SMS and adapts the result for the UI.
 
 `apps/ios/project.yml` is the source of truth for the Xcode project. On a Mac:
 
-1. Build the Rust simulator library:
+1. Build the Rust libraries and generate the Swift bindings:
 
    ```bash
-   rustup target add aarch64-apple-ios-sim
+   rustup target add aarch64-apple-ios aarch64-apple-ios-sim x86_64-apple-ios
    cd core
    cargo build --release --target aarch64-apple-ios-sim -p centwise-ffi
+   cargo build --release --target x86_64-apple-ios -p centwise-ffi
+   cargo build --release --target aarch64-apple-ios -p centwise-ffi
    cargo run -p uniffi-bindgen -- generate \
      --library target/aarch64-apple-ios-sim/release/libcentwise_ffi.a \
      --language swift \
      --config centwise-ffi/uniffi.toml \
      --out-dir ../apps/ios/Centwise/Core/FFI/generated
-   cp target/aarch64-apple-ios-sim/release/libcentwise_ffi.a \
-     ../apps/ios/Centwise/Core/FFI/lib/libcentwise_ffi.a
+   mkdir -p ../apps/ios/Centwise/Core/FFI/lib/iphonesimulator \
+     ../apps/ios/Centwise/Core/FFI/lib/iphoneos
+   xcrun lipo -create \
+     target/aarch64-apple-ios-sim/release/libcentwise_ffi.a \
+     target/x86_64-apple-ios/release/libcentwise_ffi.a \
+     -output ../apps/ios/Centwise/Core/FFI/lib/iphonesimulator/libcentwise_ffi.a
+   cp target/aarch64-apple-ios/release/libcentwise_ffi.a \
+     ../apps/ios/Centwise/Core/FFI/lib/iphoneos/libcentwise_ffi.a
    ```
 
 2. Generate the project and open it:
@@ -108,9 +116,9 @@ the Android layer only captures SMS and adapts the result for the UI.
    open Centwise.xcodeproj
    ```
 
-3. Select an iPhone Simulator and run (`Cmd+R`). The simulator library is not
-   valid for a physical iPhone; build `aarch64-apple-ios` separately for a
-   device.
+3. Select an iPhone Simulator and run (`Cmd+R`). The fat simulator archive
+   supports Apple Silicon and Intel simulator builds; the device archive is
+   separate and must be rebuilt whenever the Rust FFI API changes.
 
 ### No Mac? Alternatives
 

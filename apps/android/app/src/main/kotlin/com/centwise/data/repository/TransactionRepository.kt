@@ -18,12 +18,20 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /**
  * Android's thin view-model-facing adapter over the Rust-owned database.
  * It never opens SQLite and never maintains a second persistence fallback.
  */
 class TransactionRepository private constructor() {
+    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val refreshMutex = Mutex()
     private val _transactions = MutableStateFlow<List<TransactionItem>>(emptyList())
     val transactions: StateFlow<List<TransactionItem>> = _transactions.asStateFlow()
     private val _accounts = MutableStateFlow<List<AccountItem>>(emptyList())
@@ -36,6 +44,8 @@ class TransactionRepository private constructor() {
     val categories: StateFlow<List<CategoryOption>> = _categories.asStateFlow()
     private val _homeDashboard = MutableStateFlow<HomeDashboardRecord?>(null)
     val homeDashboard: StateFlow<HomeDashboardRecord?> = _homeDashboard.asStateFlow()
+    private val _isReady = MutableStateFlow(false)
+    val isReady: StateFlow<Boolean> = _isReady.asStateFlow()
 
     val totalIncome = _transactions.map { list ->
         list.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
@@ -49,11 +59,28 @@ class TransactionRepository private constructor() {
     }
 
     fun init(context: Context) {
-        CentwiseRustBackend.initialize(context.applicationContext)
-        loadFromRust()
+        repositoryScope.launch {
+            refreshMutex.withLock {
+                _isReady.value = false
+                CentwiseRustBackend.initialize(context.applicationContext)
+                refreshFromRust()
+                _isReady.value = true
+            }
+        }
     }
 
     fun loadFromRust() {
+        repositoryScope.launch {
+            refreshMutex.withLock { refreshFromRust() }
+        }
+    }
+
+    /** Refreshes state in the caller's IO coroutine, avoiding a second queued refresh. */
+    suspend fun refreshNow() {
+        refreshMutex.withLock { refreshFromRust() }
+    }
+
+    private fun refreshFromRust() {
         if (!CentwiseRustBackend.isAvailable()) {
             clearLoadedState()
             return

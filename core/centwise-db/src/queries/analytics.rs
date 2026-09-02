@@ -11,6 +11,15 @@ impl<'a> Queries<'a> {
         start_epoch_ms: i64,
         end_epoch_ms: i64,
     ) -> DbResult<Vec<CategorySpendSummary>> {
+        self.category_breakdown_filtered(start_epoch_ms, end_epoch_ms, "debit")
+    }
+
+    pub fn category_breakdown_filtered(
+        &self,
+        start_epoch_ms: i64,
+        end_epoch_ms: i64,
+        type_filter: &str,
+    ) -> DbResult<Vec<CategorySpendSummary>> {
         let mut statement = self.connection.prepare(
             "SELECT c.id, c.name, c.icon, c.color_hex,
                     COALESCE(SUM(t.amount_minor), 0) AS total,
@@ -18,7 +27,8 @@ impl<'a> Queries<'a> {
              FROM categories c
              LEFT JOIN transactions t
                     ON t.category_id = c.id
-                   AND t.transaction_type = 'expense'
+                   AND (?3 = 'all' OR (?3 = 'debit' AND t.transaction_type = 'expense')
+                        OR (?3 = 'credit' AND t.transaction_type = 'income'))
                    AND t.occurred_at_epoch_ms >= ?1
                    AND t.occurred_at_epoch_ms < ?2
              GROUP BY c.id
@@ -26,16 +36,17 @@ impl<'a> Queries<'a> {
              ORDER BY total DESC",
         )?;
 
-        let rows = statement.query_map(params![start_epoch_ms, end_epoch_ms], |row| {
-            Ok(CategorySpendSummary {
-                category_id: row.get(0)?,
-                category_name: row.get(1)?,
-                category_icon: row.get(2)?,
-                category_color_hex: row.get(3)?,
-                total_minor: row.get(4)?,
-                transaction_count: row.get(5)?,
-            })
-        })?;
+        let rows =
+            statement.query_map(params![start_epoch_ms, end_epoch_ms, type_filter], |row| {
+                Ok(CategorySpendSummary {
+                    category_id: row.get(0)?,
+                    category_name: row.get(1)?,
+                    category_icon: row.get(2)?,
+                    category_color_hex: row.get(3)?,
+                    total_minor: row.get(4)?,
+                    transaction_count: row.get(5)?,
+                })
+            })?;
 
         collect(rows)
     }
@@ -47,10 +58,21 @@ impl<'a> Queries<'a> {
         end_epoch_ms: i64,
         limit: u32,
     ) -> DbResult<Vec<MerchantSpendSummary>> {
+        self.top_merchants_filtered(start_epoch_ms, end_epoch_ms, limit, "debit")
+    }
+
+    pub fn top_merchants_filtered(
+        &self,
+        start_epoch_ms: i64,
+        end_epoch_ms: i64,
+        limit: u32,
+        type_filter: &str,
+    ) -> DbResult<Vec<MerchantSpendSummary>> {
         let mut statement = self.connection.prepare(
             "SELECT title, COALESCE(SUM(amount_minor), 0) AS total, COUNT(id) AS tx_count
              FROM transactions
-             WHERE transaction_type = 'expense'
+             WHERE (?4 = 'all' OR (?4 = 'debit' AND transaction_type = 'expense')
+                    OR (?4 = 'credit' AND transaction_type = 'income'))
                AND occurred_at_epoch_ms >= ?1
                AND occurred_at_epoch_ms < ?2
              GROUP BY title
@@ -58,16 +80,58 @@ impl<'a> Queries<'a> {
              LIMIT ?3",
         )?;
 
-        let rows =
-            statement.query_map(params![start_epoch_ms, end_epoch_ms, limit as i64], |row| {
+        let rows = statement.query_map(
+            params![start_epoch_ms, end_epoch_ms, limit as i64, type_filter],
+            |row| {
                 Ok(MerchantSpendSummary {
                     merchant: row.get(0)?,
                     total_minor: row.get(1)?,
                     transaction_count: row.get(2)?,
                 })
-            })?;
+            },
+        )?;
 
         collect(rows)
+    }
+
+    pub fn analytics_snapshot(
+        &self,
+        start_epoch_ms: i64,
+        end_epoch_ms: i64,
+        months_back: u32,
+        type_filter: &str,
+    ) -> DbResult<centwise_domain::AnalyticsSnapshot> {
+        let (total_income_minor, total_expense_minor, transaction_count) = self
+            .connection
+            .query_row(
+                "SELECT
+                    COALESCE(SUM(CASE WHEN transaction_type = 'income' THEN amount_minor ELSE 0 END), 0),
+                    COALESCE(SUM(CASE WHEN transaction_type = 'expense' THEN amount_minor ELSE 0 END), 0),
+                    COALESCE(SUM(CASE WHEN (?3 = 'all' OR (?3 = 'debit' AND transaction_type = 'expense')
+                               OR (?3 = 'credit' AND transaction_type = 'income')) THEN 1 ELSE 0 END), 0)
+                 FROM transactions
+                 WHERE occurred_at_epoch_ms >= ?1 AND occurred_at_epoch_ms < ?2",
+                params![start_epoch_ms, end_epoch_ms, type_filter],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?),),
+            )?;
+
+        Ok(centwise_domain::AnalyticsSnapshot {
+            total_income_minor,
+            total_expense_minor,
+            transaction_count,
+            category_breakdown: self.category_breakdown_filtered(
+                start_epoch_ms,
+                end_epoch_ms,
+                type_filter,
+            )?,
+            top_merchants: self.top_merchants_filtered(
+                start_epoch_ms,
+                end_epoch_ms,
+                5,
+                type_filter,
+            )?,
+            monthly_trends: self.spending_by_month(months_back)?,
+        })
     }
 
     /// Expense totals per calendar month within the last `months_back`

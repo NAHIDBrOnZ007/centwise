@@ -88,13 +88,17 @@ fun DataManagementScreen(
                 TextButton(
                     onClick = {
                         showLoadDemoDialog = false
-                        val summary = CentwiseRustBackend.loadDemoData()
-                        if (summary != null) {
-                            repository.clearLegacyStorage()
-                            repository.loadFromRust()
-                            Toast.makeText(context, "Sample data loaded (${summary.transactions} transactions)", Toast.LENGTH_SHORT).show()
-                        } else {
-                            Toast.makeText(context, "Could not load demo data", Toast.LENGTH_SHORT).show()
+                        coroutineScope.launch(Dispatchers.IO) {
+                            val summary = CentwiseRustBackend.loadDemoData()
+                            if (summary != null) repository.refreshNow()
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    if (summary != null) "Sample data loaded (${summary.transactions} transactions)"
+                                    else "Could not load demo data",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
                     }
                 ) {
@@ -125,8 +129,18 @@ fun DataManagementScreen(
                 TextButton(
                     onClick = {
                         showResetDialog = false
-                        repository.resetToEmptyDatabase()
-                        Toast.makeText(context, "Database wiped. Starting completely clean.", Toast.LENGTH_SHORT).show()
+                        coroutineScope.launch(Dispatchers.IO) {
+                            val succeeded = CentwiseRustBackend.resetToEmptyDatabase()
+                            if (succeeded) repository.refreshNow()
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    if (succeeded) "Database wiped. Starting completely clean."
+                                    else "Could not reset database",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
                     }
                 ) {
                     Text("Wipe Everything", color = CentwiseColors.ExpenseRed, fontWeight = FontWeight.Bold)

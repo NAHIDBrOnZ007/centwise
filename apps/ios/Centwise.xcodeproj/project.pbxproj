@@ -139,7 +139,7 @@
 		B5D63DB9BDDF6474771ACF81 /* CentwiseTypography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CentwiseTypography.swift; sourceTree = "<group>"; };
 		BB53EE9466ECDDC26FFB1D82 /* TransactionDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionDetailSheet.swift; sourceTree = "<group>"; };
 		BED4228F2BD7264D1154DD6D /* GreetingCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GreetingCard.swift; sourceTree = "<group>"; };
-		C3378329584634E533C4DFC8 /* Centwise.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Centwise.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C3378329584634E533C4DFC8 /* Centwise.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Centwise.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C5BF23F85AA725C7A0C820B7 /* CentwiseCoreFFI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CentwiseCoreFFI.h; sourceTree = "<group>"; };
 		C65C599FAAE8FFB86B0C3C43 /* CsvExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CsvExporter.swift; sourceTree = "<group>"; };
 		CC3EA605498FB10E67FFCFB0 /* OnboardingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingScreen.swift; sourceTree = "<group>"; };
@@ -601,10 +601,9 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1600;
+				LastUpgradeCheck = 2660;
 				TargetAttributes = {
 					52CFD16DC61750257CA11368 = {
-						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -741,6 +740,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -774,7 +775,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 338R5R58ZF;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -792,6 +793,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.9;
@@ -802,6 +804,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -835,7 +839,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 338R5R58ZF;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -860,6 +864,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.9;
@@ -882,7 +887,10 @@
 					"$(PROJECT_DIR)/Centwise/Core/FFI/lib/$(PLATFORM_NAME)",
 					"$(PROJECT_DIR)/Centwise/Core/FFI/lib",
 				);
-				OTHER_LDFLAGS = "$(inherited) -lcentwise_ffi";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lcentwise_ffi",
+				);
 				OTHER_SWIFT_FLAGS = "-Xcc -fmodule-map-file=$(PROJECT_DIR)/Centwise/Core/FFI/generated/CentwiseCoreFFI.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = com.centwise.ios;
 				SDKROOT = iphoneos;
@@ -908,7 +916,10 @@
 					"$(PROJECT_DIR)/Centwise/Core/FFI/lib/$(PLATFORM_NAME)",
 					"$(PROJECT_DIR)/Centwise/Core/FFI/lib",
 				);
-				OTHER_LDFLAGS = "$(inherited) -lcentwise_ffi";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lcentwise_ffi",
+				);
 				OTHER_SWIFT_FLAGS = "-Xcc -fmodule-map-file=$(PROJECT_DIR)/Centwise/Core/FFI/generated/CentwiseCoreFFI.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = com.centwise.ios;
 				SDKROOT = iphoneos;

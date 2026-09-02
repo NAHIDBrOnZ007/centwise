@@ -5,6 +5,9 @@ import Combine
 public final class RulesViewModel: ObservableObject {
     @Published public private(set) var rules: [SmartRule] = []
     private var observers: [NSObjectProtocol] = []
+    private let loadQueue = DispatchQueue(label: "com.centwise.rules-load", qos: .userInitiated)
+    private var isLoading = false
+    private var refreshPending = false
 
     public init() {
         loadRules()
@@ -28,34 +31,50 @@ public final class RulesViewModel: ObservableObject {
     }
 
     public func loadRules() {
-        let loaded = CentwiseRustBackend.listRules().map { record in
-            SmartRule(
-                id: record.id,
-                name: record.name,
-                keyword: record.keyword,
-                matchType: matchType(record.matchType),
-                category: TransactionRepository.shared.category(id: record.categoryId),
-                transactionType: transactionType(record.kind),
-                isEnabled: record.isEnabled
-            )
-        }
-        if loaded.isEmpty {
-            for rule in Self.builtInDefaultRules {
-                _ = CentwiseRustBackend.insertRule(rule)
+        let categories = Dictionary(
+            uniqueKeysWithValues: TransactionRepository.shared.categories.map { ($0.id, $0) }
+        )
+        let defaults = Self.builtInDefaultRules
+
+        loadQueue.async { [weak self] in
+            guard let self else { return }
+            guard !self.isLoading else {
+                self.refreshPending = true
+                return
             }
-            rules = CentwiseRustBackend.listRules().map { record in
+            self.isLoading = true
+            var records = CentwiseRustBackend.listRules()
+            if records.isEmpty {
+                for rule in defaults {
+                    _ = CentwiseRustBackend.insertRule(rule)
+                }
+                records = CentwiseRustBackend.listRules()
+            }
+
+            let loaded = records.map { record in
                 SmartRule(
                     id: record.id,
                     name: record.name,
                     keyword: record.keyword,
-                    matchType: matchType(record.matchType),
-                    category: TransactionRepository.shared.category(id: record.categoryId),
-                    transactionType: transactionType(record.kind),
+                    matchType: self.matchType(record.matchType),
+                    category: categories[record.categoryId] ?? TransactionCategory(
+                        id: record.categoryId,
+                        name: "Other",
+                        icon: "square.grid.2x2",
+                        colorHex: "#64748B"
+                    ),
+                    transactionType: self.transactionType(record.kind),
                     isEnabled: record.isEnabled
                 )
             }
-        } else {
-            rules = loaded
+            DispatchQueue.main.async {
+                self.rules = loaded
+            }
+            self.isLoading = false
+            if self.refreshPending {
+                self.refreshPending = false
+                self.loadRules()
+            }
         }
     }
 

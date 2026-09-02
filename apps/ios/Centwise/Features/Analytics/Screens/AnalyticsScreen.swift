@@ -20,7 +20,7 @@ public struct AnalyticsScreen: View {
 
     public var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            LazyVStack(alignment: .leading, spacing: 18) {
                 filterBar
 
                 // 3. Period Summary Hero Card
@@ -54,9 +54,6 @@ public struct AnalyticsScreen: View {
         }
         .background(Color(uiColor: .systemGroupedBackground))
         .navigationTitle("Analytics")
-        .onAppear {
-            viewModel.recalculateAnalytics()
-        }
         .sheet(item: $drillDown) { drill in
             AnalyticsDrillDownSheet(drill: drill)
         }
