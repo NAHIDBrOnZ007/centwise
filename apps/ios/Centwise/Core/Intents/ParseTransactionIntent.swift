@@ -11,9 +11,9 @@ public struct ParseTransactionIntent: AppIntent {
     @Parameter(
         title: "Message Text",
         description: "The transaction text or notification to log",
-        inputConnectionBehavior: .connectToPreviousIntentResult
+        inputConnectionBehavior: .default
     )
-    public var smsBody: String?
+    public var smsBody: String
 
     @Parameter(title: "Sender (Optional)", description: "The message sender or provider name")
     public var senderHint: String?
@@ -35,7 +35,7 @@ public struct ParseTransactionIntent: AppIntent {
         // Ensure Rust backend is ready
         CentwiseRustBackend.initialize()
 
-        var bodyToProcess = smsBody?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        var bodyToProcess = smsBody.trimmingCharacters(in: .whitespacesAndNewlines)
         var senderToProcess = senderHint?.trimmingCharacters(in: .whitespacesAndNewlines)
 
         // Smart auto-recovery: If user mapped the SMS text into `senderHint` or `smsBody`
