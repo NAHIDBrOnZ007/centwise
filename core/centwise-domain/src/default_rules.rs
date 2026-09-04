@@ -168,7 +168,19 @@ const DEFAULT_MERCHANT_CATEGORIES: &[DefaultMerchantCategory] = &[
     DefaultMerchantCategory {
         id: "palli-bidyut",
         name: "Palli Bidyut",
-        keywords: &["palli bidyut"],
+        keywords: &["palli bidyut", "breb"],
+        category_id: "bills",
+    },
+    DefaultMerchantCategory {
+        id: "carnival-internet",
+        name: "Carnival Internet",
+        keywords: &["carnival internet", "carnival"],
+        category_id: "bills",
+    },
+    DefaultMerchantCategory {
+        id: "icc-communication",
+        name: "ICC Communication",
+        keywords: &["icc communication", "icc"],
         category_id: "bills",
     },
     DefaultMerchantCategory {

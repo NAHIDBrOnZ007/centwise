@@ -20,6 +20,7 @@ apps/android/**/*.iml
 apps/android/.kotlin/
 
 # === iOS / Xcode ===
+apps/ios/**/build/
 apps/ios/**/xcuserdata/
 apps/ios/**/*.xcuserstate
 apps/ios/**/DerivedData/

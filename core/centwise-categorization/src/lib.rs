@@ -100,10 +100,20 @@ fn is_fee_transaction(text: &str) -> bool {
             "charge debited",
             "service charge",
             "annual fee",
+            "annual card fee",
+            "card annual fee",
+            "sms alert fee",
+            "card fee",
+            "maintenance fee",
+            "maintenance charge",
+            "ledger fee",
+            "excise duty",
+            "আবগারি শুল্ক",
             "চার্জ কাটা",
             "সার্ভিস চার্জ",
         ],
-    );
+    ) || (text.contains("fee") && text.contains("debited"));
+
     let has_primary_action = contains_any(
         text,
         &["payment", "purchase", "recharge", "cash out", "withdrawal"],

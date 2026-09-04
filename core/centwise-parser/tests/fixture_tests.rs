@@ -224,3 +224,8 @@ fn test_banks_generic_fixtures() {
 fn test_bangla_fixtures() {
     test_fixture_file("fixtures/sms/bangla.json");
 }
+
+#[test]
+fn test_telco_fixtures() {
+    test_fixture_file("fixtures/sms/telco.json");
+}

@@ -314,7 +314,7 @@ public struct OnboardingScreen: View {
                 VStack(alignment: .leading, spacing: 10) {
                     shortcutMiniStep(number: "1", title: "Open Shortcuts", desc: "Tap 'Automation' tab ➔ New Automation (+)")
                     shortcutMiniStep(number: "2", title: "Choose 'Message'", desc: "When Message Contains 'Tk, bKash, Nagad', set 'Run Immediately'")
-                    shortcutMiniStep(number: "3", title: "Add Centwise Action", desc: "Select 'Log Transaction' with Shortcut Input")
+                    shortcutMiniStep(number: "3", title: "Add Centwise Action", desc: "Select 'Track Transaction from SMS' with Shortcut Input")
                 }
                 .padding(14)
                 .background(

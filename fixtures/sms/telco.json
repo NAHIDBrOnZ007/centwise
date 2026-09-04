@@ -1,0 +1,52 @@
+{
+  "provider": "telco",
+  "appliesTo": ["robi", "banglalink", "grameenphone", "airtel", "teletalk"],
+  "source": "Bangladeshi telco real SMS formats, anonymized",
+  "notes": "Covers MB offer lists, loan ads, low balance alerts, and actual recharge confirmations.",
+  "messages": [
+    {
+      "kind": "banglalink-ghechang-mb-offer-menu",
+      "senderHint": "Banglalink",
+      "body": "1) 208TK 15GB 30DAYS (Dial *212*831#)\n2) 18GB+200Mins(30D) @299TK; Dial *212*974#\n10) 1P/sec(+tax) rate for 7 days @TK44 Recharge\nGhechang Recharge",
+      "expected": {
+        "isTransaction": false
+      }
+    },
+    {
+      "kind": "robi-internet-loan-ad",
+      "senderHint": "Robi",
+      "body": "Need extra internet balance? Take Internet loan of 150 MB for 3days. Tk 16 will be deducted from your next recharge. Dial *123*003# Now!",
+      "expected": {
+        "isTransaction": false
+      }
+    },
+    {
+      "kind": "robi-low-balance-jhotpot-loan-ad",
+      "senderHint": "123",
+      "body": "Your balance is finished. Dial *123*007# to get Jhotpot Loan. Recharge TK26 for 69P/Min +Taxes for 2 days",
+      "expected": {
+        "isTransaction": false
+      }
+    },
+    {
+      "kind": "robi-data-bundle-loan-ad",
+      "senderHint": "Robi",
+      "body": "Need extra data? Get a Balance of Tk 12 to purchase a data bundle and pay on your next recharge. Dial *123*007# now. Fee: Tk 2.67",
+      "expected": {
+        "isTransaction": false
+      }
+    },
+    {
+      "kind": "robi-recharge-confirmation",
+      "senderHint": "Robi",
+      "body": "Transaction number R250917.1531.34003b to recharge 50 TAKA from 1847662920 is successful and valid till 17/10/25. For best offers dial *0# for minute*4# for data",
+      "expected": {
+        "isTransaction": true,
+        "type": "expense",
+        "amountMinor": 5000,
+        "reference": "R250917.1531.34003b",
+        "party": "01847662920"
+      }
+    }
+  ]
+}

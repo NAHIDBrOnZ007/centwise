@@ -79,6 +79,30 @@
       "senderHint": "bKash",
       "body": "Add Money Tk 3,000.00 successful. Fee Tk 0.00. Balance Tk 10,458.00. TrxID MN23OP45QR at 22/08/2026 19:15",
       "expected": { "type": "income", "amountMinor": 300000, "feeMinor": 0, "balanceAfterMinor": 1045800, "reference": "MN23OP45QR", "party": null, "date": "22/08/2026 19:15" }
+    },
+    {
+      "kind": "bill-payment-desco",
+      "senderHint": "bKash",
+      "body": "Bill Payment of Tk 1,850.00 to DESCO successful. Biller A/C 12345678. Fee Tk 0.00. Balance Tk 2,113.00. TrxID 5F4G3H2J on 12/05/2026",
+      "expected": { "type": "expense", "amountMinor": 185000, "feeMinor": 0, "balanceAfterMinor": 211300, "reference": "5F4G3H2J", "party": "DESCO", "category": "bills", "date": "12/05/2026" }
+    },
+    {
+      "kind": "bill-payment-wasa",
+      "senderHint": "bKash",
+      "body": "Bill Payment of Tk 950.00 to Dhaka WASA successful. Fee Tk 0.00. Balance Tk 1,163.00. TrxID 7H8I9J0K on 15/06/2026",
+      "expected": { "type": "expense", "amountMinor": 95000, "feeMinor": 0, "balanceAfterMinor": 116300, "reference": "7H8I9J0K", "party": "Dhaka WASA", "category": "bills", "date": "15/06/2026" }
+    },
+    {
+      "kind": "refund-reversal",
+      "senderHint": "bKash",
+      "body": "Refund of Tk 500.00 successful. Fee Tk 0.00. Balance Tk 1,663.00. TrxID 3K4L5M6N on 20/07/2026",
+      "expected": { "type": "refund", "amountMinor": 50000, "feeMinor": 0, "balanceAfterMinor": 166300, "reference": "3K4L5M6N", "category": "refunds", "date": "20/07/2026" }
+    },
+    {
+      "kind": "payment-quoted-merchant-trailing-is",
+      "senderHint": "bKash",
+      "body": "Payment of Tk 2,500.00 to 'Software Shop Ltd' is successful. TrxID 9A8B7C6D on 13/11/2026. Balance 5,000.00.",
+      "expected": { "type": "expense", "amountMinor": 250000, "balanceAfterMinor": 500000, "reference": "9A8B7C6D", "party": "Software Shop Ltd", "date": "13/11/2026" }
     }
   ]
 }

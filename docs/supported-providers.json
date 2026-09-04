@@ -119,6 +119,69 @@
       "parserStatus": "planned",
       "fixtureStatus": "generic-formats",
       "lastReviewed": "2026-08-22"
+    },
+    {
+      "id": "cellfin",
+      "name": "Cellfin",
+      "type": "mfs",
+      "senderIds": [],
+      "parserStatus": "active",
+      "fixtureStatus": "generic-formats",
+      "lastReviewed": "2026-09-04"
+    },
+    {
+      "id": "upay",
+      "name": "Upay",
+      "type": "mfs",
+      "senderIds": [],
+      "parserStatus": "active",
+      "fixtureStatus": "generic-formats",
+      "lastReviewed": "2026-09-04"
+    },
+    {
+      "id": "robi",
+      "name": "Robi",
+      "type": "telco",
+      "senderIds": ["Robi", "123"],
+      "parserStatus": "active",
+      "fixtureStatus": "collected",
+      "lastReviewed": "2026-09-04"
+    },
+    {
+      "id": "grameenphone",
+      "name": "Grameenphone",
+      "type": "telco",
+      "senderIds": ["GP", "121", "GPSTAR"],
+      "parserStatus": "active",
+      "fixtureStatus": "collected",
+      "lastReviewed": "2026-09-04"
+    },
+    {
+      "id": "banglalink",
+      "name": "Banglalink",
+      "type": "telco",
+      "senderIds": ["Banglalink", "BL", "212"],
+      "parserStatus": "active",
+      "fixtureStatus": "collected",
+      "lastReviewed": "2026-09-04"
+    },
+    {
+      "id": "airtel",
+      "name": "Airtel",
+      "type": "telco",
+      "senderIds": ["Airtel"],
+      "parserStatus": "active",
+      "fixtureStatus": "collected",
+      "lastReviewed": "2026-09-04"
+    },
+    {
+      "id": "teletalk",
+      "name": "Teletalk",
+      "type": "telco",
+      "senderIds": ["Teletalk"],
+      "parserStatus": "active",
+      "fixtureStatus": "collected",
+      "lastReviewed": "2026-09-04"
     }
   ]
 }

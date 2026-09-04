@@ -242,28 +242,23 @@ rustup target add aarch64-apple-ios aarch64-apple-ios-sim
 
 For an Intel Mac, also install `x86_64-apple-ios` for an Intel simulator.
 
-- [ ] **Step 3: Build the simulator library.**
+- [ ] **Step 3: Build the iOS libraries using the automated script.**
 
-From `core` on an Apple Silicon Mac:
-
-```bash
-cargo build --release -p centwise-ffi --target aarch64-apple-ios-sim
-mkdir -p ../apps/ios/Centwise/Core/FFI/lib
-cp target/aarch64-apple-ios-sim/release/libcentwise_ffi.a \
-  ../apps/ios/Centwise/Core/FFI/lib/libcentwise_ffi.a
-```
-
-Expected: the simulator build completes and the copied file exists at the path used by Xcode.
-
-- [ ] **Step 4: Build the device library before testing on a physical iPhone.**
+From repository root:
 
 ```bash
-cargo build --release -p centwise-ffi --target aarch64-apple-ios
-cp target/aarch64-apple-ios/release/libcentwise_ffi.a \
-  ../apps/ios/Centwise/Core/FFI/lib/libcentwise_ffi.a
+./scripts/build_ios_libs.sh
 ```
 
-Expected: the device build completes. Replace the library with the simulator slice again when returning to a simulator build. A later packaging improvement may use an XCFramework, but the current project contract is the static-library path above.
+Alternatively, manually from `core`:
+
+```bash
+IPHONEOS_DEPLOYMENT_TARGET=16.0 cargo build --release -p centwise-ffi --target aarch64-apple-ios-sim
+IPHONEOS_DEPLOYMENT_TARGET=16.0 cargo build --release -p centwise-ffi --target x86_64-apple-ios
+IPHONEOS_DEPLOYMENT_TARGET=16.0 cargo build --release -p centwise-ffi --target aarch64-apple-ios
+```
+
+> **Note:** Always keep `IPHONEOS_DEPLOYMENT_TARGET=16.0` (also configured via `.cargo/config.toml`) so C dependencies like SQLite do not default to newer host SDK versions and trigger linker warnings.
 
 ---
 

@@ -132,6 +132,11 @@ design independently using Centwise components and assets.
 - The iOS deployment target is iOS 16.0, defined in `apps/ios/project.yml`.
 - Keep the deployment target at iOS 16.0 unless the user explicitly requests a
   target change.
+- When compiling Rust core libraries for iOS, always ensure `IPHONEOS_DEPLOYMENT_TARGET=16.0`
+  is set or run `./scripts/build_ios_libs.sh`. Never build Rust crates without setting
+  the deployment target to 16.0, otherwise C dependencies (such as SQLite compiled via
+  `cc-rs`) will default to the host SDK version (e.g. 26.5) and cause Xcode linker
+  warnings ("Object file ... was built for newer 'iOS' version than being linked").
 - Before using an Apple API, check its availability against iOS 16. Prefer APIs
   available on iOS 16 and add a small `#available` fallback for newer APIs.
 - Do not add iOS 15 compatibility work, lower the deployment target, or migrate

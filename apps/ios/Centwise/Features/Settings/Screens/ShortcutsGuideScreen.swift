@@ -56,7 +56,7 @@ public struct ShortcutsGuideScreen: View {
                                 .foregroundColor(.primary)
                         }
 
-                        Text("In Step 2, instead of 'Open URL', you can: search 'Centwise' → tap 'Log Transaction' → tap 'Message Text' field → select 'Shortcut Input'.")
+                        Text("In Step 2, instead of 'Open URL', you can: search 'Centwise' → tap 'Track Transaction from SMS' → map 'SMS Body' to 'Shortcut Input'.")
                             .font(CentwiseTypography.footnote)
                             .foregroundColor(.secondary)
                     }
