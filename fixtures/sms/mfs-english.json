@@ -1,0 +1,43 @@
+{
+  "provider": "bangladesh-mfs-english",
+  "source": "synthetic anonymized coverage based on publicly documented transaction services",
+  "notes": "Provider labels are test hints, not claims about production SMS sender IDs.",
+  "messages": [
+    {
+      "kind": "bkash-remittance",
+      "senderHint": "bKash",
+      "body": "Remittance of Tk 12,000.00 credited to your account. Balance Tk 18,500.00. TrxID SYM10001.",
+      "expected": { "provider": "bkash", "type": "income", "amountMinor": 1200000, "balanceAfterMinor": 1850000, "reference": "SYM10001" }
+    },
+    {
+      "kind": "nagad-bill-payment",
+      "senderHint": "Nagad",
+      "body": "Bill Payment of Tk 1,100.00 to Utility Provider successful. Fee Tk 0.00. Balance Tk 4,900.00. TrxID SYM20002.",
+      "expected": { "provider": "nagad", "type": "expense", "amountMinor": 110000, "balanceAfterMinor": 490000, "reference": "SYM20002", "party": "Utility Provider", "category": "bills" }
+    },
+    {
+      "kind": "rocket-salary-disbursement",
+      "senderHint": "DBBL / Rocket",
+      "body": "Salary Disbursement of Tk 25,000.00 credited to your Rocket A/C 01XXXXXXXXX. Balance Tk 29,500.00. TrxID SYM30003.",
+      "expected": { "provider": "rocket", "type": "income", "amountMinor": 2500000, "balanceAfterMinor": 2950000, "reference": "SYM30003", "category": "salary" }
+    },
+    {
+      "kind": "cellfin-bank-transfer",
+      "senderHint": "CellFin",
+      "body": "CellFin Transfer: Tk 3,500.00 debited from A/C *4004 to Bank 01XXXXXXXXX. Fee Tk 5.00. TrxID SYM40004.",
+      "expected": { "provider": "cellfin", "type": "transfer", "amountMinor": 350000, "feeMinor": 500, "accountLast4": "4004", "reference": "SYM40004" }
+    },
+    {
+      "kind": "upay-merchant-payment",
+      "senderHint": "Upay",
+      "body": "Merchant Payment of Tk 650.00 to Grocery Store successful. Fee Tk 0.00. Balance Tk 2,350.00. TxnID SYM50005.",
+      "expected": { "provider": "upay", "type": "expense", "amountMinor": 65000, "balanceAfterMinor": 235000, "reference": "SYM50005", "party": "Grocery Store" }
+    },
+    {
+      "kind": "mfs-failed-cash-out-rejected",
+      "senderHint": "Rocket",
+      "body": "Cash Out Tk 2,000.00 failed due to insufficient balance. Fee Tk 0.00.",
+      "expected": { "isTransaction": false }
+    }
+  ]
+}

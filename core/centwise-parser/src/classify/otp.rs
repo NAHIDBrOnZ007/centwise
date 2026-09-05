@@ -12,8 +12,7 @@ pub fn is_otp_or_security_message(text: &str) -> bool {
         || lower.contains("login code")
         || lower.contains("two factor")
         || lower.contains("2fa")
-        || lower.contains("authentication code")
-        || lower.contains("প্রমাণীকরণ");
+        || lower.contains("authentication code");
 
     // Guard: Some transaction notifications mention "do not share your PIN/OTP" as a footer.
     // Only classify as pure OTP if it lacks completed financial action keywords.
@@ -53,11 +52,6 @@ mod tests {
         assert!(is_otp_or_security_message(
             "2FA code: 123456. Do not share this code."
         ));
-    }
-
-    #[test]
-    fn detects_bangla_authentication_messages() {
-        assert!(is_otp_or_security_message("আপনার প্রমাণীকরণ কোড হলো ১২৩৪৫৬।"));
     }
 
     #[test]

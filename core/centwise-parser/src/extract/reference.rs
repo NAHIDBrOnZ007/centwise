@@ -5,7 +5,7 @@ use std::sync::LazyLock;
 
 static REFERENCE_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)\b(?:TrxID|TxnID|Ref\s*ID|Ref\s*No\.?|Ref|Txn\s*ID|Transaction\s*(?:ID|number|no\.?|num)|NPSB\s*Ref|BEFTN\s*Ref|Trx\s*No\.?|Reference)[\s:#]+([A-Za-z0-9.]+)",
+        r"(?i)\b(?:TrxID|TxnID|Ref\s*ID|Ref\s*No\.?|Ref|Txn\s*ID|Txn\s*No\.?|Transaction\s*(?:ID|number|no\.?|num)|NPSB\s*Ref|BEFTN\s*Ref|Trx\s*No\.?|Reference|RRN|STAN|Auth(?:orization)?\s+Code)[\s:#]+([A-Za-z0-9.-]+)",
     )
     .expect("valid reference regex")
 });

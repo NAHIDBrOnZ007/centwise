@@ -4,7 +4,7 @@ use regex::Regex;
 use std::sync::LazyLock;
 
 static BANK_ACCOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\bA/C\s*(?:[:\s])?\s*([A-Za-z0-9*]{4,20})\b").expect("valid account regex")
+    Regex::new(r"(?i)\b(?:A/C|ACCT\.?|ACCOUNT)\s*(?:ending(?:\s+in)?\s*)?(?:[:\s])?\s*([A-Za-z0-9*]{4,20})\b").expect("valid account regex")
 });
 
 static CARD_NUMBER_RE: LazyLock<Regex> = LazyLock::new(|| {
@@ -36,14 +36,9 @@ pub fn extract_account_info(text: &str) -> (Option<String>, Option<String>) {
         }
         if let Some(m) = cap.get(1) {
             let account = m.as_str().trim();
-            let stripped = account
-                .strip_prefix("XXXX")
-                .or_else(|| account.strip_prefix("xxxx"))
-                .or_else(|| account.strip_prefix('*'))
-                .unwrap_or(account);
-
-            if stripped.len() == 4 && stripped.chars().all(|c| c.is_ascii_digit()) {
-                return (Some(stripped.to_string()), None);
+            let digits: String = account.chars().filter(|c| c.is_ascii_digit()).collect();
+            if digits.len() == 4 {
+                return (Some(digits), None);
             }
             // Could be a masked wallet or full account hint
             return (None, Some(account.to_string()));

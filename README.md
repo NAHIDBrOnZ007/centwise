@@ -11,7 +11,7 @@ bKash / Nagad / Rocket / Bank SMS  →  Centwise  →  Transactions, budgets, in
 
 - **Automatic tracking** from bKash, Nagad, Rocket, and Bangladeshi bank SMS
   (bKash → Nagad → Rocket first; banks following)
-- **Bangla + English** message parsing, including Bangla numerals
+- **English-language** bank and MFS message parsing
 - **Local-first & private** — everything stays on your phone. No account,
   no cloud, no upload
 - **Budgets & analytics** — category budgets, spending trends, top merchants

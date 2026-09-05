@@ -36,38 +36,26 @@ pub fn categorize_by_type_or_keywords(
     let lower = text.to_lowercase();
 
     if transaction_type == TransactionType::Refund
-        || contains_any(&lower, &["refund", "reversal", "reversed", "ফেরত"])
+        || contains_any(&lower, &["refund", "reversal", "reversed"])
     {
         return Some("refunds".to_string());
     }
-    if contains_any(&lower, &["cashback", "cash back", "ক্যাশব্যাক"]) {
+    if contains_any(&lower, &["cashback", "cash back"]) {
         return Some("cashback".to_string());
     }
-    if contains_any(
-        &lower,
-        &[
-            "interest",
-            "mudaraba profit",
-            "profit credited",
-            "মুনাফা",
-            "সুদ",
-        ],
-    ) {
+    if contains_any(&lower, &["interest", "mudaraba profit", "profit credited"]) {
         return Some("interest-profit".to_string());
     }
-    if contains_any(&lower, &["dividend", "লভ্যাংশ"]) {
+    if contains_any(&lower, &["dividend"]) {
         return Some("dividends".to_string());
     }
-    if contains_any(&lower, &["salary", "payroll", "wages", "বেতন"]) {
+    if contains_any(&lower, &["salary", "payroll", "wages"]) {
         return Some("salary".to_string());
     }
     if lower.contains("recharge") {
         return Some("recharge".to_string());
     }
-    if contains_any(
-        &lower,
-        &["atm", "cash withdrawal", "cash out", "নগদ উত্তোলন"],
-    ) {
+    if contains_any(&lower, &["atm", "cash withdrawal", "cash out"]) {
         return Some("cash-withdrawal".to_string());
     }
     if lower.contains("emi") || lower.contains("loan") || lower.contains("bill") {
@@ -108,9 +96,6 @@ fn is_fee_transaction(text: &str) -> bool {
             "maintenance charge",
             "ledger fee",
             "excise duty",
-            "আবগারি শুল্ক",
-            "চার্জ কাটা",
-            "সার্ভিস চার্জ",
         ],
     ) || (text.contains("fee") && text.contains("debited"));
 
@@ -171,10 +156,6 @@ mod tests {
                 "Monthly salary credited to your account",
                 TransactionType::Income,
             ),
-            Some("salary".to_string())
-        );
-        assert_eq!(
-            categorize_by_type_or_keywords("বেতন বাবদ ২৫,০০০ টাকা জমা হয়েছে", TransactionType::Income,),
             Some("salary".to_string())
         );
     }

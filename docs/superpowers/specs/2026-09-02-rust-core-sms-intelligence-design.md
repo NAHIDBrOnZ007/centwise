@@ -31,4 +31,4 @@ Parser regexes are initialized once. Batch ingestion parses messages once, prelo
 
 ## Testing
 
-Every behavior change follows red-green TDD. Rust fixtures cover English and Bangla digits and terms, salary false positives, Income/Other fallbacks, refund balance direction, merchant learning, metadata preservation, deduplication, reported-balance ordering, and batch equivalence. Completion requires formatting, workspace tests, clippy with warnings denied, and a clean generated-binding diff.
+Every behavior change follows red-green TDD. Rust fixtures cover English transaction terms, salary false positives, Income/Other fallbacks, refund balance direction, merchant learning, metadata preservation, deduplication, reported-balance ordering, and batch equivalence. Completion requires formatting, workspace tests, clippy with warnings denied, and a clean generated-binding diff.

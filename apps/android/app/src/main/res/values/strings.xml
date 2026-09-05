@@ -24,7 +24,7 @@
     <string name="onboarding_step2_title">Private by design</string>
     <string name="onboarding_step2_body">Everything stays on your phone. No account needed, no cloud, no upload. Your money data is yours alone.</string>
     <string name="onboarding_step3_title">Budgets and insights</string>
-    <string name="onboarding_step3_body">Set category budgets, watch spending trends, and get warned before you go over. Both Bangla and English supported.</string>
+    <string name="onboarding_step3_body">Set category budgets, watch spending trends, and get warned before you go over. English-language transaction SMS supported.</string>
     <string name="onboarding_get_started">Get Started</string>
 
     <!-- Home -->

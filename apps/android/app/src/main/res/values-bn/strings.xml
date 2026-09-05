@@ -24,7 +24,7 @@
     <string name="onboarding_step2_title">গোপনীয়তা নিশ্চিত</string>
     <string name="onboarding_step2_body">সবকিছু আপনার ফোনেই থাকে। কোনো অ্যাকাউন্ট লাগবে না, ক্লাউড নেই, আপলোড নেই। আপনার টাকার তথ্য শুধু আপনার।</string>
     <string name="onboarding_step3_title">বাজেট ও বিশ্লেষণ</string>
-    <string name="onboarding_step3_body">ক্যাটাগরি বাজেট নির্ধারণ করুন, খরচের প্রবণতা দেখুন এবং সীমা ছাড়ানোর আগেই সতর্কতা পান। বাংলা ও ইংরেজি দুটোই আছে।</string>
+    <string name="onboarding_step3_body">ক্যাটাগরি বাজেট নির্ধারণ করুন, খরচের প্রবণতা দেখুন এবং সীমা ছাড়ানোর আগেই সতর্কতা পান। শুধু ইংরেজি ভাষার লেনদেনের এসএমএস সমর্থিত।</string>
     <string name="onboarding_get_started">শুরু করুন</string>
 
     <!-- Home -->

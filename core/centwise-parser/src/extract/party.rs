@@ -38,7 +38,7 @@ static RECHARGE_PHONE_RE: LazyLock<Regex> = LazyLock::new(|| {
 
 // Bill Payment specific: "Bill Payment of Tk 1,850.00 to DESCO successful"
 static BILL_PAYMENT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\b(?:Bill\s+Pay(?:ment)?)\s+(?:of\s+)?(?:(?:Tk|৳|BDT)\s*)?[0-9][0-9,]*(?:\.[0-9]{1,2})?\s+to\s+([A-Za-z][A-Za-z\s.-]+?)(?:\s+successful|\s*[.,])")
+    Regex::new(r"(?i)\b(?:Bill\s+Pay(?:ment)?)\s+(?:of\s+)?(?:(?:Tk|BDT)\s*)?[0-9][0-9,]*(?:\.[0-9]{1,2})?\s+to\s+([A-Za-z][A-Za-z\s.-]+?)(?:\s+successful|\s*[.,])")
         .expect("valid bill payment regex")
 });
 

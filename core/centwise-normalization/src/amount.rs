@@ -4,30 +4,26 @@
 //! - `5,000.00` (western grouping)
 //! - `1,50,000.00` (lakh/crore grouping — commas stripped identically)
 //! - `2000`, `0.50`, `.50`
-//! - decorations: `Tk`, `tk`, `TK`, `৳`, `BDT`, surrounding spaces
+//! - decorations: `Tk`, `tk`, `TK`, `BDT`, surrounding spaces
 //!
 //! Anything else (letters mixed into the number, multiple dots, more than
 //! two decimals, negatives) is rejected with `None` — the caller decides
 //! whether the message is a transaction; we never guess a value.
 
 /// Currency decorations tolerated around a numeric amount.
-const CURRENCY_PREFIXES: [&str; 5] = ["Tk", "tk", "TK", "৳", "BDT"];
+const CURRENCY_PREFIXES: [&str; 4] = ["Tk", "tk", "TK", "BDT"];
 
 /// Parses an amount string into minor units (taka × 100).
 ///
 /// ```text
 /// "Tk 5,000.00"   → 500_000
-/// "৳১,৫০,০০০.৫০" → 15_000_050   (Bengali digits + lakh grouping)
 /// "2000"          → 200_000
 /// "0.50"          → 50
 /// "abc", "1.2.3", "1.234", "-500" → None
 /// ```
 pub fn parse_amount_minor(input: &str) -> Option<i64> {
-    // Normalize Bengali digits first so the rest only deals with ASCII.
-    let normalized = crate::digits::bangla_to_english_digits(input.trim());
-
-    // Strip a leading currency marker (Tk/tk/TK/৳/BDT) if present.
-    let mut remainder = normalized.as_str();
+    // Strip a leading currency marker (Tk/tk/TK/BDT) if present.
+    let mut remainder = input.trim();
     for prefix in CURRENCY_PREFIXES {
         if let Some(stripped) = remainder.strip_prefix(prefix) {
             remainder = stripped.trim_start();
@@ -82,20 +78,17 @@ pub fn parse_amount_minor(input: &str) -> Option<i64> {
 }
 
 /// Finds all numeric amount candidates in a text: runs of digits with
-/// optional commas and an optional two-decimal fraction (after converting
-/// Bengali digits).
+/// optional commas and an optional two-decimal fraction.
 ///
 /// This only locates candidates — phone prefixes (`017`), numeric Rocket
 /// TrxIDs, and date/time components (`22`, `08`, `2026`, `14`, `25`) also
 /// surface here. The parser layer disambiguates which candidate is the
 /// amount vs fee, balance, or noise using the words around them.
 pub fn find_amount_tokens(input: &str) -> Vec<String> {
-    let normalized = crate::digits::bangla_to_english_digits(input);
-
     let mut tokens = Vec::new();
     let mut current = String::new();
 
-    for character in normalized.chars() {
+    for character in input.chars() {
         let is_digit = character.is_ascii_digit();
         let continues_number = is_digit
             || (character == ','
@@ -138,7 +131,6 @@ mod tests {
     #[test]
     fn parses_lakh_grouping() {
         assert_eq!(parse_amount_minor("1,50,000.00"), Some(15_000_000));
-        assert_eq!(parse_amount_minor("৳১,৫০,০০০.৫০"), Some(15_000_050));
     }
 
     #[test]
@@ -147,7 +139,6 @@ mod tests {
         assert_eq!(parse_amount_minor("0.50"), Some(50));
         assert_eq!(parse_amount_minor(".50"), Some(50));
         assert_eq!(parse_amount_minor("19.5"), Some(1_950));
-        assert_eq!(parse_amount_minor("৳150.00"), Some(15_000));
         assert_eq!(parse_amount_minor("BDT 850"), Some(85_000));
     }
 
@@ -178,12 +169,6 @@ mod tests {
                 "234567890123".to_string()
             ]
         );
-    }
-
-    #[test]
-    fn finds_bengali_amount_candidates() {
-        let tokens = find_amount_tokens("৫,০০০.০০ টাকা পাঠিয়েছেন");
-        assert_eq!(tokens, vec!["5,000.00".to_string()]);
     }
 
     #[test]

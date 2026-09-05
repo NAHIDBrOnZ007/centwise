@@ -34,7 +34,7 @@ The shared business logic is written in Rust and exposed to Android and iOS thro
 Rust handles:
 
 - SMS text normalization
-- Bangla and English number parsing
+- English number parsing
 - Bangladesh bank and MFS parser logic
 - Amount extraction
 - Income and expense detection

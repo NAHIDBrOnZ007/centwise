@@ -21,7 +21,86 @@ pub fn classify_safety(body: &str, sender_hint: Option<&str>) -> Option<RejectRe
         return Some(RejectReason::PromotionOrSpam);
     }
 
+    if is_non_posted_financial_message(trimmed) {
+        return Some(RejectReason::NotATransaction);
+    }
+
     false_or_none(trimmed)
+}
+
+/// Rejects financial-looking messages that do not represent posted money movement.
+fn is_non_posted_financial_message(text: &str) -> bool {
+    let lower = text.to_lowercase();
+
+    // A posted refund/reversal is a real credit even when it describes an earlier failure.
+    let is_posted_refund =
+        (lower.contains("refund") || lower.contains("reversal") || lower.contains("reversed"))
+            && (lower.contains("credited")
+                || lower.contains("refunded")
+                || lower.contains("completed")
+                || lower.contains("successful"));
+    if is_posted_refund {
+        return false;
+    }
+
+    let failed = [
+        "declined",
+        "failed",
+        "unsuccessful",
+        "rejected",
+        "cancelled",
+        "canceled",
+        "could not be processed",
+        "not processed",
+    ]
+    .iter()
+    .any(|marker| lower.contains(marker));
+
+    let pending = [
+        "is pending",
+        "pending for",
+        "pending transaction",
+        "under process",
+        "will be processed",
+        "has been initiated",
+    ]
+    .iter()
+    .any(|marker| lower.contains(marker));
+
+    let has_posted_action = [
+        "successful",
+        "completed",
+        "has been debited",
+        "was debited",
+        "has been credited",
+        "was credited",
+        "payment received",
+    ]
+    .iter()
+    .any(|marker| lower.contains(marker));
+
+    let request_or_reminder = !has_posted_action
+        && [
+            "payment request",
+            "has requested",
+            "requesting payment",
+            "collect request",
+            "minimum amount due",
+            "min amount due",
+            "payment is due",
+            "payment of",
+        ]
+        .iter()
+        .any(|marker| lower.contains(marker))
+        && (lower.contains("approve")
+            || lower.contains("requested")
+            || lower.contains("request")
+            || lower.contains(" is due")
+            || lower.contains(" due by")
+            || lower.contains("minimum amount due")
+            || lower.contains("min amount due"));
+
+    failed || pending || request_or_reminder
 }
 
 fn false_or_none(_text: &str) -> Option<RejectReason> {
@@ -92,8 +171,6 @@ pub fn is_likely_financial_review(body: &str, sender_hint: Option<&str>) -> bool
         "rtgs",
         "excise duty",
         "annual fee",
-        "টাকা",
-        "লেনদেন",
     ]
     .iter()
     .any(|word| lower.contains(word) || sender.contains(word))
@@ -141,5 +218,24 @@ mod tests {
     fn npsb_beftn_transfers_are_reviewable() {
         let npsb_msg = "NPSB transfer of BDT 5,000 from unknown account format.";
         assert!(is_likely_financial_review(npsb_msg, Some("EBL")));
+    }
+
+    #[test]
+    fn rejects_unposted_financial_events_but_keeps_posted_refunds() {
+        assert!(is_non_posted_financial_message(
+            "Payment of BDT 2,000 was declined"
+        ));
+        assert!(is_non_posted_financial_message(
+            "Fund transfer of BDT 5,000 is pending for processing"
+        ));
+        assert!(is_non_posted_financial_message(
+            "Payment request of Tk 900 received. Open app to approve"
+        ));
+        assert!(!is_non_posted_financial_message(
+            "Failed card transaction refund of BDT 2,000 credited to your account"
+        ));
+        assert!(!is_non_posted_financial_message(
+            "Credit card payment of BDT 8,000 completed. Minimum amount due is now BDT 0"
+        ));
     }
 }

@@ -19,6 +19,7 @@ struct FixtureMessage {
 
 #[derive(Debug, Deserialize)]
 struct ExpectedResult {
+    pub provider: Option<String>,
     #[serde(rename = "isTransaction")]
     pub is_transaction: Option<bool>,
     #[serde(rename = "type")]
@@ -77,6 +78,14 @@ fn test_fixture_file(relative_path: &str) {
 
         match outcome {
             ParseOutcome::Parsed(tx) => {
+                if let Some(expected_provider) = &msg.expected.provider {
+                    assert_eq!(
+                        &tx.provider_id, expected_provider,
+                        "Provider mismatch in kind '{}': body: '{}'",
+                        msg.kind, msg.body
+                    );
+                }
+
                 // Check transaction type
                 if let Some(expected_type) = &msg.expected.transaction_type {
                     let expected_enum = match expected_type.as_str() {
@@ -221,8 +230,13 @@ fn test_banks_generic_fixtures() {
 }
 
 #[test]
-fn test_bangla_fixtures() {
-    test_fixture_file("fixtures/sms/bangla.json");
+fn test_banks_english_fixtures() {
+    test_fixture_file("fixtures/sms/banks-english.json");
+}
+
+#[test]
+fn test_mfs_english_fixtures() {
+    test_fixture_file("fixtures/sms/mfs-english.json");
 }
 
 #[test]

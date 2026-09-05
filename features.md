@@ -37,7 +37,6 @@ Centwise is a Bangladesh-focused SMS expense tracker for Android and iOS.
 - Bank transfer SMS
 - Mobile recharge SMS
 - Payment and merchant SMS
-- Bangla-language SMS handling
 - English-language SMS handling
 - Bangladeshi taka formatting and ৳ currency support
 - Local sender-ID detection
@@ -236,7 +235,6 @@ Centwise is a Bangladesh-focused SMS expense tracker for Android and iOS.
 ## Future Expansion
 
 - More Bangladesh banks and MFS providers
-- Better Bangla-language parsing
 - More card and ATM formats
 - Shared/family budgets
 - Cloud sync

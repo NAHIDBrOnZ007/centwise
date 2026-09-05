@@ -65,8 +65,8 @@ fun FAQScreen(
                     "OTP, promotional, and non-transaction messages are ignored on purpose. If a real transaction was missed, add it manually."
                 ),
                 FaqItem(
-                    "Does it work with Bangla-language SMS?",
-                    "Yes. Centwise parses both Bangla and English messages, including Bangla numerals."
+                    "Which SMS languages are supported?",
+                    "Centwise parses English-language transaction messages."
                 )
             )
         ),

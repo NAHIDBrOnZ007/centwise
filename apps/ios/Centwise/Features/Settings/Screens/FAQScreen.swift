@@ -28,8 +28,8 @@ public struct FAQScreen: View {
              "Major Bangladeshi banks and MFS services including bKash, Nagad, Rocket, Upay, and leading bank cards. Support for more providers is added regularly through the parser."),
             ("Why was an SMS not tracked?",
              "OTP, promotional, and non-transaction messages are ignored on purpose. If a real transaction was missed, add it manually or check the review queue."),
-            ("Does it work with Bangla-language SMS?",
-             "Yes. Centwise parses both Bangla and English messages, including Bangla numerals.")
+            ("Which SMS languages are supported?",
+             "Centwise parses English-language transaction messages.")
         ]
     }
 

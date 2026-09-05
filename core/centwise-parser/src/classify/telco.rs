@@ -81,22 +81,17 @@ pub fn is_promotional_or_telco_offer(body: &str, sender_hint: Option<&str>) -> b
         return true;
     }
 
-    // 9. Bangla promotional messages
-    if is_bangla_promotional(&lower) && !is_confirmed_transaction_text(&lower) {
-        return true;
-    }
-
-    // 10. Reward points / loyalty informational notices (not transactions)
+    // 9. Reward points / loyalty informational notices (not transactions)
     if is_reward_points_notice(&lower) && !is_confirmed_transaction_text(&lower) {
         return true;
     }
 
-    // 11. Balance check responses (e.g. "Your balance is Tk 102.50") without debit/credit action
+    // 10. Balance check responses (e.g. "Your balance is Tk 102.50") without debit/credit action
     if is_balance_check_response(&lower) {
         return true;
     }
 
-    // 12. Unexecuted USSD Call-To-Action (e.g., "Dial *123*003# Now!")
+    // 11. Unexecuted USSD Call-To-Action (e.g., "Dial *123*003# Now!")
     // Note: If a message is a confirmed recharge or added balance,
     // a trailing advisory code like "For best offers dial *0#" or "For Details dial *123*600#" is just a footer.
     let has_confirmed_transaction = is_confirmed_transaction_text(&lower);
@@ -187,15 +182,6 @@ fn is_fnf_or_migration_notice(lower: &str) -> bool {
         || lower.contains("sim replacement")
         || lower.contains("sim migration")
         || lower.contains("sim swap")
-}
-
-/// Detects Bangla promotional messages.
-fn is_bangla_promotional(lower: &str) -> bool {
-    lower.contains("বিশেষ অফার")
-        || lower.contains("ফ্রি")
-        || lower.contains("বোনাস")
-        || lower.contains("উপভোগ করুন")
-        || lower.contains("জিতুন")
 }
 
 /// Detects reward points / loyalty informational notices.
@@ -298,12 +284,6 @@ mod tests {
     fn rejects_congratulations_marketing() {
         let text =
             "Congratulations! You've won a chance to get 1GB free. Dial *121*99# to claim now!";
-        assert!(is_promotional_or_telco_offer(text, Some("GP")));
-    }
-
-    #[test]
-    fn rejects_bangla_promotional() {
-        let text = "বিশেষ অফার! ১০০ এমবি ফ্রি পেতে ডায়াল করুন *121*99#";
         assert!(is_promotional_or_telco_offer(text, Some("GP")));
     }
 

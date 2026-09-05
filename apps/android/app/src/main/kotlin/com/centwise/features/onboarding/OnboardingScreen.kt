@@ -109,7 +109,7 @@ fun OnboardingScreen(
             icon = Icons.Default.NotificationsActive,
             tint = accent,
             title = "Budgets & insights",
-            description = "Set category budgets, watch spending trends, and get warned before you go over. Both Bangla and English supported."
+            description = "Set category budgets, watch spending trends, and get warned before you go over. English-language transaction SMS supported."
         )
     )
 

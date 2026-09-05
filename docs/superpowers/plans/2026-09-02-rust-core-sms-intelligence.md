@@ -56,22 +56,18 @@
 - [ ] Make the parser extract facts and valid transaction types while leaving persisted precedence to ingestion.
 - [ ] Run categorization and parser tests and confirm they pass.
 
-### Task 3: Bangla normalization and parser accuracy
+### Task 3: Parser accuracy and cached extraction
 
 **Files:**
-- Modify: `core/centwise-normalization/src/digits.rs`
 - Modify: `core/centwise-normalization/src/text.rs`
 - Modify: `core/centwise-parser/src/engine.rs`
 - Modify: `core/centwise-parser/src/providers.rs`
-- Create: `fixtures/sms/bangla.json`
 
 **Interfaces:**
 - Consumes: stable category IDs from Task 1.
-- Produces: normalized Bangla digits and deterministic Bangla transaction signals using the existing parser API.
+- Produces: deterministic English transaction signals using the existing parser API.
 
-- [ ] Add fixtures for Bangla salary, refund, cashback/profit, expense, fee, and non-transaction messages.
-- [ ] Run parser fixture tests and confirm they fail for unsupported normalization/signals.
-- [ ] Normalize Bangla digits before amount parsing and add precise Bangla signal aliases.
+- [ ] Run parser fixture tests and confirm they fail for unsupported signals.
 - [ ] Cache regexes with standard-library lazy initialization and tighten provider aliases.
 - [ ] Run normalization and parser tests and confirm they pass.
 

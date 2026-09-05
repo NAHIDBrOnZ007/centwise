@@ -6,11 +6,7 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
     let lower = text.to_lowercase();
 
     // 1. Refunds and Reversals
-    if lower.contains("refund")
-        || lower.contains("reversal")
-        || lower.contains("reversed")
-        || lower.contains("ফেরত")
-    {
+    if lower.contains("refund") || lower.contains("reversal") || lower.contains("reversed") {
         return Some(TransactionType::Refund);
     }
 
@@ -22,7 +18,6 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
         || lower.contains("transfer of")
         || lower.contains("transfer to")
         || lower.contains("transferred")
-        || lower.contains("স্থানান্তর")
     {
         // If body mentions NPSB/BEFTN/RTGS with a debit verb, it's a transfer
         return Some(TransactionType::Transfer);
@@ -52,13 +47,14 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
     if lower.contains("cash in")
         || lower.contains("received")
         || lower.contains("credited")
+        || lower.contains("cr transaction")
+        || lower.contains("cr. transaction")
         || lower.contains("add money")
         || lower.contains("cashback")
         || lower.contains("interest")
         || lower.contains("salary")
         || lower.contains("deposit")
-        || lower.contains("জমা হয়েছে")
-        || lower.contains("পেয়েছেন")
+        || lower.contains("remittance")
     {
         return Some(TransactionType::Income);
     }
@@ -69,9 +65,16 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
         || lower.contains("payment")
         || lower.contains("debited")
         || lower.contains("withdrawal")
+        || lower.contains("withdrawn")
         || lower.contains("recharge")
         || lower.contains("emi")
         || lower.contains("purchase")
+        || lower.contains("spent")
+        || lower.contains("charged")
+        || lower.contains("dr transaction")
+        || lower.contains("dr. transaction")
+        || lower.contains("auto debit")
+        || lower.contains("loan repayment")
         || lower.contains("bill pay")
         || lower.contains("used at")
         || lower.contains("was used")
@@ -82,8 +85,6 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
         || lower.contains("sms alert fee")
         || lower.contains("maintenance fee")
         || lower.contains("ledger fee")
-        || lower.contains("খরচ")
-        || lower.contains("কাটা হয়েছে")
         || (lower.contains("deducted") && !lower.contains("will be deducted"));
 
     if has_current_debit {

@@ -50,10 +50,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); project is pre-1
 ### Added — Rust Core (`core/`, machine-verified)
 - Cargo workspace with `centwise-domain`, `centwise-db`, `centwise-ffi`,
   `uniffi-bindgen`
-- `centwise-normalization` crate: Bengali ↔ ASCII digit conversion,
-  whole-SMS text normalization, integer-minor amount parsing (lakh/western
-  grouping, Tk/৳/BDT prefixes, float-free, strict rejection of invalid
-  tokens), and amount-candidate scanning — 15 unit tests green
+- `centwise-normalization` crate: whole-SMS text normalization, integer-minor
+  amount parsing (lakh/western grouping, Tk/BDT prefixes, float-free, strict
+  rejection of invalid tokens), and amount-candidate scanning
 - Domain models: money as i64 minor units (poisha), dates as epoch millis,
   default category seed
 - Database: rusqlite (bundled SQLite) in WAL mode with busy timeout and
@@ -108,6 +107,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/); project is pre-1
 - Local notifications: channel, permission check, fires on new transaction
 - Home-screen spending widget (RemoteViews, 30-min refresh)
 - English + Bengali `strings.xml`
+
+### Changed
+- Rust SMS parsing now supports English-language transaction messages only;
+  non-English parsing aliases and fixtures were removed to prevent duplicate
+  ingestion when providers send separate localized alerts.
 
 ### Fixed
 - Removed all Pennywise-derived UI code and the `PennywiseCompat` shim

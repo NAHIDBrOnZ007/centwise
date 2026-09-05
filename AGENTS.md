@@ -8,7 +8,7 @@ the Centwise repository.
 
 ## Product Direction
 
-- Bangladesh first: BDT, Bangla/English SMS, local banks, cards, bKash, Nagad,
+- Bangladesh first: BDT, English SMS, local banks, cards, bKash, Nagad,
   Rocket, and other Bangladesh MFS providers.
 - Android and iOS are first-class products.
 - Android uses native Kotlin and Jetpack Compose.
@@ -177,7 +177,7 @@ Every significant UI change requires:
 Rust owns deterministic shared logic:
 
 - Text normalization
-- Bangla and English number parsing
+- English number parsing
 - Currency and BDT normalization
 - Bank/MFS parser selection
 - Amount, type, merchant, balance, reference, account, and card extraction

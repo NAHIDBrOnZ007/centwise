@@ -46,10 +46,10 @@ All doable on this Windows PC, each under an hour, no NDK/Mac/emulator needed:
 - ~~**Q1. Root `README.md`**~~ ✅ done 2026-08-22
 - ~~**Q2. `PRIVACY.md`**~~ ✅ done 2026-08-22
 - ~~**Q3. `docs/ui/icon-map.md`**~~ ✅ done 2026-08-22
-- ~~**Q4. `centwise-normalization` crate**~~ ✅ done 2026-08-22 — Bangla ↔
-  English digits, SMS text normalization, integer-minor amount parsing
+- ~~**Q4. `centwise-normalization` crate**~~ ✅ done 2026-08-22 — English
+  SMS text normalization, integer-minor amount parsing
   (lakh grouping, currency prefixes, no floats), amount-candidate scanner;
-  15 unit tests green
+  8 unit tests green
 - ~~**Q5. Rust query expansion**~~ ✅ done 2026-08-22 — analytics queries
   (category breakdown, top merchants, monthly trends with anchored windows),
   accounts/budgets/subscriptions list + insert queries, budget live-progress

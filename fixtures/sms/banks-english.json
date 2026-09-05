@@ -1,0 +1,97 @@
+{
+  "provider": "bangladesh-banks-english",
+  "source": "synthetic anonymized coverage based on publicly documented transaction services",
+  "notes": "No real sender IDs, account numbers, card numbers, customer names, or transaction references.",
+  "messages": [
+    {
+      "kind": "sonali-credit-tk-dot-avl-bal",
+      "senderHint": "Sonali Bank",
+      "body": "Tk. 5,000.00 has been credited to A/C XXXX1001. Avl. Bal: Tk. 25,450.00. Ref: SYN10001.",
+      "expected": { "provider": "sonali-bank", "type": "income", "amountMinor": 500000, "balanceAfterMinor": 2545000, "accountLast4": "1001", "reference": "SYN10001" }
+    },
+    {
+      "kind": "ibbl-dr-transaction",
+      "senderHint": "IBBL",
+      "body": "DR transaction of BDT 1,250.00 from A/C XX2002 on 05-Sep-26. Avl Bal BDT 18,750.00. Txn ID SYN20002.",
+      "expected": { "provider": "islami-bank", "type": "expense", "amountMinor": 125000, "balanceAfterMinor": 1875000, "accountLast4": "2002", "reference": "SYN20002" }
+    },
+    {
+      "kind": "dbbl-atm-withdrawn-closing-balance",
+      "senderHint": "DBBL",
+      "body": "BDT 5,000.00 withdrawn from A/C *3003 at ATM on 05/09/2026. Closing Balance BDT 12,500.00. RRN SYN30003.",
+      "expected": { "provider": "dbbl", "type": "expense", "amountMinor": 500000, "balanceAfterMinor": 1250000, "accountLast4": "3003", "reference": "SYN30003", "category": "cash-withdrawal" }
+    },
+    {
+      "kind": "brac-card-spend",
+      "senderHint": "BRAC Bank",
+      "body": "Card ending 4004 spent BDT 2,400.00 at Grocery Store on 05/09/2026. Available Balance BDT 20,000.00. Auth Code SYN40004.",
+      "expected": { "provider": "brac-bank", "type": "expense", "amountMinor": 240000, "balanceAfterMinor": 2000000, "accountLast4": "4004", "reference": "SYN40004", "party": "Grocery Store" }
+    },
+    {
+      "kind": "city-card-charged-tk-dot",
+      "senderHint": "City Bank",
+      "body": "Your Card *5005 was charged Tk. 875.50 at Book Store on 05 Sep 2026. Avl. Bal Tk. 9,124.50. Ref No SYN50005.",
+      "expected": { "provider": "city-bank", "type": "expense", "amountMinor": 87550, "balanceAfterMinor": 912450, "accountLast4": "5005", "reference": "SYN50005", "party": "Book Store" }
+    },
+    {
+      "kind": "ebl-npsb-transfer",
+      "senderHint": "EBL",
+      "body": "Fund Transfer of BDT 10,000.00 from A/C *6006 via NPSB completed. Fee BDT 10.00. Current Balance BDT 45,000.00. STAN SYN60006.",
+      "expected": { "provider": "ebl", "type": "transfer", "amountMinor": 1000000, "feeMinor": 1000, "balanceAfterMinor": 4500000, "accountLast4": "6006", "reference": "SYN60006" }
+    },
+    {
+      "kind": "pubali-cash-deposit",
+      "senderHint": "Pubali Bank",
+      "body": "Cash Deposit BDT 7,500.00 credited to Acct ending 7007 on 05/09/2026. Ledger Bal BDT 32,000.00. Txn No SYN70007.",
+      "expected": { "provider": "pubali-bank", "type": "income", "amountMinor": 750000, "balanceAfterMinor": 3200000, "accountLast4": "7007", "reference": "SYN70007" }
+    },
+    {
+      "kind": "ucb-auto-debit",
+      "senderHint": "UCB",
+      "body": "Auto Debit of BDT 3,200.00 completed from A/C XXXX8008 for loan repayment. Avail Bal BDT 16,800.00. Ref SYN80008.",
+      "expected": { "provider": "ucb", "type": "expense", "amountMinor": 320000, "balanceAfterMinor": 1680000, "accountLast4": "8008", "reference": "SYN80008", "category": "bills" }
+    },
+    {
+      "kind": "prime-excise-duty",
+      "senderHint": "Prime Bank",
+      "body": "Excise Duty BDT 500.00 debited from Card ending 9009. Available Limit BDT 24,500.00. TxnID SYN90009.",
+      "expected": { "provider": "prime-bank", "type": "expense", "amountMinor": 50000, "accountLast4": "9009", "reference": "SYN90009", "category": "fees" }
+    },
+    {
+      "kind": "agrani-remittance-credit",
+      "senderHint": "Agrani Bank",
+      "body": "Remittance of 15,000.00 BDT credited to A/C XXXX1010 on 2026-09-05. Available Balance 55,000.00 BDT. Ref SYN10010.",
+      "expected": { "provider": "agrani-bank", "type": "income", "amountMinor": 1500000, "balanceAfterMinor": 5500000, "accountLast4": "1010", "reference": "SYN10010" }
+    },
+    {
+      "kind": "failed-card-payment-rejected",
+      "senderHint": "BRAC Bank",
+      "body": "Payment of BDT 2,000.00 using Card ending 4004 was declined. Available Balance BDT 20,000.00.",
+      "expected": { "isTransaction": false }
+    },
+    {
+      "kind": "pending-transfer-rejected",
+      "senderHint": "EBL",
+      "body": "Fund Transfer of BDT 5,000.00 from A/C *6006 is pending for processing. Ref SYN60007.",
+      "expected": { "isTransaction": false }
+    },
+    {
+      "kind": "payment-request-rejected",
+      "senderHint": "bKash",
+      "body": "Payment request of Tk 900.00 received from Merchant. Open the app to approve.",
+      "expected": { "isTransaction": false }
+    },
+    {
+      "kind": "card-due-reminder-rejected",
+      "senderHint": "City Bank",
+      "body": "Credit card payment of BDT 8,000.00 is due by 15/09/2026. Minimum amount due BDT 800.00.",
+      "expected": { "isTransaction": false }
+    },
+    {
+      "kind": "balance-only-rejected",
+      "senderHint": "Agrani Bank",
+      "body": "Your account balance is BDT 42,000.00 as of 05/09/2026.",
+      "expected": { "isTransaction": false }
+    }
+  ]
+}

@@ -258,7 +258,7 @@ in advance.
 - [ ] ATM and card cases covered
 - [ ] Balance cases covered
 - [ ] OTP and promotional cases rejected
-- [ ] Bangla and English SMS cases covered
+- [ ] English SMS cases covered
 - [ ] Unknown-message review path defined
 
 ## Testing Foundation

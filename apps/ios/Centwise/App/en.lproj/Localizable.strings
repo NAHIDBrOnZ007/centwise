@@ -23,7 +23,7 @@
 "onboarding.step2.title" = "Private by design";
 "onboarding.step2.body" = "Everything stays on your phone. No account needed, no cloud, no upload. Your money data is yours alone.";
 "onboarding.step3.title" = "Budgets and insights";
-"onboarding.step3.body" = "Set category budgets, watch spending trends, and get warned before you go over. Both Bangla and English supported.";
+"onboarding.step3.body" = "Set category budgets, watch spending trends, and get warned before you go over. English-language transaction SMS supported.";
 "onboarding.getStarted" = "Get Started";
 
 /* Home */

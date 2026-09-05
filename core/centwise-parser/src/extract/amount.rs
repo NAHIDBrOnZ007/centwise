@@ -1,8 +1,8 @@
 //! Field extraction: Amounts, Fees, and Balances.
 //!
 //! Supports diverse Bangladeshi banking formats:
-//! - Standard currency markers: `Tk`, `TK`, `৳`, `BDT`.
-//! - Postfix currency markers: `টাকা`, `taka`, `TAKA`.
+//! - Standard currency markers: `Tk`, `TK`, `BDT`.
+//! - Postfix currency markers: `taka`, `TAKA`.
 //! - Bank accounts debited/credited without currency markers (e.g. "debited by 5,000.00").
 //! - Card transactions (e.g. "Card 1234 used at SWAPNO for BDT 1,500.00").
 //! - Telco recharge confirmations (e.g. "to recharge 50 TAKA").
@@ -14,13 +14,13 @@ use regex::Regex;
 use std::sync::LazyLock;
 
 static FEE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\b(?:Fee|Charge|Service\s+fee)(?:\s*(?:of|is|[:]))?(?:\s*(?:Tk|৳|BDT))?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)")
+    Regex::new(r"(?i)\b(?:Fee|Charge|Service\s+fee)(?:\s*(?:of|is|[:]))?(?:\s*(?:Tk\.?|BDT))?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)")
         .expect("valid fee regex")
 });
 
 static BALANCE_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)(?:Available\s+Balance|Avail(?:\.|\ +)?Bal(?:ance)?|\bBal(?:ance)?\b|ব্যালেন্স|Current\s+Balance)(?:\s*[:\-])?\s*(?:Tk|৳|BDT)?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)",
+        r"(?i)(?:Available\s+Balance|Avail(?:able)?\.?\s*Bal(?:ance)?|Avl\.?\s*Bal(?:ance)?|Closing\s+Balance|Ledger\s+Bal(?:ance)?|\bBal(?:ance)?\b|Current\s+Balance)(?:\s*[:\-])?\s*(?:Tk\.?|BDT)?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?:\s*(?:Tk\.?|BDT))?",
     )
     .expect("valid balance regex")
 });
@@ -28,7 +28,7 @@ static BALANCE_RE: LazyLock<Regex> = LazyLock::new(|| {
 // Bank verbs: debited with/by/for, credited with/by/for (even without currency symbol)
 static BANK_DEBIT_CREDIT_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)\b(?:debited|credited)\s+(?:with|by|for)\s+(?:(?:Tk|৳|BDT)\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)",
+        r"(?i)\b(?:debited|credited)\s+(?:with|by|for)\s+(?:(?:Tk\.?|BDT)\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)",
     )
     .expect("valid bank debit credit regex")
 });
@@ -36,7 +36,7 @@ static BANK_DEBIT_CREDIT_RE: LazyLock<Regex> = LazyLock::new(|| {
 // Card purchase: "used at ... for BDT 500" or "used for BDT 500"
 static CARD_USAGE_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)\bused(?:\s+at\s+[^.]+?)?\s+for\s+(?:(?:Tk|৳|BDT)\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)",
+        r"(?i)\bused(?:\s+at\s+[^.]+?)?\s+for\s+(?:(?:Tk\.?|BDT)\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)",
     )
     .expect("valid card usage regex")
 });
@@ -44,26 +44,26 @@ static CARD_USAGE_RE: LazyLock<Regex> = LazyLock::new(|| {
 // Primary transaction verbs: Cash in, Cash out, Payment, Recharge, etc.
 static VERB_AMOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)(?:Cash\s+In|Cash\s+Out|Send\s+Money|Payment|Bill\s+Pay(?:ment)?|Recharge|Withdrawal|received|deposited|transferred|Fund\s+Transfer|added\s+to\s+your\s+account|EMI\s+of|Cashback(?:/Interest)?\s+of|Excise\s+Duty|Annual\s+(?:Card\s+)?Fee|SMS\s+Alert\s+Fee|Maintenance\s+Fee|Add\s+Money)\s+(?:of\s+)?(?:(?:Tk|৳|BDT)\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)",
+        r"(?i)(?:Cash\s+In|Cash\s+Out|Cash\s+Deposit|Send\s+Money|Payment|Bill\s+Pay(?:ment)?|Recharge|Withdrawal|Withdrawn|received|deposited|transferred|Fund\s+Transfer|Remittance|Auto\s+Debit|Loan\s+Repayment|spent|charged|(?:DR|CR)\.?\s+transaction|added\s+to\s+your\s+account|EMI\s+of|Cashback(?:/Interest)?\s+of|Excise\s+Duty|Annual\s+(?:Card\s+)?Fee|SMS\s+Alert\s+Fee|Maintenance\s+Fee|Add\s+Money)\s+(?:of\s+)?(?:(?:Tk\.?|BDT)\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?:\s*(?:Tk\.?|BDT))?",
     )
     .expect("valid verb amount regex")
 });
 
 // Telco "recharge <amount> TAKA" pattern
 static RECHARGE_TAKA_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\brecharge\s+([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s*(?:TAKA|Tk|৳|BDT)")
+    Regex::new(r"(?i)\brecharge\s+([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s*(?:TAKA|Tk\.?|BDT)")
         .expect("valid recharge taka regex")
 });
 
-// Postfix currency: "5,000 টাকা" or "5000 taka" (no prefix marker)
+// Postfix currency: "5000 taka" (no prefix marker)
 static TAKA_SUFFIX_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s*(?:টাকা|taka)")
-        .expect("valid taka suffix regex")
+    Regex::new(r"(?i)([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s*(?:taka|Tk\.?|BDT)")
+        .expect("valid currency suffix regex")
 });
 
-// Generic currency amounts (Tk 500, BDT 500, ৳500)
+// Generic currency amounts (Tk 500, BDT 500)
 static CURRENCY_AMOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)(?:Tk|৳|BDT)\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)")
+    Regex::new(r"(?i)(?:Tk\.?|BDT)\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)")
         .expect("valid currency amount regex")
 });
 
@@ -130,7 +130,7 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
         }
     }
 
-    // 5. Postfix TAKA/টাকা pattern (e.g. "৫,০০০ টাকা", "5000 taka")
+    // 5. Postfix TAKA pattern (e.g. "5000 taka")
     for cap in TAKA_SUFFIX_RE.captures_iter(text) {
         if let Some(m) = cap.get(1) {
             let start = m.start();
@@ -172,7 +172,6 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
         if lower.contains("debited")
             || lower.contains("fee charged")
             || lower.contains("charge debited")
-            || lower.contains("কাটা হয়েছে")
         {
             return Some(f);
         }
@@ -195,9 +194,7 @@ fn is_fee_or_balance(
         return true;
     }
     if balance == Some(val)
-        && (is_near_keyword(text, pos, "balance")
-            || is_near_keyword(text, pos, "bal")
-            || is_near_keyword(text, pos, "ব্যালেন্স"))
+        && (is_near_keyword(text, pos, "balance") || is_near_keyword(text, pos, "bal"))
     {
         return true;
     }
@@ -289,14 +286,6 @@ mod tests {
         let text = "Tk15 has been added to your account. Your total outstanding is Tk 17.78. For Details dial *123*600#";
         let amount = extract_main_amount(text, None, None);
         assert_eq!(amount, Some(1_500));
-    }
-
-    #[test]
-    fn parses_taka_suffix_amount() {
-        // After normalize_sms_text, Bengali digits are already converted to ASCII
-        let text = "আপনার হিসাবে 5,000 টাকা জমা হয়েছে।";
-        let amount = extract_main_amount(text, None, None);
-        assert_eq!(amount, Some(500_000));
     }
 
     #[test]
