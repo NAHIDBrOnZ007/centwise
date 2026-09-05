@@ -74,6 +74,7 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
         || lower.contains("dr transaction")
         || lower.contains("dr. transaction")
         || lower.contains("auto debit")
+        || lower.contains("auto-debit")
         || lower.contains("loan repayment")
         || lower.contains("bill pay")
         || lower.contains("used at")

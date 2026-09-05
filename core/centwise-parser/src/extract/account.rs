@@ -37,6 +37,9 @@ pub fn extract_account_info(text: &str) -> (Option<String>, Option<String>) {
         if let Some(m) = cap.get(1) {
             let account = m.as_str().trim();
             let digits: String = account.chars().filter(|c| c.is_ascii_digit()).collect();
+            if digits.is_empty() {
+                continue;
+            }
             if digits.len() == 4 {
                 return (Some(digits), None);
             }

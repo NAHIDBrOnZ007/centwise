@@ -67,6 +67,15 @@ static CURRENCY_AMOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
         .expect("valid currency amount regex")
 });
 
+static INFORMATIONAL_AMOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\b(?:available\s+(?:credit\s+)?limit|(?:minimum\s+)?amount\s+due|due\s+amount|total\s+outstanding)\s*(?:is\s*)?[:\-]?\s*(?:Tk\.?|BDT)?\s*$")
+        .expect("valid informational amount regex")
+});
+
+static DATE_OR_PHONE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"^(?:01[0-9]{9}\b|[0-9]{1,4}[/\-][0-9])").expect("valid date or phone regex")
+});
+
 pub fn extract_fee(text: &str) -> Option<i64> {
     if let Some(cap) = FEE_RE.captures(text) {
         if let Some(m) = cap.get(1) {
@@ -187,6 +196,9 @@ fn is_fee_or_balance(
     fee: Option<i64>,
     balance: Option<i64>,
 ) -> bool {
+    if INFORMATIONAL_AMOUNT_RE.is_match(&text[..pos]) || DATE_OR_PHONE_RE.is_match(&text[pos..]) {
+        return true;
+    }
     if fee == Some(val) && is_near_keyword(text, pos, "fee") {
         return true;
     }

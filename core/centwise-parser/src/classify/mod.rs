@@ -8,6 +8,17 @@ pub mod otp;
 pub mod telco;
 
 use crate::types::RejectReason;
+use regex::Regex;
+use std::sync::LazyLock;
+
+static POSTED_REFUND_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\b(?:credited|refunded|completed|successful)\b")
+        .expect("valid posted refund regex")
+});
+
+static UNPOSTED_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\b(?:pending|requested|reminder)\b").expect("valid unposted regex")
+});
 
 /// Runs Stage 1 safety checks. Returns a `RejectReason` if the message should be discarded immediately.
 pub fn classify_safety(body: &str, sender_hint: Option<&str>) -> Option<RejectReason> {
@@ -33,12 +44,14 @@ fn is_non_posted_financial_message(text: &str) -> bool {
     let lower = text.to_lowercase();
 
     // A posted refund/reversal is a real credit even when it describes an earlier failure.
-    let is_posted_refund =
-        (lower.contains("refund") || lower.contains("reversal") || lower.contains("reversed"))
-            && (lower.contains("credited")
-                || lower.contains("refunded")
-                || lower.contains("completed")
-                || lower.contains("successful"));
+    let is_posted_refund = lower.split(". ").any(|clause| {
+        (clause.contains("refund") || clause.contains("reversal") || clause.contains("reversed"))
+            && POSTED_REFUND_RE.is_match(clause)
+            && !clause.contains("not ")
+            && !clause.contains("will be")
+            && !clause.contains("unsuccessful")
+            && !UNPOSTED_RE.is_match(clause)
+    });
     if is_posted_refund {
         return false;
     }
@@ -52,6 +65,8 @@ fn is_non_posted_financial_message(text: &str) -> bool {
         "canceled",
         "could not be processed",
         "not processed",
+        "not been credited",
+        "will be credited",
     ]
     .iter()
     .any(|marker| lower.contains(marker));
@@ -80,25 +95,26 @@ fn is_non_posted_financial_message(text: &str) -> bool {
     .any(|marker| lower.contains(marker));
 
     let request_or_reminder = !has_posted_action
-        && [
-            "payment request",
-            "has requested",
-            "requesting payment",
-            "collect request",
-            "minimum amount due",
-            "min amount due",
-            "payment is due",
-            "payment of",
-        ]
-        .iter()
-        .any(|marker| lower.contains(marker))
-        && (lower.contains("approve")
-            || lower.contains("requested")
-            || lower.contains("request")
-            || lower.contains(" is due")
-            || lower.contains(" due by")
-            || lower.contains("minimum amount due")
-            || lower.contains("min amount due"));
+        && (UNPOSTED_RE.is_match(&lower)
+            || ([
+                "payment request",
+                "has requested",
+                "requesting payment",
+                "collect request",
+                "minimum amount due",
+                "min amount due",
+                "payment is due",
+                "payment of",
+            ]
+            .iter()
+            .any(|marker| lower.contains(marker))
+                && (lower.contains("approve")
+                    || lower.contains("requested")
+                    || lower.contains("request")
+                    || lower.contains(" is due")
+                    || lower.contains(" due by")
+                    || lower.contains("minimum amount due")
+                    || lower.contains("min amount due"))));
 
     failed || pending || request_or_reminder
 }

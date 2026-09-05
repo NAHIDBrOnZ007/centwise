@@ -1,7 +1,18 @@
 //! Fast safety filter for OTP, 2FA, PIN, and security alerts.
 
+use regex::Regex;
+use std::sync::LazyLock;
+
+static SECURITY_CODE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\b(?:otp|one[ -]time password|verification code|security code|pin code|login code|authentication code)\s*(?:is\s*|[:=-]\s*)?[0-9]{4,8}\b")
+        .expect("valid security code regex")
+});
+
 /// Checks if an SMS is an OTP or security alert that must never become a transaction.
 pub fn is_otp_or_security_message(text: &str) -> bool {
+    if SECURITY_CODE_RE.is_match(text) {
+        return true;
+    }
     let lower = text.to_lowercase();
     let has_otp_keyword = lower.contains("otp")
         || lower.contains("one time password")
