@@ -10,7 +10,7 @@ static USSD_DIAL_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?i)\bdial\s+\*[0-9*#]+").expect("valid ussd regex"));
 
 static BUNDLE_MENU_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)(?:[0-9]+[)\.]\s*[0-9]+(?:TK|GB|MB)|@(?:TK\s*)?[0-9]+(?:\.[0-9]{1,2})?|Ghechang\s+Rechar[ge]{1,2})")
+    Regex::new(r"(?i)(?:[0-9]+[)]\s*[0-9]+(?:TK|GB|MB)|[0-9]+\.\s+[0-9]+(?:TK|GB|MB)|@(?:TK\s*)?[0-9]+(?:\.[0-9]{1,2})?|Ghechang\s+Rechar[ge]{1,2})")
         .expect("valid bundle menu regex")
 });
 
@@ -27,6 +27,10 @@ pub fn is_promotional_or_telco_offer(body: &str, sender_hint: Option<&str>) -> b
         || lower.contains("download mygp")
         || lower.contains("download mybl")
         || lower.contains("download myrobi")
+        || lower.contains("special offer")
+        || lower.contains("chomok offer")
+        || lower.contains("super offer")
+        || lower.contains("hot offer")
     {
         return true;
     }
@@ -40,6 +44,10 @@ pub fn is_promotional_or_telco_offer(body: &str, sender_hint: Option<&str>) -> b
         || lower.contains("your balance is low")
         || lower.contains("balance sesh")
         || lower.contains("your balance is 0")
+        || (lower.contains("balance is tk") && lower.contains("or less"))
+        || lower.contains("take balance loan")
+        || lower.contains("take loan")
+        || lower.contains("take emergency")
     {
         return true;
     }
@@ -52,6 +60,13 @@ pub fn is_promotional_or_telco_offer(body: &str, sender_hint: Option<&str>) -> b
         || lower.contains("get a balance of tk")
         || lower.contains("to settle your recent due loan")
         || lower.contains("to settle your due loan")
+        || ((lower.contains("will be deducted")
+            || lower.contains("will be adjusted")
+            || lower.contains("will be recovered"))
+            && (USSD_DIAL_RE.is_match(body) || lower.contains("dial *") || lower.contains("dial*"))
+            && !lower.contains("has been added")
+            && !lower.contains("you have received")
+            && !lower.contains("received tk"))
     {
         return true;
     }
@@ -207,9 +222,24 @@ fn is_balance_check_response(lower: &str) -> bool {
 }
 
 fn is_confirmed_transaction_text(lower: &str) -> bool {
+    let is_future_loan_deduction_only = (lower.contains("will be deducted")
+        || lower.contains("will be adjusted")
+        || lower.contains("will be recovered"))
+        && !lower.contains("has been added")
+        && !lower.contains("received tk")
+        && !lower.contains("is credited");
+    if is_future_loan_deduction_only {
+        return false;
+    }
+
     lower.contains("is successful")
         || lower.contains("recharge successful")
         || lower.contains("recharge of")
+        || lower.contains("recharged with")
+        || (lower.contains("recharge tk")
+            && (lower.contains("successful")
+                || lower.contains("is ")
+                || lower.contains("validity")))
         || lower.contains("mobile recharge")
         || lower.contains("bill payment")
         || lower.contains("add money")
@@ -218,7 +248,24 @@ fn is_confirmed_transaction_text(lower: &str) -> bool {
         || lower.contains("has been debited")
         || lower.contains("has been credited")
         || lower.contains("has been added")
+        || lower.contains("has been deducted")
+        || lower.contains("has been recovered")
+        || lower.contains("deducted for")
+        || (lower.contains("deducted from") && !lower.contains("will be deducted from"))
+        || lower.contains("deducted as")
+        || lower.contains("purchased")
+        || lower.contains("bought")
+        || lower.contains("activated")
+        || lower.contains("pack purchase")
+        || lower.contains("data pack")
+        || (lower.contains("emergency balance")
+            && (lower.contains("received") || lower.contains("deducted")))
+        || (lower.contains("jhotpot balance")
+            && (lower.contains("received") || lower.contains("deducted")))
+        || (lower.contains("emergency loan")
+            && (lower.contains("credited") || lower.contains("recovered")))
         || lower.contains("transaction number r")
+        || (lower.contains("transferred") && lower.contains("balance"))
         || (lower.contains("successful") && (lower.contains("trxid") || lower.contains("txnid")))
 }
 

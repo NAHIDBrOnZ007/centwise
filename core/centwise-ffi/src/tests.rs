@@ -285,6 +285,27 @@ mod ingestion_tests {
     }
 
     #[test]
+    fn ingest_sms_bangla_gatekeeper_ignores_and_never_queues_bengali_sms() {
+        let core = core_with_account();
+        let bangla_sms_samples = [
+            "আপনার বিকাশ একাউন্ট থেকে ৫০ টাকা রিচার্জ সফল হয়েছে। ট্রানজেকশন আইডি TX12345",
+            "নগদ একাউন্টে ১,০০০ টাকা ক্যাশ ইন সম্পন্ন হয়েছে।",
+            "সিটি ব্যাংক: আপনার একাউন্ট থেকে ৫০০ টাকা উত্তোলন করা হয়েছে।",
+        ];
+
+        for sample in bangla_sms_samples {
+            let result = core
+                .ingest_sms(sample.into(), Some("bKash".into()), 1_700_000_000_000)
+                .expect("ingest bangla sms");
+            assert_eq!(result.status, SmsIngestStatus::Ignored);
+            assert!(result.transaction_id.is_none());
+            assert!(result.review_id.is_none());
+        }
+
+        assert!(core.list_review_queue(10).expect("queue").is_empty());
+    }
+
+    #[test]
     fn ingest_sms_applies_a_persisted_rust_rule() {
         let core = core_with_account();
         core.insert_category(CategoryInput {

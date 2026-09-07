@@ -14,7 +14,7 @@ object CsvExporter {
 
     private val headerFields = listOf(
         "Date", "Title", "Amount", "Type", "Category",
-        "Payment Method", "Note"
+        "Payment Method", "Reference", "Note", "Raw SMS"
     )
 
     fun transactionsCsv(transactions: List<TransactionItem>): String {
@@ -29,7 +29,9 @@ object CsvExporter {
                 transaction.type.displayName,
                 escape(transaction.category),
                 escape(transaction.paymentMethod),
-                escape(transaction.note ?: "")
+                escape(transaction.reference ?: ""),
+                escape(transaction.note ?: ""),
+                escape(transaction.rawSms ?: "")
             )
             lines.add(fields.joinToString(","))
         }
@@ -71,7 +73,7 @@ object CsvExporter {
     }
 
     private fun escape(field: String): String {
-        return if (field.contains(",") || field.contains("\"") || field.contains("\n")) {
+        return if (field.contains(",") || field.contains("\"") || field.contains("\n") || field.contains("\r")) {
             "\"${field.replace("\"", "\"\"")}\""
         } else {
             field

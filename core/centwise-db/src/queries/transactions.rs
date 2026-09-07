@@ -53,6 +53,30 @@ impl<'a> Queries<'a> {
             if self.reference_exists(reference)? {
                 return Err(DbError::DuplicateReference(reference.to_string()));
             }
+        } else if transaction.is_auto_tracked && transaction.raw_sms.is_some() {
+            // Deduplicate auto-tracked transactions that lack an explicit reference (e.g. repeated SMS delivery)
+            let dup_count: i64 = self.connection.query_row(
+                "SELECT COUNT(*) FROM transactions 
+                 WHERE account_id = ?1 
+                   AND amount_minor = ?2 
+                   AND transaction_type = ?3 
+                   AND ABS(occurred_at_epoch_ms - ?4) <= 300000
+                   AND ((balance_after_minor IS NULL AND ?5 IS NULL) OR balance_after_minor = ?5)",
+                params![
+                    transaction.account_id,
+                    transaction.amount_minor,
+                    transaction.transaction_type.as_str(),
+                    transaction.occurred_at_epoch_ms,
+                    transaction.balance_after_minor
+                ],
+                |row| row.get(0),
+            )?;
+            if dup_count > 0 {
+                return Err(DbError::DuplicateTransaction(format!(
+                    "duplicate auto-tracked transaction within 5 minutes at epoch {}",
+                    transaction.occurred_at_epoch_ms
+                )));
+            }
         }
 
         let latest_reported_at = self.latest_reported_balance_at(&transaction.account_id)?;

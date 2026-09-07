@@ -1,4 +1,4 @@
-use centwise_db::Database;
+use centwise_db::{Database, DbError};
 use centwise_domain::{Account, NewTransaction, TransactionType};
 
 fn seed_account(database: &Database) {
@@ -211,4 +211,42 @@ fn newest_reported_balance_is_anchor_for_out_of_order_imports() {
         database.account_balance("acct-1").expect("balance"),
         475_000
     );
+}
+
+#[test]
+fn deduplicates_auto_tracked_sms_without_reference() {
+    let database = Database::open_in_memory().expect("open");
+    seed_account(&database);
+
+    let mut first_sms = tx(
+        "sms-1",
+        101_000,
+        TransactionType::Expense,
+        1_723_650_000_000,
+    );
+    first_sms.raw_sms =
+        Some("14-Aug-2024 CITYTOUCH TXN Tk. 1,010 Withdrawal Tk. 74,049 Balance".into());
+    first_sms.balance_after_minor = Some(7_404_900);
+    first_sms.is_auto_tracked = true;
+
+    database
+        .insert_transaction(&first_sms)
+        .expect("first delivery inserted");
+
+    // Second retry delivery of the exact same SMS ~30 seconds later (e.g. telco re-send with different survey link)
+    let mut retry_sms = tx(
+        "sms-2",
+        101_000,
+        TransactionType::Expense,
+        1_723_650_030_000,
+    );
+    retry_sms.raw_sms =
+        Some("14-Aug-2024 CITYTOUCH TXN Tk. 1,010 Withdrawal Tk. 74,049 Balance (retry)".into());
+    retry_sms.balance_after_minor = Some(7_404_900);
+    retry_sms.is_auto_tracked = true;
+
+    let err = database
+        .insert_transaction(&retry_sms)
+        .expect_err("retry must be rejected as duplicate");
+    assert!(matches!(err, DbError::DuplicateTransaction(_)));
 }

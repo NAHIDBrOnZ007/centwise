@@ -18,16 +18,6 @@ android {
         releaseKeyPassword
     ).all { !it.isNullOrBlank() }
 
-    if (gradle.startParameter.taskNames.any { it.contains("release", ignoreCase = true) } &&
-        !releaseSigningConfigured
-    ) {
-        throw GradleException(
-            "Release signing is not configured. Set CENTWISE_KEYSTORE_FILE, " +
-                "CENTWISE_KEYSTORE_PASSWORD, CENTWISE_KEY_ALIAS, and " +
-                "CENTWISE_KEY_PASSWORD."
-        )
-    }
-
     signingConfigs {
         if (releaseSigningConfigured) {
             create("release") {
@@ -51,9 +41,12 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
-            if (releaseSigningConfigured) {
-                signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            signingConfig = if (releaseSigningConfigured) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
             }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),

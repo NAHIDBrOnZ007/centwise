@@ -103,6 +103,18 @@
       "senderHint": "bKash",
       "body": "Payment of Tk 2,500.00 to 'Software Shop Ltd' is successful. TrxID 9A8B7C6D on 13/11/2026. Balance 5,000.00.",
       "expected": { "type": "expense", "amountMinor": 250000, "balanceAfterMinor": 500000, "reference": "9A8B7C6D", "party": "Software Shop Ltd", "date": "13/11/2026" }
+    },
+    {
+      "kind": "send-money-you-have-sent",
+      "senderHint": "bKash",
+      "body": "You have sent Tk 500.00 to 017XXXXXXXX. Fee Tk 5.00. Balance Tk 1,250.00. TrxID 8J7A6K9L.",
+      "expected": { "type": "expense", "amountMinor": 50000, "feeMinor": 500, "balanceAfterMinor": 125000, "reference": "8J7A6K9L", "party": "017XXXXXXXX" }
+    },
+    {
+      "kind": "savings-auto-debit",
+      "senderHint": "bKash",
+      "body": "Tk 1,000.00 deducted for monthly deposit in IDLC Savings Scheme via bKash. Balance Tk 4,200.00. TrxID 6T7U8V9W.",
+      "expected": { "type": "expense", "amountMinor": 100000, "balanceAfterMinor": 420000, "reference": "6T7U8V9W" }
     }
   ]
 }

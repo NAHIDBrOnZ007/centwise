@@ -18,11 +18,12 @@ static AT_MERCHANT_RE: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 static TO_SUCCESS_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\bto\s+([0-9A-Za-z\s'.-]+?)\s+successful").expect("valid to success regex")
+    Regex::new(r"(?i)\bto\s+([0-9A-Za-z\s'.-]+?)(?:\s+(?:Tk\.?|BDT)\b|\s+successful|\s*[.,])")
+        .expect("valid to success regex")
 });
 
 static FROM_SUCCESS_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\bfrom\s+([0-9A-Za-z\s'.-]+?)(?:\s+successful|\s*[.,])")
+    Regex::new(r"(?i)\bfrom\s+([0-9A-Za-z\s'.-]+?)(?:\s+(?:Tk\.?|BDT)\b|\s+successful|\s*[.,])")
         .expect("valid from success regex")
 });
 
@@ -36,9 +37,9 @@ static RECHARGE_PHONE_RE: LazyLock<Regex> = LazyLock::new(|| {
         .expect("valid recharge phone regex")
 });
 
-// Bill Payment specific: "Bill Payment of Tk 1,850.00 to DESCO successful"
+// Bill Payment specific: "Bill Payment of Tk 1,850.00 to DESCO successful" or "Pay Bill Tk 1,420.00 to DESCO successful"
 static BILL_PAYMENT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\b(?:Bill\s+Pay(?:ment)?)\s+(?:of\s+)?(?:(?:Tk|BDT)\s*)?[0-9][0-9,]*(?:\.[0-9]{1,2})?\s+to\s+([A-Za-z][A-Za-z\s.-]+?)(?:\s+successful|\s*[.,])")
+    Regex::new(r"(?i)\b(?:Bill\s+Pay(?:ment)?|Pay\s+Bill)\s+(?:of\s+)?(?:(?:Tk|BDT)\s*)?[0-9][0-9,]*(?:\.[0-9]{1,2})?\s+to\s+([A-Za-z][A-Za-z\s.-]+?)(?:\s+successful|\s*[.,])")
         .expect("valid bill payment regex")
 });
 
@@ -54,11 +55,26 @@ static RECEIVED_FROM_RE: LazyLock<Regex> = LazyLock::new(|| {
         .expect("valid received from regex")
 });
 
+// EFT sender: "credited(EFT by: BIPOULHOSSAIN adn: ...)"
+static EFT_BY_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\bEFT\s+by:\s*([A-Za-z0-9\s.-]+?)(?:\s+adn:|\s+on|\)|,)")
+        .expect("valid eft by regex")
+});
+
 pub fn extract_party(text: &str) -> Option<String> {
     let lower = text.to_lowercase();
 
+    // 0. EFT sender name (e.g. "EFT by: BIPOULHOSSAIN")
+    if let Some(cap) = EFT_BY_RE.captures(text) {
+        if let Some(m) = cap.get(1) {
+            if let Some(clean) = clean_party_candidate(m.as_str()) {
+                return Some(clean);
+            }
+        }
+    }
+
     // 1. Bill Payment biller extraction (highest priority for bill flows)
-    if lower.contains("bill pay") {
+    if lower.contains("bill pay") || lower.contains("pay bill") {
         if let Some(cap) = BILL_PAYMENT_RE.captures(text) {
             if let Some(m) = cap.get(1) {
                 if let Some(clean) = clean_party_candidate(m.as_str()) {
@@ -178,11 +194,16 @@ fn clean_party_candidate(raw: &str) -> Option<String> {
     if lower.starts_with("a/c")
         || lower.starts_with("your a/c")
         || lower.starts_with("your account")
+        || lower.starts_with("your recharge")
         || lower.starts_with("your next recharge")
         || lower.starts_with("your card")
         || lower.starts_with("my account")
         || lower.starts_with("your balance")
         || lower.starts_with("biller a/c")
+        || lower.starts_with("tk ")
+        || lower.starts_with("tk.")
+        || lower.starts_with("bdt ")
+        || lower.starts_with("taka ")
     {
         return None;
     }
@@ -204,6 +225,10 @@ fn clean_party_candidate(raw: &str) -> Option<String> {
         "subscribe",
         "activate",
         "check",
+        "receive",
+        "open",
+        "download",
+        "contact",
     ];
     for verb in invalid_leading_verbs {
         if lower.starts_with(verb)

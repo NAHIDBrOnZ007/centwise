@@ -6,31 +6,62 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
     let lower = text.to_lowercase();
 
     // 1. Refunds and Reversals
-    if lower.contains("refund") || lower.contains("reversal") || lower.contains("reversed") {
+    if lower.contains("refund")
+        || lower.contains("reversal")
+        || lower.contains("reversed")
+        || lower.contains("tk-")
+        || lower.contains("bdt-")
+        || lower.contains("by -")
+    {
         return Some(TransactionType::Refund);
     }
 
-    // 2. Transfers between own accounts, wallet transfers, and interbank
+    // 2. Incoming Credits via Fund Transfer / RTGS / NPSB / BEFTN / EFT (Inflows = Income)
+    // When an account is credited via RTGS, NPSB, BEFTN, or Fund Transfer, it is incoming money.
+    let is_account_credit = (lower.contains("credited")
+        || lower.contains("deposit")
+        || lower.contains("received deposit")
+        || lower.contains("cr transaction")
+        || lower.contains("cr. transaction")
+        || (lower.contains("credit")
+            && (lower.contains("to your a/c")
+                || lower.contains("to a/c")
+                || lower.contains("in your a/c")
+                || lower.contains("funds transfer - credit"))))
+        && !lower.contains("debited from your a/c")
+        && !lower.contains("debited from your account")
+        && !lower.contains("recharge request");
+
+    if is_account_credit
+        && (lower.contains("fund transfer")
+            || lower.contains("funds transfer")
+            || lower.contains("rtgs")
+            || lower.contains("npsb")
+            || lower.contains("beftn")
+            || lower.contains("eft"))
+    {
+        return Some(TransactionType::Income);
+    }
+
+    // 3. Transfers between own accounts, wallet transfers, and interbank outflows
     if lower.contains("between your own accounts")
         || lower.contains("between own accounts")
         || lower.contains("fund transfer")
         || lower.contains("transfer:")
         || lower.contains("transfer of")
         || lower.contains("transfer to")
+        || lower.contains("transfer money")
         || lower.contains("transferred")
     {
-        // If body mentions NPSB/BEFTN/RTGS with a debit verb, it's a transfer
         return Some(TransactionType::Transfer);
     }
 
-    // 3. Interbank transfers via NPSB/BEFTN/RTGS (explicit signals)
+    // 4. Interbank transfers via NPSB/BEFTN/RTGS (explicit signals)
     if (lower.contains("npsb") || lower.contains("beftn") || lower.contains("rtgs"))
         && (lower.contains("from a/c")
             || lower.contains("to a/c")
             || lower.contains("to your a/c")
-            || lower.contains("debited")
-            || lower.contains("credited")
-            || lower.contains("credit"))
+            || lower.contains("debited"))
     {
         return Some(TransactionType::Transfer);
     }
@@ -39,53 +70,97 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
     if lower.contains("has been added to your account")
         || lower.contains("added to your account")
         || lower.contains("added to your balance")
+        || (lower.contains("emergency balance") && lower.contains("received"))
+        || (lower.contains("jhotpot balance") && lower.contains("received"))
+        || (lower.contains("emergency loan")
+            && (lower.contains("credited") || lower.contains("received")))
     {
         return Some(TransactionType::Income);
     }
 
-    // 5. Standard Income keywords
+    // 5. Explicit Expense overrides:
+    // - Recharge requests: "Received Recharge request of Tk 20.00 for 01615076000"
+    // - Bank account debit with merchant/service credit: "debited from your a/c ***316 and credited to MOBILE RECHARGE"
+    // - Cash Out / Send Money with promotional footers: "Cash Out Tk 4,000 ... Cashback 50 on 25,000 CashOut"
+    if lower.contains("received recharge request")
+        || lower.contains("recharge request")
+        || lower.contains("debited from your a/c")
+        || lower.contains("debited from your account")
+        || lower.contains("cash out")
+        || lower.contains("send money")
+        || lower.contains("you have sent")
+        || lower.contains("sent to")
+    {
+        return Some(TransactionType::Expense);
+    }
+
+    // 6. Standard Income keywords
     if lower.contains("cash in")
-        || lower.contains("received")
-        || lower.contains("credited")
+        || (lower.contains("received") && !lower.contains("recharge request"))
+        || (lower.contains("credited") && !lower.contains("debited from your"))
         || lower.contains("cr transaction")
         || lower.contains("cr. transaction")
         || lower.contains("add money")
-        || lower.contains("cashback")
+        || (lower.contains("cashback")
+            && (lower.contains("received")
+                || lower.contains("credited")
+                || lower.contains("added")
+                || !lower.contains("cashout")))
         || lower.contains("interest")
-        || lower.contains("salary")
-        || lower.contains("deposit")
+        || (lower.contains("salary")
+            && (lower.contains("credited")
+                || lower.contains("deposited")
+                || lower.contains("received")
+                || lower.contains("a/c")
+                || lower.contains("account")
+                || lower.contains("salary of")))
+        || (lower.contains("deposit") && !lower.contains("deducted"))
         || lower.contains("remittance")
     {
         return Some(TransactionType::Income);
     }
 
-    // 6. Standard Expense keywords (safely ignoring future conditional "will be deducted")
+    // 7. Standard Expense keywords (safely ignoring future conditional "will be deducted")
     let has_current_debit = lower.contains("cash out")
         || lower.contains("send money")
+        || lower.contains("you have sent")
+        || lower.contains("sent to")
+        || (lower.contains("sent") && !lower.contains("sent from"))
         || lower.contains("payment")
         || lower.contains("debited")
         || lower.contains("withdrawal")
         || lower.contains("withdrawn")
         || lower.contains("recharge")
         || lower.contains("emi")
-        || lower.contains("purchase")
+        || (lower.contains("purchase")
+            && !lower.contains("min purchase")
+            && !lower.contains("minimum purchase"))
         || lower.contains("spent")
         || lower.contains("charged")
+        || lower.contains("bought")
+        || lower.contains("activated")
+        || lower.contains("pack purchase")
         || lower.contains("dr transaction")
         || lower.contains("dr. transaction")
         || lower.contains("auto debit")
         || lower.contains("auto-debit")
         || lower.contains("loan repayment")
         || lower.contains("bill pay")
+        || lower.contains("pay bill")
         || lower.contains("used at")
         || lower.contains("was used")
         || lower.contains("used for")
+        || lower.contains("done with your debit card")
+        || lower.contains("done with your credit card")
+        || lower.contains("done with your card")
         || lower.contains("excise duty")
         || lower.contains("annual fee")
         || lower.contains("annual card fee")
         || lower.contains("sms alert fee")
         || lower.contains("maintenance fee")
         || lower.contains("ledger fee")
+        || lower.contains("recovered for")
+        || lower.contains("has been recovered")
         || (lower.contains("deducted") && !lower.contains("will be deducted"));
 
     if has_current_debit {
@@ -142,12 +217,15 @@ mod tests {
     }
 
     #[test]
-    fn classifies_beftn_salary_credit_as_transfer() {
+    fn classifies_beftn_salary_credit_as_income() {
         let text = "BEFTN credit of BDT 25,000.00 to your A/C XXXX1234. Ref: BF12345678";
-        assert_eq!(
-            detect_transaction_type(text),
-            Some(TransactionType::Transfer)
-        );
+        assert_eq!(detect_transaction_type(text), Some(TransactionType::Income));
+    }
+
+    #[test]
+    fn classifies_rtgs_credit_as_income() {
+        let text = "Dear Sir, your A/C ***5543 credited (RTGS Funds Transfer - Credit) by Tk5,00,000.00 on 28-08-2023 11:45:57 AM C/B Tk5,00,766.82. NexusPay https://bit.ly/nexuspay";
+        assert_eq!(detect_transaction_type(text), Some(TransactionType::Income));
     }
 
     #[test]

@@ -40,6 +40,29 @@ pub fn categorize_by_type_or_keywords(
     {
         return Some("refunds".to_string());
     }
+
+    if transaction_type == TransactionType::Income {
+        if contains_any(&lower, &["salary", "payroll", "wages"]) {
+            return Some("salary".to_string());
+        }
+        if contains_any(&lower, &["interest", "mudaraba profit", "profit credited"]) {
+            return Some("interest-profit".to_string());
+        }
+        if contains_any(&lower, &["dividend"]) {
+            return Some("dividends".to_string());
+        }
+        if contains_any(&lower, &["cashback", "cash back"]) {
+            return Some("cashback".to_string());
+        }
+        return Some("income".to_string());
+    }
+
+    if contains_any(&lower, &["atm", "cash withdrawal", "cash out"]) {
+        return Some("cash-withdrawal".to_string());
+    }
+    if lower.contains("recharge") {
+        return Some("recharge".to_string());
+    }
     if contains_any(&lower, &["cashback", "cash back"]) {
         return Some("cashback".to_string());
     }
@@ -52,13 +75,11 @@ pub fn categorize_by_type_or_keywords(
     if contains_any(&lower, &["salary", "payroll", "wages"]) {
         return Some("salary".to_string());
     }
-    if lower.contains("recharge") {
-        return Some("recharge".to_string());
-    }
-    if contains_any(&lower, &["atm", "cash withdrawal", "cash out"]) {
-        return Some("cash-withdrawal".to_string());
-    }
-    if lower.contains("emi") || lower.contains("loan") || lower.contains("bill") {
+    let has_bill = lower.contains("bill")
+        && !lower.contains("bill no")
+        && !lower.contains("bill number")
+        && !lower.contains("purchase bill");
+    if has_word(&lower, "emi") || has_word(&lower, "loan") || has_bill {
         return Some("bills".to_string());
     }
     if is_fee_transaction(&lower) {
@@ -74,6 +95,11 @@ pub fn categorize_by_type_or_keywords(
         }
         .to_string(),
     )
+}
+
+fn has_word(text: &str, word: &str) -> bool {
+    text.split(|c: char| !c.is_alphanumeric())
+        .any(|token| token.eq_ignore_ascii_case(word))
 }
 
 fn contains_any(text: &str, needles: &[&str]) -> bool {
@@ -184,6 +210,28 @@ mod tests {
     fn unknown_expense_uses_other_without_an_unknown_category() {
         assert_eq!(
             categorize_by_type_or_keywords("Card purchase", TransactionType::Expense),
+            Some("other".to_string())
+        );
+    }
+
+    #[test]
+    fn ryans_and_cashout_categorization() {
+        // Ryans mapped to shopping
+        let ryans = categorize_by_merchant("Ryans").unwrap();
+        assert_eq!(ryans.category_id, "shopping");
+
+        // Cash Out with promotional cashback footer must be categorized as cash-withdrawal, NOT cashback
+        let cashout =
+            "Cash Out Tk 4,000.00 to 01707376622 successful. Cashback 50 on 25,000 CashOut";
+        assert_eq!(
+            categorize_by_type_or_keywords(cashout, TransactionType::Expense),
+            Some("cash-withdrawal".to_string())
+        );
+
+        // "purchase bill no" must not trigger "bills"
+        let invoice = "Your purchase bill no is B-2242120, Tk 1,000";
+        assert_eq!(
+            categorize_by_type_or_keywords(invoice, TransactionType::Expense),
             Some("other".to_string())
         );
     }

@@ -31,13 +31,14 @@ if [ -z "${ANDROID_NDK_HOME:-}" ] || [ ! -d "${ANDROID_NDK_HOME}" ]; then
     exit 1
 fi
 
-echo "Building Rust core for arm64-v8a and x86_64..."
+echo "Building Rust core for arm64-v8a, armeabi-v7a, and x86_64..."
 cd "${CORE_DIR}"
 
-cargo ndk -t arm64-v8a -t x86_64 \
+cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 \
     -o "${JNI_LIBS_DIR}" \
     build --release -p centwise-ffi
 
 echo "=== Success! Native libraries generated ==="
 ls -la "${JNI_LIBS_DIR}/arm64-v8a/libcentwise_ffi.so" 2>/dev/null || true
+ls -la "${JNI_LIBS_DIR}/armeabi-v7a/libcentwise_ffi.so" 2>/dev/null || true
 ls -la "${JNI_LIBS_DIR}/x86_64/libcentwise_ffi.so" 2>/dev/null || true

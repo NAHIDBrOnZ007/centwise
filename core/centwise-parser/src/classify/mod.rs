@@ -20,16 +20,41 @@ static UNPOSTED_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?i)\b(?:pending|requested|reminder)\b").expect("valid unposted regex")
 });
 
+/// Returns true if the string contains any characters in the Bengali Unicode block (U+0980 - U+09FF).
+pub fn contains_bengali_script(text: &str) -> bool {
+    text.chars().any(|c| ('\u{0980}'..='\u{09FF}').contains(&c))
+}
+
 /// Runs Stage 1 safety checks. Returns a `RejectReason` if the message should be discarded immediately.
 pub fn classify_safety(body: &str, sender_hint: Option<&str>) -> Option<RejectReason> {
     let trimmed = body.trim();
+
+    // 0. Bangla Gatekeeper: Discard Bengali script early as unsupported language
+    if contains_bengali_script(trimmed) {
+        return Some(RejectReason::PromotionOrSpam);
+    }
 
     if otp::is_otp_or_security_message(trimmed) {
         return Some(RejectReason::OtpOrSecurity);
     }
 
+    if is_marketing_or_scam_message(trimmed) {
+        return Some(RejectReason::PromotionOrSpam);
+    }
+
     if telco::is_promotional_or_telco_offer(trimmed, sender_hint) {
         return Some(RejectReason::PromotionOrSpam);
+    }
+
+    let lower = trimmed.to_lowercase();
+    // bKash intermediate recharge request notices without TrxID (e.g. "Your bKash Mobile Recharge request of Tk 40.00 for ... was successful. Use bKash App...").
+    // Discard notice so only the authoritative confirmation receipt with TrxID and balance is parsed.
+    if lower.contains("your bkash mobile recharge request") && lower.contains("use bkash app") {
+        return Some(RejectReason::NotATransaction);
+    }
+
+    if is_unposted_or_registration_invite(trimmed) {
+        return Some(RejectReason::NotATransaction);
     }
 
     if is_non_posted_financial_message(trimmed) {
@@ -37,6 +62,76 @@ pub fn classify_safety(body: &str, sender_hint: Option<&str>) -> Option<RejectRe
     }
 
     false_or_none(trimmed)
+}
+
+/// Detects commercial e-commerce marketing promotions, shopping discounts,
+/// and recruitment/job WhatsApp scam messages.
+pub fn is_marketing_or_scam_message(text: &str) -> bool {
+    let lower = text.to_lowercase();
+
+    // 1. Job recruitment / WhatsApp scams (e.g. "BOSCH is recruiting... salary is 23600 BDT... https://wa.me/...")
+    let is_recruitment_scam = lower.contains("is recruiting")
+        || lower.contains("recruiting internet")
+        || lower.contains("job vacancy")
+        || lower.contains("part time job")
+        || lower.contains("part-time job")
+        || lower.contains("earn daily")
+        || lower.contains("daily income")
+        || lower.contains("work from home")
+        || ((lower.contains("salary is")
+            || lower.contains("salary:")
+            || lower.contains("salary bdt"))
+            && (lower.contains("wa.me/")
+                || lower.contains("whatsapp")
+                || lower.contains("contact the staff")
+                || lower.contains("telegram")
+                || lower.contains("t.me/")));
+    if is_recruitment_scam {
+        return true;
+    }
+
+    // 2. Commercial / retail shopping marketing blasts (e.g. "1 TAKA-2 Products!! Min Purchase: 399TAKA Shop: www.TheMallBD.com")
+    let has_shopping_ad_marker = lower.contains("min purchase")
+        || lower.contains("minimum purchase")
+        || lower.contains("min order")
+        || lower.contains("minimum order")
+        || lower.contains("shop:")
+        || lower.contains("shop at www")
+        || lower.contains("themallbd.com")
+        || lower.contains("buy 1 get 1")
+        || lower.contains("buy 1 get")
+        || lower.contains("bogo")
+        || (lower.contains("at 1 taka") && lower.contains("products"))
+        || lower.contains("free delivery")
+        || lower.contains("promo code")
+        || lower.contains("coupon")
+        || lower.contains("voucher")
+        || (lower.contains("valid till") && lower.contains("purchase of"));
+
+    let has_confirmed_bank_action = lower.contains("has been debited")
+        || lower.contains("has been credited")
+        || lower.contains("was debited")
+        || lower.contains("was credited")
+        || (lower.contains("a/c") && lower.contains("debited"))
+        || (lower.contains("a/c") && lower.contains("credited"))
+        || (lower.contains("successful") && (lower.contains("trxid") || lower.contains("txnid")));
+
+    if has_shopping_ad_marker && !has_confirmed_bank_action {
+        return true;
+    }
+
+    false
+}
+
+/// Detects registration invites and non-account holder claim notifications
+/// (e.g. "Tk 200.00 has been sent from 018... To receive the money, open Account from bKash App within 31/05/2024").
+pub fn is_unposted_or_registration_invite(text: &str) -> bool {
+    let lower = text.to_lowercase();
+    lower.contains("to receive the money, open account")
+        || lower.contains("open account from bkash app")
+        || (lower.contains("open account") && lower.contains("to receive"))
+        || lower.contains("bka.sh/smnewreg")
+        || lower.contains("smnewreg")
 }
 
 /// Rejects financial-looking messages that do not represent posted money movement.
@@ -124,8 +219,20 @@ fn false_or_none(_text: &str) -> Option<RejectReason> {
 }
 
 /// Determines if an unparseable or rejected message should be queued for human review.
-/// Strictly excludes spam, promotions, telco bundles, and non-financial messages.
+/// Strictly excludes spam, promotions, telco bundles, non-financial messages, and Bengali Unicode.
 pub fn is_likely_financial_review(body: &str, sender_hint: Option<&str>) -> bool {
+    // 0. Bangla Gatekeeper: Never queue Bengali Unicode script for human review in English pipeline
+    if contains_bengali_script(body) {
+        return false;
+    }
+
+    if is_marketing_or_scam_message(body)
+        || is_unposted_or_registration_invite(body)
+        || otp::is_otp_or_security_message(body)
+    {
+        return false;
+    }
+
     let lower = body.to_lowercase();
     let sender = sender_hint.unwrap_or_default().to_lowercase();
 
@@ -253,5 +360,16 @@ mod tests {
         assert!(!is_non_posted_financial_message(
             "Credit card payment of BDT 8,000 completed. Minimum amount due is now BDT 0"
         ));
+    }
+
+    #[test]
+    fn bangla_gatekeeper_blocks_bengali_unicode_from_review_queue_and_parsing() {
+        let bangla_sms = "আপনার বিকাশ একাউন্ট থেকে ৫০ টাকা রিচার্জ সফল হয়েছে। TrxID 8J7A6K9L";
+        assert!(contains_bengali_script(bangla_sms));
+        assert_eq!(
+            classify_safety(bangla_sms, Some("bKash")),
+            Some(RejectReason::PromotionOrSpam)
+        );
+        assert!(!is_likely_financial_review(bangla_sms, Some("bKash")));
     }
 }

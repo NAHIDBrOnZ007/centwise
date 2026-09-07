@@ -40,6 +40,12 @@ const DEFAULT_MERCHANT_CATEGORIES: &[DefaultMerchantCategory] = &[
         category_id: "shopping",
     },
     DefaultMerchantCategory {
+        id: "ryans",
+        name: "Ryans",
+        keywords: &["ryans", "ryans computers"],
+        category_id: "shopping",
+    },
+    DefaultMerchantCategory {
         id: "pathao",
         name: "Pathao",
         keywords: &["pathao"],

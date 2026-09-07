@@ -20,15 +20,30 @@ static FEE_RE: LazyLock<Regex> = LazyLock::new(|| {
 
 static BALANCE_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)(?:Available\s+Balance|Avail(?:able)?\.?\s*Bal(?:ance)?|Avl\.?\s*Bal(?:ance)?|Closing\s+Balance|Ledger\s+Bal(?:ance)?|\bBal(?:ance)?\b|Current\s+Balance)(?:\s*[:\-])?\s*(?:Tk\.?|BDT)?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?:\s*(?:Tk\.?|BDT))?",
+        r"(?i)(?:Available\s+Balance|Avail(?:able)?\.?\s*Bal(?:ance)?|Avl\.?\s*Bal(?:ance)?|Closing\s+Balance|\bC/B\b|Ledger\s+Bal(?:ance)?|New\s+(?:main\s+)?Bal(?:ance)?|Main\s+Bal(?:ance)?|\bBal(?:ance)?\b|Current\s+Balance)(?:\s*(?:is\s*)?[:\-]|\s+is)?\s*(?:Tk\.?|BDT)?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?:\s*(?:Tk\.?|BDT))?",
     )
     .expect("valid balance regex")
+});
+
+static BALANCE_POSTFIX_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        r"(?i)(?:(?:Tk\.?|BDT)\s*-?\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s*(?:Tk\.?|BDT)?\s*\b(?:Available\s+Balance|Balance|Bal)\b",
+    )
+    .expect("valid postfix balance regex")
+});
+
+// Postfix transaction verbs: "Tk. 500 Withdrawal", "BDT 1,000 Deposit", "Tk 500 Purchased"
+static AMOUNT_POSTFIX_VERB_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        r"(?i)\b(?:(?:Tk\.?|BDT)[ \t]*-?[ \t]*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)[ \t]*(?:Tk\.?|BDT)?[ \t]+(?:Withdrawal|Withdrawn|Deposit|Deposited|Purchased)\b",
+    )
+    .expect("valid amount postfix verb regex")
 });
 
 // Bank verbs: debited with/by/for, credited with/by/for (even without currency symbol)
 static BANK_DEBIT_CREDIT_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)\b(?:debited|credited)\s+(?:with|by|for)\s+(?:(?:Tk\.?|BDT)\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)",
+        r"(?i)\b(?:debited|credited)(?:\s*\([^)]*\))?\s+(?:with|by|for)\s+(?:(?:Tk\.?|BDT)\s*-?\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)",
     )
     .expect("valid bank debit credit regex")
 });
@@ -36,7 +51,7 @@ static BANK_DEBIT_CREDIT_RE: LazyLock<Regex> = LazyLock::new(|| {
 // Card purchase: "used at ... for BDT 500" or "used for BDT 500"
 static CARD_USAGE_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)\bused(?:\s+at\s+[^.]+?)?\s+for\s+(?:(?:Tk\.?|BDT)\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)",
+        r"(?i)\bused(?:\s+at\s+[^.]+?)?\s+for\s+(?:(?:Tk\.?|BDT)\s*-?\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)",
     )
     .expect("valid card usage regex")
 });
@@ -44,7 +59,7 @@ static CARD_USAGE_RE: LazyLock<Regex> = LazyLock::new(|| {
 // Primary transaction verbs: Cash in, Cash out, Payment, Recharge, etc.
 static VERB_AMOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)(?:Cash\s+In|Cash\s+Out|Cash\s+Deposit|Send\s+Money|Payment|Bill\s+Pay(?:ment)?|Recharge|Withdrawal|Withdrawn|received|deposited|transferred|Fund\s+Transfer|Remittance|Auto\s+Debit|Loan\s+Repayment|spent|charged|(?:DR|CR)\.?\s+transaction|added\s+to\s+your\s+account|EMI\s+of|Cashback(?:/Interest)?\s+of|Excise\s+Duty|Annual\s+(?:Card\s+)?Fee|SMS\s+Alert\s+Fee|Maintenance\s+Fee|Add\s+Money)\s+(?:of\s+)?(?:(?:Tk\.?|BDT)\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?:\s*(?:Tk\.?|BDT))?",
+        r"(?i)(?:Cash\s+In|Cash\s+Out|Cash\s+Deposit|Send\s+Money|sent|Payment|Bill\s+Pay(?:ment)?|Pay\s+Bill|Recharge|Withdrawal|Withdrawn|received|deposited|transferred|Transfer\s+Money|Fund\s+Transfer|Remittance|Auto\s+Debit|Loan\s+Repayment|spent|charged|(?:DR|CR)\.?\s+transaction|Txn|added\s+to\s+your\s+account|EMI\s+of|Cashback(?:/Interest)?\s+of|Excise\s+Duty|Annual\s+(?:Card\s+)?Fee|SMS\s+Alert\s+Fee|Maintenance\s+Fee|Add\s+Money|recovered\s+for\s+emergency\s+loan)[ \t]+(?:of[ \t]+)?(?:(?:Tk\.?|BDT)[ \t]*-?[ \t]*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?:[ \t]*(?:Tk\.?|BDT))?",
     )
     .expect("valid verb amount regex")
 });
@@ -55,15 +70,15 @@ static RECHARGE_TAKA_RE: LazyLock<Regex> = LazyLock::new(|| {
         .expect("valid recharge taka regex")
 });
 
-// Postfix currency: "5000 taka" (no prefix marker)
+// Postfix currency: "5000 taka" (strictly taka/TAKA with word boundary, never prefix Tk/BDT)
 static TAKA_SUFFIX_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s*(?:taka|Tk\.?|BDT)")
+    Regex::new(r"(?i)\b([0-9]+(?:,[0-9]+)*(?:\.[0-9]{1,2})?)\s*(?:taka|TAKA)\b")
         .expect("valid currency suffix regex")
 });
 
-// Generic currency amounts (Tk 500, BDT 500)
+// Generic currency amounts (Tk 500, BDT 500, Tk-500)
 static CURRENCY_AMOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)(?:Tk\.?|BDT)\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)")
+    Regex::new(r"(?i)\b(?:Tk\.?|BDT)\s*-?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)")
         .expect("valid currency amount regex")
 });
 
@@ -91,6 +106,11 @@ pub fn extract_balance(text: &str) -> Option<i64> {
             return parse_amount_minor(m.as_str());
         }
     }
+    if let Some(cap) = BALANCE_POSTFIX_RE.captures(text) {
+        if let Some(m) = cap.get(1) {
+            return parse_amount_minor(m.as_str());
+        }
+    }
     None
 }
 
@@ -99,7 +119,7 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
     if let Some(cap) = BANK_DEBIT_CREDIT_RE.captures(text) {
         if let Some(m) = cap.get(1) {
             if let Some(val) = parse_amount_minor(m.as_str()) {
-                if val > 0 && !is_fee_or_balance(val, m.start(), text, fee, balance) {
+                if val > 0 && !is_fee_or_balance(val, m.start(), m.end(), text, fee, balance) {
                     return Some(val);
                 }
             }
@@ -110,7 +130,7 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
     if let Some(cap) = CARD_USAGE_RE.captures(text) {
         if let Some(m) = cap.get(1) {
             if let Some(val) = parse_amount_minor(m.as_str()) {
-                if val > 0 && !is_fee_or_balance(val, m.start(), text, fee, balance) {
+                if val > 0 && !is_fee_or_balance(val, m.start(), m.end(), text, fee, balance) {
                     return Some(val);
                 }
             }
@@ -121,7 +141,7 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
     if let Some(cap) = RECHARGE_TAKA_RE.captures(text) {
         if let Some(m) = cap.get(1) {
             if let Some(val) = parse_amount_minor(m.as_str()) {
-                if val > 0 && !is_fee_or_balance(val, m.start(), text, fee, balance) {
+                if val > 0 && !is_fee_or_balance(val, m.start(), m.end(), text, fee, balance) {
                     return Some(val);
                 }
             }
@@ -132,7 +152,18 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
     if let Some(cap) = VERB_AMOUNT_RE.captures(text) {
         if let Some(m) = cap.get(1) {
             if let Some(val) = parse_amount_minor(m.as_str()) {
-                if val > 0 && !is_fee_or_balance(val, m.start(), text, fee, balance) {
+                if val > 0 && !is_fee_or_balance(val, m.start(), m.end(), text, fee, balance) {
+                    return Some(val);
+                }
+            }
+        }
+    }
+
+    // 4b. Postfix transaction verbs (e.g. "Tk. 690 Withdrawal", "Tk. 20,000 Deposit", "Tk 500 Purchased")
+    if let Some(cap) = AMOUNT_POSTFIX_VERB_RE.captures(text) {
+        if let Some(m) = cap.get(1) {
+            if let Some(val) = parse_amount_minor(m.as_str()) {
+                if val > 0 && !is_fee_or_balance(val, m.start(), m.end(), text, fee, balance) {
                     return Some(val);
                 }
             }
@@ -143,11 +174,12 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
     for cap in TAKA_SUFFIX_RE.captures_iter(text) {
         if let Some(m) = cap.get(1) {
             let start = m.start();
+            let end = m.end();
             if is_future_deduction_clause(text, start) || is_outstanding_clause(text, start) {
                 continue;
             }
             if let Some(val) = parse_amount_minor(m.as_str()) {
-                if is_fee_or_balance(val, start, text, fee, balance) {
+                if is_fee_or_balance(val, start, end, text, fee, balance) {
                     continue;
                 }
                 if val > 0 {
@@ -161,11 +193,12 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
     for cap in CURRENCY_AMOUNT_RE.captures_iter(text) {
         if let Some(m) = cap.get(1) {
             let start = m.start();
+            let end = m.end();
             if is_future_deduction_clause(text, start) || is_outstanding_clause(text, start) {
                 continue;
             }
             if let Some(val) = parse_amount_minor(m.as_str()) {
-                if is_fee_or_balance(val, start, text, fee, balance) {
+                if is_fee_or_balance(val, start, end, text, fee, balance) {
                     continue;
                 }
                 if val > 0 {
@@ -191,25 +224,65 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
 
 fn is_fee_or_balance(
     val: i64,
-    pos: usize,
+    start_pos: usize,
+    end_pos: usize,
     text: &str,
     fee: Option<i64>,
     balance: Option<i64>,
 ) -> bool {
-    if INFORMATIONAL_AMOUNT_RE.is_match(&text[..pos]) || DATE_OR_PHONE_RE.is_match(&text[pos..]) {
-        return true;
-    }
-    if fee == Some(val) && is_near_keyword(text, pos, "fee") {
-        return true;
-    }
-    if fee == Some(val) && is_near_keyword(text, pos, "charge") {
-        return true;
-    }
-    if balance == Some(val)
-        && (is_near_keyword(text, pos, "balance") || is_near_keyword(text, pos, "bal"))
+    let after = &text[start_pos..];
+    if after.starts_with(')')
+        || after.starts_with(". ")
+        || after.starts_with("P/")
+        || after.starts_with("p/")
+        || after.starts_with("GB")
+        || after.starts_with("MB")
+        || after.starts_with("Min")
+        || after.starts_with("min")
     {
         return true;
     }
+
+    if INFORMATIONAL_AMOUNT_RE.is_match(&text[..start_pos])
+        || DATE_OR_PHONE_RE.is_match(&text[start_pos..])
+    {
+        return true;
+    }
+    if fee == Some(val) && is_near_keyword(text, start_pos, "fee") {
+        return true;
+    }
+    if fee == Some(val) && is_near_keyword(text, start_pos, "charge") {
+        return true;
+    }
+    if balance == Some(val) && is_adjacent_balance(text, start_pos, end_pos) {
+        return true;
+    }
+    false
+}
+
+fn is_adjacent_balance(text: &str, pos: usize, end_pos: usize) -> bool {
+    // 1. Check if preceded by balance keyword: e.g. "Balance: Tk 1,172"
+    let mut start = pos.saturating_sub(25);
+    while start < pos && !text.is_char_boundary(start) {
+        start += 1;
+    }
+    let before = text[start..pos].to_lowercase();
+    if before.contains("balance") || before.contains("bal") || before.contains("c/b") {
+        return true;
+    }
+
+    // 2. Check if immediately followed by balance keyword: e.g. "1,172 Balance" or "1,172 Tk Balance"
+    let after_slice = &text[end_pos..];
+    let after_words: Vec<&str> = after_slice.split_whitespace().take(2).collect();
+    for word in after_words {
+        let clean = word
+            .trim_matches(|c: char| !c.is_alphabetic())
+            .to_lowercase();
+        if clean == "balance" || clean == "bal" {
+            return true;
+        }
+    }
+
     false
 }
 
@@ -324,5 +397,14 @@ mod tests {
         let text = "Recharge of Tk 100.00 on 017XXXXXXXX successful on 22/08/2026 14:30. Current Balance: Tk 102.50.";
         let bal = extract_balance(text);
         assert_eq!(bal, Some(10_250));
+    }
+
+    #[test]
+    fn parses_city_bank_postfix_withdrawal_and_balance() {
+        let text = "05-Feb-2024\nTk. 690 Withdrawal\nTk. 1,172 Balance\nA/C: 2303***7001";
+        let bal = extract_balance(text);
+        assert_eq!(bal, Some(117_200));
+        let amount = extract_main_amount(text, None, bal);
+        assert_eq!(amount, Some(69_000));
     }
 }

@@ -47,6 +47,64 @@
         "reference": "R250917.1531.34003b",
         "party": "01847662920"
       }
+    },
+    {
+      "kind": "gp-data-pack-purchase",
+      "senderHint": "GP",
+      "body": "You have successfully purchased 1.5GB Internet at Tk 43.00 (incl. VAT). Validity: 3 Days. Dial *121*1# to check balance.",
+      "expected": {
+        "isTransaction": true,
+        "type": "expense",
+        "amountMinor": 4300
+      }
+    },
+    {
+      "kind": "banglalink-data-pack-activation",
+      "senderHint": "Banglalink",
+      "body": "You have successfully activated 10GB Data Pack at Tk 199.00 for 7 Days.",
+      "expected": {
+        "isTransaction": true,
+        "type": "expense",
+        "amountMinor": 19900
+      }
+    },
+    {
+      "kind": "airtel-pack-purchase",
+      "senderHint": "Airtel",
+      "body": "You have successfully bought 1GB at Tk 36.00 (Valid for 3 Days). Main balance is Tk 14.50.",
+      "expected": {
+        "isTransaction": true,
+        "type": "expense",
+        "amountMinor": 3600
+      }
+    },
+    {
+      "kind": "teletalk-data-pack",
+      "senderHint": "Teletalk",
+      "body": "Data pack 1GB at Tk 23.00 activated successfully. Validity: 3 days. To check dial *152#.",
+      "expected": {
+        "isTransaction": true,
+        "type": "expense",
+        "amountMinor": 2300
+      }
+    },
+    {
+      "kind": "robi-jhotpot-balance-disbursal",
+      "senderHint": "Robi",
+      "body": "You have received Tk 20.00 Jhotpot balance. Outstanding loan Tk 20.00. Dial *222*16# to check.",
+      "expected": {
+        "isTransaction": true,
+        "type": "income",
+        "amountMinor": 2000
+      }
+    },
+    {
+      "kind": "banglalink-chomok-offer-promo",
+      "senderHint": "Banglalink",
+      "body": "Chomok Offer! 3GB @ only Tk 69 for 7 days! To activate dial *121*69# or visit MyBL app.",
+      "expected": {
+        "isTransaction": false
+      }
     }
   ]
 }
