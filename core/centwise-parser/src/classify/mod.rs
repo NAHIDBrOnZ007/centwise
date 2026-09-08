@@ -61,6 +61,16 @@ pub fn classify_safety(body: &str, sender_hint: Option<&str>) -> Option<RejectRe
         return Some(RejectReason::NotATransaction);
     }
 
+    // Educational course admission / tuition confirmation receipts
+    // (e.g. "Dear Tasfia, your admission is successful for Utkorsho HSC 25 ... you paid Tk 2500")
+    if lower.contains("admission is successful")
+        || (lower.contains("admission")
+            && lower.contains("roll number")
+            && lower.contains("registration no"))
+    {
+        return Some(RejectReason::NotATransaction);
+    }
+
     false_or_none(trimmed)
 }
 
@@ -70,6 +80,12 @@ pub fn is_marketing_or_scam_message(text: &str) -> bool {
     let lower = text.to_lowercase();
 
     // 1. Job recruitment / WhatsApp scams (e.g. "BOSCH is recruiting... salary is 23600 BDT... https://wa.me/...")
+    let has_whatsapp_or_tg = lower.contains("wa.me/")
+        || lower.contains("whatsapp")
+        || lower.contains("contact the staff")
+        || lower.contains("telegram")
+        || lower.contains("t.me/");
+
     let is_recruitment_scam = lower.contains("is recruiting")
         || lower.contains("recruiting internet")
         || lower.contains("job vacancy")
@@ -78,14 +94,13 @@ pub fn is_marketing_or_scam_message(text: &str) -> bool {
         || lower.contains("earn daily")
         || lower.contains("daily income")
         || lower.contains("work from home")
-        || ((lower.contains("salary is")
-            || lower.contains("salary:")
-            || lower.contains("salary bdt"))
-            && (lower.contains("wa.me/")
-                || lower.contains("whatsapp")
-                || lower.contains("contact the staff")
-                || lower.contains("telegram")
-                || lower.contains("t.me/")));
+        || (has_whatsapp_or_tg
+            && (lower.contains("salary")
+                || lower.contains("daily income")
+                || lower.contains("working in")
+                || lower.contains("daily salary")
+                || lower.contains("part time")
+                || lower.contains("vacancy")));
     if is_recruitment_scam {
         return true;
     }

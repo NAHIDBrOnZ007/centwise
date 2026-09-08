@@ -19,13 +19,14 @@ class SmsScanWorker(
     override suspend fun doWork(): Result {
         if (isStopped) return Result.failure()
         return try {
-            val result = HistoricalSmsScanner.scanInbox(applicationContext) { scanned, imported ->
+            val result = HistoricalSmsScanner.scanInbox(applicationContext, forceFullScan = false) { scanned, imported ->
                 setProgressAsync(workDataOf("scanned" to scanned, "imported" to imported))
             }
             Result.success(
                 workDataOf(
                     "scanned" to result.totalScanned,
-                    "imported" to result.transactionsImported
+                    "imported" to result.transactionsImported,
+                    "reviewQueued" to result.reviewQueued
                 )
             )
         } catch (_: Exception) {
@@ -46,7 +47,7 @@ class SmsScanWorker(
                 .build()
             WorkManager.getInstance(context).enqueueUniqueWork(
                 WORK_NAME,
-                ExistingWorkPolicy.KEEP,
+                ExistingWorkPolicy.REPLACE,
                 request
             )
         }

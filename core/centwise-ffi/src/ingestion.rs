@@ -126,13 +126,10 @@ pub(crate) fn ingest_sms_in_transaction(
             if let Some(account_id) = target_account_id {
                 let transaction_id =
                     sms_transaction_id(reference.as_deref(), &body, sender_hint.as_deref());
+                let (title, notes) = build_transaction_title_and_notes(&parsed, &body);
                 let transaction = centwise_domain::NewTransaction {
                     id: transaction_id.clone(),
-                    title: parsed
-                        .merchant
-                        .clone()
-                        .or_else(|| parsed.party.clone())
-                        .unwrap_or_else(|| format!("{} transaction", parsed.provider_id)),
+                    title,
                     amount_minor: parsed.amount_minor,
                     currency: "BDT".into(),
                     transaction_type: parsed.transaction_type,
@@ -142,7 +139,7 @@ pub(crate) fn ingest_sms_in_transaction(
                     reference: parsed.reference.clone(),
                     balance_after_minor: parsed.balance_after_minor,
                     fee_minor: parsed.fee_minor,
-                    notes: None,
+                    notes,
                     raw_sms: Some(body),
                     is_auto_tracked: true,
                 };
@@ -253,4 +250,100 @@ pub(crate) fn ingest_sms_in_transaction(
             })
         }
     }
+}
+
+pub(crate) fn build_transaction_title_and_notes(
+    parsed: &centwise_parser::ParsedTransaction,
+    body: &str,
+) -> (String, Option<String>) {
+    let lower = body.to_lowercase();
+
+    // 1. Build human-readable Title
+    let title = if let Some(ref merchant) = parsed.merchant {
+        merchant.clone()
+    } else if let Some(ref party) = parsed.party {
+        match parsed.transaction_type {
+            centwise_domain::TransactionType::Income => {
+                if lower.contains("cash in") {
+                    format!("Cash In ({})", party)
+                } else {
+                    format!("Received from {}", party)
+                }
+            }
+            centwise_domain::TransactionType::Expense => {
+                if lower.contains("recharge") {
+                    format!("Recharge to {}", party)
+                } else if lower.contains("send money") || lower.contains("sent") {
+                    format!("Send Money to {}", party)
+                } else if lower.contains("cash in") {
+                    format!("Cash In ({})", party)
+                } else {
+                    party.clone()
+                }
+            }
+            centwise_domain::TransactionType::Transfer => format!("Transfer to {}", party),
+            centwise_domain::TransactionType::Refund => format!("Refund from {}", party),
+        }
+    } else if lower.contains("emergency loan advances")
+        || (lower.contains("deducted") && lower.contains("emergency loan"))
+    {
+        "Emergency Loan Settlement".to_string()
+    } else if lower.contains("disbursement received") || lower.contains("disbursement") {
+        "Disbursement Received".to_string()
+    } else if lower.contains("has been added to your account")
+        || lower.contains("emergency loan")
+        || lower.contains("jhotpot")
+    {
+        if parsed.provider_id == "robi" {
+            "Robi Emergency Balance".to_string()
+        } else if parsed.provider_id == "airtel" {
+            "Airtel Emergency Balance".to_string()
+        } else {
+            "Emergency Balance".to_string()
+        }
+    } else {
+        format!("{} transaction", parsed.provider_id)
+    };
+
+    // 2. Build contextual Note
+    let mut notes_parts = Vec::new();
+    if let Some(ref party) = parsed.party {
+        if lower.contains("sender:") {
+            notes_parts.push(format!("Sender: {}", party));
+        } else if lower.contains("receiver:") {
+            notes_parts.push(format!("Receiver: {}", party));
+        } else if lower.contains("uddokta:") {
+            notes_parts.push(format!("Agent: {}", party));
+        } else if lower.contains("mobile:") && lower.contains("recharge") {
+            notes_parts.push(format!("Mobile: {}", party));
+        }
+    }
+
+    // Extract user memo (e.g. "Ref: tasfia" or "Ref: 1")
+    if let Some(idx) = lower.find("ref:") {
+        let after_ref = &body[idx + 4..];
+        let memo = after_ref
+            .lines()
+            .next()
+            .unwrap_or("")
+            .split_whitespace()
+            .next()
+            .unwrap_or("")
+            .trim();
+        if !memo.eq_ignore_ascii_case("n/a")
+            && !memo.eq_ignore_ascii_case("na")
+            && !memo.eq_ignore_ascii_case("none")
+            && !memo.is_empty()
+        {
+            notes_parts.push(format!("Memo: {}", memo));
+        }
+    }
+
+    let notes = if !notes_parts.is_empty() {
+        Some(notes_parts.join(" | "))
+    } else {
+        None
+    };
+
+    (title, notes)
 }

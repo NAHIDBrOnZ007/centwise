@@ -3,30 +3,49 @@
 use regex::Regex;
 use std::sync::LazyLock;
 
-static REFERENCE_RE: LazyLock<Regex> = LazyLock::new(|| {
+static TXN_ID_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)\b(?:Trx\s*ID|Txn\s*ID|Ref\s*ID|Ref\s*No\.?|Ref|Txn\s*No\.?|Transaction\s*(?:ID|number|no\.?|num)|NPSB\s*Ref|BEFTN\s*Ref|Trx\s*No\.?|Reference|RRN|STAN|Auth(?:orization)?\s+Code)[\s:#]+([A-Za-z0-9.-]+)",
+        r"(?i)\b(?:Trx\s*ID|Txn\s*ID|Transaction\s*(?:ID|number|no\.?|num)|NPSB\s*Ref|BEFTN\s*Ref|Trx\s*No\.?|Txn\s*No\.?|Ref\s*No\.?|Ref\s*ID|RRN|STAN|Auth(?:orization)?\s+Code)[\s:#]+([A-Za-z0-9.-]+)",
     )
-    .expect("valid reference regex")
+    .expect("valid txn id regex")
+});
+
+static GENERIC_REF_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\b(?:Ref|Reference)[\s:#]+([A-Za-z0-9.-]+)").expect("valid generic ref regex")
 });
 
 pub fn extract_reference(text: &str) -> Option<String> {
-    for cap in REFERENCE_RE.captures_iter(text) {
+    // 1. Prioritize authoritative transaction IDs
+    for cap in TXN_ID_RE.captures_iter(text) {
         if let Some(m) = cap.get(1) {
             let val = m.as_str().trim().trim_end_matches('.');
-            if val.eq_ignore_ascii_case("not")
-                || val.eq_ignore_ascii_case("na")
-                || val.eq_ignore_ascii_case("none")
-                || val.eq_ignore_ascii_case("applicable")
-            {
-                continue;
+            if is_valid_ref_val(val) {
+                return Some(val.to_string());
             }
-            if val.len() >= 4 {
+        }
+    }
+
+    // 2. Fallback to generic Reference / Ref headers
+    for cap in GENERIC_REF_RE.captures_iter(text) {
+        if let Some(m) = cap.get(1) {
+            let val = m.as_str().trim().trim_end_matches('.');
+            if is_valid_ref_val(val) {
                 return Some(val.to_string());
             }
         }
     }
     None
+}
+
+fn is_valid_ref_val(val: &str) -> bool {
+    if val.eq_ignore_ascii_case("not")
+        || val.eq_ignore_ascii_case("na")
+        || val.eq_ignore_ascii_case("none")
+        || val.eq_ignore_ascii_case("applicable")
+    {
+        return false;
+    }
+    val.len() >= 4
 }
 
 #[cfg(test)]

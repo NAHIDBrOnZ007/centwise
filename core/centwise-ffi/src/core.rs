@@ -5,6 +5,7 @@ use centwise_domain as domain;
 
 use crate::conversions::*;
 use crate::error::{CentwiseError, ChangeListener, ForeignObserver};
+use crate::ingestion::build_transaction_title_and_notes;
 use crate::types::*;
 
 /// The Centwise core handle shared with both platforms.
@@ -401,13 +402,10 @@ impl CentwiseCore {
                     if let Some(account_id) = target_account_id {
                         let transaction_id =
                             sms_transaction_id(reference.as_deref(), &body, sender_hint.as_deref());
+                        let (title, notes) = build_transaction_title_and_notes(&parsed, &body);
                         let transaction = domain::NewTransaction {
                             id: transaction_id.clone(),
-                            title: parsed
-                                .merchant
-                                .clone()
-                                .or_else(|| parsed.party.clone())
-                                .unwrap_or_else(|| format!("{} transaction", parsed.provider_id)),
+                            title,
                             amount_minor: parsed.amount_minor,
                             currency: "BDT".into(),
                             transaction_type: parsed.transaction_type,
@@ -417,7 +415,7 @@ impl CentwiseCore {
                             reference: parsed.reference.clone(),
                             balance_after_minor: parsed.balance_after_minor,
                             fee_minor: parsed.fee_minor,
-                            notes: None,
+                            notes,
                             raw_sms: Some(body.clone()),
                             is_auto_tracked: true,
                         };

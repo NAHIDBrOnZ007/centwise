@@ -279,3 +279,74 @@ fn deduplicates_auto_tracked_resends_just_over_five_minutes_apart() {
         .expect_err("resend must be rejected as duplicate");
     assert!(matches!(err, DbError::DuplicateTransaction(_)));
 }
+
+#[test]
+fn deduplicates_cross_account_mfs_and_telco_recharge() {
+    let database = Database::open_in_memory().expect("open");
+
+    // Seed Nagad account and Primary account
+    database
+        .write(|q| {
+            q.insert_account(&Account {
+                id: "account-nagad".into(),
+                name: "Nagad".into(),
+                provider: "nagad".into(),
+                last_four: None,
+                balance_minor: 100_000,
+                archived: false,
+            })?;
+            q.insert_account(&Account {
+                id: "account-primary".into(),
+                name: "Primary Account".into(),
+                provider: "primary-account".into(),
+                last_four: None,
+                balance_minor: 0,
+                archived: false,
+            })
+        })
+        .expect("seed accounts");
+
+    // 1. User recharges ৳50 from Nagad
+    let mut mfs_recharge = tx(
+        "tx-nagad-recharge",
+        5_000,
+        TransactionType::Expense,
+        1_700_000_000_000,
+    );
+    mfs_recharge.account_id = "account-nagad".into();
+    mfs_recharge.category_id = "recharge".into();
+    mfs_recharge.raw_sms =
+        Some("Mobile Recharge Request Received. Amount: Tk 50.00 TxnID: 74E22XY4".into());
+    mfs_recharge.reference = Some("74E22XY4".into());
+    mfs_recharge.is_auto_tracked = true;
+
+    database
+        .insert_transaction(&mfs_recharge)
+        .expect("MFS recharge must succeed");
+
+    // 2. Robi SIM confirmation arrives 30 seconds later for the same ৳50
+    let mut telco_recharge = tx(
+        "tx-robi-recharge",
+        5_000,
+        TransactionType::Expense,
+        1_700_000_030_000,
+    );
+    telco_recharge.account_id = "account-primary".into();
+    telco_recharge.category_id = "recharge".into();
+    telco_recharge.raw_sms = Some(
+        "Transaction number R250923.1219.37013b to recharge 50 TAKA from 1847662920 is successful"
+            .into(),
+    );
+    telco_recharge.reference = Some("R250923.1219.37013b".into());
+    telco_recharge.is_auto_tracked = true;
+
+    let err = database.insert_transaction(&telco_recharge).expect_err(
+        "Telco recharge confirmation must be rejected as duplicate of MFS wallet recharge",
+    );
+    assert!(matches!(err, DbError::DuplicateTransaction(_)));
+
+    // Verify only the 1 MFS recharge exists in transactions
+    let all_txs = database.read(|q| q.list_transactions(10)).expect("list");
+    assert_eq!(all_txs.len(), 1);
+    assert_eq!(all_txs[0].id, "tx-nagad-recharge");
+}

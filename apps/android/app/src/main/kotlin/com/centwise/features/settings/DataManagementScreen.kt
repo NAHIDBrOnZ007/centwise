@@ -1,6 +1,11 @@
 package com.centwise.features.settings
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -31,6 +36,8 @@ import com.centwise.core.design.components.iosBounceClick
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
+import com.centwise.core.scanner.HistoricalSmsScanner
+import com.centwise.data.repository.ReviewQueueRepository
 import com.centwise.data.repository.TransactionRepository
 
 import kotlinx.coroutines.Dispatchers
@@ -324,30 +331,104 @@ fun DataManagementScreen(
                     ) {
                         // Scan SMS Inbox (Manual SMS Trigger)
                         var isScanning by remember { mutableStateOf(false) }
+                        var scannedCount by remember { mutableIntStateOf(0) }
+                        var importedCount by remember { mutableIntStateOf(0) }
+
+                        val smsPermissionLauncher = rememberLauncherForActivityResult(
+                            contract = ActivityResultContracts.RequestMultiplePermissions()
+                        ) { permissions ->
+                            val granted = permissions[Manifest.permission.READ_SMS] == true ||
+                                ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED
+                            if (granted) {
+                                isScanning = true
+                                scannedCount = 0
+                                importedCount = 0
+                                coroutineScope.launch(Dispatchers.IO) {
+                                    try {
+                                        val result = HistoricalSmsScanner.scanInbox(
+                                            context = context.applicationContext,
+                                            forceFullScan = true,
+                                            onProgress = { s, i ->
+                                                scannedCount = s
+                                                importedCount = i
+                                            }
+                                        )
+                                        withContext(Dispatchers.Main) {
+                                            isScanning = false
+                                            repository.loadFromRust()
+                                            ReviewQueueRepository.shared.refresh()
+                                            val msg = if (result.transactionsImported > 0 || result.reviewQueued > 0) {
+                                                "Scan complete: ${result.transactionsImported} transactions imported, ${result.reviewQueued} queued for review (${result.totalScanned} messages checked)"
+                                            } else {
+                                                "Scan complete: ${result.totalScanned} messages checked. All transactions up to date."
+                                            }
+                                            Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        withContext(Dispatchers.Main) {
+                                            isScanning = false
+                                            Toast.makeText(context, "Scan error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }
+                            } else {
+                                Toast.makeText(context, "SMS permission is required to scan inbox", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+
+                        fun triggerSmsScan() {
+                            if (isScanning) return
+                            val hasReadSms = ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.READ_SMS
+                            ) == PackageManager.PERMISSION_GRANTED
+
+                            if (!hasReadSms) {
+                                smsPermissionLauncher.launch(
+                                    arrayOf(
+                                        Manifest.permission.READ_SMS,
+                                        Manifest.permission.RECEIVE_SMS
+                                    )
+                                )
+                            } else {
+                                isScanning = true
+                                scannedCount = 0
+                                importedCount = 0
+                                coroutineScope.launch(Dispatchers.IO) {
+                                    try {
+                                        val result = HistoricalSmsScanner.scanInbox(
+                                            context = context.applicationContext,
+                                            forceFullScan = true,
+                                            onProgress = { s, i ->
+                                                scannedCount = s
+                                                importedCount = i
+                                            }
+                                        )
+                                        withContext(Dispatchers.Main) {
+                                            isScanning = false
+                                            repository.loadFromRust()
+                                            ReviewQueueRepository.shared.refresh()
+                                            val msg = if (result.transactionsImported > 0 || result.reviewQueued > 0) {
+                                                "Scan complete: ${result.transactionsImported} transactions imported, ${result.reviewQueued} queued for review (${result.totalScanned} messages checked)"
+                                            } else {
+                                                "Scan complete: ${result.totalScanned} messages checked. All transactions up to date."
+                                            }
+                                            Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        withContext(Dispatchers.Main) {
+                                            isScanning = false
+                                            Toast.makeText(context, "Scan error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .iosBounceClick {
-                                    if (isScanning) return@iosBounceClick
-                                    val hasReadSms = androidx.core.content.ContextCompat.checkSelfPermission(
-                                        context,
-                                        android.Manifest.permission.READ_SMS
-                                    ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-
-                                    if (!hasReadSms) {
-                                        val activity = context as? androidx.fragment.app.FragmentActivity
-                                        activity?.let {
-                                            androidx.core.app.ActivityCompat.requestPermissions(
-                                                it,
-                                                arrayOf(android.Manifest.permission.READ_SMS, android.Manifest.permission.RECEIVE_SMS),
-                                                1001
-                                            )
-                                        }
-                                    } else {
-                                        com.centwise.core.scanner.SmsScanWorker.enqueue(context.applicationContext)
-                                        Toast.makeText(context, "SMS scan started in background", Toast.LENGTH_SHORT).show()
-                                    }
-                                }
+                                .iosBounceClick { triggerSmsScan() }
                                 .padding(horizontal = 16.dp, vertical = 14.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -360,14 +441,20 @@ fun DataManagementScreen(
                             Spacer(modifier = Modifier.width(14.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = if (isScanning) "Scanning SMS Inbox..." else "Scan SMS Inbox",
+                                    text = if (isScanning) {
+                                        if (scannedCount > 0) "Scanning SMS... ($scannedCount checked)" else "Scanning SMS Inbox..."
+                                    } else "Scan SMS Inbox",
                                     style = CentwiseTypography.Headline.copy(fontSize = 15.sp),
                                     color = textPrimary
                                 )
                                 Text(
-                                    text = "Auto-detect bank & MFS transactions from your messages",
+                                    text = if (isScanning) {
+                                        if (importedCount > 0) "$importedCount transactions imported so far" else "Checking messages for transactions..."
+                                    } else {
+                                        "Auto-detect bank & MFS transactions from your messages"
+                                    },
                                     style = CentwiseTypography.Caption,
-                                    color = textSecondary
+                                    color = if (isScanning && importedCount > 0) accent else textSecondary
                                 )
                             }
                             if (isScanning) {

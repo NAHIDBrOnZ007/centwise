@@ -53,7 +53,61 @@ impl<'a> Queries<'a> {
             if self.reference_exists(reference)? {
                 return Err(DbError::DuplicateReference(reference.to_string()));
             }
-        } else if transaction.is_auto_tracked && transaction.raw_sms.is_some() {
+        }
+
+        if transaction.is_auto_tracked
+            && (transaction.category_id == "recharge"
+                || transaction.category_id == "category-mobile-recharge")
+        {
+            let is_telco_confirmation = transaction.raw_sms.as_ref().is_some_and(|sms| {
+                let s = sms.to_lowercase();
+                s.contains("transaction number r")
+                    || (s.contains("to recharge") && s.contains("successful"))
+                    || (s.contains("recharge")
+                        && s.contains("is successful")
+                        && !s.contains("request received"))
+            });
+
+            if is_telco_confirmation {
+                let mfs_recharge_count: i64 = self.connection.query_row(
+                    "SELECT COUNT(*) FROM transactions t
+                     JOIN accounts a ON t.account_id = a.id
+                     WHERE (t.category_id = 'recharge' OR t.category_id = 'category-mobile-recharge')
+                       AND t.amount_minor = ?1
+                       AND t.transaction_type = 'expense'
+                       AND t.is_auto_tracked = 1
+                       AND a.provider IN ('nagad', 'bkash', 'rocket', 'cellfin', 'upay')
+                       AND ABS(t.occurred_at_epoch_ms - ?2) <= 600000",
+                    params![transaction.amount_minor, transaction.occurred_at_epoch_ms],
+                    |row| row.get(0),
+                )?;
+
+                if mfs_recharge_count > 0 {
+                    return Err(DbError::DuplicateTransaction(format!(
+                        "telco recharge confirmation duplicated by MFS wallet transaction of {} minor at epoch {}",
+                        transaction.amount_minor, transaction.occurred_at_epoch_ms
+                    )));
+                }
+            } else {
+                let _ = self.connection.execute(
+                    "DELETE FROM transactions
+                     WHERE (category_id = 'recharge' OR category_id = 'category-mobile-recharge')
+                       AND amount_minor = ?1
+                       AND transaction_type = 'expense'
+                       AND is_auto_tracked = 1
+                       AND account_id NOT IN (
+                           SELECT id FROM accounts WHERE provider IN ('nagad', 'bkash', 'rocket', 'cellfin', 'upay')
+                       )
+                       AND ABS(occurred_at_epoch_ms - ?2) <= 600000",
+                    params![transaction.amount_minor, transaction.occurred_at_epoch_ms],
+                );
+            }
+        }
+
+        if transaction.reference.is_none()
+            && transaction.is_auto_tracked
+            && transaction.raw_sms.is_some()
+        {
             // Deduplicate auto-tracked transactions that lack an explicit reference (e.g. repeated SMS delivery)
             let dup_count: i64 = self.connection.query_row(
                 "SELECT COUNT(*) FROM transactions 

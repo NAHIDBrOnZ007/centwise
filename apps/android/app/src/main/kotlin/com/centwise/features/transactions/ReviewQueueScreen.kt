@@ -1,5 +1,11 @@
 package com.centwise.features.transactions
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -13,6 +19,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MarkEmailRead
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,10 +37,12 @@ import com.centwise.core.design.components.TopBarBackButton
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
+import com.centwise.core.scanner.HistoricalSmsScanner
 import com.centwise.data.models.ReviewQueueItem
 import com.centwise.data.models.TransactionItem
 import com.centwise.data.models.TransactionType
 import com.centwise.data.repository.ReviewQueueRepository
+import com.centwise.data.repository.TransactionRepository
 import com.centwise.features.settings.AccentOptions
 import com.centwise.features.settings.AppearancePrefs
 import kotlinx.coroutines.Dispatchers
@@ -52,12 +61,65 @@ fun ReviewQueueScreen(
     val items by repository.items.collectAsState()
     var editingItem by remember { mutableStateOf<ReviewQueueItem?>(null) }
 
+    var isScanning by remember { mutableStateOf(false) }
+    var scannedCount by remember { mutableIntStateOf(0) }
+    var importedCount by remember { mutableIntStateOf(0) }
+
     val accent = AccentOptions.byName(AppearancePrefs.accentName).color
 
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
+
+    LaunchedEffect(Unit) {
+        repository.refresh()
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions[Manifest.permission.READ_SMS] == true ||
+            ContextCompat.checkSelfPermission(context, Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED
+        if (granted) {
+            startManualScan(
+                context = context,
+                coroutineScope = coroutineScope,
+                repository = repository,
+                onScanningChange = { isScanning = it },
+                onScannedChange = { scannedCount = it },
+                onImportedChange = { importedCount = it }
+            )
+        } else {
+            Toast.makeText(context, "SMS permission is required to scan inbox", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    fun triggerScan() {
+        if (isScanning) return
+        val hasPermission = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.READ_SMS
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (!hasPermission) {
+            permissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.READ_SMS,
+                    Manifest.permission.RECEIVE_SMS
+                )
+            )
+        } else {
+            startManualScan(
+                context = context,
+                coroutineScope = coroutineScope,
+                repository = repository,
+                onScanningChange = { isScanning = it },
+                onScannedChange = { scannedCount = it },
+                onImportedChange = { importedCount = it }
+            )
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -91,6 +153,61 @@ fun ReviewQueueScreen(
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                     )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
+            }
+            IconButton(
+                onClick = { triggerScan() },
+                enabled = !isScanning
+            ) {
+                if (isScanning) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        strokeWidth = 2.dp,
+                        color = accent
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Scan SMS Inbox",
+                        tint = accent,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+            }
+        }
+
+        // Live scanning status banner
+        if (isScanning) {
+            Surface(
+                color = accent.copy(alpha = 0.12f),
+                shape = RoundedCornerShape(CentwiseSpacing.CornerRadiusMedium),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp,
+                        color = accent
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "Scanning SMS Inbox...",
+                            style = CentwiseTypography.Headline.copy(fontSize = 14.sp),
+                            color = textPrimary
+                        )
+                        Text(
+                            text = if (scannedCount > 0) "$scannedCount messages checked ($importedCount imported)" else "Reading messages...",
+                            style = CentwiseTypography.Caption,
+                            color = textSecondary
+                        )
+                    }
                 }
             }
         }
@@ -134,42 +251,41 @@ fun ReviewQueueScreen(
                     )
 
                     Button(
-                        onClick = {
-                            val hasReadSms = androidx.core.content.ContextCompat.checkSelfPermission(
-                                context,
-                                android.Manifest.permission.READ_SMS
-                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-
-                            if (hasReadSms) {
-                                com.centwise.core.scanner.SmsScanWorker.enqueue(context.applicationContext)
-                                android.widget.Toast.makeText(context, "SMS scan started in background", android.widget.Toast.LENGTH_SHORT).show()
-                            } else {
-                                val activity = context as? androidx.fragment.app.FragmentActivity
-                                activity?.let {
-                                    androidx.core.app.ActivityCompat.requestPermissions(
-                                        it,
-                                        arrayOf(android.Manifest.permission.READ_SMS, android.Manifest.permission.RECEIVE_SMS),
-                                        1001
-                                    )
-                                }
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = accent),
+                        onClick = { triggerScan() },
+                        enabled = !isScanning,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = accent,
+                            disabledContainerColor = accent.copy(alpha = 0.6f)
+                        ),
                         shape = RoundedCornerShape(CentwiseSpacing.CornerRadiusMedium),
                         modifier = Modifier.padding(top = 8.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Sms,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Scan SMS Inbox",
-                            style = CentwiseTypography.Headline.copy(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
-                            color = Color.White
-                        )
+                        if (isScanning) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                                color = Color.White
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (scannedCount > 0) "Scanning ($scannedCount)..." else "Scanning SMS...",
+                                style = CentwiseTypography.Headline.copy(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
+                                color = Color.White
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Sms,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Scan SMS Inbox",
+                                style = CentwiseTypography.Headline.copy(fontSize = 14.sp, fontWeight = FontWeight.SemiBold),
+                                color = Color.White
+                            )
+                        }
                     }
                 }
             }
@@ -322,4 +438,46 @@ private fun ReviewQueueCard(
 @Composable
 fun ReviewQueueScreenPreview() {
     ReviewQueueScreen()
+}
+
+private fun startManualScan(
+    context: android.content.Context,
+    coroutineScope: kotlinx.coroutines.CoroutineScope,
+    repository: ReviewQueueRepository,
+    onScanningChange: (Boolean) -> Unit,
+    onScannedChange: (Int) -> Unit,
+    onImportedChange: (Int) -> Unit
+) {
+    onScanningChange(true)
+    onScannedChange(0)
+    onImportedChange(0)
+
+    coroutineScope.launch(Dispatchers.IO) {
+        try {
+            val result = HistoricalSmsScanner.scanInbox(
+                context = context.applicationContext,
+                forceFullScan = true,
+                onProgress = { scanned, imported ->
+                    onScannedChange(scanned)
+                    onImportedChange(imported)
+                }
+            )
+            withContext(Dispatchers.Main) {
+                onScanningChange(false)
+                repository.refresh()
+                TransactionRepository.shared.loadFromRust()
+                val message = if (result.transactionsImported > 0 || result.reviewQueued > 0) {
+                    "Scan complete: ${result.transactionsImported} transactions imported, ${result.reviewQueued} queued for review (${result.totalScanned} messages checked)"
+                } else {
+                    "Scan complete: ${result.totalScanned} messages checked. All transactions up to date."
+                }
+                Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            }
+        } catch (e: Exception) {
+            withContext(Dispatchers.Main) {
+                onScanningChange(false)
+                Toast.makeText(context, "Scan error: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 }

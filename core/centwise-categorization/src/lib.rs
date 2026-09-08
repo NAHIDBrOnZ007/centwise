@@ -35,7 +35,18 @@ pub fn categorize_by_type_or_keywords(
 ) -> Option<String> {
     let lower = text.to_lowercase();
 
-    if transaction_type == TransactionType::Transfer {
+    if transaction_type == TransactionType::Transfer
+        || contains_any(
+            &lower,
+            &[
+                "send money",
+                "money sent",
+                "sent money",
+                "transfer to",
+                "fund transfer",
+            ],
+        )
+    {
         return Some("transfer".to_string());
     }
 

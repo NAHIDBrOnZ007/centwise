@@ -51,6 +51,10 @@ pub fn detect_provider(sender_hint: Option<&str>, body: &str) -> String {
         || body_lower.contains("transaction number r")
         || body_lower.contains("*123*")
         || body_lower.contains("dial *0#")
+        || body_lower.contains("*8#")
+        || body_lower.contains("emergency loan advances")
+        || body_lower.contains("emergency loan")
+        || body_lower.contains("jhotpot")
     {
         return PROVIDER_ROBI.to_string();
     }

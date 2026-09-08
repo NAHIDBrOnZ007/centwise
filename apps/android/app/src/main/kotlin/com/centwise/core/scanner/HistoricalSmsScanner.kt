@@ -22,18 +22,20 @@ object HistoricalSmsScanner {
 
     data class ScanResult(
         val totalScanned: Int,
-        val transactionsImported: Int
+        val transactionsImported: Int,
+        val reviewQueued: Int = 0
     )
 
     suspend fun scanInbox(
         context: Context,
+        forceFullScan: Boolean = false,
         onProgress: (scanned: Int, imported: Int) -> Unit = { _, _ -> }
     ): ScanResult = withContext(Dispatchers.IO) {
         val preferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val previousScan = preferences.getLong(LAST_SCAN_EPOCH_MS, 0L)
         val pipelineIsCurrent = preferences.getInt(SCAN_PIPELINE_VERSION_KEY, 0) == SCAN_PIPELINE_VERSION
-        // A new pipeline must rebuild history once; subsequent scans are incremental.
-        val scanStart = if (pipelineIsCurrent && previousScan > 0L) {
+        // When forceFullScan is false, subsequent scans are incremental.
+        val scanStart = if (!forceFullScan && pipelineIsCurrent && previousScan > 0L) {
             (previousScan - OVERLAP_MS).coerceAtLeast(0L)
         } else {
             0L
@@ -70,17 +72,20 @@ object HistoricalSmsScanner {
         }
 
         var imported = 0
+        var reviewQueued = 0
         var processed = 0
         CentwiseRustBackend.initialize(context.applicationContext)
         messages.chunked(BATCH_SIZE).forEach { batch ->
             val results = CentwiseRustBackend.ingestSmsBatch(batch)
             imported += results.count { it.status == SmsIngestStatus.INSERTED }
+            reviewQueued += results.count { it.status == SmsIngestStatus.QUEUED_FOR_REVIEW }
             processed += batch.size
             onProgress(processed, imported)
         }
 
         withContext(Dispatchers.Main) {
             com.centwise.data.repository.TransactionRepository.shared.loadFromRust()
+            com.centwise.data.repository.ReviewQueueRepository.shared.refresh()
         }
         preferences.edit()
             .putInt(SCAN_PIPELINE_VERSION_KEY, SCAN_PIPELINE_VERSION)
@@ -90,7 +95,7 @@ object HistoricalSmsScanner {
                 }
             }
             .apply()
-        Log.i(TAG, "Finished scan from $scanStart: ${messages.size} scanned, $imported imported")
-        ScanResult(messages.size, imported)
+        Log.i(TAG, "Finished scan from $scanStart: ${messages.size} scanned, $imported imported, $reviewQueued review items")
+        ScanResult(messages.size, imported, reviewQueued)
     }
 }

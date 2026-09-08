@@ -2,27 +2,12 @@ use centwise_parser::{parse_sms, ParseOutcome};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-#[test]
-fn test_audit_all_csv_messages() {
-    let candidates = [
-        r"C:\Users\USE\Documents\centwise_export_20260907_2320.csv",
-        "/Users/faysal/Documents/centwise/csv report/report 3.csv",
-        "/Users/faysal/Documents/centwise/csv report/report 2.csv",
-        "/Users/faysal/Documents/centwise/csv report/report 1.csv",
-        "csv report/report 3.csv",
-        "../csv report/report 3.csv",
-    ];
-    let file = match candidates.iter().find_map(|p| File::open(p).ok()) {
-        Some(f) => f,
-        None => {
-            println!("No CSV export file found; skipping local audit test.");
-            return;
-        }
-    };
+fn audit_csv_path(path: &str) -> Option<(usize, usize, usize, usize)> {
+    let file = File::open(path).ok()?;
     let reader = BufReader::new(file);
 
     let mut lines = reader.lines();
-    let _header = lines.next().unwrap().unwrap();
+    let _header = lines.next()?.ok()?;
 
     let mut count = 0;
     let mut parsed_ok = 0;
@@ -134,4 +119,56 @@ fn test_audit_all_csv_messages() {
         (total_refund_minor as f64) / 100.0,
         (net_minor as f64) / 100.0,
     );
+    Some((count, parsed_ok, amount_diff_count, rejected))
 }
+
+#[test]
+fn test_audit_report_4_csv() {
+    let candidates = [
+        "/Users/faysal/Documents/centwise/csv report/repoet 4.csv",
+        "csv report/repoet 4.csv",
+        "../csv report/repoet 4.csv",
+    ];
+    if let Some((count, parsed, diffs, rejected)) =
+        candidates.iter().find_map(|p| audit_csv_path(p))
+    {
+        assert_eq!(count, 120);
+        assert_eq!(diffs, 0, "No amount differences allowed");
+        // Two rejected: 1 WhatsApp job scam and 1 educational admission receipt
+        assert_eq!(
+            rejected, 2,
+            "Expected 2 rejected spam/non-transaction messages"
+        );
+        assert_eq!(parsed, 118, "Expected 118 parsed transactions");
+    }
+}
+
+#[test]
+fn test_audit_report_3_csv() {
+    let candidates = [
+        "/Users/faysal/Documents/centwise/csv report/report 3.csv",
+        "csv report/report 3.csv",
+        "../csv report/report 3.csv",
+    ];
+    if let Some((count, _parsed, diffs, _rejected)) =
+        candidates.iter().find_map(|p| audit_csv_path(p))
+    {
+        assert_eq!(count, 565);
+        assert_eq!(diffs, 0, "No amount differences allowed in report 3");
+    }
+}
+
+#[test]
+fn test_audit_report_6_csv() {
+    let candidates = [
+        "/Users/faysal/Documents/centwise/csv report/report 6.csv",
+        "csv report/report 6.csv",
+        "../csv report/report 6.csv",
+    ];
+    if let Some((count, parsed, diffs, rejected)) =
+        candidates.iter().find_map(|p| audit_csv_path(p))
+    {
+        println!("REPORT 6: count={count}, parsed={parsed}, diffs={diffs}, rejected={rejected}");
+    }
+}
+

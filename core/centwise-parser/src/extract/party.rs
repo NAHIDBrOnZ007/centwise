@@ -61,8 +61,72 @@ static EFT_BY_RE: LazyLock<Regex> = LazyLock::new(|| {
         .expect("valid eft by regex")
 });
 
+// MFS explicit counterparty fields (Sender, Receiver, Uddokta, Mobile, From Bank)
+static MFS_SENDER_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\bSender:\s*(01[3-9][0-9]{8}|[A-Za-z0-9\s.-]+?)(?:\s+Ref:|\s+TxnID:|\s+Fee:|\s+Balance:|\n|$)")
+        .expect("valid mfs sender regex")
+});
+
+static MFS_RECEIVER_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\bReceiver:\s*(01[3-9][0-9]{8}|[A-Za-z0-9\s.-]+?)(?:\s+Ref:|\s+TxnID:|\s+Fee:|\s+Balance:|\n|$)")
+        .expect("valid mfs receiver regex")
+});
+
+static MFS_UDDOKTA_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\bUddokta:\s*(01[3-9][0-9]{8}|[A-Za-z0-9\s.-]+?)(?:\s+TxnID:|\s+Fee:|\s+Balance:|\n|$)")
+        .expect("valid mfs uddokta regex")
+});
+
+static MFS_MOBILE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\bMobile:\s*(01[3-9][0-9]{8})\b").expect("valid mfs mobile regex")
+});
+
+static MFS_FROM_BANK_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\bFrom:\s*([A-Za-z0-9\s.-]+?)(?:\s+Amount:|\s+TxnID:|\n|$)")
+        .expect("valid mfs from bank regex")
+});
+
 pub fn extract_party(text: &str) -> Option<String> {
     let lower = text.to_lowercase();
+
+    // 0. Explicit MFS field headers (Sender, Receiver, Uddokta, Mobile, From)
+    if let Some(cap) = MFS_SENDER_RE.captures(text) {
+        if let Some(m) = cap.get(1) {
+            if let Some(clean) = clean_party_candidate(m.as_str()) {
+                return Some(clean);
+            }
+        }
+    }
+    if let Some(cap) = MFS_RECEIVER_RE.captures(text) {
+        if let Some(m) = cap.get(1) {
+            if let Some(clean) = clean_party_candidate(m.as_str()) {
+                return Some(clean);
+            }
+        }
+    }
+    if let Some(cap) = MFS_UDDOKTA_RE.captures(text) {
+        if let Some(m) = cap.get(1) {
+            if let Some(clean) = clean_party_candidate(m.as_str()) {
+                return Some(clean);
+            }
+        }
+    }
+    if let Some(cap) = MFS_FROM_BANK_RE.captures(text) {
+        if let Some(m) = cap.get(1) {
+            if let Some(clean) = clean_party_candidate(m.as_str()) {
+                return Some(clean);
+            }
+        }
+    }
+    if lower.contains("recharge") {
+        if let Some(cap) = MFS_MOBILE_RE.captures(text) {
+            if let Some(m) = cap.get(1) {
+                if let Some(clean) = clean_party_candidate(m.as_str()) {
+                    return Some(clean);
+                }
+            }
+        }
+    }
 
     // 0. EFT sender name (e.g. "EFT by: BIPOULHOSSAIN")
     if let Some(cap) = EFT_BY_RE.captures(text) {
@@ -184,6 +248,9 @@ fn clean_party_candidate(raw: &str) -> Option<String> {
         candidate = candidate[1..candidate.len() - 1].trim();
     }
 
+    // Strip trailing periods (e.g. "Eastern Bank PLC." -> "Eastern Bank PLC")
+    candidate = candidate.trim_end_matches('.').trim();
+
     if candidate.is_empty() || candidate.len() < 2 || candidate.len() > 45 {
         return None;
     }
@@ -298,5 +365,29 @@ mod tests {
     fn rejects_biller_account_as_party() {
         let text = "to Biller A/C 12345678 on 22/08/2026";
         assert_eq!(extract_party(text), None);
+    }
+
+    #[test]
+    fn extracts_nagad_counterparties() {
+        let money_received = "Money Received. Amount: Tk 20000.00 Sender: 01811552202 Ref: N/A TxnID: 75GFFXCN Balance: Tk 20005.47 01/06/2026 14:55";
+        assert_eq!(
+            extract_party(money_received),
+            Some("01811552202".to_string())
+        );
+
+        let cash_in = "Cash In Received. Amount: Tk 1000.00 Uddokta: 01760526260 TxnID: 75AI91M3 Balance: 1017.16 02/05/2026 11:35";
+        assert_eq!(extract_party(cash_in), Some("01760526260".to_string()));
+
+        let send_money = "Send Money Successful. Amount: Tk 660.00 Receiver: 01321886176 Ref: tasfia TxnID: 73XL3F8B Fee: Tk 5.00 Balance: Tk 2400.00 16/05/2025 12:58";
+        assert_eq!(extract_party(send_money), Some("01321886176".to_string()));
+
+        let add_money = "Add Money from Bank is Successful. From: Eastern Bank PLC. Amount: Tk 2100.0 TxnID: 75NA7YH3 Balance: Tk 6100.62 09/07/2026 20:53";
+        assert_eq!(
+            extract_party(add_money),
+            Some("Eastern Bank PLC".to_string())
+        );
+
+        let recharge = "Mobile Recharge Request Received. Amount: Tk 50.00 Mobile:01851096720 TxnID: 74E22XY4 Balance: Tk 4.16 23/09/2025 12:19";
+        assert_eq!(extract_party(recharge), Some("01851096720".to_string()));
     }
 }

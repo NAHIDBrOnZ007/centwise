@@ -243,6 +243,12 @@ const DEFAULT_MERCHANT_CATEGORIES: &[DefaultMerchantCategory] = &[
         keywords: &["10 minute school"],
         category_id: "education",
     },
+    DefaultMerchantCategory {
+        id: "sslcommerz",
+        name: "SSLCOMMERZ",
+        keywords: &["sslcommerz", "software shop limited", "software shop ltd"],
+        category_id: "shopping",
+    },
 ];
 
 const SEEDED_RULE_IDS: &[&str] = &[
