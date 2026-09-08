@@ -99,6 +99,7 @@ impl CentwiseCore {
                     transaction.account_id = queries.resolve_or_create_account(
                         provider,
                         account_last_four.as_deref(),
+                        None,
                         account_name,
                     )?;
                 } else if !queries.account_exists(&transaction.account_id)? {
@@ -156,6 +157,7 @@ impl CentwiseCore {
                     transaction.account_id = queries.resolve_or_create_account(
                         provider,
                         account_last_four.as_deref(),
+                        None,
                         account_name,
                     )?;
                 }
@@ -342,10 +344,15 @@ impl CentwiseCore {
         self.database
             .write(|queries| match outcome {
                 centwise_parser::ParseOutcome::Parsed(parsed) => {
-                    let matches = queries.find_matching_accounts(
-                        &parsed.provider_id,
-                        parsed.account_last4.as_deref(),
-                    )?;
+                    let matches = if parsed.account_last4.is_none() && parsed.account_hint.is_some()
+                    {
+                        Vec::new()
+                    } else {
+                        queries.find_matching_accounts(
+                            &parsed.provider_id,
+                            parsed.account_last4.as_deref(),
+                        )?
+                    };
                     let reference = parsed.reference.clone();
                     let merchant_or_party = parsed
                         .merchant
@@ -384,6 +391,7 @@ impl CentwiseCore {
                         Some(queries.resolve_or_create_account(
                             &parsed.provider_id,
                             parsed.account_last4.as_deref(),
+                            parsed.account_hint.as_deref(),
                             default_account_name(&parsed.provider_id),
                         )?)
                     } else {
@@ -632,6 +640,7 @@ impl CentwiseCore {
                     transaction.account_id = queries.resolve_or_create_account(
                         provider,
                         account_last_four.as_deref(),
+                        None,
                         account_name,
                     )?;
                 }

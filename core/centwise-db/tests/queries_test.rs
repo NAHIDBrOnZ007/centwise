@@ -250,3 +250,32 @@ fn deduplicates_auto_tracked_sms_without_reference() {
         .expect_err("retry must be rejected as duplicate");
     assert!(matches!(err, DbError::DuplicateTransaction(_)));
 }
+
+#[test]
+fn deduplicates_auto_tracked_resends_just_over_five_minutes_apart() {
+    let database = Database::open_in_memory().expect("open");
+    seed_account(&database);
+
+    let mut first = tx(
+        "sms-long-1",
+        50_000,
+        TransactionType::Expense,
+        1_700_000_000_000,
+    );
+    first.raw_sms = Some("Payment Tk 500 successful".into());
+    first.balance_after_minor = Some(100_000);
+    database.insert_transaction(&first).expect("first delivery");
+
+    let mut retry = tx(
+        "sms-long-2",
+        50_000,
+        TransactionType::Expense,
+        1_700_000_328_000,
+    );
+    retry.raw_sms = Some("Payment Tk 500 successful (retry)".into());
+    retry.balance_after_minor = Some(100_000);
+    let err = database
+        .insert_transaction(&retry)
+        .expect_err("resend must be rejected as duplicate");
+    assert!(matches!(err, DbError::DuplicateTransaction(_)));
+}

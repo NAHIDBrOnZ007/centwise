@@ -756,7 +756,7 @@ fn test_audit_fixes_real_user_sms() {
         .clone();
     assert_eq!(tx_rocket.amount_minor, 50_000); // 500.00 Taka, NOT 1,03,973.32!
     assert_eq!(tx_rocket.balance_after_minor, Some(10_397_332));
-    assert_eq!(tx_rocket.transaction_type, TransactionType::Refund);
+    assert_eq!(tx_rocket.transaction_type, TransactionType::Transfer);
 
     // 3. bKash duplicate mobile recharge request notification must be rejected
     let bk_dup_notice = "Your bKash Mobile Recharge request of Tk 40.00 for 01615076000 was successful. Use bKash App for convenience & offers! TCA Download App: https://bKa.sh/5app";

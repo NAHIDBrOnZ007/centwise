@@ -11,6 +11,9 @@ pub use catalog::*;
 pub fn detect_provider(sender_hint: Option<&str>, body: &str) -> String {
     if let Some(sender) = sender_hint {
         let s = normalize_sender(sender);
+        if s == "16216" && body.to_lowercase().contains("nexuspay") {
+            return PROVIDER_NEXUSPAY.to_string();
+        }
         if let Some(provider) = catalog::lookup_sender(&s) {
             // DBBL sends both core bank and Rocket SMS
             if provider == PROVIDER_DBBL && body.to_lowercase().contains("rocket") {
@@ -166,6 +169,14 @@ mod tests {
         assert_eq!(detect_provider(Some("16247"), ""), PROVIDER_BKASH);
         assert_eq!(detect_provider(Some("16167"), ""), PROVIDER_NAGAD);
         assert_eq!(detect_provider(Some("16216"), ""), PROVIDER_ROCKET);
+    }
+
+    #[test]
+    fn detects_nexuspay_from_ambiguous_16216_sender() {
+        assert_eq!(
+            detect_provider(Some("16216"), "NexusPay transaction successful"),
+            PROVIDER_NEXUSPAY
+        );
     }
 
     #[test]

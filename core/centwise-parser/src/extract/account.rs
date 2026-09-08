@@ -4,7 +4,7 @@ use regex::Regex;
 use std::sync::LazyLock;
 
 static BANK_ACCOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\b(?:A/C|ACCT\.?|ACCOUNT)\s*(?:ending(?:\s+in)?\s*)?(?:[:\s])?\s*([A-Za-z0-9*]{4,20})\b").expect("valid account regex")
+    Regex::new(r"(?i)\b(?:A/C|ACCT\.?|ACCOUNT|AC)\s*(?:number|no\.?)?\s*(?:ending(?:\s+in)?\s*)?(?:[:\s])?\s*([A-Za-z0-9*]{4,20})\b").expect("valid account regex")
 });
 
 static CARD_NUMBER_RE: LazyLock<Regex> = LazyLock::new(|| {
@@ -107,6 +107,18 @@ mod tests {
         assert_eq!(
             extract_account_info("A/C 017XXXXXXXXX credited"),
             (None, Some("017XXXXXXXXX".to_string()))
+        );
+    }
+
+    #[test]
+    fn extracts_account_number_and_bare_ac_formats() {
+        assert_eq!(
+            extract_account_info("Your account number 017901121****01 was debited"),
+            (None, Some("017901121****01".to_string()))
+        );
+        assert_eq!(
+            extract_account_info("AC 160***160 is credited"),
+            (None, Some("160***160".to_string()))
         );
     }
 

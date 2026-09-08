@@ -60,7 +60,7 @@ impl<'a> Queries<'a> {
                  WHERE account_id = ?1 
                    AND amount_minor = ?2 
                    AND transaction_type = ?3 
-                   AND ABS(occurred_at_epoch_ms - ?4) <= 300000
+                    AND ABS(occurred_at_epoch_ms - ?4) <= 600000
                    AND ((balance_after_minor IS NULL AND ?5 IS NULL) OR balance_after_minor = ?5)",
                 params![
                     transaction.account_id,

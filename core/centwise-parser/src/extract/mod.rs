@@ -38,7 +38,62 @@ pub fn resolve_categorization(
         return (cat_res.matched_merchant, Some(cat_res.category_id));
     }
 
+    if transaction_type == TransactionType::Expense {
+        if let Some((operator, category)) = categorize_mobile_recharge_by_prefix(party, body) {
+            return (Some(operator.to_string()), Some(category.to_string()));
+        }
+    }
+
     // 3. Fallback to keyword / transaction type based category
     let category = categorize_by_type_or_keywords(body, transaction_type);
     (None, category)
+}
+
+fn categorize_mobile_recharge_by_prefix(
+    party: Option<&str>,
+    body: &str,
+) -> Option<(&'static str, &'static str)> {
+    let lower = body.to_lowercase();
+    if !(lower.contains("recharge")
+        || lower.contains("data pack")
+        || lower.contains("internet at")
+        || lower.contains("gb at"))
+    {
+        return None;
+    }
+
+    let phone = party?.trim();
+    if phone.starts_with("013") || phone.starts_with("017") {
+        Some(("Grameenphone", "recharge"))
+    } else if phone.starts_with("014") || phone.starts_with("019") {
+        Some(("Banglalink", "recharge"))
+    } else if phone.starts_with("015") {
+        Some(("Teletalk", "recharge"))
+    } else if phone.starts_with("016") {
+        Some(("Airtel", "recharge"))
+    } else if phone.starts_with("018") {
+        Some(("Robi", "recharge"))
+    } else {
+        None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn derives_mobile_operator_from_recharge_phone_prefix() {
+        assert_eq!(
+            resolve_categorization(
+                Some("01712345678"),
+                "Recharge of Tk 100.00 on 01712345678 successful",
+                TransactionType::Expense,
+            ),
+            (
+                Some("Grameenphone".to_string()),
+                Some("recharge".to_string())
+            )
+        );
+    }
 }

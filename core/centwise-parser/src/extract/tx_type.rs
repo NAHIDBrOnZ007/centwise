@@ -6,13 +6,7 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
     let lower = text.to_lowercase();
 
     // 1. Refunds and Reversals
-    if lower.contains("refund")
-        || lower.contains("reversal")
-        || lower.contains("reversed")
-        || lower.contains("tk-")
-        || lower.contains("bdt-")
-        || lower.contains("by -")
-    {
+    if lower.contains("refund") || lower.contains("reversal") || lower.contains("reversed") {
         return Some(TransactionType::Refund);
     }
 
@@ -210,6 +204,15 @@ mod tests {
     #[test]
     fn classifies_npsb_transfer() {
         let text = "Fund transfer of BDT 10,000.00 from A/C *1234 via NPSB on 05/09/2026.";
+        assert_eq!(
+            detect_transaction_type(text),
+            Some(TransactionType::Transfer)
+        );
+    }
+
+    #[test]
+    fn negative_fund_transfer_is_not_a_refund_without_refund_wording() {
+        let text = "Your A/C debited (Fund Transfer) by Tk-500.00. C/B Tk1,03,973.32.";
         assert_eq!(
             detect_transaction_type(text),
             Some(TransactionType::Transfer)

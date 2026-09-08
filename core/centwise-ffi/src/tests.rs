@@ -411,6 +411,32 @@ mod ingestion_tests {
     }
 
     #[test]
+    fn account_hints_create_distinct_automatic_accounts() {
+        let core = CentwiseCore::open(":memory:".into()).expect("open core");
+        for (hint, reference) in [("017901121****01", "HINT1"), ("017901121****02", "HINT2")] {
+            let result = core
+                .ingest_sms(
+                    format!(
+                        "Your account number {hint} has been debited with BDT 30.00. Ref {reference}."
+                    ),
+                    Some("Janata Bank".into()),
+                    1_700_000_000_000,
+                )
+                .expect("ingest");
+            assert_eq!(result.status, SmsIngestStatus::Inserted);
+        }
+
+        let ids = core
+            .list_accounts()
+            .expect("accounts")
+            .into_iter()
+            .map(|account| account.id)
+            .collect::<Vec<_>>();
+        assert_eq!(ids.len(), 2);
+        assert_ne!(ids[0], ids[1]);
+    }
+
+    #[test]
     fn batch_ingestion_preserves_order_and_per_message_results() {
         let core = core_with_account();
         let results = core

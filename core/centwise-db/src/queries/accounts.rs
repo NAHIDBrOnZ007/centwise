@@ -79,6 +79,7 @@ impl<'a> Queries<'a> {
         &self,
         provider_id: &str,
         account_last4: Option<&str>,
+        account_hint: Option<&str>,
         preferred_name: &str,
     ) -> DbResult<String> {
         let provider = normalize_account_component(provider_id);
@@ -90,6 +91,31 @@ impl<'a> Queries<'a> {
         let last_four = account_last4
             .map(normalize_account_component)
             .filter(|value| !value.is_empty());
+        let hint = account_hint
+            .map(normalize_account_component)
+            .filter(|value| !value.is_empty());
+
+        if last_four.is_none() {
+            if let Some(hint) = hint.as_deref() {
+                let id = format!("auto-{provider}-hint-{hint}");
+                if self.account_exists(&id)? {
+                    self.connection.execute(
+                        "UPDATE accounts SET archived = 0 WHERE id = ?1",
+                        params![id],
+                    )?;
+                    return Ok(id);
+                }
+                self.insert_account(&Account {
+                    id: id.clone(),
+                    name: preferred_name.to_string(),
+                    provider,
+                    last_four: None,
+                    balance_minor: 0,
+                    archived: false,
+                })?;
+                return Ok(id);
+            }
+        }
         let matches = self.find_matching_accounts(&provider, last_four.as_deref())?;
 
         match matches.as_slice() {

@@ -35,6 +35,10 @@ pub fn categorize_by_type_or_keywords(
 ) -> Option<String> {
     let lower = text.to_lowercase();
 
+    if transaction_type == TransactionType::Transfer {
+        return Some("transfer".to_string());
+    }
+
     if transaction_type == TransactionType::Refund
         || contains_any(&lower, &["refund", "reversal", "reversed"])
     {
@@ -57,10 +61,20 @@ pub fn categorize_by_type_or_keywords(
         return Some("income".to_string());
     }
 
-    if contains_any(&lower, &["atm", "cash withdrawal", "cash out"]) {
+    if contains_any(&lower, &["atm", "cash withdrawal", "cash out"])
+        || (lower.contains("citytouch txn") && lower.contains("withdrawal"))
+    {
         return Some("cash-withdrawal".to_string());
     }
-    if lower.contains("recharge") {
+    if lower.contains("recharge")
+        || ((lower.contains("data pack")
+            || lower.contains("internet at")
+            || lower.contains("gb at"))
+            && (lower.contains("successfully purchased")
+                || lower.contains("successfully activated")
+                || lower.contains("successfully bought")
+                || lower.contains("activated successfully")))
+    {
         return Some("recharge".to_string());
     }
     if contains_any(&lower, &["cashback", "cash back"]) {
@@ -234,5 +248,39 @@ mod tests {
             categorize_by_type_or_keywords(invoice, TransactionType::Expense),
             Some("other".to_string())
         );
+    }
+
+    #[test]
+    fn categorizes_citytouch_and_transfers_before_fee_fallback() {
+        assert_eq!(
+            categorize_by_type_or_keywords(
+                "CITYTOUCH TXN Tk. 500 Withdrawal Tk. 20 Balance",
+                TransactionType::Expense,
+            ),
+            Some("cash-withdrawal".to_string())
+        );
+        assert_eq!(
+            categorize_by_type_or_keywords(
+                "CellFin Transfer Tk 3,500 debited. Fee Tk 5.00.",
+                TransactionType::Transfer,
+            ),
+            Some("transfer".to_string())
+        );
+    }
+
+    #[test]
+    fn categorizes_confirmed_telco_data_packs_as_recharge() {
+        for text in [
+            "You have successfully purchased 1.5GB Internet at Tk 43.00",
+            "You have successfully activated 10GB Data Pack at Tk 199.00",
+            "You have successfully bought 1GB at Tk 36.00",
+            "Data pack 1GB at Tk 23.00 activated successfully",
+        ] {
+            assert_eq!(
+                categorize_by_type_or_keywords(text, TransactionType::Expense),
+                Some("recharge".to_string()),
+                "{text}"
+            );
+        }
     }
 }

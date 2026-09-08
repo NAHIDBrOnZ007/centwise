@@ -73,8 +73,12 @@ pub(crate) fn ingest_sms_in_transaction(
 ) -> centwise_db::DbResult<SmsIngestResult> {
     match outcome {
         centwise_parser::ParseOutcome::Parsed(parsed) => {
-            let matches = queries
-                .find_matching_accounts(&parsed.provider_id, parsed.account_last4.as_deref())?;
+            let matches = if parsed.account_last4.is_none() && parsed.account_hint.is_some() {
+                Vec::new()
+            } else {
+                queries
+                    .find_matching_accounts(&parsed.provider_id, parsed.account_last4.as_deref())?
+            };
             let reference = parsed.reference.clone();
             let merchant_or_party = parsed
                 .merchant
@@ -113,6 +117,7 @@ pub(crate) fn ingest_sms_in_transaction(
                 [] => Some(queries.resolve_or_create_account(
                     &parsed.provider_id,
                     parsed.account_last4.as_deref(),
+                    parsed.account_hint.as_deref(),
                     default_account_name(&parsed.provider_id),
                 )?),
                 _ => None,
