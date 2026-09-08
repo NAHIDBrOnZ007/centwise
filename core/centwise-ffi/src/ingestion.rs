@@ -285,7 +285,9 @@ pub(crate) fn build_transaction_title_and_notes(
             centwise_domain::TransactionType::Refund => format!("Refund from {}", party),
         }
     } else if lower.contains("emergency loan advances")
-        || (lower.contains("deducted") && lower.contains("emergency loan"))
+        || lower.contains("emergency balance advances")
+        || (lower.contains("deducted")
+            && (lower.contains("emergency loan") || lower.contains("emergency balance")))
     {
         "Emergency Loan Settlement".to_string()
     } else if lower.contains("disbursement received") || lower.contains("disbursement") {

@@ -17,6 +17,11 @@ object CsvExporter {
         "Payment Method", "Reference", "Note", "Raw SMS"
     )
 
+    private val reviewQueueHeaderFields = listOf(
+        "Date", "Sender", "Reason", "Candidate Amount", "Candidate Type",
+        "Candidate Party", "Reference", "Raw SMS"
+    )
+
     fun transactionsCsv(transactions: List<TransactionItem>): String {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US)
         val lines = mutableListOf(headerFields.joinToString(","))
@@ -39,12 +44,45 @@ object CsvExporter {
         return lines.joinToString("\n")
     }
 
+    fun reviewQueueCsv(items: List<com.centwise.data.models.ReviewQueueItem>): String {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US)
+        val lines = mutableListOf(reviewQueueHeaderFields.joinToString(","))
+
+        items.sortedByDescending { it.timestamp }.forEach { item ->
+            val fields = listOf(
+                dateFormat.format(Date(item.timestamp)),
+                escape(item.sender),
+                escape(item.reason),
+                item.candidateAmount?.let { String.format(Locale.US, "%.2f", it) } ?: "",
+                escape(item.candidateType?.displayName ?: ""),
+                escape(item.candidateParty ?: ""),
+                escape(item.reference ?: ""),
+                escape(item.rawSms)
+            )
+            lines.add(fields.joinToString(","))
+        }
+
+        return lines.joinToString("\n")
+    }
+
     fun writeCsvFile(context: Context, transactions: List<TransactionItem>): File? {
         return try {
             val timestamp = SimpleDateFormat("yyyyMMdd_HHmm", Locale.US).format(Date())
             val exportDir = File(context.cacheDir, "exports").apply { mkdirs() }
             val file = File(exportDir, "centwise_export_$timestamp.csv")
             file.writeText(transactionsCsv(transactions))
+            file
+        } catch (exception: Exception) {
+            null
+        }
+    }
+
+    fun writeReviewQueueCsvFile(context: Context, items: List<com.centwise.data.models.ReviewQueueItem>): File? {
+        return try {
+            val timestamp = SimpleDateFormat("yyyyMMdd_HHmm", Locale.US).format(Date())
+            val exportDir = File(context.cacheDir, "exports").apply { mkdirs() }
+            val file = File(exportDir, "centwise_review_queue_$timestamp.csv")
+            file.writeText(reviewQueueCsv(items))
             file
         } catch (exception: Exception) {
             null
@@ -69,6 +107,35 @@ object CsvExporter {
         }
 
         context.startActivity(Intent.createChooser(intent, "Share Centwise export"))
+        return true
+    }
+
+    /** Exports review queue items and opens the system share sheet. */
+    fun shareReviewQueueExport(context: Context): Boolean {
+        var items = com.centwise.data.repository.ReviewQueueRepository.shared.items.value
+        if (items.isEmpty()) {
+            com.centwise.data.repository.ReviewQueueRepository.shared.refresh()
+            items = com.centwise.data.repository.ReviewQueueRepository.shared.items.value
+        }
+        if (items.isEmpty()) {
+            android.widget.Toast.makeText(context, "Review queue is empty", android.widget.Toast.LENGTH_SHORT).show()
+            return false
+        }
+        val file = writeReviewQueueCsvFile(context, items) ?: return false
+
+        val uri = FileProvider.getUriForFile(
+            context,
+            "${context.packageName}.fileprovider",
+            file
+        )
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/csv"
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+
+        context.startActivity(Intent.createChooser(intent, "Share Centwise review queue export"))
         return true
     }
 

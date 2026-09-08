@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MarkEmailRead
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -154,7 +155,18 @@ fun ReviewQueueScreen(
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                     )
                 }
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                IconButton(
+                    onClick = { CsvExporter.shareReviewQueueExport(context) }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Export Review Queue to CSV",
+                        tint = accent,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(4.dp))
             }
             IconButton(
                 onClick = { triggerScan() },
@@ -297,6 +309,40 @@ fun ReviewQueueScreen(
                 contentPadding = PaddingValues(top = 8.dp, bottom = 32.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${items.size} messages awaiting review",
+                            style = CentwiseTypography.Subheadline,
+                            color = textSecondary
+                        )
+                        OutlinedButton(
+                            onClick = { CsvExporter.shareReviewQueueExport(context) },
+                            shape = RoundedCornerShape(CentwiseSpacing.CornerRadiusMedium),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, accent.copy(alpha = 0.5f))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = null,
+                                tint = accent,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Export CSV",
+                                style = CentwiseTypography.Caption.copy(fontWeight = FontWeight.SemiBold),
+                                color = accent
+                            )
+                        }
+                    }
+                }
                 items(items, key = { it.id }) { item ->
                     ReviewQueueCard(
                         item = item,

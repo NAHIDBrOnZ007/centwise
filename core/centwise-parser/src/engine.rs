@@ -264,4 +264,83 @@ mod tests {
         assert_eq!(tx.reference.as_deref(), Some("CF12345678"));
         assert_eq!(tx.transaction_type, TransactionType::Transfer);
     }
+
+    #[test]
+    fn parses_ibbplc_deposit_amount_correctly() {
+        let text = "IBBPLC\nTrxID: 5825103000000348\nAcc: 20507770229645665\nDeposit Amount: 1,000.00\nFee: 0.00\nBalance: 1,000.00 at 30/10/2025 10:11 AM";
+        let outcome = parse_sms(text, None);
+        let ParseOutcome::Parsed(tx) = outcome else {
+            panic!("expected parsed transaction");
+        };
+
+        assert_eq!(tx.provider_id, "islami-bank");
+        assert_eq!(tx.amount_minor, 100_000); // 1,000.00 BDT, NOT 20 quadrillion!
+        assert_eq!(tx.reference.as_deref(), Some("5825103000000348"));
+        assert_eq!(tx.balance_after_minor, Some(100_000));
+        assert_eq!(tx.transaction_type, TransactionType::Income);
+    }
+
+    #[test]
+    fn rejects_loan_installment_reminders() {
+        let text = "Dear Client: Please deposit your BRAC Bank SME loan (Loan A/C: 6057075130001) installment of Tk 32,962.0 by 24th Nov. Kindly ignore if you have already made the deposit. Query-16221";
+        assert_eq!(
+            parse_sms(text, Some("BRAC Bank")),
+            ParseOutcome::Rejected(RejectReason::NotATransaction)
+        );
+    }
+
+    #[test]
+    fn rejects_fixed_deposit_renewal_advice() {
+        let text = "Dear Customer, your FD A/C 30570***001 for TK 50,000.00 with interest TK 225.00 (after deduction of tax & excise duty) has been renewed at an interest rate of 3.00% for 60 Days. Details: 16221";
+        assert_eq!(
+            parse_sms(text, Some("BRAC Bank")),
+            ParseOutcome::Rejected(RejectReason::NotATransaction)
+        );
+    }
+
+    #[test]
+    fn rejects_call_rate_upsell_offer() {
+        let text = "You have got 60 paisa/minute(+Tax) call rate to any local operator for 7 days. To get the same offer with 60 day validity recharge Tk. 99";
+        assert_eq!(
+            parse_sms(text, None),
+            ParseOutcome::Rejected(RejectReason::PromotionOrSpam)
+        );
+    }
+
+    #[test]
+    fn parses_airtel_emergency_balance_plural_deduction() {
+        let text = "Tk 1.01 have been deducted to settle your recent Emergency Balance advances. Current outstanding Tk 6.21. For Details dial *141*600#.";
+        let outcome = parse_sms(text, None);
+        let ParseOutcome::Parsed(tx) = outcome else {
+            panic!("expected parsed transaction");
+        };
+
+        assert_eq!(tx.provider_id, "airtel");
+        assert_eq!(tx.amount_minor, 101);
+        assert_eq!(tx.transaction_type, TransactionType::Expense);
+    }
+
+    #[test]
+    fn parses_banglalink_toffee_pack() {
+        let text = "Asia Cup Pack - 3 Days with 1GB TOFFEE - 3 Days - BDT 26 subscription has been activated successfully on TOFFEE for 01983699939.";
+        let outcome = parse_sms(text, None);
+        let ParseOutcome::Parsed(tx) = outcome else {
+            panic!("expected parsed transaction");
+        };
+
+        assert_eq!(tx.provider_id, "banglalink");
+        assert_eq!(tx.amount_minor, 2_600);
+        assert_eq!(tx.merchant.as_deref(), Some("Toffee"));
+        assert_eq!(tx.category_id.as_deref(), Some("entertainment"));
+        assert_eq!(tx.transaction_type, TransactionType::Expense);
+    }
+
+    #[test]
+    fn rejects_insurance_policy_expiry_advisory() {
+        let text = "Your fire insurance policy will expire on 23-Dec-24.Please contact your BRAC Bank representative to renew the insurance.Sum Insured Tk 832140.464 Premium Tk 1072";
+        assert_eq!(
+            parse_sms(text, Some("BRAC Bank")),
+            ParseOutcome::Rejected(RejectReason::NotATransaction)
+        );
+    }
 }

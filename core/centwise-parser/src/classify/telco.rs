@@ -39,6 +39,17 @@ pub fn is_promotional_or_telco_offer(body: &str, sender_hint: Option<&str>) -> b
         return true;
     }
 
+    // 1b. Call rate offer expiry / upsell recharges
+    if lower.contains("call rate offer will end")
+        || lower.contains("to take the offer again, recharge")
+        || lower.contains("to take the offer again recharge")
+        || (lower.contains("call rate") && lower.contains("validity recharge"))
+        || (lower.contains("paisa/minute") && lower.contains("recharge"))
+        || (lower.contains("poisha/second") && lower.contains("recharge"))
+    {
+        return true;
+    }
+
     // 2. Low-balance notifications and upsell prompts
     if lower.contains("your balance is finished")
         || lower.contains("your balance is low")

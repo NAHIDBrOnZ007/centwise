@@ -4,7 +4,7 @@ use regex::Regex;
 use std::sync::LazyLock;
 
 static BANK_ACCOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\b(?:A/C|ACCT\.?|ACCOUNT|AC)\s*(?:number|no\.?)?\s*(?:ending(?:\s+in)?\s*)?(?:[:\s])?\s*([A-Za-z0-9*]{4,20})\b").expect("valid account regex")
+    Regex::new(r"(?i)\b(?:A/C|ACCT\.?|ACCOUNT|ACC\.?|AC)\s*(?:number|no\.?)?\s*(?:ending(?:\s+in)?\s*)?(?:[:\s])?\s*([A-Za-z0-9*]{4,25})\b").expect("valid account regex")
 });
 
 static CARD_NUMBER_RE: LazyLock<Regex> = LazyLock::new(|| {

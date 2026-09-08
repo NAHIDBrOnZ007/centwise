@@ -51,4 +51,35 @@ class CsvAndFormatterTest {
         assertTrue(lines[1].contains("BIPOULHOSSAIN"))
         assertTrue(lines[1].contains("NexusPay"))
     }
+
+    @Test
+    fun testReviewQueueCsvExporter() {
+        val sampleItems = listOf(
+            com.centwise.data.models.ReviewQueueItem(
+                id = "review-1",
+                sender = "BRAC Bank",
+                rawSms = "Dear Client: Please deposit your BRAC Bank SME loan installment of Tk 32,962.0 by 24th Nov.",
+                timestamp = 1661065666000L,
+                candidateAmount = 32962.0,
+                candidateType = TransactionType.EXPENSE,
+                candidateParty = "BRAC Bank",
+                reference = "REF123",
+                reason = "Format needs confirmation"
+            )
+        )
+
+        val csv = CsvExporter.reviewQueueCsv(sampleItems)
+        val lines = csv.split("\n")
+
+        // Header check
+        assertEquals("Date,Sender,Reason,Candidate Amount,Candidate Type,Candidate Party,Reference,Raw SMS", lines[0])
+
+        // Data row check
+        assertTrue(lines[1].contains("BRAC Bank"))
+        assertTrue(lines[1].contains("Format needs confirmation"))
+        assertTrue(lines[1].contains("32962.00"))
+        assertTrue(lines[1].contains("Expense"))
+        assertTrue(lines[1].contains("REF123"))
+        assertTrue(lines[1].contains("Please deposit your BRAC Bank SME loan"))
+    }
 }

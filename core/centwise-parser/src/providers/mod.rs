@@ -64,10 +64,11 @@ pub fn detect_provider(sender_hint: Option<&str>, body: &str) -> String {
     if body_lower.contains("banglalink")
         || body_lower.contains("*212*")
         || body_lower.contains("ghechang")
+        || body_lower.contains("toffee")
     {
         return PROVIDER_BANGLALINK.to_string();
     }
-    if body_lower.contains("airtel") {
+    if body_lower.contains("airtel") || body_lower.contains("*141*") {
         return PROVIDER_AIRTEL.to_string();
     }
     if body_lower.contains("teletalk") {
@@ -90,7 +91,11 @@ pub fn detect_provider(sender_hint: Option<&str>, body: &str) -> String {
     if body_lower.contains("dutch-bangla") || body_lower.contains("dutch bangla") {
         return PROVIDER_DBBL.to_string();
     }
-    if body_lower.contains("islami bank") || body_lower.contains("mudaraba") {
+    if body_lower.contains("islami bank")
+        || body_lower.contains("mudaraba")
+        || body_lower.contains("ibbplc")
+        || body_lower.contains("ibbl")
+    {
         return PROVIDER_ISLAMI_BANK.to_string();
     }
     if body_lower.contains("mutual trust bank") || body_lower.contains("mtb ") {

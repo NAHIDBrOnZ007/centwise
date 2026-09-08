@@ -59,7 +59,7 @@ static CARD_USAGE_RE: LazyLock<Regex> = LazyLock::new(|| {
 // Primary transaction verbs: Cash in, Cash out, Payment, Recharge, etc.
 static VERB_AMOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)(?:Cash\s+In|Cash\s+Out|Cash\s+Deposit|Send\s+Money|sent|Payment|Bill\s+Pay(?:ment)?|Pay\s+Bill|Recharge|Withdrawal|Withdrawn|received|deposited|transferred|Transfer\s+Money|Fund\s+Transfer|Remittance|Auto\s+Debit|Loan\s+Repayment|spent|charged|(?:DR|CR)\.?\s+transaction|Txn|added\s+to\s+your\s+account|EMI\s+of|Cashback(?:/Interest)?\s+of|Excise\s+Duty|Annual\s+(?:Card\s+)?Fee|SMS\s+Alert\s+Fee|Maintenance\s+Fee|Add\s+Money|recovered\s+for\s+emergency\s+loan)[ \t]+(?:of[ \t]+)?(?:(?:Tk\.?|BDT)[ \t]*-?[ \t]*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?:[ \t]*(?:Tk\.?|BDT))?",
+        r"(?i)(?:Cash\s+In|Cash\s+Out|Cash\s+Deposit|Deposit\s+Amount|Send\s+Money|sent|Payment|Bill\s+Pay(?:ment)?|Pay\s+Bill|Recharge|Withdrawal|Withdrawn|received|deposited|transferred|Transfer\s+Money|Fund\s+Transfer|Remittance|Auto\s+Debit|Loan\s+Repayment|spent|charged|(?:DR|CR)\.?\s+transaction|Txn|added\s+to\s+your\s+account|EMI\s+of|Cashback(?:/Interest)?\s+of|Excise\s+Duty|Annual\s+(?:Card\s+)?Fee|SMS\s+Alert\s+Fee|Maintenance\s+Fee|Add\s+Money|recovered\s+for\s+emergency\s+loan)[ \t]*[:\-]?[ \t]*(?:of[ \t]+)?(?:(?:Tk\.?|BDT)[ \t]*-?[ \t]*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?:[ \t]*(?:Tk\.?|BDT))?",
     )
     .expect("valid verb amount regex")
 });
@@ -83,7 +83,7 @@ static CURRENCY_AMOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 static INFORMATIONAL_AMOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\b(?:available\s+(?:credit\s+)?limit|(?:minimum\s+)?amount\s+due|due\s+amount|total\s+outstanding)\s*(?:is\s*)?[:\-]?\s*(?:Tk\.?|BDT)?\s*$")
+    Regex::new(r"(?i)\b(?:available\s+(?:credit\s+)?limit|(?:minimum\s+)?amount\s+due|due\s+amount|total\s+outstanding|sum\s+insured)\s*(?:is\s*)?[:\-]?\s*(?:Tk\.?|BDT)?\s*$")
         .expect("valid informational amount regex")
 });
 
@@ -160,7 +160,7 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
     }
 
     // 4b. Postfix transaction verbs (e.g. "Tk. 690 Withdrawal", "Tk. 20,000 Deposit", "Tk 500 Purchased")
-    if let Some(cap) = AMOUNT_POSTFIX_VERB_RE.captures(text) {
+    for cap in AMOUNT_POSTFIX_VERB_RE.captures_iter(text) {
         if let Some(m) = cap.get(1) {
             if let Some(val) = parse_amount_minor(m.as_str()) {
                 if val > 0 && !is_fee_or_balance(val, m.start(), m.end(), text, fee, balance) {
@@ -245,6 +245,7 @@ fn is_fee_or_balance(
 
     if INFORMATIONAL_AMOUNT_RE.is_match(&text[..start_pos])
         || DATE_OR_PHONE_RE.is_match(&text[start_pos..])
+        || is_account_or_identifier(text, start_pos)
     {
         return true;
     }
@@ -258,6 +259,40 @@ fn is_fee_or_balance(
         return true;
     }
     false
+}
+
+fn is_account_or_identifier(text: &str, pos: usize) -> bool {
+    let mut start = pos.saturating_sub(25);
+    while start < pos && !text.is_char_boundary(start) {
+        start += 1;
+    }
+    let before = text[start..pos].to_lowercase();
+    let trimmed = before.trim_end();
+    trimmed.ends_with("acc:")
+        || trimmed.ends_with("acc :")
+        || trimmed.ends_with("acc.")
+        || trimmed.ends_with("acc")
+        || trimmed.ends_with("a/c:")
+        || trimmed.ends_with("a/c :")
+        || trimmed.ends_with("a/c#")
+        || trimmed.ends_with("a/c")
+        || trimmed.ends_with("acct:")
+        || trimmed.ends_with("acct.")
+        || trimmed.ends_with("acct")
+        || trimmed.ends_with("account:")
+        || trimmed.ends_with("account :")
+        || trimmed.ends_with("account")
+        || trimmed.ends_with("trxid:")
+        || trimmed.ends_with("trxid :")
+        || trimmed.ends_with("trx id:")
+        || trimmed.ends_with("txnid:")
+        || trimmed.ends_with("txnid :")
+        || trimmed.ends_with("txn id:")
+        || trimmed.ends_with("loan a/c:")
+        || trimmed.ends_with("loan a/c :")
+        || trimmed.ends_with("loan a/c")
+        || trimmed.ends_with("ref:")
+        || trimmed.ends_with("ref :")
 }
 
 fn is_adjacent_balance(text: &str, pos: usize, end_pos: usize) -> bool {

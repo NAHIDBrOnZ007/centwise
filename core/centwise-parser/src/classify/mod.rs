@@ -61,6 +61,22 @@ pub fn classify_safety(body: &str, sender_hint: Option<&str>) -> Option<RejectRe
         return Some(RejectReason::NotATransaction);
     }
 
+    // Fixed Deposit (FD) rollover / renewal advice (not cash-flow or checking transaction)
+    if lower.contains("has been renewed at an interest rate")
+        || (lower.contains("fd a/c") && lower.contains("has been renewed"))
+    {
+        return Some(RejectReason::NotATransaction);
+    }
+
+    // Insurance policy expiry / renewal advisory notices (not a money debit/credit)
+    if (lower.contains("insurance policy")
+        && (lower.contains("will expire") || lower.contains("to renew")))
+        || (lower.contains("sum insured") && lower.contains("premium"))
+        || lower.contains("policy will expire")
+    {
+        return Some(RejectReason::NotATransaction);
+    }
+
     // Educational course admission / tuition confirmation receipts
     // (e.g. "Dear Tasfia, your admission is successful for Utkorsho HSC 25 ... you paid Tk 2500")
     if lower.contains("admission is successful")
@@ -226,7 +242,15 @@ fn is_non_posted_financial_message(text: &str) -> bool {
                     || lower.contains("minimum amount due")
                     || lower.contains("min amount due"))));
 
-    failed || pending || request_or_reminder
+    let loan_or_payment_reminder = !has_posted_action
+        && (((lower.contains("please deposit") || lower.contains("kindly deposit"))
+            && (lower.contains("installment")
+                || lower.contains("instalment")
+                || lower.contains("loan")
+                || lower.contains("sme")))
+            || lower.contains("kindly ignore if you have already made the deposit"));
+
+    failed || pending || request_or_reminder || loan_or_payment_reminder
 }
 
 fn false_or_none(_text: &str) -> Option<RejectReason> {

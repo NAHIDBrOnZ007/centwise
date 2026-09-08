@@ -168,7 +168,35 @@ fn test_audit_report_6_csv() {
     if let Some((count, parsed, diffs, rejected)) =
         candidates.iter().find_map(|p| audit_csv_path(p))
     {
-        println!("REPORT 6: count={count}, parsed={parsed}, diffs={diffs}, rejected={rejected}");
+        assert_eq!(count, 130);
+        assert_eq!(
+            diffs, 1,
+            "Only 1 difference expected: row 20 account number 20 quadrillion fix"
+        );
+        assert_eq!(
+            rejected, 29,
+            "29 rejected: 26 loan reminders, 1 FD renewal, 2 promo ads"
+        );
+        assert_eq!(parsed, 101, "101 legitimate transactions parsed");
     }
 }
 
+#[test]
+fn test_audit_report_7_csv() {
+    let candidates = [
+        "/Users/faysal/Documents/centwise/csv report/report 7.csv",
+        "csv report/report 7.csv",
+        "../csv report/report 7.csv",
+    ];
+    if let Some((count, parsed, diffs, rejected)) =
+        candidates.iter().find_map(|p| audit_csv_path(p))
+    {
+        assert_eq!(count, 132);
+        assert_eq!(diffs, 0, "No amount differences allowed");
+        assert_eq!(
+            rejected, 1,
+            "Expected 1 rejected non-transaction (insurance expiry notice)"
+        );
+        assert_eq!(parsed, 131, "Expected 131 legitimate transactions parsed");
+    }
+}

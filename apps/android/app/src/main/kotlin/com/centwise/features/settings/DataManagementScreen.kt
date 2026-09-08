@@ -536,6 +536,39 @@ fun DataManagementScreen(
                                 modifier = Modifier.size(16.dp)
                             )
                         }
+
+                        HorizontalDivider(color = dividerColor, modifier = Modifier.padding(start = 52.dp))
+
+                        // Export Review Queue to CSV
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .iosBounceClick {
+                                    com.centwise.features.transactions.CsvExporter.shareReviewQueueExport(context)
+                                }
+                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = null,
+                                tint = accent,
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(14.dp))
+                            Text(
+                                text = "Export Review Queue to CSV",
+                                style = CentwiseTypography.Headline.copy(fontSize = 15.sp),
+                                color = textPrimary,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = Color(0xFFC7C7CC),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(6.dp))

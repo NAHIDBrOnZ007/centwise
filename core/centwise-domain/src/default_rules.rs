@@ -232,6 +232,12 @@ const DEFAULT_MERCHANT_CATEGORIES: &[DefaultMerchantCategory] = &[
         category_id: "entertainment",
     },
     DefaultMerchantCategory {
+        id: "toffee",
+        name: "Toffee",
+        keywords: &["toffee"],
+        category_id: "entertainment",
+    },
+    DefaultMerchantCategory {
         id: "lazz-pharma",
         name: "Lazz Pharma",
         keywords: &["lazz pharma"],
