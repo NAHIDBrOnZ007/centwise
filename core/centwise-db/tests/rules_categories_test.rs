@@ -61,7 +61,7 @@ fn custom_categories_and_rules_persist_and_support_crud() {
 }
 
 #[test]
-fn system_categories_are_protected_and_reset_removes_user_categories_and_rules() {
+fn reset_removes_user_categories_and_rules_but_preserves_default_data() {
     let database = Database::open_in_memory().expect("open database");
     database
         .insert_category(&category("coffee"))
@@ -85,7 +85,9 @@ fn system_categories_are_protected_and_reset_removes_user_categories_and_rules()
 
     database.reset_to_empty().expect("reset");
     assert_eq!(database.list_categories().expect("categories").len(), 20);
-    assert!(database.list_rules().expect("rules").is_empty());
+    let rules = database.list_rules().expect("rules");
+    assert_eq!(rules.len(), centwise_domain::default_rules().len());
+    assert!(rules.iter().all(|rule| rule.id.starts_with("rule-")));
     assert!(database
         .list_categories()
         .expect("categories")

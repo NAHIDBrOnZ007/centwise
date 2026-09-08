@@ -31,9 +31,36 @@ impl<'a> Queries<'a> {
              DELETE FROM budgets;
              DELETE FROM subscriptions;
              DELETE FROM accounts;
-             DELETE FROM rules;
              DELETE FROM categories WHERE is_system = 0;",
         )?;
+
+        let default_rules = centwise_domain::default_rules();
+        let placeholders = std::iter::repeat_n("?", default_rules.len())
+            .collect::<Vec<_>>()
+            .join(", ");
+        self.connection.execute(
+            &format!("DELETE FROM rules WHERE id NOT IN ({placeholders})"),
+            rusqlite::params_from_iter(default_rules.iter().map(|rule| &rule.id)),
+        )?;
+
+        let mut statement = self.connection.prepare(
+            "INSERT OR IGNORE INTO rules
+                (id, name, keyword, match_type, category_id, transaction_type,
+                 is_enabled, sort_order)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+        )?;
+        for (sort_order, rule) in default_rules.into_iter().enumerate() {
+            statement.execute(rusqlite::params![
+                rule.id,
+                rule.name,
+                rule.keyword,
+                rule.match_type.as_str(),
+                rule.category_id,
+                rule.transaction_type.as_str(),
+                rule.is_enabled as i64,
+                sort_order as i64,
+            ])?;
+        }
         Ok(())
     }
 }
