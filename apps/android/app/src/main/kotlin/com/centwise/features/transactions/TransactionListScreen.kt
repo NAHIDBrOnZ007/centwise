@@ -7,6 +7,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -39,8 +40,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.centwise.core.design.components.ActionPillGroup
 import com.centwise.core.design.components.CategoryIconHelper
+import com.centwise.core.design.components.DismissKeyboardOnScroll
 import com.centwise.core.design.components.EmptyStateView
 import com.centwise.core.design.components.TransactionRow
+import com.centwise.core.design.components.clearFocusOnTapOutside
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
@@ -84,12 +87,17 @@ fun TransactionListScreen(
     val menuBg = if (isDark) Color(0xFF2C2C2E) else Color.White
     val menuBorder = BorderStroke(1.dp, if (isDark) Color(0x26FFFFFF) else Color(0x0F000000))
 
+    val listState = rememberLazyListState()
+    DismissKeyboardOnScroll(listState)
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(bg)
+            .clearFocusOnTapOutside()
     ) {
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp),

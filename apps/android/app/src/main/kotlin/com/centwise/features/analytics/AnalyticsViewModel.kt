@@ -115,7 +115,11 @@ class AnalyticsViewModel(
             ?: emptyList()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val monthlyTrends: StateFlow<List<TrendPoint>> = snapshot.map { value ->
-        value?.monthlyTrends?.map { TrendPoint("${it.month}/${it.year}", it.totalExpenseMinor / 100.0) } ?: emptyList()
+        val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+        value?.monthlyTrends?.map {
+            val monthIdx = (it.month.toInt() - 1).coerceIn(0, 11)
+            TrendPoint(monthNames[monthIdx], it.totalExpenseMinor / 100.0)
+        } ?: emptyList()
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun transactionsForCategory(category: String): List<TransactionItem> {

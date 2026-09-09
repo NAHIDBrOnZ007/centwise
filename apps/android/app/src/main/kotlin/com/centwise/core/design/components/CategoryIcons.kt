@@ -28,6 +28,7 @@ object CategoryIconHelper {
         when (symbol) {
             "fork.knife", "cup.and.saucer", "fork.knife.circle", "fork.knife.circle.fill" -> return Icons.Default.Restaurant
             "car", "car.fill", "car.2", "car.2.fill", "tram", "bus" -> return Icons.Default.DirectionsCar
+            "airplane", "airplane.circle", "airplane.circle.fill", "flight" -> return Icons.Default.Flight
             "bag", "bag.fill", "bag.circle", "cart", "cart.fill" -> return Icons.Default.ShoppingBag
             "bolt", "bolt.fill", "bolt.circle", "bolt.circle.fill", "lightbulb" -> return Icons.Default.Bolt
             "antenna.radiowaves.left.and.right", "iphone", "phone", "phone.fill", "simcard" -> return Icons.Default.PhoneIphone
@@ -46,6 +47,7 @@ object CategoryIconHelper {
         return when {
             cat.contains("health") || cat.contains("medical") || cat.contains("doctor") || cat.contains("pharma") || cat.contains("hospital") -> Icons.Default.MedicalServices
             cat.contains("food") || cat.contains("dining") || cat.contains("restaurant") || cat.contains("cafe") || cat.contains("lunch") || cat.contains("dinner") -> Icons.Default.Restaurant
+            cat.contains("travel") || cat.contains("flight") || cat.contains("airline") || cat.contains("ticket") -> Icons.Default.Flight
             cat.contains("transport") || cat.contains("ride") || cat.contains("uber") || cat.contains("pathao") || cat.contains("fuel") || cat.contains("vehicle") || cat.split(" ", "-", "_").any { it == "car" } -> Icons.Default.DirectionsCar
             cat.contains("shopping") || cat.contains("daraz") || cat.contains("aarong") || cat.contains("cloth") || cat.contains("grocery") || cat.split(" ", "-", "_").any { it == "bag" } -> Icons.Default.ShoppingBag
             cat.contains("bill") || cat.contains("utilit") || cat.contains("electric") || cat.contains("water") || cat.contains("gas") || cat.contains("desco") || cat.contains("dpdc") || cat.contains("nesco") -> Icons.Default.Bolt
@@ -66,6 +68,7 @@ object CategoryIconHelper {
         return when {
             cat.contains("health") || cat.contains("medical") -> Color(0xFFEF4444)
             cat.contains("food") || cat.contains("dining") -> Color(0xFFF97316)
+            cat.contains("travel") || cat.contains("flight") -> Color(0xFF0284C7)
             cat.contains("transport") || cat.contains("ride") || cat.split(" ", "-", "_").any { it == "car" } -> Color(0xFF06B6D4)
             cat.contains("shopping") || cat.contains("cloth") -> Color(0xFFEC4899)
             cat.contains("bill") || cat.contains("utilit") -> Color(0xFFEAB308)

@@ -49,6 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.centwise.core.design.components.clearFocusOnTapOutside
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
@@ -135,6 +136,7 @@ fun OnboardingScreen(
             .fillMaxSize()
             .background(bg)
             .systemBarsPadding()
+            .clearFocusOnTapOutside()
             .padding(horizontal = 24.dp)
     ) {
         // Top Centwise Header

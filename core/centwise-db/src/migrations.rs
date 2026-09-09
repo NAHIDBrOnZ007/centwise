@@ -154,6 +154,11 @@ CREATE INDEX idx_merchant_category_mappings_category
     ON merchant_category_mappings(category_id);
 "#,
     },
+    Migration {
+        version: 5,
+        name: "seed bangladesh smart rules",
+        sql: r#"-- Default smart rules are updated for Bangladesh brands."#,
+    },
 ];
 
 /// Latest schema version available in this build.
@@ -167,6 +172,7 @@ pub fn latest_version() -> i64 {
 /// Runs pending migrations and seeds system data on fresh installs.
 pub fn run(connection: &Connection) -> DbResult<()> {
     let current: i64 = connection.query_row("PRAGMA user_version", [], |row| row.get(0))?;
+    let had_pending = current < latest_version();
 
     for migration in MIGRATIONS
         .iter()
@@ -181,19 +187,20 @@ pub fn run(connection: &Connection) -> DbResult<()> {
     }
 
     seed_system_data(connection)?;
-    seed_default_rules(connection)?;
+    if had_pending || count_rules(connection)? == 0 {
+        seed_default_rules(connection)?;
+    }
 
     Ok(())
 }
 
-fn seed_default_rules(connection: &Connection) -> DbResult<()> {
-    let count: i64 = connection
+fn count_rules(connection: &Connection) -> DbResult<i64> {
+    connection
         .query_row("SELECT COUNT(*) FROM rules", [], |row| row.get(0))
-        .unwrap_or(0);
-    if count > 0 {
-        return Ok(());
-    }
+        .map_err(Into::into)
+}
 
+fn seed_default_rules(connection: &Connection) -> DbResult<()> {
     let mut statement = connection.prepare(
         "INSERT OR IGNORE INTO rules
             (id, name, keyword, match_type, category_id, transaction_type,

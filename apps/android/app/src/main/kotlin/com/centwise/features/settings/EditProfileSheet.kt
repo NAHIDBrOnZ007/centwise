@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.centwise.core.design.components.ModalSheetTopBar
+import com.centwise.core.design.components.clearFocusOnTapOutside
 import com.centwise.core.design.components.iosBounceClick
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseTypography
@@ -70,11 +71,16 @@ fun EditProfileSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = if (isDark) CentwiseColors.DarkBackground else Color(0xFFF2F2F7),
-        dragHandle = { BottomSheetDefaults.DragHandle() }
+        dragHandle = {
+            Box(modifier = Modifier.clearFocusOnTapOutside()) {
+                BottomSheetDefaults.DragHandle()
+            }
+        }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .clearFocusOnTapOutside()
                 .padding(horizontal = 20.dp)
                 .padding(bottom = 36.dp),
             horizontalAlignment = Alignment.CenterHorizontally

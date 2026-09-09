@@ -106,6 +106,29 @@ impl<'a> Queries<'a> {
                 && rule.match_type.matches(merchant_or_party, &rule.keyword)
         }))
     }
+
+    pub fn restore_default_rules(&self) -> DbResult<()> {
+        let default_rules = centwise_domain::default_rules();
+        let mut statement = self.connection.prepare(
+            "INSERT OR IGNORE INTO rules
+                (id, name, keyword, match_type, category_id, transaction_type,
+                 is_enabled, sort_order)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+        )?;
+        for (sort_order, rule) in default_rules.into_iter().enumerate() {
+            statement.execute(params![
+                rule.id,
+                rule.name,
+                rule.keyword,
+                rule.match_type.as_str(),
+                rule.category_id,
+                rule.transaction_type.as_str(),
+                rule.is_enabled as i64,
+                sort_order as i64,
+            ])?;
+        }
+        Ok(())
+    }
 }
 
 fn validate_rule(connection: &Connection, rule: &NewSmartRule) -> DbResult<()> {

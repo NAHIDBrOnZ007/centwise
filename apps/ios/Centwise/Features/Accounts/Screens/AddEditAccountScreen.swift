@@ -53,6 +53,7 @@ public struct AddEditAccountScreen: View {
                     }
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle(accountToEdit == nil ? "New Account" : "Edit Account")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

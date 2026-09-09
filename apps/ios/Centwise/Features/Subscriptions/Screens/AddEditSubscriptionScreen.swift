@@ -64,6 +64,7 @@ public struct AddEditSubscriptionScreen: View {
                 Text("Paused subscriptions stop reminders but keep their history.")
             }
         }
+        .scrollDismissesKeyboard(.interactively)
         .navigationTitle(editingSubscription == nil ? "New Subscription" : "Edit Subscription")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

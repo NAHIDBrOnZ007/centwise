@@ -38,6 +38,14 @@ cargo ndk -t arm64-v8a -t armeabi-v7a -t x86_64 \
     -o "${JNI_LIBS_DIR}" \
     build --release -p centwise-ffi
 
+echo "Regenerating Kotlin bindings..."
+cargo build -p centwise-ffi
+cargo run -p uniffi-bindgen generate \
+    --library target/debug/libcentwise_ffi.dylib \
+    --language kotlin \
+    --config centwise-ffi/uniffi.toml \
+    --out-dir "${ROOT_DIR}/apps/android/app/src/main/kotlin"
+
 echo "=== Success! Native libraries generated ==="
 ls -la "${JNI_LIBS_DIR}/arm64-v8a/libcentwise_ffi.so" 2>/dev/null || true
 ls -la "${JNI_LIBS_DIR}/armeabi-v7a/libcentwise_ffi.so" 2>/dev/null || true

@@ -332,6 +332,12 @@ impl CentwiseCore {
         self.database.delete_rule(&id).map_err(CentwiseError::from)
     }
 
+    pub fn restore_default_rules(&self) -> Result<(), CentwiseError> {
+        self.database
+            .restore_default_rules()
+            .map_err(CentwiseError::from)
+    }
+
     /// Parses, resolves, deduplicates, and stores an SMS in one Rust-owned
     /// operation. Native platforms only provide the message and timestamp.
     pub fn ingest_sms(
@@ -561,7 +567,8 @@ impl CentwiseCore {
             })
             .collect::<Vec<_>>();
 
-        self.database
+        let results = self
+            .database
             .write(|queries| {
                 let rules = queries.list_rules()?;
                 parsed
@@ -578,7 +585,9 @@ impl CentwiseCore {
                     })
                     .collect()
             })
-            .map_err(CentwiseError::from)
+            .map_err(CentwiseError::from)?;
+        let _ = self.database.checkpoint();
+        Ok(results)
     }
 
     pub fn list_review_queue(&self, limit: u32) -> Result<Vec<ReviewQueueRecord>, CentwiseError> {

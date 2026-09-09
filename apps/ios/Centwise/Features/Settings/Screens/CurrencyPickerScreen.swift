@@ -58,6 +58,7 @@ public struct CurrencyPickerScreen: View {
             }
         }
         .listStyle(.insetGrouped)
+        .scrollDismissesKeyboard(.interactively)
         .searchable(text: $searchText, prompt: "Search currency")
         .navigationTitle("Currency")
         .navigationBarTitleDisplayMode(.inline)

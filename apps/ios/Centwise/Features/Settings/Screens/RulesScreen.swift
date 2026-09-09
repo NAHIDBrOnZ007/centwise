@@ -75,6 +75,7 @@ public struct RulesScreen: View {
             }
         }
         .listStyle(.insetGrouped)
+        .scrollDismissesKeyboard(.interactively)
         .searchable(text: $searchText, prompt: "Search rules")
         .navigationTitle("Smart Rules")
         .navigationBarTitleDisplayMode(.inline)

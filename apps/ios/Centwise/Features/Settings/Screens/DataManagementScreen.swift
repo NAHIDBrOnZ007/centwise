@@ -9,21 +9,23 @@ public struct DataManagementScreen: View {
     @State private var showExportSheet = false
     @State private var toastItem: ToastItem?
     @State private var isDatabaseOperationInProgress = false
+    @State private var refreshTrigger: Int = 0
 
     public init() {}
 
     private var databaseFileSizeString: String {
-        let dbUrl = CentwiseRustBackend.databaseURL()
-        if let attrs = try? FileManager.default.attributesOfItem(atPath: dbUrl.path),
-           let size = attrs[.size] as? Int64 {
-            let kb = Double(size) / 1024.0
-            if kb < 1024 {
-                return String(format: "%.1f KB", kb)
-            } else {
-                return String(format: "%.2f MB", kb / 1024.0)
-            }
+        _ = refreshTrigger
+        let totalBytes = CentwiseRustBackend.totalDatabaseSizeBytes()
+        if totalBytes == 0 {
+            return "Clean DB"
         }
-        return "Clean DB"
+        let kb = Double(totalBytes) / 1024.0
+        let formatted = kb < 1024 ? String(format: "%.1f KB", kb) : String(format: "%.2f MB", kb / 1024.0)
+        if repository.transactions.isEmpty && repository.accounts.isEmpty {
+            return "Clean DB (\(formatted))"
+        } else {
+            return formatted
+        }
     }
 
     public var body: some View {
@@ -80,6 +82,7 @@ public struct DataManagementScreen: View {
                 isDatabaseOperationInProgress = true
                 repository.loadSampleDemoDataAsync { summary in
                     isDatabaseOperationInProgress = false
+                    refreshTrigger += 1
                     themeManager.triggerHapticFeedback(summary == nil ? .warning : .success)
                     if let summary {
                         toastItem = ToastItem("Sample data loaded (\(summary.transactions) transactions)", style: .success)
@@ -98,6 +101,7 @@ public struct DataManagementScreen: View {
                 isDatabaseOperationInProgress = true
                 repository.resetToEmptyDatabaseAsync { succeeded in
                     isDatabaseOperationInProgress = false
+                    refreshTrigger += 1
                     themeManager.triggerHapticFeedback(succeeded ? .warning : .error)
                     toastItem = ToastItem(
                         succeeded ? "Database wiped. Starting completely clean." : "Could not reset database",
@@ -108,6 +112,12 @@ public struct DataManagementScreen: View {
             .disabled(isDatabaseOperationInProgress)
         } message: {
             Text("Are you sure you want to delete all transactions, budgets, and subscriptions? This action cannot be undone.")
+        }
+        .onAppear {
+            refreshTrigger += 1
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .centwiseTransactionsUpdated)) { _ in
+            refreshTrigger += 1
         }
     }
 

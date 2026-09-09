@@ -4,9 +4,14 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -298,8 +303,10 @@ fun SpendingTrendsChart(
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
+    val gridLineColor = if (isDark) Color(0x14FFFFFF) else Color(0x0F000000)
 
-    val maxValue = maxOf(points.maxOfOrNull { it.value } ?: 0.0, 1.0)
+    val rawMax = points.maxOfOrNull { it.value } ?: 0.0
+    val niceMax = calculateNiceMax(rawMax)
 
     var appeared by remember { mutableStateOf(false) }
     val barScale by animateFloatAsState(
@@ -309,6 +316,9 @@ fun SpendingTrendsChart(
     )
     LaunchedEffect(Unit) { appeared = true }
 
+    var selectedIndex by remember { mutableStateOf<Int?>(null) }
+
+    // Trend direction calculation matching iOS 1:1
     var trendLabel: String? = null
     var trendUp = false
     if (points.size >= 2) {
@@ -332,88 +342,199 @@ fun SpendingTrendsChart(
             .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
             .background(cardBg)
             .padding(18.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Header matching iOS 1:1
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "Spending Trends",
+                text = "Spending Trends",
                 style = CentwiseTypography.Headline,
                 color = textPrimary,
                 modifier = Modifier.weight(1f)
             )
-            if (trendLabel != null) {
+
+            if (selectedIndex != null && selectedIndex!! in points.indices) {
+                val selected = points[selectedIndex!!]
                 Text(
-                    text = if (trendUp) "▲ $trendLabel" else "▼ $trendLabel",
-                    style = CentwiseTypography.Caption,
-                    color = if (trendUp) CentwiseColors.ExpenseRed else CentwiseColors.IncomeGreen
+                    text = "${selected.label}: ${CurrencyFormatter.formatBDT(selected.value)}",
+                    style = CentwiseTypography.Caption.copy(fontWeight = FontWeight.SemiBold, fontSize = 12.sp),
+                    color = accent
                 )
+            } else if (trendLabel != null) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = if (trendUp) Icons.AutoMirrored.Filled.TrendingUp else Icons.AutoMirrored.Filled.TrendingDown,
+                        contentDescription = null,
+                        tint = if (trendUp) CentwiseColors.ExpenseRed else CentwiseColors.IncomeGreen,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Text(
+                        text = trendLabel,
+                        style = CentwiseTypography.Caption.copy(fontWeight = FontWeight.SemiBold, fontSize = 12.sp),
+                        color = if (trendUp) CentwiseColors.ExpenseRed else CentwiseColors.IncomeGreen
+                    )
+                }
             }
         }
 
         if (points.isEmpty()) {
             Text(
-                "No spending data for this period",
+                text = "No spending data for this period",
                 style = CentwiseTypography.Subheadline,
                 color = textSecondary,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 24.dp),
+                    .padding(vertical = CentwiseSpacing.md),
                 textAlign = TextAlign.Center
             )
         } else {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(130.dp),
-                verticalAlignment = Alignment.Bottom,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .height(120.dp)
             ) {
-                points.forEach { point ->
-                    val ratio = if (maxValue > 0) (point.value / maxValue).toFloat().coerceIn(0f, 1f) else 0f
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                // Plot area and X-Axis
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                ) {
+                    // Plot area with 3 horizontal grid lines and vertical bars
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(96.dp)
                     ) {
-                        Text(
-                            text = if (point.value > 0) CurrencyFormatter.formatBDT(point.value, compact = true) else "-",
-                            style = CentwiseTypography.Caption.copy(fontSize = 10.sp),
-                            color = if (point.value > 0) textPrimary else textSecondary.copy(alpha = 0.5f),
-                            maxLines = 1
-                        )
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(90.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isDark) Color(0x14FFFFFF) else Color(0x0A000000)),
-                            contentAlignment = Alignment.BottomCenter
+                        // Horizontal grid lines matching iOS AxisMarks / AxisGridLine
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Box(
+                            repeat(3) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(1.dp)
+                                        .background(gridLineColor)
+                                )
+                            }
+                        }
+
+                        // Vertical bars matching iOS BarMark (accent colored, cornerRadius 6, no gray box)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceEvenly,
+                            verticalAlignment = Alignment.Bottom
+                        ) {
+                            points.forEachIndexed { index, point ->
+                                val ratio = if (niceMax > 0) (point.value / niceMax).toFloat().coerceIn(0f, 1f) else 0f
+                                val barHeight = 96.dp * (ratio * barScale)
+                                val barWidth = when {
+                                    points.size <= 3 -> 24.dp
+                                    points.size <= 6 -> 18.dp
+                                    else -> 14.dp
+                                }
+                                val isSelected = selectedIndex == index
+
+                                Box(
+                                    modifier = Modifier
+                                        .width(barWidth)
+                                        .height(if (point.value > 0) barHeight.coerceAtLeast(4.dp) else 0.dp)
+                                        .clip(RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp))
+                                        .background(if (isSelected) accent.copy(alpha = 0.8f) else accent)
+                                        .clickable {
+                                            selectedIndex = if (selectedIndex == index) null else index
+                                        }
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    // X-Axis Labels (matching iOS AxisValueLabel)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        points.forEachIndexed { index, point ->
+                            val labelWidth = when {
+                                points.size <= 3 -> 40.dp
+                                points.size <= 6 -> 32.dp
+                                else -> 24.dp
+                            }
+                            val isSelected = selectedIndex == index
+                            Text(
+                                text = point.label,
+                                style = CentwiseTypography.Caption.copy(
+                                    fontSize = 11.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                ),
+                                color = if (isSelected) accent else textSecondary,
+                                textAlign = TextAlign.Center,
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .fillMaxHeight((ratio * barScale).coerceAtLeast(0.04f))
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(
-                                        if (ratio > 0.01f) accent else Color.Transparent
-                                    )
+                                    .width(labelWidth)
+                                    .clickable {
+                                        selectedIndex = if (selectedIndex == index) null else index
+                                    }
                             )
                         }
-                        Text(
-                            text = point.label,
-                            style = CentwiseTypography.Caption.copy(fontSize = 11.sp, fontWeight = FontWeight.Medium),
-                            color = textSecondary,
-                            maxLines = 1,
-                            textAlign = TextAlign.Center
-                        )
                     }
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                // Y-Axis Labels aligned with the 3 grid lines (matching iOS AxisValueLabel)
+                Column(
+                    modifier = Modifier
+                        .height(96.dp),
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        text = CurrencyFormatter.formatBDT(niceMax, compact = true),
+                        style = CentwiseTypography.Caption.copy(fontSize = 10.sp),
+                        color = textSecondary
+                    )
+                    Text(
+                        text = CurrencyFormatter.formatBDT(niceMax / 2.0, compact = true),
+                        style = CentwiseTypography.Caption.copy(fontSize = 10.sp),
+                        color = textSecondary
+                    )
+                    Text(
+                        text = "0",
+                        style = CentwiseTypography.Caption.copy(fontSize = 10.sp),
+                        color = textSecondary
+                    )
                 }
             }
         }
     }
+}
+
+private fun calculateNiceMax(rawMax: Double): Double {
+    if (rawMax <= 0.0) return 1000.0
+    val exponent = kotlin.math.floor(kotlin.math.log10(rawMax))
+    val power = Math.pow(10.0, exponent)
+    val fraction = rawMax / power
+    val niceFraction = when {
+        fraction <= 1.0 -> 1.0
+        fraction <= 2.0 -> 2.0
+        fraction <= 2.5 -> 2.5
+        fraction <= 5.0 -> 5.0
+        else -> 10.0
+    }
+    return niceFraction * power
 }
 
 @Preview(showBackground = true)

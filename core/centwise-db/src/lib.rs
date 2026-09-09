@@ -202,6 +202,10 @@ impl Database {
         self.write(|queries| queries.delete_rule(id))
     }
 
+    pub fn restore_default_rules(&self) -> DbResult<()> {
+        self.write(|queries| queries.restore_default_rules())
+    }
+
     /// Replaces all user records with the deterministic Rust-owned demo set.
     /// This is explicit because it is destructive to the current local data.
     pub fn replace_with_demo_data(&self) -> DbResult<DemoDataSummary> {
@@ -209,15 +213,30 @@ impl Database {
     }
 
     pub fn replace_with_demo_data_at(&self, now_epoch_ms: i64) -> DbResult<DemoDataSummary> {
-        self.write(|queries| {
+        let summary = self.write(|queries| {
             queries.clear_user_records()?;
             demo::populate(queries, now_epoch_ms)
-        })
+        })?;
+        let guard = self.lock();
+        let _ = guard.execute("PRAGMA wal_checkpoint(PASSIVE)", []);
+        Ok(summary)
     }
 
     /// Clears user records while preserving system categories.
+    /// Runs VACUUM and WAL checkpoint TRUNCATE to reclaim on-disk storage.
     pub fn reset_to_empty(&self) -> DbResult<()> {
-        self.write(|queries| queries.clear_user_records())
+        self.write(|queries| queries.clear_user_records())?;
+        let guard = self.lock();
+        let _ = guard.execute("VACUUM", []);
+        let _ = guard.execute("PRAGMA wal_checkpoint(TRUNCATE)", []);
+        Ok(())
+    }
+
+    /// Flushes WAL journal pages to the main database file.
+    pub fn checkpoint(&self) -> DbResult<()> {
+        let guard = self.lock();
+        let _ = guard.execute("PRAGMA wal_checkpoint(PASSIVE)", []);
+        Ok(())
     }
 
     pub fn account_balance(&self, account_id: &str) -> DbResult<i64> {

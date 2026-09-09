@@ -66,6 +66,7 @@ public struct AddEditBudgetScreen: View {
                 Text("Preview")
             }
         }
+        .scrollDismissesKeyboard(.interactively)
         .navigationTitle(editingBudget == nil ? "New Budget" : "Edit Budget")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

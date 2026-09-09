@@ -14,6 +14,35 @@ enum CentwiseRustBackend {
                 .appendingPathComponent("centwise.db")
     }
 
+    static func totalDatabaseSizeBytes() -> Int64 {
+        let fileManager = FileManager.default
+        var candidates: [URL] = []
+        if let groupUrl = fileManager.containerURL(forSecurityApplicationGroupIdentifier: appGroupIdentifier) {
+            candidates.append(groupUrl.appendingPathComponent("centwise.db"))
+        }
+        if let appSupport = fileManager.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
+            candidates.append(appSupport.appendingPathComponent("centwise.db"))
+        }
+
+        guard let activeDbUrl = candidates.first(where: { fileManager.fileExists(atPath: $0.path) }) ?? candidates.first else {
+            return 0
+        }
+
+        let baseDir = activeDbUrl.deletingLastPathComponent()
+        let filename = activeDbUrl.lastPathComponent
+        let walUrl = baseDir.appendingPathComponent("\(filename)-wal")
+        let shmUrl = baseDir.appendingPathComponent("\(filename)-shm")
+
+        var total: Int64 = 0
+        for url in [activeDbUrl, walUrl, shmUrl] {
+            if let attrs = try? fileManager.attributesOfItem(atPath: url.path),
+               let size = attrs[.size] as? Int64 {
+                total += size
+            }
+        }
+        return total
+    }
+
     static func initialize() {
         guard core == nil else { return }
 
@@ -161,6 +190,12 @@ enum CentwiseRustBackend {
     static func deleteRule(id: String) -> Bool {
         initialize()
         return (try? core?.deleteRule(id: id)) ?? false
+    }
+
+    static func restoreDefaultRules() -> Bool {
+        initialize()
+        guard let core else { return false }
+        return (try? core.restoreDefaultRules()) != nil
     }
 
     static func insertTransaction(_ transaction: CentwiseTransaction) -> Bool {

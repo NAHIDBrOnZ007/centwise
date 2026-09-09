@@ -603,6 +603,8 @@ public protocol CentwiseCoreProtocol : AnyObject {
      */
     func resetToEmptyDatabase() throws 
     
+    func restoreDefaultRules() throws 
+    
     func updateAccount(account: AccountInput) throws  -> Bool
     
     func updateBudget(input: BudgetInput) throws  -> Bool
@@ -937,6 +939,12 @@ open func loadDemoData()throws  -> DemoDataSummaryRecord {
      */
 open func resetToEmptyDatabase()throws  {try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_reset_to_empty_database(self.uniffiClonePointer(),$0
+    )
+}
+}
+    
+open func restoreDefaultRules()throws  {try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
+    uniffi_centwise_ffi_fn_method_centwisecore_restore_default_rules(self.uniffiClonePointer(),$0
     )
 }
 }
@@ -4430,6 +4438,9 @@ private var initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_centwise_ffi_checksum_method_centwisecore_reset_to_empty_database() != 12546) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_centwise_ffi_checksum_method_centwisecore_restore_default_rules() != 36615) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_centwise_ffi_checksum_method_centwisecore_update_account() != 59265) {

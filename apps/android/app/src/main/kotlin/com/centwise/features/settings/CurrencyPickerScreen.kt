@@ -6,6 +6,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -24,7 +25,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.centwise.core.design.components.DismissKeyboardOnScroll
 import com.centwise.core.design.components.TopBarBackButton
+import com.centwise.core.design.components.clearFocusOnTapOutside
 import com.centwise.core.design.components.iosBounceClick
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
@@ -95,6 +98,7 @@ fun CurrencyPickerScreen(
             .fillMaxSize()
             .background(bg)
             .statusBarsPadding()
+            .clearFocusOnTapOutside()
     ) {
         // Top Bar
         Row(
@@ -140,7 +144,11 @@ fun CurrencyPickerScreen(
             )
         }
 
+        val listState = rememberLazyListState()
+        DismissKeyboardOnScroll(listState)
+
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp),

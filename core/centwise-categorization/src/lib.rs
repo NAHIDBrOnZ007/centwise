@@ -17,7 +17,12 @@ pub fn categorize_by_merchant(party_or_merchant: &str) -> Option<CategorizationR
     let lower = party_or_merchant.to_lowercase();
     for rule in centwise_domain::default_merchant_categories() {
         for &keyword in rule.keywords {
-            if lower.contains(keyword) {
+            let matched = if keyword.len() <= 4 && !keyword.contains(' ') {
+                has_word(&lower, keyword)
+            } else {
+                lower.contains(keyword)
+            };
+            if matched {
                 return Some(CategorizationResult {
                     category_id: rule.category_id.to_string(),
                     matched_merchant: Some(rule.name.to_string()),
@@ -178,6 +183,35 @@ mod tests {
         let result = categorize_by_merchant("Airtel 017XXXXXXXX").unwrap();
         assert_eq!(result.category_id, "recharge");
         assert_eq!(result.matched_merchant, Some("Airtel".to_string()));
+
+        // Brand tests for newly added categories
+        let bata = categorize_by_merchant("Bata Showroom").unwrap();
+        assert_eq!(bata.category_id, "shopping");
+        assert_eq!(bata.matched_merchant, Some("Bata".to_string()));
+
+        let apex = categorize_by_merchant("Apex Footwear").unwrap();
+        assert_eq!(apex.category_id, "shopping");
+        assert_eq!(apex.matched_merchant, Some("Apex".to_string()));
+
+        let foodi = categorize_by_merchant("Foodi Delivery").unwrap();
+        assert_eq!(foodi.category_id, "food");
+        assert_eq!(foodi.matched_merchant, Some("Foodi".to_string()));
+
+        let uber = categorize_by_merchant("Uber Trip").unwrap();
+        assert_eq!(uber.category_id, "transport");
+        assert_eq!(uber.matched_merchant, Some("Uber".to_string()));
+
+        let arogga = categorize_by_merchant("Arogga Pharmacy").unwrap();
+        assert_eq!(arogga.category_id, "health");
+        assert_eq!(arogga.matched_merchant, Some("Arogga".to_string()));
+
+        let shikho = categorize_by_merchant("Shikho Learning").unwrap();
+        assert_eq!(shikho.category_id, "education");
+        assert_eq!(shikho.matched_merchant, Some("Shikho".to_string()));
+
+        let bracu = categorize_by_merchant("BRAC University Tuition").unwrap();
+        assert_eq!(bracu.category_id, "education");
+        assert_eq!(bracu.matched_merchant, Some("BRAC University".to_string()));
     }
 
     #[test]

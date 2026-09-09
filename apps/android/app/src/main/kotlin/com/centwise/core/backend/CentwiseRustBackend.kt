@@ -215,6 +215,14 @@ object CentwiseRustBackend {
         false
     }
 
+    fun restoreDefaultRules(): Boolean = try {
+        core?.restoreDefaultRules()
+        true
+    } catch (error: Throwable) {
+        Log.e(TAG, "Rust restore default rules failed", error)
+        false
+    }
+
     fun listReviewQueue(): List<ReviewQueueRecord> = try {
         core?.listReviewQueue(10_000u) ?: emptyList()
     } catch (error: Throwable) {

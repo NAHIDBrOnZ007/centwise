@@ -43,6 +43,7 @@ import com.centwise.data.repository.TransactionRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 /**
  * Idiomatic Jetpack Compose Data & Storage Screen matching iOS DataManagementScreen 1:1.
@@ -65,6 +66,7 @@ fun DataManagementScreen(
 
     var showLoadDemoDialog by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
+    var refreshCounter by remember { mutableIntStateOf(0) }
 
     val accent = AccentOptions.byName(AppearancePrefs.accentName).color
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground
@@ -73,12 +75,33 @@ fun DataManagementScreen(
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
     val dividerColor = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000)
 
-    val dbFile = context.noBackupFilesDir.resolve("centwise.db")
-    val dbSizeString = if (dbFile.exists()) {
-        val bytes = dbFile.length()
-        val kb = bytes / 1024.0
-        if (kb < 1024) String.format("%.1f KB", kb) else String.format("%.2f MB", kb / 1024.0)
-    } else "Clean DB"
+    val dbSizeString = remember(refreshCounter, transactions.size, accounts.size, budgets.size, subscriptions.size) {
+        val dir = context.noBackupFilesDir
+        val dbFile = dir.resolve("centwise.db")
+        val walFile = dir.resolve("centwise.db-wal")
+        val shmFile = dir.resolve("centwise.db-shm")
+
+        var totalBytes = 0L
+        if (dbFile.exists()) totalBytes += dbFile.length()
+        if (walFile.exists()) totalBytes += walFile.length()
+        if (shmFile.exists()) totalBytes += shmFile.length()
+
+        if (totalBytes == 0L) {
+            "Clean DB"
+        } else {
+            val kb = totalBytes / 1024.0
+            val formatted = if (kb < 1024) {
+                String.format(Locale.US, "%.1f KB", kb)
+            } else {
+                String.format(Locale.US, "%.2f MB", kb / 1024.0)
+            }
+            if (transactions.isEmpty() && accounts.isEmpty()) {
+                "Clean DB ($formatted)"
+            } else {
+                formatted
+            }
+        }
+    }
 
     if (showLoadDemoDialog) {
         AlertDialog(
@@ -99,6 +122,7 @@ fun DataManagementScreen(
                             val summary = CentwiseRustBackend.loadDemoData()
                             if (summary != null) repository.refreshNow()
                             withContext(Dispatchers.Main) {
+                                refreshCounter++
                                 Toast.makeText(
                                     context,
                                     if (summary != null) "Sample data loaded (${summary.transactions} transactions)"
@@ -140,6 +164,7 @@ fun DataManagementScreen(
                             val succeeded = CentwiseRustBackend.resetToEmptyDatabase()
                             if (succeeded) repository.refreshNow()
                             withContext(Dispatchers.Main) {
+                                refreshCounter++
                                 Toast.makeText(
                                     context,
                                     if (succeeded) "Database wiped. Starting completely clean."
@@ -357,6 +382,7 @@ fun DataManagementScreen(
                                             isScanning = false
                                             repository.loadFromRust()
                                             ReviewQueueRepository.shared.refresh()
+                                            refreshCounter++
                                             val msg = if (result.transactionsImported > 0 || result.reviewQueued > 0) {
                                                 "Scan complete: ${result.transactionsImported} transactions imported, ${result.reviewQueued} queued for review (${result.totalScanned} messages checked)"
                                             } else {
@@ -408,6 +434,7 @@ fun DataManagementScreen(
                                             isScanning = false
                                             repository.loadFromRust()
                                             ReviewQueueRepository.shared.refresh()
+                                            refreshCounter++
                                             val msg = if (result.transactionsImported > 0 || result.reviewQueued > 0) {
                                                 "Scan complete: ${result.transactionsImported} transactions imported, ${result.reviewQueued} queued for review (${result.totalScanned} messages checked)"
                                             } else {

@@ -28,6 +28,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.centwise.core.design.components.DismissKeyboardOnScroll
+import com.centwise.core.design.components.clearFocusOnTapOutside
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
@@ -90,12 +92,20 @@ fun AddEditAccountSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
         containerColor = bg,
-        dragHandle = { BottomSheetDefaults.DragHandle() }
+        dragHandle = {
+            Box(modifier = Modifier.clearFocusOnTapOutside()) {
+                BottomSheetDefaults.DragHandle()
+            }
+        }
     ) {
+        val scrollState = rememberScrollState()
+        DismissKeyboardOnScroll(scrollState)
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
+                .clearFocusOnTapOutside()
+                .verticalScroll(scrollState)
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 36.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)

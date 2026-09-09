@@ -64,6 +64,7 @@ public struct AddEditCategoryScreen: View {
                 Text("Custom categories can be assigned to any transaction.")
             }
         }
+        .scrollDismissesKeyboard(.interactively)
         .navigationTitle(editingCategory == nil ? "New Category" : "Edit Category")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

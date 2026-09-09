@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 @main
 struct CentwiseApp: App {
@@ -10,6 +11,10 @@ struct CentwiseApp: App {
             ZStack {
                 MainTabView()
                     .environmentObject(themeManager)
+
+                KeyboardDismissalInstaller()
+                    .frame(width: 0, height: 0)
+                    .allowsHitTesting(false)
 
                 if appLockManager.isLocked {
                     LockScreenView(onUnlock: {
@@ -50,5 +55,103 @@ struct CentwiseApp: App {
                 }
             }
         }
+    }
+}
+
+// MARK: - Global Keyboard Dismissal on Tap Outside
+
+final class DismissKeyboardTapGesture: UITapGestureRecognizer, UIGestureRecognizerDelegate {
+    init() {
+        super.init(target: nil, action: nil)
+        self.cancelsTouchesInView = false
+        self.delaysTouchesBegan = false
+        self.delaysTouchesEnded = false
+        self.delegate = self
+        self.addTarget(self, action: #selector(handleTap))
+    }
+
+    @objc private func handleTap() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        var current: UIView? = touch.view
+        while let view = current {
+            if view is UITextField || view is UITextView {
+                return false
+            }
+            let className = String(describing: type(of: view))
+            if className.contains("TextField") || className.contains("TextView") {
+                return false
+            }
+            current = view.superview
+        }
+        return true
+    }
+
+    func gestureRecognizer(
+        _ gestureRecognizer: UIGestureRecognizer,
+        shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
+    ) -> Bool {
+        return true
+    }
+}
+
+final class KeyboardDismissalManager: NSObject {
+    static let shared = KeyboardDismissalManager()
+    private var installedWindows = NSHashTable<UIWindow>.weakObjects()
+
+    override private init() {
+        super.init()
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(windowDidBecomeVisible(_:)),
+            name: UIWindow.didBecomeVisibleNotification,
+            object: nil
+        )
+    }
+
+    @objc private func windowDidBecomeVisible(_ notification: Notification) {
+        guard let window = notification.object as? UIWindow else { return }
+        install(on: window)
+    }
+
+    func install(on window: UIWindow) {
+        let className = String(describing: type(of: window))
+        if className.contains("Keyboard") || className.contains("TextEffects") {
+            return
+        }
+        if installedWindows.contains(window) {
+            return
+        }
+        if window.gestureRecognizers?.contains(where: { $0 is DismissKeyboardTapGesture }) == true {
+            return
+        }
+        installedWindows.add(window)
+        let gesture = DismissKeyboardTapGesture()
+        window.addGestureRecognizer(gesture)
+    }
+}
+
+struct KeyboardDismissalInstaller: UIViewRepresentable {
+    func makeUIView(context: Context) -> KeyboardDismissalUIView {
+        KeyboardDismissalUIView()
+    }
+
+    func updateUIView(_ uiView: KeyboardDismissalUIView, context: Context) {}
+}
+
+final class KeyboardDismissalUIView: UIView {
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if let window = self.window {
+            KeyboardDismissalManager.shared.install(on: window)
+        }
+    }
+}
+
+extension View {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }

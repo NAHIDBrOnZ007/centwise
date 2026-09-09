@@ -66,6 +66,7 @@ public struct AddEditRuleScreen: View {
                 Text("Disabled rules are kept but no longer applied to new transactions.")
             }
         }
+        .scrollDismissesKeyboard(.interactively)
         .navigationTitle(editingRule == nil ? "New Rule" : "Edit Rule")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

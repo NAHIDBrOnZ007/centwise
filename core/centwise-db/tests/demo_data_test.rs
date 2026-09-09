@@ -66,3 +66,39 @@ fn system_categories_are_read_from_rust_in_stable_order() {
         .windows(2)
         .all(|pair| pair[0].sort_order < pair[1].sort_order));
 }
+
+#[test]
+fn reset_to_empty_compacts_file_size_on_disk() {
+    let temp_dir = std::env::temp_dir().join(format!(
+        "centwise_test_compact_{}",
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
+    ));
+    std::fs::create_dir_all(&temp_dir).unwrap();
+    let db_path = temp_dir.join("centwise.db");
+
+    let database = Database::open(&db_path).expect("open file db");
+
+    let initial_size = std::fs::metadata(&db_path).unwrap().len();
+
+    // Populate with demo data
+    database
+        .replace_with_demo_data_at(DEMO_NOW)
+        .expect("load demo data");
+
+    let demo_size = std::fs::metadata(&db_path).unwrap().len();
+    assert!(
+        demo_size >= initial_size,
+        "Demo data must be reflected in file storage"
+    );
+
+    // Reset to empty - must vacuum and truncate WAL
+    database.reset_to_empty().expect("reset");
+
+    let reset_size = std::fs::metadata(&db_path).unwrap().len();
+    assert!(reset_size <= demo_size, "Reset must reclaim disk storage");
+
+    let _ = std::fs::remove_dir_all(&temp_dir);
+}

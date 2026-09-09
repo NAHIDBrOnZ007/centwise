@@ -34,7 +34,6 @@ public final class RulesViewModel: ObservableObject {
         let categories = Dictionary(
             uniqueKeysWithValues: TransactionRepository.shared.categories.map { ($0.id, $0) }
         )
-        let defaults = Self.builtInDefaultRules
 
         loadQueue.async { [weak self] in
             guard let self else { return }
@@ -45,9 +44,7 @@ public final class RulesViewModel: ObservableObject {
             self.isLoading = true
             var records = CentwiseRustBackend.listRules()
             if records.isEmpty {
-                for rule in defaults {
-                    _ = CentwiseRustBackend.insertRule(rule)
-                }
+                _ = CentwiseRustBackend.restoreDefaultRules()
                 records = CentwiseRustBackend.listRules()
             }
 
@@ -79,9 +76,7 @@ public final class RulesViewModel: ObservableObject {
     }
 
     public func restoreDefaultRules() {
-        for rule in Self.builtInDefaultRules {
-            _ = CentwiseRustBackend.insertRule(rule)
-        }
+        _ = CentwiseRustBackend.restoreDefaultRules()
         loadRules()
     }
 

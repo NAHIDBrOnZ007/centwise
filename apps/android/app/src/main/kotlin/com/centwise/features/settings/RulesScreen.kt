@@ -6,6 +6,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -25,7 +26,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.centwise.core.design.components.CategoryIconHelper
+import com.centwise.core.design.components.DismissKeyboardOnScroll
 import com.centwise.core.design.components.TopBarBackButton
+import com.centwise.core.design.components.clearFocusOnTapOutside
 import com.centwise.core.design.components.iosBounceClick
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseSpacing
@@ -73,6 +76,7 @@ fun RulesScreen(
             .fillMaxSize()
             .background(bg)
             .statusBarsPadding()
+            .clearFocusOnTapOutside()
     ) {
         // Top Bar
         Row(
@@ -134,7 +138,7 @@ fun RulesScreen(
                         leadingIcon = { Icon(Icons.Default.Refresh, contentDescription = null) },
                         onClick = {
                             showMenu = false
-                            repository.refresh()
+                            repository.restoreDefaultRules()
                         }
                     )
                 }
@@ -176,7 +180,11 @@ fun RulesScreen(
             )
         }
 
+        val listState = rememberLazyListState()
+        DismissKeyboardOnScroll(listState)
+
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp),

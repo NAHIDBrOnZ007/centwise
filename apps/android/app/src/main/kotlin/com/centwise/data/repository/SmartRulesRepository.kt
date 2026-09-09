@@ -15,7 +15,12 @@ class SmartRulesRepository private constructor() {
     val rules: StateFlow<List<SmartRule>> = _rules.asStateFlow()
 
     fun refresh() {
-        _rules.value = CentwiseRustBackend.listRules().map { rule ->
+        var records = CentwiseRustBackend.listRules()
+        if (records.isEmpty()) {
+            CentwiseRustBackend.restoreDefaultRules()
+            records = CentwiseRustBackend.listRules()
+        }
+        _rules.value = records.map { rule ->
             SmartRule(
                 id = rule.id,
                 name = rule.name,
@@ -36,6 +41,11 @@ class SmartRulesRepository private constructor() {
             )
         }
     }
+
+    fun restoreDefaultRules(): Boolean =
+        CentwiseRustBackend.restoreDefaultRules().also {
+            if (it) refresh()
+        }
 
     fun addRule(rule: SmartRule): Boolean =
         CentwiseRustBackend.insertRule(CentwiseRustBackend.toSmartRuleInput(rule)).also {

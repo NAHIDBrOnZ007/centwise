@@ -813,6 +813,8 @@ internal open class UniffiVTableCallbackInterfaceChangeListener(
 
 
 
+
+
 // A JNA Library to expose the extern-C FFI definitions.
 // This is an implementation detail which will be called internally by the public API.
 
@@ -826,102 +828,104 @@ internal interface UniffiLib : Library {
                 uniffiCallbackInterfaceChangeListener.register(lib)
                 }
         }
-
+        
         // The Cleaner for the whole library
         internal val CLEANER: UniffiCleaner by lazy {
             UniffiCleaner.create()
         }
     }
 
-    fun uniffi_centwise_ffi_fn_clone_centwisecore(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_clone_centwisecore(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
     ): Pointer
-    fun uniffi_centwise_ffi_fn_free_centwisecore(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_free_centwisecore(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
-    fun uniffi_centwise_ffi_fn_constructor_centwisecore_open(`path`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_constructor_centwisecore_open(`path`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Pointer
-    fun uniffi_centwise_ffi_fn_method_centwisecore_account_balance(`ptr`: Pointer,`accountId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_account_balance(`ptr`: Pointer,`accountId`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
-    fun uniffi_centwise_ffi_fn_method_centwisecore_add_listener(`ptr`: Pointer,`listener`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_add_listener(`ptr`: Pointer,`listener`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
-    fun uniffi_centwise_ffi_fn_method_centwisecore_analytics_snapshot(`ptr`: Pointer,`startEpochMs`: Long,`endEpochMs`: Long,`monthsBack`: Int,`typeFilter`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_analytics_snapshot(`ptr`: Pointer,`startEpochMs`: Long,`endEpochMs`: Long,`monthsBack`: Int,`typeFilter`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun uniffi_centwise_ffi_fn_method_centwisecore_convert_review_queue_item(`ptr`: Pointer,`id`: RustBuffer.ByValue,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_convert_review_queue_item(`ptr`: Pointer,`id`: RustBuffer.ByValue,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
-    fun uniffi_centwise_ffi_fn_method_centwisecore_delete_account(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_delete_account(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
-    fun uniffi_centwise_ffi_fn_method_centwisecore_delete_budget(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_delete_budget(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
-    fun uniffi_centwise_ffi_fn_method_centwisecore_delete_category(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_delete_category(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
-    fun uniffi_centwise_ffi_fn_method_centwisecore_delete_rule(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_delete_rule(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
-    fun uniffi_centwise_ffi_fn_method_centwisecore_delete_subscription(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_delete_subscription(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
-    fun uniffi_centwise_ffi_fn_method_centwisecore_delete_transaction(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_delete_transaction(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
-    fun uniffi_centwise_ffi_fn_method_centwisecore_dismiss_review_queue_item(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_dismiss_review_queue_item(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
-    fun uniffi_centwise_ffi_fn_method_centwisecore_get_transaction(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_get_transaction(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun uniffi_centwise_ffi_fn_method_centwisecore_home_dashboard(`ptr`: Pointer,`startEpochMs`: Long,`endEpochMs`: Long,`recentLimit`: Int,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_home_dashboard(`ptr`: Pointer,`startEpochMs`: Long,`endEpochMs`: Long,`recentLimit`: Int,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun uniffi_centwise_ffi_fn_method_centwisecore_ingest_sms(`ptr`: Pointer,`body`: RustBuffer.ByValue,`senderHint`: RustBuffer.ByValue,`occurredAtEpochMs`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_ingest_sms(`ptr`: Pointer,`body`: RustBuffer.ByValue,`senderHint`: RustBuffer.ByValue,`occurredAtEpochMs`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun uniffi_centwise_ffi_fn_method_centwisecore_ingest_sms_batch(`ptr`: Pointer,`messages`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_ingest_sms_batch(`ptr`: Pointer,`messages`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun uniffi_centwise_ffi_fn_method_centwisecore_insert_account(`ptr`: Pointer,`account`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_insert_account(`ptr`: Pointer,`account`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
-    fun uniffi_centwise_ffi_fn_method_centwisecore_insert_budget(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_insert_budget(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
-    fun uniffi_centwise_ffi_fn_method_centwisecore_insert_category(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_insert_category(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
-    fun uniffi_centwise_ffi_fn_method_centwisecore_insert_rule(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_insert_rule(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
-    fun uniffi_centwise_ffi_fn_method_centwisecore_insert_subscription(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_insert_subscription(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
-    fun uniffi_centwise_ffi_fn_method_centwisecore_insert_transaction(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_insert_transaction(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
-    fun uniffi_centwise_ffi_fn_method_centwisecore_list_accounts(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_list_accounts(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun uniffi_centwise_ffi_fn_method_centwisecore_list_budgets(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_list_budgets(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun uniffi_centwise_ffi_fn_method_centwisecore_list_categories(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_list_categories(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun uniffi_centwise_ffi_fn_method_centwisecore_list_review_queue(`ptr`: Pointer,`limit`: Int,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_list_review_queue(`ptr`: Pointer,`limit`: Int,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun uniffi_centwise_ffi_fn_method_centwisecore_list_rules(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_list_rules(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun uniffi_centwise_ffi_fn_method_centwisecore_list_subscriptions(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_list_subscriptions(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun uniffi_centwise_ffi_fn_method_centwisecore_list_transactions(`ptr`: Pointer,`limit`: Int,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_list_transactions(`ptr`: Pointer,`limit`: Int,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun uniffi_centwise_ffi_fn_method_centwisecore_load_demo_data(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_load_demo_data(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun uniffi_centwise_ffi_fn_method_centwisecore_reset_to_empty_database(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_reset_to_empty_database(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
-    fun uniffi_centwise_ffi_fn_method_centwisecore_update_account(`ptr`: Pointer,`account`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_restore_default_rules(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus, 
+    ): Unit
+    fun uniffi_centwise_ffi_fn_method_centwisecore_update_account(`ptr`: Pointer,`account`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
-    fun uniffi_centwise_ffi_fn_method_centwisecore_update_budget(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_update_budget(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
-    fun uniffi_centwise_ffi_fn_method_centwisecore_update_category(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_update_category(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
-    fun uniffi_centwise_ffi_fn_method_centwisecore_update_rule(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_update_rule(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
-    fun uniffi_centwise_ffi_fn_method_centwisecore_update_subscription(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_update_subscription(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
-    fun uniffi_centwise_ffi_fn_method_centwisecore_update_transaction(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_method_centwisecore_update_transaction(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
     fun uniffi_centwise_ffi_fn_init_callback_vtable_changelistener(`vtable`: UniffiVTableCallbackInterfaceChangeListener,
     ): Unit
-    fun uniffi_centwise_ffi_fn_func_parse_sms_message(`body`: RustBuffer.ByValue,`senderHint`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun uniffi_centwise_ffi_fn_func_parse_sms_message(`body`: RustBuffer.ByValue,`senderHint`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun ffi_centwise_ffi_rustbuffer_alloc(`size`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rustbuffer_alloc(`size`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun ffi_centwise_ffi_rustbuffer_from_bytes(`bytes`: ForeignBytes.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rustbuffer_from_bytes(`bytes`: ForeignBytes.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
-    fun ffi_centwise_ffi_rustbuffer_free(`buf`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rustbuffer_free(`buf`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
-    fun ffi_centwise_ffi_rustbuffer_reserve(`buf`: RustBuffer.ByValue,`additional`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rustbuffer_reserve(`buf`: RustBuffer.ByValue,`additional`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     fun ffi_centwise_ffi_rust_future_poll_u8(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
     ): Unit
@@ -929,7 +933,7 @@ internal interface UniffiLib : Library {
     ): Unit
     fun ffi_centwise_ffi_rust_future_free_u8(`handle`: Long,
     ): Unit
-    fun ffi_centwise_ffi_rust_future_complete_u8(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rust_future_complete_u8(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
     fun ffi_centwise_ffi_rust_future_poll_i8(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
     ): Unit
@@ -937,7 +941,7 @@ internal interface UniffiLib : Library {
     ): Unit
     fun ffi_centwise_ffi_rust_future_free_i8(`handle`: Long,
     ): Unit
-    fun ffi_centwise_ffi_rust_future_complete_i8(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rust_future_complete_i8(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Byte
     fun ffi_centwise_ffi_rust_future_poll_u16(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
     ): Unit
@@ -945,7 +949,7 @@ internal interface UniffiLib : Library {
     ): Unit
     fun ffi_centwise_ffi_rust_future_free_u16(`handle`: Long,
     ): Unit
-    fun ffi_centwise_ffi_rust_future_complete_u16(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rust_future_complete_u16(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Short
     fun ffi_centwise_ffi_rust_future_poll_i16(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
     ): Unit
@@ -953,7 +957,7 @@ internal interface UniffiLib : Library {
     ): Unit
     fun ffi_centwise_ffi_rust_future_free_i16(`handle`: Long,
     ): Unit
-    fun ffi_centwise_ffi_rust_future_complete_i16(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rust_future_complete_i16(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Short
     fun ffi_centwise_ffi_rust_future_poll_u32(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
     ): Unit
@@ -961,7 +965,7 @@ internal interface UniffiLib : Library {
     ): Unit
     fun ffi_centwise_ffi_rust_future_free_u32(`handle`: Long,
     ): Unit
-    fun ffi_centwise_ffi_rust_future_complete_u32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rust_future_complete_u32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Int
     fun ffi_centwise_ffi_rust_future_poll_i32(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
     ): Unit
@@ -969,7 +973,7 @@ internal interface UniffiLib : Library {
     ): Unit
     fun ffi_centwise_ffi_rust_future_free_i32(`handle`: Long,
     ): Unit
-    fun ffi_centwise_ffi_rust_future_complete_i32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rust_future_complete_i32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Int
     fun ffi_centwise_ffi_rust_future_poll_u64(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
     ): Unit
@@ -977,7 +981,7 @@ internal interface UniffiLib : Library {
     ): Unit
     fun ffi_centwise_ffi_rust_future_free_u64(`handle`: Long,
     ): Unit
-    fun ffi_centwise_ffi_rust_future_complete_u64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rust_future_complete_u64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
     fun ffi_centwise_ffi_rust_future_poll_i64(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
     ): Unit
@@ -985,7 +989,7 @@ internal interface UniffiLib : Library {
     ): Unit
     fun ffi_centwise_ffi_rust_future_free_i64(`handle`: Long,
     ): Unit
-    fun ffi_centwise_ffi_rust_future_complete_i64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rust_future_complete_i64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Long
     fun ffi_centwise_ffi_rust_future_poll_f32(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
     ): Unit
@@ -993,7 +997,7 @@ internal interface UniffiLib : Library {
     ): Unit
     fun ffi_centwise_ffi_rust_future_free_f32(`handle`: Long,
     ): Unit
-    fun ffi_centwise_ffi_rust_future_complete_f32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rust_future_complete_f32(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Float
     fun ffi_centwise_ffi_rust_future_poll_f64(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
     ): Unit
@@ -1001,7 +1005,7 @@ internal interface UniffiLib : Library {
     ): Unit
     fun ffi_centwise_ffi_rust_future_free_f64(`handle`: Long,
     ): Unit
-    fun ffi_centwise_ffi_rust_future_complete_f64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rust_future_complete_f64(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Double
     fun ffi_centwise_ffi_rust_future_poll_pointer(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
     ): Unit
@@ -1009,7 +1013,7 @@ internal interface UniffiLib : Library {
     ): Unit
     fun ffi_centwise_ffi_rust_future_free_pointer(`handle`: Long,
     ): Unit
-    fun ffi_centwise_ffi_rust_future_complete_pointer(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rust_future_complete_pointer(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Pointer
     fun ffi_centwise_ffi_rust_future_poll_rust_buffer(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
     ): Unit
@@ -1017,7 +1021,7 @@ internal interface UniffiLib : Library {
     ): Unit
     fun ffi_centwise_ffi_rust_future_free_rust_buffer(`handle`: Long,
     ): Unit
-    fun ffi_centwise_ffi_rust_future_complete_rust_buffer(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rust_future_complete_rust_buffer(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): RustBuffer.ByValue
     fun ffi_centwise_ffi_rust_future_poll_void(`handle`: Long,`callback`: UniffiRustFutureContinuationCallback,`callbackData`: Long,
     ): Unit
@@ -1025,7 +1029,7 @@ internal interface UniffiLib : Library {
     ): Unit
     fun ffi_centwise_ffi_rust_future_free_void(`handle`: Long,
     ): Unit
-    fun ffi_centwise_ffi_rust_future_complete_void(`handle`: Long,uniffi_out_err: UniffiRustCallStatus,
+    fun ffi_centwise_ffi_rust_future_complete_void(`handle`: Long,uniffi_out_err: UniffiRustCallStatus, 
     ): Unit
     fun uniffi_centwise_ffi_checksum_func_parse_sms_message(
     ): Short
@@ -1089,6 +1093,8 @@ internal interface UniffiLib : Library {
     ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_reset_to_empty_database(
     ): Short
+    fun uniffi_centwise_ffi_checksum_method_centwisecore_restore_default_rules(
+    ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_update_account(
     ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_update_budget(
@@ -1107,7 +1113,7 @@ internal interface UniffiLib : Library {
     ): Short
     fun ffi_centwise_ffi_uniffi_contract_version(
     ): Int
-
+    
 }
 
 private fun uniffiCheckContractApiVersion(lib: UniffiLib) {
@@ -1215,6 +1221,9 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_reset_to_empty_database() != 12546.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_restore_default_rules() != 36615.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_update_account() != 59265.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -1279,7 +1288,7 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
         }
     }
 
-/**
+/** 
  * Used to instantiate an interface without an actual pointer, for fakes in tests, mostly.
  *
  * @suppress
@@ -1601,105 +1610,107 @@ private class AndroidSystemCleanable(
  * The Centwise core handle shared with both platforms.
  */
 public interface CentwiseCoreInterface {
-
+    
     fun `accountBalance`(`accountId`: kotlin.String): kotlin.Long
-
+    
     /**
      * Registers a change listener. Keep the object alive on the native side
      * or notifications stop.
      */
     fun `addListener`(`listener`: ChangeListener)
-
+    
     /**
      * Computes the complete Analytics screen result in Rust in one database read.
      */
     fun `analyticsSnapshot`(`startEpochMs`: kotlin.Long, `endEpochMs`: kotlin.Long, `monthsBack`: kotlin.UInt, `typeFilter`: kotlin.String): AnalyticsSnapshotRecord
-
+    
     fun `convertReviewQueueItem`(`id`: kotlin.String, `input`: TransactionInput): kotlin.Boolean
-
+    
     fun `deleteAccount`(`id`: kotlin.String): kotlin.Boolean
-
+    
     fun `deleteBudget`(`id`: kotlin.String): kotlin.Boolean
-
+    
     fun `deleteCategory`(`id`: kotlin.String): kotlin.Boolean
-
+    
     fun `deleteRule`(`id`: kotlin.String): kotlin.Boolean
-
+    
     fun `deleteSubscription`(`id`: kotlin.String): kotlin.Boolean
-
+    
     fun `deleteTransaction`(`id`: kotlin.String): kotlin.Boolean
-
+    
     fun `dismissReviewQueueItem`(`id`: kotlin.String): kotlin.Boolean
-
+    
     fun `getTransaction`(`id`: kotlin.String): TransactionRecord?
-
+    
     /**
      * The single query powering the Home screen.
      */
     fun `homeDashboard`(`startEpochMs`: kotlin.Long, `endEpochMs`: kotlin.Long, `recentLimit`: kotlin.UInt): HomeDashboardRecord
-
+    
     /**
      * Parses, resolves, deduplicates, and stores an SMS in one Rust-owned
      * operation. Native platforms only provide the message and timestamp.
      */
     fun `ingestSms`(`body`: kotlin.String, `senderHint`: kotlin.String?, `occurredAtEpochMs`: kotlin.Long): SmsIngestResult
-
+    
     /**
      * Ingests multiple platform SMS messages through the same Rust parser.
      * The native bridge crosses once for the whole batch; each message keeps
      * the existing Rust deduplication and review-queue behavior.
      */
     fun `ingestSmsBatch`(`messages`: List<SmsBatchMessage>): List<SmsIngestResult>
-
+    
     fun `insertAccount`(`account`: AccountInput)
-
+    
     fun `insertBudget`(`input`: BudgetInput)
-
+    
     fun `insertCategory`(`input`: CategoryInput)
-
+    
     fun `insertRule`(`input`: SmartRuleInput)
-
+    
     fun `insertSubscription`(`input`: SubscriptionInput)
-
+    
     fun `insertTransaction`(`input`: TransactionInput)
-
+    
     fun `listAccounts`(): List<AccountRecord>
-
+    
     fun `listBudgets`(): List<BudgetRecord>
-
+    
     fun `listCategories`(): List<CategoryRecord>
-
+    
     fun `listReviewQueue`(`limit`: kotlin.UInt): List<ReviewQueueRecord>
-
+    
     fun `listRules`(): List<SmartRuleRecord>
-
+    
     fun `listSubscriptions`(): List<SubscriptionRecord>
-
+    
     fun `listTransactions`(`limit`: kotlin.UInt): List<TransactionRecord>
-
+    
     /**
      * Explicitly replaces user records with Rust's deterministic demo set.
      * The native UI must ask for confirmation before calling this method.
      */
     fun `loadDemoData`(): DemoDataSummaryRecord
-
+    
     /**
      * Clears user records and preserves Rust's system categories.
      */
     fun `resetToEmptyDatabase`()
-
+    
+    fun `restoreDefaultRules`()
+    
     fun `updateAccount`(`account`: AccountInput): kotlin.Boolean
-
+    
     fun `updateBudget`(`input`: BudgetInput): kotlin.Boolean
-
+    
     fun `updateCategory`(`input`: CategoryInput): kotlin.Boolean
-
+    
     fun `updateRule`(`input`: SmartRuleInput): kotlin.Boolean
-
+    
     fun `updateSubscription`(`input`: SubscriptionInput): kotlin.Boolean
-
+    
     fun `updateTransaction`(`input`: TransactionInput): kotlin.Boolean
-
+    
     companion object
 }
 
@@ -1787,7 +1798,7 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
         }
     }
 
-
+    
     @Throws(CentwiseException::class)override fun `accountBalance`(`accountId`: kotlin.String): kotlin.Long {
             return FfiConverterLong.lift(
     callWithPointer {
@@ -1798,24 +1809,24 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     /**
      * Registers a change listener. Keep the object alive on the native side
      * or notifications stop.
      */override fun `addListener`(`listener`: ChangeListener)
-        =
+        = 
     callWithPointer {
     uniffiRustCall() { _status ->
     UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_add_listener(
         it, FfiConverterTypeChangeListener.lower(`listener`),_status)
 }
     }
+    
+    
 
-
-
-
+    
     /**
      * Computes the complete Analytics screen result in Rust in one database read.
      */
@@ -1829,9 +1840,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `convertReviewQueueItem`(`id`: kotlin.String, `input`: TransactionInput): kotlin.Boolean {
             return FfiConverterBoolean.lift(
     callWithPointer {
@@ -1842,9 +1853,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `deleteAccount`(`id`: kotlin.String): kotlin.Boolean {
             return FfiConverterBoolean.lift(
     callWithPointer {
@@ -1855,9 +1866,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `deleteBudget`(`id`: kotlin.String): kotlin.Boolean {
             return FfiConverterBoolean.lift(
     callWithPointer {
@@ -1868,9 +1879,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `deleteCategory`(`id`: kotlin.String): kotlin.Boolean {
             return FfiConverterBoolean.lift(
     callWithPointer {
@@ -1881,9 +1892,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `deleteRule`(`id`: kotlin.String): kotlin.Boolean {
             return FfiConverterBoolean.lift(
     callWithPointer {
@@ -1894,9 +1905,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `deleteSubscription`(`id`: kotlin.String): kotlin.Boolean {
             return FfiConverterBoolean.lift(
     callWithPointer {
@@ -1907,9 +1918,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `deleteTransaction`(`id`: kotlin.String): kotlin.Boolean {
             return FfiConverterBoolean.lift(
     callWithPointer {
@@ -1920,9 +1931,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `dismissReviewQueueItem`(`id`: kotlin.String): kotlin.Boolean {
             return FfiConverterBoolean.lift(
     callWithPointer {
@@ -1933,9 +1944,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `getTransaction`(`id`: kotlin.String): TransactionRecord? {
             return FfiConverterOptionalTypeTransactionRecord.lift(
     callWithPointer {
@@ -1946,9 +1957,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     /**
      * The single query powering the Home screen.
      */
@@ -1962,9 +1973,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     /**
      * Parses, resolves, deduplicates, and stores an SMS in one Rust-owned
      * operation. Native platforms only provide the message and timestamp.
@@ -1979,9 +1990,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     /**
      * Ingests multiple platform SMS messages through the same Rust parser.
      * The native bridge crosses once for the whole batch; each message keeps
@@ -1997,81 +2008,81 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `insertAccount`(`account`: AccountInput)
-        =
+        = 
     callWithPointer {
     uniffiRustCallWithError(CentwiseException) { _status ->
     UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_insert_account(
         it, FfiConverterTypeAccountInput.lower(`account`),_status)
 }
     }
+    
+    
 
-
-
-
+    
     @Throws(CentwiseException::class)override fun `insertBudget`(`input`: BudgetInput)
-        =
+        = 
     callWithPointer {
     uniffiRustCallWithError(CentwiseException) { _status ->
     UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_insert_budget(
         it, FfiConverterTypeBudgetInput.lower(`input`),_status)
 }
     }
+    
+    
 
-
-
-
+    
     @Throws(CentwiseException::class)override fun `insertCategory`(`input`: CategoryInput)
-        =
+        = 
     callWithPointer {
     uniffiRustCallWithError(CentwiseException) { _status ->
     UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_insert_category(
         it, FfiConverterTypeCategoryInput.lower(`input`),_status)
 }
     }
+    
+    
 
-
-
-
+    
     @Throws(CentwiseException::class)override fun `insertRule`(`input`: SmartRuleInput)
-        =
+        = 
     callWithPointer {
     uniffiRustCallWithError(CentwiseException) { _status ->
     UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_insert_rule(
         it, FfiConverterTypeSmartRuleInput.lower(`input`),_status)
 }
     }
+    
+    
 
-
-
-
+    
     @Throws(CentwiseException::class)override fun `insertSubscription`(`input`: SubscriptionInput)
-        =
+        = 
     callWithPointer {
     uniffiRustCallWithError(CentwiseException) { _status ->
     UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_insert_subscription(
         it, FfiConverterTypeSubscriptionInput.lower(`input`),_status)
 }
     }
+    
+    
 
-
-
-
+    
     @Throws(CentwiseException::class)override fun `insertTransaction`(`input`: TransactionInput)
-        =
+        = 
     callWithPointer {
     uniffiRustCallWithError(CentwiseException) { _status ->
     UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_insert_transaction(
         it, FfiConverterTypeTransactionInput.lower(`input`),_status)
 }
     }
+    
+    
 
-
-
-
+    
     @Throws(CentwiseException::class)override fun `listAccounts`(): List<AccountRecord> {
             return FfiConverterSequenceTypeAccountRecord.lift(
     callWithPointer {
@@ -2082,9 +2093,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `listBudgets`(): List<BudgetRecord> {
             return FfiConverterSequenceTypeBudgetRecord.lift(
     callWithPointer {
@@ -2095,9 +2106,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `listCategories`(): List<CategoryRecord> {
             return FfiConverterSequenceTypeCategoryRecord.lift(
     callWithPointer {
@@ -2108,9 +2119,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `listReviewQueue`(`limit`: kotlin.UInt): List<ReviewQueueRecord> {
             return FfiConverterSequenceTypeReviewQueueRecord.lift(
     callWithPointer {
@@ -2121,9 +2132,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `listRules`(): List<SmartRuleRecord> {
             return FfiConverterSequenceTypeSmartRuleRecord.lift(
     callWithPointer {
@@ -2134,9 +2145,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `listSubscriptions`(): List<SubscriptionRecord> {
             return FfiConverterSequenceTypeSubscriptionRecord.lift(
     callWithPointer {
@@ -2147,9 +2158,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `listTransactions`(`limit`: kotlin.UInt): List<TransactionRecord> {
             return FfiConverterSequenceTypeTransactionRecord.lift(
     callWithPointer {
@@ -2160,9 +2171,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     /**
      * Explicitly replaces user records with Rust's deterministic demo set.
      * The native UI must ask for confirmation before calling this method.
@@ -2177,24 +2188,36 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     /**
      * Clears user records and preserves Rust's system categories.
      */
     @Throws(CentwiseException::class)override fun `resetToEmptyDatabase`()
-        =
+        = 
     callWithPointer {
     uniffiRustCallWithError(CentwiseException) { _status ->
     UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_reset_to_empty_database(
         it, _status)
 }
     }
+    
+    
 
+    
+    @Throws(CentwiseException::class)override fun `restoreDefaultRules`()
+        = 
+    callWithPointer {
+    uniffiRustCallWithError(CentwiseException) { _status ->
+    UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_restore_default_rules(
+        it, _status)
+}
+    }
+    
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `updateAccount`(`account`: AccountInput): kotlin.Boolean {
             return FfiConverterBoolean.lift(
     callWithPointer {
@@ -2205,9 +2228,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `updateBudget`(`input`: BudgetInput): kotlin.Boolean {
             return FfiConverterBoolean.lift(
     callWithPointer {
@@ -2218,9 +2241,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `updateCategory`(`input`: CategoryInput): kotlin.Boolean {
             return FfiConverterBoolean.lift(
     callWithPointer {
@@ -2231,9 +2254,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `updateRule`(`input`: SmartRuleInput): kotlin.Boolean {
             return FfiConverterBoolean.lift(
     callWithPointer {
@@ -2244,9 +2267,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `updateSubscription`(`input`: SubscriptionInput): kotlin.Boolean {
             return FfiConverterBoolean.lift(
     callWithPointer {
@@ -2257,9 +2280,9 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
-
-
+    
     @Throws(CentwiseException::class)override fun `updateTransaction`(`input`: TransactionInput): kotlin.Boolean {
             return FfiConverterBoolean.lift(
     callWithPointer {
@@ -2270,13 +2293,13 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     }
     )
     }
+    
 
+    
 
-
-
-
+    
     companion object {
-
+        
     /**
      * Opens (or creates) the shared database at `path` and runs migrations.
      * The platform passes an app-container path; Rust never decides locations.
@@ -2289,11 +2312,11 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
 }
     )
     }
+    
 
-
-
+        
     }
-
+    
 }
 
 /**
@@ -2330,14 +2353,14 @@ public object FfiConverterTypeCentwiseCore: FfiConverter<CentwiseCore, Pointer> 
  * An account to insert.
  */
 data class AccountInput (
-    val `id`: kotlin.String,
-    val `name`: kotlin.String,
-    val `provider`: kotlin.String,
-    val `lastFour`: kotlin.String?,
-    val `startingBalanceMinor`: kotlin.Long,
+    val `id`: kotlin.String, 
+    val `name`: kotlin.String, 
+    val `provider`: kotlin.String, 
+    val `lastFour`: kotlin.String?, 
+    val `startingBalanceMinor`: kotlin.Long, 
     val `archived`: kotlin.Boolean
 ) {
-
+    
     companion object
 }
 
@@ -2378,14 +2401,14 @@ public object FfiConverterTypeAccountInput: FfiConverterRustBuffer<AccountInput>
 
 
 data class AccountRecord (
-    val `id`: kotlin.String,
-    val `name`: kotlin.String,
-    val `provider`: kotlin.String,
-    val `lastFour`: kotlin.String?,
-    val `balanceMinor`: kotlin.Long,
+    val `id`: kotlin.String, 
+    val `name`: kotlin.String, 
+    val `provider`: kotlin.String, 
+    val `lastFour`: kotlin.String?, 
+    val `balanceMinor`: kotlin.Long, 
     val `archived`: kotlin.Boolean
 ) {
-
+    
     companion object
 }
 
@@ -2426,14 +2449,14 @@ public object FfiConverterTypeAccountRecord: FfiConverterRustBuffer<AccountRecor
 
 
 data class AnalyticsCategoryRecord (
-    val `categoryId`: kotlin.String,
-    val `categoryName`: kotlin.String,
-    val `categoryIcon`: kotlin.String,
-    val `categoryColorHex`: kotlin.String,
-    val `totalMinor`: kotlin.Long,
+    val `categoryId`: kotlin.String, 
+    val `categoryName`: kotlin.String, 
+    val `categoryIcon`: kotlin.String, 
+    val `categoryColorHex`: kotlin.String, 
+    val `totalMinor`: kotlin.Long, 
     val `transactionCount`: kotlin.Long
 ) {
-
+    
     companion object
 }
 
@@ -2474,11 +2497,11 @@ public object FfiConverterTypeAnalyticsCategoryRecord: FfiConverterRustBuffer<An
 
 
 data class AnalyticsMerchantRecord (
-    val `merchant`: kotlin.String,
-    val `totalMinor`: kotlin.Long,
+    val `merchant`: kotlin.String, 
+    val `totalMinor`: kotlin.Long, 
     val `transactionCount`: kotlin.Long
 ) {
-
+    
     companion object
 }
 
@@ -2510,11 +2533,11 @@ public object FfiConverterTypeAnalyticsMerchantRecord: FfiConverterRustBuffer<An
 
 
 data class AnalyticsMonthlyRecord (
-    val `year`: kotlin.Int,
-    val `month`: kotlin.UInt,
+    val `year`: kotlin.Int, 
+    val `month`: kotlin.UInt, 
     val `totalExpenseMinor`: kotlin.Long
 ) {
-
+    
     companion object
 }
 
@@ -2546,14 +2569,14 @@ public object FfiConverterTypeAnalyticsMonthlyRecord: FfiConverterRustBuffer<Ana
 
 
 data class AnalyticsSnapshotRecord (
-    val `totalIncomeMinor`: kotlin.Long,
-    val `totalExpenseMinor`: kotlin.Long,
-    val `transactionCount`: kotlin.Long,
-    val `categoryBreakdown`: List<AnalyticsCategoryRecord>,
-    val `topMerchants`: List<AnalyticsMerchantRecord>,
+    val `totalIncomeMinor`: kotlin.Long, 
+    val `totalExpenseMinor`: kotlin.Long, 
+    val `transactionCount`: kotlin.Long, 
+    val `categoryBreakdown`: List<AnalyticsCategoryRecord>, 
+    val `topMerchants`: List<AnalyticsMerchantRecord>, 
     val `monthlyTrends`: List<AnalyticsMonthlyRecord>
 ) {
-
+    
     companion object
 }
 
@@ -2597,14 +2620,14 @@ public object FfiConverterTypeAnalyticsSnapshotRecord: FfiConverterRustBuffer<An
  * A budget to insert or update.
  */
 data class BudgetInput (
-    val `id`: kotlin.String,
-    val `categoryId`: kotlin.String,
-    val `limitMinor`: kotlin.Long,
-    val `period`: kotlin.String,
-    val `startEpochMs`: kotlin.Long,
+    val `id`: kotlin.String, 
+    val `categoryId`: kotlin.String, 
+    val `limitMinor`: kotlin.Long, 
+    val `period`: kotlin.String, 
+    val `startEpochMs`: kotlin.Long, 
     val `endEpochMs`: kotlin.Long
 ) {
-
+    
     companion object
 }
 
@@ -2645,16 +2668,16 @@ public object FfiConverterTypeBudgetInput: FfiConverterRustBuffer<BudgetInput> {
 
 
 data class BudgetRecord (
-    val `id`: kotlin.String,
-    val `categoryId`: kotlin.String,
-    val `categoryName`: kotlin.String,
-    val `limitMinor`: kotlin.Long,
-    val `period`: kotlin.String,
-    val `startEpochMs`: kotlin.Long,
-    val `endEpochMs`: kotlin.Long,
+    val `id`: kotlin.String, 
+    val `categoryId`: kotlin.String, 
+    val `categoryName`: kotlin.String, 
+    val `limitMinor`: kotlin.Long, 
+    val `period`: kotlin.String, 
+    val `startEpochMs`: kotlin.Long, 
+    val `endEpochMs`: kotlin.Long, 
     val `spentMinor`: kotlin.Long
 ) {
-
+    
     companion object
 }
 
@@ -2704,12 +2727,12 @@ public object FfiConverterTypeBudgetRecord: FfiConverterRustBuffer<BudgetRecord>
  * A user-created category to insert or update.
  */
 data class CategoryInput (
-    val `id`: kotlin.String,
-    val `name`: kotlin.String,
-    val `icon`: kotlin.String,
+    val `id`: kotlin.String, 
+    val `name`: kotlin.String, 
+    val `icon`: kotlin.String, 
     val `colorHex`: kotlin.String
 ) {
-
+    
     companion object
 }
 
@@ -2747,14 +2770,14 @@ public object FfiConverterTypeCategoryInput: FfiConverterRustBuffer<CategoryInpu
  * A category read from Rust's canonical category table.
  */
 data class CategoryRecord (
-    val `id`: kotlin.String,
-    val `name`: kotlin.String,
-    val `icon`: kotlin.String,
-    val `colorHex`: kotlin.String,
-    val `isSystem`: kotlin.Boolean,
+    val `id`: kotlin.String, 
+    val `name`: kotlin.String, 
+    val `icon`: kotlin.String, 
+    val `colorHex`: kotlin.String, 
+    val `isSystem`: kotlin.Boolean, 
     val `sortOrder`: kotlin.Int
 ) {
-
+    
     companion object
 }
 
@@ -2799,12 +2822,12 @@ public object FfiConverterTypeCategoryRecord: FfiConverterRustBuffer<CategoryRec
  * records.
  */
 data class DemoDataSummaryRecord (
-    val `accounts`: kotlin.UInt,
-    val `transactions`: kotlin.UInt,
-    val `budgets`: kotlin.UInt,
+    val `accounts`: kotlin.UInt, 
+    val `transactions`: kotlin.UInt, 
+    val `budgets`: kotlin.UInt, 
     val `subscriptions`: kotlin.UInt
 ) {
-
+    
     companion object
 }
 
@@ -2842,11 +2865,11 @@ public object FfiConverterTypeDemoDataSummaryRecord: FfiConverterRustBuffer<Demo
  * Everything the Home screen needs in one call.
  */
 data class HomeDashboardRecord (
-    val `periodExpenseMinor`: kotlin.Long,
-    val `periodIncomeMinor`: kotlin.Long,
+    val `periodExpenseMinor`: kotlin.Long, 
+    val `periodIncomeMinor`: kotlin.Long, 
     val `recentTransactions`: List<TransactionSummaryRecord>
 ) {
-
+    
     companion object
 }
 
@@ -2881,21 +2904,21 @@ public object FfiConverterTypeHomeDashboardRecord: FfiConverterRustBuffer<HomeDa
  * Result of parsing an incoming SMS across the FFI boundary.
  */
 data class ParsedSmsRecord (
-    val `isTransaction`: kotlin.Boolean,
-    val `providerId`: kotlin.String,
-    val `kind`: TransactionKind?,
-    val `amountMinor`: kotlin.Long?,
-    val `feeMinor`: kotlin.Long?,
-    val `balanceAfterMinor`: kotlin.Long?,
-    val `reference`: kotlin.String?,
-    val `party`: kotlin.String?,
-    val `merchant`: kotlin.String?,
-    val `categoryId`: kotlin.String?,
-    val `accountLast4`: kotlin.String?,
-    val `accountHint`: kotlin.String?,
+    val `isTransaction`: kotlin.Boolean, 
+    val `providerId`: kotlin.String, 
+    val `kind`: TransactionKind?, 
+    val `amountMinor`: kotlin.Long?, 
+    val `feeMinor`: kotlin.Long?, 
+    val `balanceAfterMinor`: kotlin.Long?, 
+    val `reference`: kotlin.String?, 
+    val `party`: kotlin.String?, 
+    val `merchant`: kotlin.String?, 
+    val `categoryId`: kotlin.String?, 
+    val `accountLast4`: kotlin.String?, 
+    val `accountHint`: kotlin.String?, 
     val `rawDate`: kotlin.String?
 ) {
-
+    
     companion object
 }
 
@@ -2960,24 +2983,24 @@ public object FfiConverterTypeParsedSmsRecord: FfiConverterRustBuffer<ParsedSmsR
  * A review queue row shaped for native review screens.
  */
 data class ReviewQueueRecord (
-    val `id`: kotlin.String,
-    val `sender`: kotlin.String?,
-    val `rawSms`: kotlin.String,
-    val `receivedAtEpochMs`: kotlin.Long,
-    val `providerId`: kotlin.String?,
-    val `reason`: kotlin.String,
-    val `candidateAmountMinor`: kotlin.Long?,
-    val `candidateKind`: TransactionKind?,
-    val `feeMinor`: kotlin.Long?,
-    val `balanceAfterMinor`: kotlin.Long?,
-    val `reference`: kotlin.String?,
-    val `party`: kotlin.String?,
-    val `merchant`: kotlin.String?,
-    val `categoryId`: kotlin.String?,
-    val `accountLast4`: kotlin.String?,
+    val `id`: kotlin.String, 
+    val `sender`: kotlin.String?, 
+    val `rawSms`: kotlin.String, 
+    val `receivedAtEpochMs`: kotlin.Long, 
+    val `providerId`: kotlin.String?, 
+    val `reason`: kotlin.String, 
+    val `candidateAmountMinor`: kotlin.Long?, 
+    val `candidateKind`: TransactionKind?, 
+    val `feeMinor`: kotlin.Long?, 
+    val `balanceAfterMinor`: kotlin.Long?, 
+    val `reference`: kotlin.String?, 
+    val `party`: kotlin.String?, 
+    val `merchant`: kotlin.String?, 
+    val `categoryId`: kotlin.String?, 
+    val `accountLast4`: kotlin.String?, 
     val `accountHint`: kotlin.String?
 ) {
-
+    
     companion object
 }
 
@@ -3051,15 +3074,15 @@ public object FfiConverterTypeReviewQueueRecord: FfiConverterRustBuffer<ReviewQu
  * A Smart Rule to insert or update.
  */
 data class SmartRuleInput (
-    val `id`: kotlin.String,
-    val `name`: kotlin.String,
-    val `keyword`: kotlin.String,
-    val `matchType`: kotlin.String,
-    val `categoryId`: kotlin.String,
-    val `kind`: TransactionKind,
+    val `id`: kotlin.String, 
+    val `name`: kotlin.String, 
+    val `keyword`: kotlin.String, 
+    val `matchType`: kotlin.String, 
+    val `categoryId`: kotlin.String, 
+    val `kind`: TransactionKind, 
     val `isEnabled`: kotlin.Boolean
 ) {
-
+    
     companion object
 }
 
@@ -3106,17 +3129,17 @@ public object FfiConverterTypeSmartRuleInput: FfiConverterRustBuffer<SmartRuleIn
  * A persisted Smart Rule shaped for native settings screens.
  */
 data class SmartRuleRecord (
-    val `id`: kotlin.String,
-    val `name`: kotlin.String,
-    val `keyword`: kotlin.String,
-    val `matchType`: kotlin.String,
-    val `categoryId`: kotlin.String,
-    val `categoryName`: kotlin.String,
-    val `kind`: TransactionKind,
-    val `isEnabled`: kotlin.Boolean,
+    val `id`: kotlin.String, 
+    val `name`: kotlin.String, 
+    val `keyword`: kotlin.String, 
+    val `matchType`: kotlin.String, 
+    val `categoryId`: kotlin.String, 
+    val `categoryName`: kotlin.String, 
+    val `kind`: TransactionKind, 
+    val `isEnabled`: kotlin.Boolean, 
     val `sortOrder`: kotlin.Int
 ) {
-
+    
     companion object
 }
 
@@ -3169,11 +3192,11 @@ public object FfiConverterTypeSmartRuleRecord: FfiConverterRustBuffer<SmartRuleR
  * An SMS supplied by a native platform to the shared ingestion pipeline.
  */
 data class SmsBatchMessage (
-    val `body`: kotlin.String,
-    val `senderHint`: kotlin.String?,
+    val `body`: kotlin.String, 
+    val `senderHint`: kotlin.String?, 
     val `occurredAtEpochMs`: kotlin.Long
 ) {
-
+    
     companion object
 }
 
@@ -3205,12 +3228,12 @@ public object FfiConverterTypeSmsBatchMessage: FfiConverterRustBuffer<SmsBatchMe
 
 
 data class SmsIngestResult (
-    val `status`: SmsIngestStatus,
-    val `transactionId`: kotlin.String?,
-    val `reviewId`: kotlin.String?,
+    val `status`: SmsIngestStatus, 
+    val `transactionId`: kotlin.String?, 
+    val `reviewId`: kotlin.String?, 
     val `reference`: kotlin.String?
 ) {
-
+    
     companion object
 }
 
@@ -3248,14 +3271,14 @@ public object FfiConverterTypeSmsIngestResult: FfiConverterRustBuffer<SmsIngestR
  * A subscription to insert or update.
  */
 data class SubscriptionInput (
-    val `id`: kotlin.String,
-    val `name`: kotlin.String,
-    val `amountMinor`: kotlin.Long,
-    val `billingCycle`: kotlin.String,
-    val `nextDueEpochMs`: kotlin.Long,
+    val `id`: kotlin.String, 
+    val `name`: kotlin.String, 
+    val `amountMinor`: kotlin.Long, 
+    val `billingCycle`: kotlin.String, 
+    val `nextDueEpochMs`: kotlin.Long, 
     val `isActive`: kotlin.Boolean
 ) {
-
+    
     companion object
 }
 
@@ -3296,14 +3319,14 @@ public object FfiConverterTypeSubscriptionInput: FfiConverterRustBuffer<Subscrip
 
 
 data class SubscriptionRecord (
-    val `id`: kotlin.String,
-    val `name`: kotlin.String,
-    val `amountMinor`: kotlin.Long,
-    val `billingCycle`: kotlin.String,
-    val `nextDueEpochMs`: kotlin.Long,
+    val `id`: kotlin.String, 
+    val `name`: kotlin.String, 
+    val `amountMinor`: kotlin.Long, 
+    val `billingCycle`: kotlin.String, 
+    val `nextDueEpochMs`: kotlin.Long, 
     val `isActive`: kotlin.Boolean
 ) {
-
+    
     companion object
 }
 
@@ -3347,25 +3370,25 @@ public object FfiConverterTypeSubscriptionRecord: FfiConverterRustBuffer<Subscri
  * A transaction to insert.
  */
 data class TransactionInput (
-    val `id`: kotlin.String,
-    val `title`: kotlin.String,
-    val `amountMinor`: kotlin.Long,
-    val `currency`: kotlin.String,
-    val `kind`: TransactionKind,
-    val `categoryId`: kotlin.String,
-    val `occurredAtEpochMs`: kotlin.Long,
-    val `accountId`: kotlin.String,
-    val `accountProvider`: kotlin.String?,
-    val `accountName`: kotlin.String?,
-    val `accountLastFour`: kotlin.String?,
-    val `reference`: kotlin.String?,
-    val `balanceAfterMinor`: kotlin.Long?,
-    val `feeMinor`: kotlin.Long?,
-    val `notes`: kotlin.String?,
-    val `rawSms`: kotlin.String?,
+    val `id`: kotlin.String, 
+    val `title`: kotlin.String, 
+    val `amountMinor`: kotlin.Long, 
+    val `currency`: kotlin.String, 
+    val `kind`: TransactionKind, 
+    val `categoryId`: kotlin.String, 
+    val `occurredAtEpochMs`: kotlin.Long, 
+    val `accountId`: kotlin.String, 
+    val `accountProvider`: kotlin.String?, 
+    val `accountName`: kotlin.String?, 
+    val `accountLastFour`: kotlin.String?, 
+    val `reference`: kotlin.String?, 
+    val `balanceAfterMinor`: kotlin.Long?, 
+    val `feeMinor`: kotlin.Long?, 
+    val `notes`: kotlin.String?, 
+    val `rawSms`: kotlin.String?, 
     val `isAutoTracked`: kotlin.Boolean
 ) {
-
+    
     companion object
 }
 
@@ -3439,22 +3462,22 @@ public object FfiConverterTypeTransactionInput: FfiConverterRustBuffer<Transacti
 
 
 data class TransactionRecord (
-    val `id`: kotlin.String,
-    val `title`: kotlin.String,
-    val `amountMinor`: kotlin.Long,
-    val `currency`: kotlin.String,
-    val `kind`: TransactionKind,
-    val `categoryId`: kotlin.String,
-    val `occurredAtEpochMs`: kotlin.Long,
-    val `accountId`: kotlin.String,
-    val `reference`: kotlin.String?,
-    val `balanceAfterMinor`: kotlin.Long?,
-    val `feeMinor`: kotlin.Long?,
-    val `notes`: kotlin.String?,
-    val `rawSms`: kotlin.String?,
+    val `id`: kotlin.String, 
+    val `title`: kotlin.String, 
+    val `amountMinor`: kotlin.Long, 
+    val `currency`: kotlin.String, 
+    val `kind`: TransactionKind, 
+    val `categoryId`: kotlin.String, 
+    val `occurredAtEpochMs`: kotlin.Long, 
+    val `accountId`: kotlin.String, 
+    val `reference`: kotlin.String?, 
+    val `balanceAfterMinor`: kotlin.Long?, 
+    val `feeMinor`: kotlin.Long?, 
+    val `notes`: kotlin.String?, 
+    val `rawSms`: kotlin.String?, 
     val `isAutoTracked`: kotlin.Boolean
 ) {
-
+    
     companion object
 }
 
@@ -3522,17 +3545,17 @@ public object FfiConverterTypeTransactionRecord: FfiConverterRustBuffer<Transact
  * A short transaction for lists.
  */
 data class TransactionSummaryRecord (
-    val `id`: kotlin.String,
-    val `title`: kotlin.String,
-    val `amountMinor`: kotlin.Long,
-    val `kind`: TransactionKind,
-    val `categoryName`: kotlin.String,
-    val `categoryIcon`: kotlin.String,
-    val `categoryColorHex`: kotlin.String,
-    val `occurredAtEpochMs`: kotlin.Long,
+    val `id`: kotlin.String, 
+    val `title`: kotlin.String, 
+    val `amountMinor`: kotlin.Long, 
+    val `kind`: TransactionKind, 
+    val `categoryName`: kotlin.String, 
+    val `categoryIcon`: kotlin.String, 
+    val `categoryColorHex`: kotlin.String, 
+    val `occurredAtEpochMs`: kotlin.Long, 
     val `accountName`: kotlin.String
 ) {
-
+    
     companion object
 }
 
@@ -3587,29 +3610,29 @@ public object FfiConverterTypeTransactionSummaryRecord: FfiConverterRustBuffer<T
  * Errors surfaced to Kotlin/Swift.
  */
 sealed class CentwiseException: kotlin.Exception() {
-
+    
     class Db(
-
+        
         val `reason`: kotlin.String
         ) : CentwiseException() {
         override val message
             get() = "reason=${ `reason` }"
     }
-
+    
     class Invalid(
-
+        
         val `reason`: kotlin.String
         ) : CentwiseException() {
         override val message
             get() = "reason=${ `reason` }"
     }
-
+    
 
     companion object ErrorHandler : UniffiRustCallStatusErrorHandler<CentwiseException> {
         override fun lift(error_buf: RustBuffer.ByValue): CentwiseException = FfiConverterTypeCentwiseError.lift(error_buf)
     }
 
-
+    
 }
 
 /**
@@ -3617,7 +3640,7 @@ sealed class CentwiseException: kotlin.Exception() {
  */
 public object FfiConverterTypeCentwiseError : FfiConverterRustBuffer<CentwiseException> {
     override fun read(buf: ByteBuffer): CentwiseException {
-
+        
 
         return when(buf.getInt()) {
             1 -> CentwiseException.Db(
@@ -3669,7 +3692,7 @@ public object FfiConverterTypeCentwiseError : FfiConverterRustBuffer<CentwiseExc
  */
 
 enum class SmsIngestStatus {
-
+    
     INSERTED,
     QUEUED_FOR_REVIEW,
     IGNORED,
@@ -3704,7 +3727,7 @@ public object FfiConverterTypeSmsIngestStatus: FfiConverterRustBuffer<SmsIngestS
  */
 
 enum class TransactionKind {
-
+    
     EXPENSE,
     INCOME,
     TRANSFER,
@@ -3740,9 +3763,9 @@ public object FfiConverterTypeTransactionKind: FfiConverterRustBuffer<Transactio
  * Implemented in Kotlin/Swift. Fires after every data write.
  */
 public interface ChangeListener {
-
+    
     fun `onDataChanged`()
-
+    
     companion object
 }
 
@@ -4319,6 +4342,6 @@ public object FfiConverterSequenceTypeTransactionSummaryRecord: FfiConverterRust
 }
     )
     }
-
+    
 
 

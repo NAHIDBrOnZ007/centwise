@@ -93,6 +93,7 @@ public struct TransactionListView: View {
             }
         }
         .listStyle(.insetGrouped)
+        .scrollDismissesKeyboard(.interactively)
         .navigationTitle("Transactions")
         .searchable(text: $viewModel.searchQuery, prompt: "Merchant, account, or reference")
         .toolbar {
