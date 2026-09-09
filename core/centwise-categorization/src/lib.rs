@@ -44,6 +44,9 @@ pub fn categorize_by_type_or_keywords(
                 "sent money",
                 "transfer to",
                 "fund transfer",
+                "mfs transfer",
+                "account transfer",
+                "trf to",
             ],
         )
     {
@@ -72,7 +75,7 @@ pub fn categorize_by_type_or_keywords(
         return Some("income".to_string());
     }
 
-    if contains_any(&lower, &["atm", "cash withdrawal", "cash out"])
+    if contains_any(&lower, &["atm", "cash withdrawal", "cash out", "cash wd"])
         || (lower.contains("citytouch txn") && lower.contains("withdrawal"))
     {
         return Some("cash-withdrawal".to_string());

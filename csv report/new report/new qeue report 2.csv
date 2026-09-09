@@ -1,0 +1,16 @@
+Date,Sender,Reason,Candidate Amount,Candidate Type,Candidate Party,Reference,Raw SMS
+2026-09-05 19:46,EBL,SMS could not be parsed: NotATransaction,,,,,Cash WD BDT3000 from EBL DEMRA STAFF QUAR. Card 452017**1549 on 05-Sep-26 07:46:06 PM BST.Your A/C 109**0386 Balance BDT 16638.5. EBL Helpline 16230
+2026-08-26 16:09,EBL,SMS could not be parsed: NotATransaction,,,,,Cash WD BDT1000 from MTB Sarulia Bazar CR. Card 452017**1549 on 26-Aug-26 04:09:12 PM BST.Your A/C 109**0386 Balance BDT 582.5. EBL Helpline 16230
+2026-08-16 17:56,EBL,SMS could not be parsed: NotATransaction,,,,,Cash WD BDT1500 from MTB Sarulia Bazar CR. Card 452017**1549 on 16-Aug-26 05:56:14 PM BST.Your A/C 109**0386 Balance BDT 3097.5. EBL Helpline 16230
+2026-07-15 10:06,EBL,SMS could not be parsed: NoAmountFound,,,,,"Dear Customer, your Half Yearly Deposit A/C(s) Statement & Balance Confirmation Certificate are sent to your registered e-mail address. Helpline 16230."
+2026-07-09 10:27,EBL,SMS could not be parsed: NotATransaction,,,,,Cash WD BDT10000 from EBL DEMRA STAFF QUAR. Card 452017**1549 on 09-Jul-26 10:27:48 AM BST.Your A/C 109**0386 Balance BDT 230.5. EBL Helpline 16230
+2026-07-05 14:40,EBL,SMS could not be parsed: NotATransaction,,,,,Cash WD BDT2000 from EBL DEMRA STAFF QUAR. Card 452017**1549 on 05-Jul-26 02:40:20 PM BST.Your A/C 109**0386 Balance BDT 10230.5. EBL Helpline 16230
+2026-06-22 18:16,EBL,SMS could not be parsed: NotATransaction,,,,,Cash WD BDT2000 from MTB Sarulia Bazar CR. Card 452017**1549 on 22-Jun-26 06:16:34 PM BST.Your A/C 109**0386 Balance BDT 2510.5. EBL Helpline 16230
+2026-05-25 18:17,EBL,SMS could not be parsed: NotATransaction,,,,,Cash WD BDT2500 from MTB Sarulia Bazar CR. Card 452017**1549 on 25-May-26 06:17:17 PM BST.Your A/C 109**0386 Balance BDT 245.5. EBL Helpline 16230
+2026-05-22 16:26,EBL,SMS could not be parsed: NotATransaction,,,,,Cash WD BDT2000 from EBL DEMRA STAFF QUAR. Card 452017**1549 on 22-May-26 04:26:12 PM BST.Your A/C 109**0386 Balance BDT 2760.5. EBL Helpline 16230
+2026-05-05 13:23,EBL,SMS could not be parsed: NoAmountFound,,,,,"Your transaction enabled in EBL Skybanking. If this is not you, contact 16230 immediately."
+2026-05-05 13:08,EBL,SMS could not be parsed: NoAmountFound,,,,,"You are now registered on EBL Skybanking. Your Skybanking ID is 01311604677, and currently unauthorized for making any financial transaction. Helpline 16230"
+2026-04-26 16:55,EBL,SMS could not be parsed: NoAmountFound,,,,,"Dear Customer, your account in EBL has been created. Please contact with Agent Outlet for Fingerprint Registration if required. Thanks. Helpline 16230"
+2026-04-20 11:19,EBL,SMS could not be parsed: NoAmountFound,,,,,"Welcome to EBL Insta Banking. Please read Terms and Conditions (www.ebl.com.bd/terms-and-conditions-of-payroll-banking) before proceeding. EBL Insta A/C Terms Agreed No. is: 9910. By sharing it with your RM, you hereby agree to all A/C rules in opening Insta A/C. Terms Agreed No expires in 3 minutes. Tracer ID : eXyWsA"
+2026-03-14 16:22,bKash,SMS could not be parsed: NoAmountFound,,,,,<#> Your registration reference number is 668755. Expires in 2 minutes. 46IS00LPAIS00FW
+2025-11-08 00:45,NAGAD,SMS could not be parsed: NoAmountFound,,,,,You have authorized MY GP for payment at 08-Nov-25 00:45 AM.

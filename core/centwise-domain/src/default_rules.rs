@@ -46,6 +46,18 @@ const DEFAULT_MERCHANT_CATEGORIES: &[DefaultMerchantCategory] = &[
         category_id: "shopping",
     },
     DefaultMerchantCategory {
+        id: "sara-lifestyle",
+        name: "Sara Lifestyle",
+        keywords: &["sara lifestyle"],
+        category_id: "shopping",
+    },
+    DefaultMerchantCategory {
+        id: "mygp",
+        name: "MyGP",
+        keywords: &["my gp", "mygp"],
+        category_id: "recharge",
+    },
+    DefaultMerchantCategory {
         id: "pathao",
         name: "Pathao",
         keywords: &["pathao"],

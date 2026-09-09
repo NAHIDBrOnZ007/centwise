@@ -12,6 +12,10 @@ static CARD_NUMBER_RE: LazyLock<Regex> = LazyLock::new(|| {
         .expect("valid card regex")
 });
 
+static CELLFIN_FROM_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\bFROM:\s*([0-9]{10,25})\b").expect("valid cellfin from regex")
+});
+
 pub fn extract_account_info(text: &str) -> (Option<String>, Option<String>) {
     // 1. Check for card pattern (e.g. "Card 1234", "Card ending 4321", "Card *5678", "Card no. 1234")
     if let Some(cap) = CARD_NUMBER_RE.captures(text) {
@@ -45,6 +49,17 @@ pub fn extract_account_info(text: &str) -> (Option<String>, Option<String>) {
             }
             // Could be a masked wallet or full account hint
             return (None, Some(account.to_string()));
+        }
+    }
+
+    // 3. CellFin "FROM: <account_digits>"
+    if text.to_lowercase().contains("cellfin") {
+        if let Some(cap) = CELLFIN_FROM_RE.captures(text) {
+            if let Some(m) = cap.get(1) {
+                let digits = m.as_str().trim();
+                let last4 = digits[digits.len() - 4..].to_string();
+                return (Some(last4), Some(digits.to_string()));
+            }
         }
     }
 

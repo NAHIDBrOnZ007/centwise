@@ -46,6 +46,15 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
         || lower.contains("transfer to")
         || lower.contains("transfer money")
         || lower.contains("transferred")
+        || lower.contains("mfs transfer")
+        || lower.contains("account transfer")
+        || lower.contains("trf to")
+        || lower.contains(" trf ")
+        || lower.starts_with("trf ")
+        || lower.contains("send money bkash")
+        || lower.contains("send money to bkash")
+        || lower.contains("send money nagad")
+        || lower.contains("send money to nagad")
     {
         return Some(TransactionType::Transfer);
     }
@@ -81,6 +90,7 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
         || lower.contains("debited from your a/c")
         || lower.contains("debited from your account")
         || lower.contains("cash out")
+        || lower.contains("cash-out")
         || lower.contains("send money")
         || lower.contains("you have sent")
         || lower.contains("sent to")
@@ -90,6 +100,7 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
 
     // 6. Standard Income keywords
     if lower.contains("cash in")
+        || lower.contains("cash-in")
         || (lower.contains("received") && !lower.contains("recharge request"))
         || (lower.contains("credited") && !lower.contains("debited from your"))
         || lower.contains("cr transaction")
@@ -116,15 +127,23 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
 
     // 7. Standard Expense keywords (safely ignoring future conditional "will be deducted")
     let has_current_debit = lower.contains("cash out")
+        || lower.contains("cash-out")
         || lower.contains("send money")
         || lower.contains("you have sent")
         || lower.contains("sent to")
-        || (lower.contains("sent") && !lower.contains("sent from"))
+        || (has_word(&lower, "sent") && !lower.contains("sent from"))
         || lower.contains("payment")
+        || lower.contains("paid to")
+        || lower.contains("successfully paid")
+        || lower.contains("bill paid")
         || lower.contains("debited")
         || lower.contains("withdrawal")
         || lower.contains("withdrawn")
+        || lower.contains("cash wd")
+        || lower.contains(" wd ")
         || lower.contains("recharge")
+        || lower.contains("refilled")
+        || lower.contains("refill")
         || lower.contains("emi")
         || (lower.contains("purchase")
             && !lower.contains("min purchase")
@@ -162,6 +181,11 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
     }
 
     None
+}
+
+fn has_word(text: &str, word: &str) -> bool {
+    text.split(|c: char| !c.is_alphanumeric())
+        .any(|token| token.eq_ignore_ascii_case(word))
 }
 
 #[cfg(test)]

@@ -36,7 +36,7 @@ pub const PROVIDER_RUPALI_BANK: &str = "rupali-bank";
 pub fn lookup_sender(normalized_sender: &str) -> Option<&'static str> {
     match normalized_sender {
         // MFS
-        "bkash" | "bkashbd" | "bkash16247" | "16247" => Some(PROVIDER_BKASH),
+        "bkash" | "bkashbd" | "bkash16247" | "bkashnotice" | "16247" => Some(PROVIDER_BKASH),
         "nagad" | "nagadbd" | "nagad16167" | "16167" => Some(PROVIDER_NAGAD),
         "rocket" | "dbblrocket" | "16216" => Some(PROVIDER_ROCKET),
         "upay" | "upaybd" | "ucash" => Some(PROVIDER_UPAY),
@@ -48,7 +48,7 @@ pub fn lookup_sender(normalized_sender: &str) -> Option<&'static str> {
         "gp" | "grameenphone" | "gpstar" | "121" => Some(PROVIDER_GRAMEENPHONE),
         "bl" | "banglalink" | "212" => Some(PROVIDER_BANGLALINK),
         "airtel" | "airtelbd" => Some(PROVIDER_AIRTEL),
-        "teletalk" | "teletalkbd" => Some(PROVIDER_TELETALK),
+        "teletalk" | "teletalkbd" | "telecharge" => Some(PROVIDER_TELETALK),
 
         // Banks
         "dbbl" | "dutchbanglabank" | "dutchbanglabankplc" => Some(PROVIDER_DBBL),

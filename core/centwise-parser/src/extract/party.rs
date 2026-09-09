@@ -28,7 +28,7 @@ static FROM_SUCCESS_RE: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 static TO_GENERAL_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\bto\s+([0-9A-Za-z\s'.-]+?)(?:\s+on|\.|,|Fee|Balance|TrxID)")
+    Regex::new(r"(?i)\bto\s+([0-9A-Za-z\s'.-]+?)(?:\s+on|\.|,|Fee|Balance|TrxID|TxnId|TxnID|Date:)")
         .expect("valid to general regex")
 });
 
@@ -61,7 +61,7 @@ static EFT_BY_RE: LazyLock<Regex> = LazyLock::new(|| {
         .expect("valid eft by regex")
 });
 
-// MFS explicit counterparty fields (Sender, Receiver, Uddokta, Mobile, From Bank)
+// MFS explicit counterparty fields (Sender, Receiver, Uddokta, Mobile, From Bank, Biller/Org)
 static MFS_SENDER_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?i)\bSender:\s*(01[3-9][0-9]{8}|[A-Za-z0-9\s.-]+?)(?:\s+Ref:|\s+TxnID:|\s+Fee:|\s+Balance:|\n|$)")
         .expect("valid mfs sender regex")
@@ -86,10 +86,40 @@ static MFS_FROM_BANK_RE: LazyLock<Regex> = LazyLock::new(|| {
         .expect("valid mfs from bank regex")
 });
 
+static MFS_BILLER_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\b(?:Biller|Org):\s*([A-Za-z0-9\s.()-]+?)(?:\s+Amount:|\s+MMYYYY|\s+Fee:|\s+A/C:|\s+Ref:|\s+TrxID:|\n|$)")
+        .expect("valid mfs biller regex")
+});
+
+static MFS_WALLET_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\b(?:bKash\s+Wallet|Wallet|To):\s*([0-9A-Za-z]+)(?:\s+Amount:|\s+Trx|\n|$)")
+        .expect("valid mfs wallet regex")
+});
+
 pub fn extract_party(text: &str) -> Option<String> {
     let lower = text.to_lowercase();
 
-    // 0. Explicit MFS field headers (Sender, Receiver, Uddokta, Mobile, From)
+    // 0. Explicit MFS field headers (Sender, Receiver, Uddokta, Mobile, From, Biller/Org, Wallet/To)
+    if let Some(cap) = MFS_WALLET_RE.captures(text) {
+        if let Some(m) = cap.get(1) {
+            let val = m.as_str().trim();
+            if !val.is_empty() {
+                if lower.contains("bkash wallet") && !val.to_lowercase().starts_with("bkash") {
+                    return Some(format!("bKash {val}"));
+                }
+                if let Some(clean) = clean_party_candidate(val) {
+                    return Some(clean);
+                }
+            }
+        }
+    }
+    if let Some(cap) = MFS_BILLER_RE.captures(text) {
+        if let Some(m) = cap.get(1) {
+            if let Some(clean) = clean_party_candidate(m.as_str()) {
+                return Some(clean);
+            }
+        }
+    }
     if let Some(cap) = MFS_SENDER_RE.captures(text) {
         if let Some(m) = cap.get(1) {
             if let Some(clean) = clean_party_candidate(m.as_str()) {
@@ -250,6 +280,13 @@ fn clean_party_candidate(raw: &str) -> Option<String> {
 
     // Strip trailing periods (e.g. "Eastern Bank PLC." -> "Eastern Bank PLC")
     candidate = candidate.trim_end_matches('.').trim();
+
+    // Strip trailing utility bill metadata (e.g. "DPDC Id 1011 Bill No 32205988" -> "DPDC")
+    if let Some(pos) = candidate.find(" Id ") {
+        candidate = candidate[..pos].trim();
+    } else if let Some(pos) = candidate.find(" Bill No") {
+        candidate = candidate[..pos].trim();
+    }
 
     if candidate.is_empty() || candidate.len() < 2 || candidate.len() > 45 {
         return None;

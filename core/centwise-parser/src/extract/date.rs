@@ -3,21 +3,23 @@
 use regex::Regex;
 use std::sync::LazyLock;
 
-// DD/MM/YY, DD/MM/YYYY, DD-MM-YY, DD-MM-YYYY (with optional time HH:MM or HH:MM:SS)
+// DD/MM/YY, DD/MM/YYYY, DD-MM-YY, DD-MM-YYYY (with optional time HH:MM or HH:MM:SS and optional AM/PM)
 static DATE_DMY_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"([0-9]{2}[/-][0-9]{2}[/-][0-9]{2,4}(?:\s+[0-9]{2}:[0-9]{2}(?::[0-9]{2})?)?)")
+    Regex::new(r"([0-9]{2}[/-][0-9]{2}[/-][0-9]{2,4}(?:\s+[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s+[APap][Mm])?)?)")
         .expect("valid date dmy regex")
 });
 
 // YYYY-MM-DD (ISO format, with optional time)
 static DATE_ISO_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"([0-9]{4}-[0-9]{2}-[0-9]{2}(?:\s+[0-9]{2}:[0-9]{2}(?::[0-9]{2})?)?)")
-        .expect("valid date iso regex")
+    Regex::new(
+        r"([0-9]{4}-[0-9]{2}-[0-9]{2}(?:\s+[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s+[APap][Mm])?)?)",
+    )
+    .expect("valid date iso regex")
 });
 
-// DD MMM YYYY or DD-MMM-YY (e.g. "05 Sep 2026", "05-Sep-26")
+// DD MMM YYYY or DD-MMM-YY (e.g. "05 Sep 2026", "05-Sep-26", "29-APR-26 12:47 AM")
 static DATE_NAMED_MONTH_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)([0-9]{2}[\s-](?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\s-][0-9]{2,4}(?:\s+[0-9]{2}:[0-9]{2}(?::[0-9]{2})?)?)")
+    Regex::new(r"(?i)([0-9]{2}[\s-](?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\s-][0-9]{2,4}(?:\s+[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s+[APap][Mm])?)?)")
         .expect("valid date named month regex")
 });
 

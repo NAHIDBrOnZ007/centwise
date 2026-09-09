@@ -1,0 +1,459 @@
+Date,Title,Amount,Type,Category,Payment Method,Reference,Note,Raw SMS
+2026-09-06 12:52,DPDC,1200.00,Expense,Bills & Utilities,Primary Account,DI667RCDIY,,Your Pay Bill request of Tk 1200.0 is being processed at 06/09/26 12:52PM Fee: Tk 0.0 TrxID: DI667RCDIY Org: DPDC (Prepaid) A/C: 32205988
+2026-09-06 10:33,ebl transaction,35000.00,Expense,Cash Withdrawal,Eastern Bank,,,AC 109***608 is debited with BDT 35000 as Cash Withdrawal through Agent Banking on 06-SEP-26 10:32:54 AM Balance is BDT 661.69 Thanks. EBL Helpline 16230
+2026-09-03 20:37,ebl transaction,17088.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 17088 as AC TRANSFER THROUGH EBL CONNECT on 03-SEP-26 08:37:43 PM Balance is BDT 35661.69 Thanks. EBL Helpline 16230
+2026-09-02 18:05,nexuspay transaction,1000.00,Transfer,Transfers,Primary Account,6904878677,,"Tk1,000.00 transferred to A/C:***789 Fee:Tk.00, Your A/C Balance: Tk3.95 TxnId:6904878677 Date:02-SEP-26 06:05:12 pm. Download https://bit.ly/nexuspay"
+2026-09-02 18:03,rocket transaction,1000.00,Credit,Refunds,Rocket,6904876424,,"Your A/C has been credited for reversal by Tk 1,000.00; NetBal: Tk1,003.95; TxnId: 6904876424."
+2026-09-02 16:13,Received from 01721801743,800.00,Income,Income,Nagad,75X8M6EJ,Sender: 01721801743,"Money Received.
+Amount: Tk 800.00
+Sender: 01721801743
+Ref: N/A
+TxnID: 75X8M6EJ
+Balance: Tk 802.64
+02/09/2026 16:13"
+2026-09-01 19:21,Intercloud Limited,40.00,Expense,Other,Nagad,75X2563X,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk 40.0
+TxnID: 75X2563X
+Balance: Tk 2.64
+01/09/2026 19:21"
+2026-08-16 16:30,Cash In (01931329625),901.00,Income,Income,Nagad,75TXRWSZ,Agent: 01931329625,"Cash In Received.
+Amount: Tk 901.00
+Uddokta: 01931329625
+TxnID: 75TXRWSZ
+Balance: 954.34
+16/08/2026 16:30"
+2026-08-16 11:40,Cash In (01313805906),1000.00,Income,Income,Nagad,75TW9K39,Agent: 01313805906,"Cash In Received.
+Amount: Tk 1000.00
+Uddokta: 01313805906
+TxnID: 75TW9K39
+Balance: 1066.33
+16/08/2026 11:39"
+2026-08-15 18:22,ebl transaction,1083.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 1083 as AC TRANSFER THROUGH EBL CONNECT on 15-AUG-26 06:22:47 PM Balance is BDT 18573.69 Thanks. EBL Helpline 16230
+2026-08-08 21:32,Intercloud Limited,50.00,Expense,Other,Nagad,75SJVJF5,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk 50.0
+TxnID: 75SJVJF5
+Balance: Tk 66.33
+08/08/2026 21:32"
+2026-08-08 16:11,ebl transaction,17088.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 17088 as AC TRANSFER THROUGH EBL CONNECT on 08-AUG-26 04:11:17 PM Balance is BDT 17490.69 Thanks. EBL Helpline 16230
+2026-07-27 19:13,Cash In (01777846410),7000.00,Income,Income,Nagad,75QGDU61,Agent: 01777846410,"Cash In Received.
+Amount: Tk 7000.00
+Uddokta: 01777846410
+TxnID: 75QGDU61
+Balance: 7000.76
+27/07/2026 19:13"
+2026-07-19 11:32,ebl transaction,18000.00,Expense,Cash Withdrawal,Eastern Bank,,,AC 109***608 is debited with BDT 18000 as Cash Withdrawal through Agent Banking on 19-JUL-26 11:32:21 AM Balance is BDT 402.69 Thanks. EBL Helpline 16230
+2026-07-16 12:36,ebl transaction,1786.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 1786 as AC TRANSFER THROUGH EBL CONNECT on 16-JUL-26 12:35:50 PM Balance is BDT 18402.69 Thanks. EBL Helpline 16230
+2026-07-02 23:35,ebl transaction,16122.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 16122 as AC TRANSFER THROUGH EBL CONNECT on 02-JUL-26 11:35:35 PM Balance is BDT 16616.69 Thanks. EBL Helpline 16230
+2026-07-01 23:30,Intercloud Limited,30.00,Expense,Other,Nagad,75LV5E84,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  30.0
+TxnID: 75LV5E84
+Balance: Tk 20.76
+01/07/2026 23:30"
+2026-07-01 08:42,ebl transaction,1.52,Expense,Other,Eastern Bank,,,AC 109***608 is debited with BDT 1.52 as WITHOLDING SOURCE TAX ON CASA ACCOUNTS on 01-JUL-26 07:05:11 AM Balance is BDT 494.69 Thanks. EBL Helpline 16230
+2026-07-01 08:42,ebl transaction,15.21,Income,Interest & Profit,Eastern Bank,,,AC 109***608 is credited with BDT 15.21 as IC INTEREST LIQUIDATION on 01-JUL-26 07:05:11 AM Balance is BDT 494.69 Thanks. EBL Helpline 16230
+2026-06-29 19:30,Intercloud Limited,30.00,Expense,Other,Nagad,75LBYGPO,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  30.0
+TxnID: 75LBYGPO
+Balance: Tk 70.76
+29/06/2026 19:30"
+2026-06-29 17:49,Cash In (01777846410),100.00,Income,Income,Nagad,75LASRL1,Agent: 01777846410,"Cash In Received.
+Amount: Tk 100.00
+Uddokta: 01777846410
+TxnID: 75LASRL1
+Balance: 100.76
+29/06/2026 17:49"
+2026-06-23 01:14,Intercloud Limited,35.00,Expense,Other,Nagad,75JXC806,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  35.0
+TxnID: 75JXC806
+Balance: Tk 0.76
+23/06/2026 01:14"
+2026-06-20 23:30,Intercloud Limited,30.00,Expense,Other,Nagad,75JJGLZT,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  30.0
+TxnID: 75JJGLZT
+Balance: Tk 50.76
+20/06/2026 23:30"
+2026-06-19 09:26,Received from Eastern Bank PLC,100.00,Income,Income,Nagad,75J9QJDQ,,"Add Money from Bank is Successful.
+From: Eastern Bank PLC.
+Amount: Tk 100.0
+TxnID: 75J9QJDQ
+Balance: Tk 100.76
+19/06/2026 09:26"
+2026-06-16 23:57,Intercloud Limited,50.00,Expense,Other,Nagad,75IXC7H4,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 75IXC7H4
+Balance: Tk 0.76
+16/06/2026 23:57"
+2026-06-15 00:04,Intercloud Limited,50.00,Expense,Other,Nagad,75ILTK94,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 75ILTK94
+Balance: Tk 50.76
+15/06/2026 00:04"
+2026-06-14 20:04,Cash In (01777846410),100.00,Income,Income,Nagad,75IK77GM,Agent: 01777846410,"Cash In Received.
+Amount: Tk 100.00
+Uddokta: 01777846410
+TxnID: 75IK77GM
+Balance: 100.76
+14/06/2026 20:04"
+2026-06-14 12:42,ebl transaction,6500.00,Expense,Cash Withdrawal,Eastern Bank,,,AC 109***608 is debited with BDT 6500 as Cash Withdrawal through Agent Banking on 14-JUN-26 12:41:46 PM Balance is BDT 481 Thanks. EBL Helpline 16230
+2026-06-14 00:50,Intercloud Limited,30.00,Expense,Other,Nagad,75IG54YR,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  30.0
+TxnID: 75IG54YR
+Balance: Tk 0.76
+14/06/2026 00:50"
+2026-06-12 22:57,Intercloud Limited,50.00,Expense,Other,Nagad,75IA7JDQ,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 75IA7JDQ
+Balance: Tk 50.76
+12/06/2026 22:57"
+2026-06-12 22:55,Cash In (01777846410),100.00,Income,Income,Nagad,75IA75QF,Agent: 01777846410,"Cash In Received.
+Amount: Tk 100.00
+Uddokta: 01777846410
+TxnID: 75IA75QF
+Balance: 100.76
+12/06/2026 22:55"
+2026-06-12 19:57,ebl transaction,6809.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 6809 as AC TRANSFER THROUGH EBL CONNECT on 12-JUN-26 07:57:47 PM Balance is BDT 6981 Thanks. EBL Helpline 16230
+2026-06-07 11:58,ebl transaction,27500.00,Expense,Cash Withdrawal,Eastern Bank,,,AC 109***608 is debited with BDT 27500 as Cash Withdrawal through Agent Banking on 07-JUN-26 11:58:17 AM Balance is BDT 172 Thanks. EBL Helpline 16230
+2026-06-04 13:22,ebl transaction,16122.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 16122 as AC TRANSFER THROUGH EBL CONNECT on 04-JUN-26 01:22:36 PM Balance is BDT 27672 Thanks. EBL Helpline 16230
+2026-06-03 00:34,Robi Emergency Balance,60.00,Income,Income,Primary Account,,,"Dear Customer, 90min_72hr_60Tk has been added to your account. Tk 60.0 + Service fee of TK 0.00 will be deducted from your next recharge. Your total outstanding is Tk 60.00. For Details, dial *8#"
+2026-06-02 23:11,Intercloud Limited,20.00,Expense,Other,Nagad,75GOFG3U,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  20.0
+TxnID: 75GOFG3U
+Balance: Tk 0.76
+02/06/2026 23:11"
+2026-05-30 22:21,Intercloud Limited,50.00,Expense,Other,Nagad,75G6D6HK,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 75G6D6HK
+Balance: Tk 20.76
+30/05/2026 22:21"
+2026-05-29 17:35,Intercloud Limited,30.00,Expense,Other,Nagad,75FYJF5E,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  30.0
+TxnID: 75FYJF5E
+Balance: Tk 70.76
+29/05/2026 17:35"
+2026-05-29 16:54,Cash In (01333595930),100.00,Income,Income,Nagad,75FYC5M8,Agent: 01333595930,"Cash In Received.
+Amount: Tk 100.00
+Uddokta: 01333595930
+TxnID: 75FYC5M8
+Balance: 100.76
+29/05/2026 16:53"
+2026-05-28 00:18,Intercloud Limited,20.00,Expense,Other,Nagad,75FPB4RA,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  20.0
+TxnID: 75FPB4RA
+Balance: Tk 0.76
+28/05/2026 00:18"
+2026-05-25 23:48,Intercloud Limited,30.00,Expense,Other,Nagad,75F3W4LC,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  30.0
+TxnID: 75F3W4LC
+Balance: Tk 20.76
+25/05/2026 23:48"
+2026-05-24 22:15,Intercloud Limited,30.00,Expense,Other,Nagad,75ESOXRJ,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  30.0
+TxnID: 75ESOXRJ
+Balance: Tk 50.76
+24/05/2026 22:15"
+2026-05-23 12:17,Airtel,20.00,Expense,Mobile Recharge,Nagad,75EDXD4L,Mobile: 01604711175,"Mobile Recharge Request Received.
+Amount: Tk 20.00
+Mobile:01604711175
+TxnID: 75EDXD4L
+Balance: Tk 80.76
+23/05/2026 12:17"
+2026-05-23 10:51,Cash In (01777846410),100.00,Income,Income,Nagad,75EDEPBW,Agent: 01777846410,"Cash In Received.
+Amount: Tk 100.00
+Uddokta: 01777846410
+TxnID: 75EDEPBW
+Balance: 100.76
+23/05/2026 10:51"
+2026-05-20 15:25,ebl transaction,8500.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 8500 as AC TRANSFER THROUGH EBL CONNECT on 20-MAY-26 03:25:00 PM Balance is BDT 11550 Thanks. EBL Helpline 16230
+2026-05-20 11:00,ebl transaction,60000.00,Expense,Cash Withdrawal,Eastern Bank,,,AC 109***608 is debited with BDT 60000 as Cash Withdrawal through Agent Banking on 20-MAY-26 11:00:45 AM Balance is BDT 3050 Thanks. EBL Helpline 16230
+2026-05-20 00:16,Intercloud Limited,30.00,Expense,Other,Nagad,75DNPDX7,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  30.0
+TxnID: 75DNPDX7
+Balance: Tk 25.76
+20/05/2026 00:16"
+2026-05-18 10:23,Cash In (01777846410),100.00,Income,Income,Nagad,75DA2NJG,Agent: 01777846410,"Cash In Received.
+Amount: Tk 100.00
+Uddokta: 01777846410
+TxnID: 75DA2NJG
+Balance: 130.76
+18/05/2026 10:23"
+2026-05-15 22:04,ebl transaction,3081.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 3081 as AC TRANSFER THROUGH EBL CONNECT on 15-MAY-26 10:04:44 PM Balance is BDT 63050 Thanks. EBL Helpline 16230
+2026-05-07 20:04,Intercloud Limited,50.00,Expense,Other,Nagad,75BGG2W0,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 75BGG2W0
+Balance: Tk 85.76
+07/05/2026 20:04"
+2026-05-06 01:07,Intercloud Limited,30.00,Expense,Other,Nagad,75B69CT6,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  30.0
+TxnID: 75B69CT6
+Balance: Tk 150.76
+06/05/2026 01:07"
+2026-05-05 13:41,Intercloud Limited,20.00,Expense,Other,Nagad,75B27E97,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  20.0
+TxnID: 75B27E97
+Balance: Tk 180.76
+05/05/2026 13:41"
+2026-05-03 17:57,Cash In (01777846410),200.00,Income,Income,Nagad,75AQFKUT,Agent: 01777846410,"Cash In Received.
+Amount: Tk 200.00
+Uddokta: 01777846410
+TxnID: 75AQFKUT
+Balance: 200.76
+03/05/2026 17:56"
+2026-05-03 15:11,Intercloud Limited,50.00,Expense,Other,Nagad,75APE48B,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 75APE48B
+Balance: Tk 0.76
+03/05/2026 15:11"
+2026-05-02 17:21,ebl transaction,16122.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 16122 as AC TRANSFER THROUGH EBL CONNECT on 02-MAY-26 05:21:44 PM Balance is BDT 59969 Thanks. EBL Helpline 16230
+2026-04-27 22:58,Intercloud Limited,50.00,Expense,Other,Nagad,759UJHRI,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 759UJHRI
+Balance: Tk 50.76
+27/04/2026 22:58"
+2026-04-27 20:33,Cash In (01777846410),100.00,Income,Income,Nagad,759TLSL5,Agent: 01777846410,"Cash In Received.
+Amount: Tk 100.00
+Uddokta: 01777846410
+TxnID: 759TLSL5
+Balance: 100.76
+27/04/2026 20:33"
+2026-04-24 23:36,Intercloud Limited,50.00,Expense,Other,Nagad,759ENAC5,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 759ENAC5
+Balance: Tk 0.76
+24/04/2026 23:36"
+2026-04-21 23:27,Intercloud Limited,50.00,Expense,Other,Nagad,758YOFXD,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 758YOFXD
+Balance: Tk 50.76
+21/04/2026 23:27"
+2026-04-21 20:10,Intercloud Limited,50.00,Expense,Other,Nagad,758XF3QX,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 758XF3QX
+Balance: Tk 100.76
+21/04/2026 20:10"
+2026-04-19 12:39,Intercloud Limited,50.00,Expense,Other,Nagad,758JTJRA,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 758JTJRA
+Balance: Tk 150.76
+19/04/2026 12:39"
+2026-04-19 12:35,Cash In (01777846410),200.00,Income,Income,Nagad,758JT07L,Agent: 01777846410,"Cash In Received.
+Amount: Tk 200.00
+Uddokta: 01777846410
+TxnID: 758JT07L
+Balance: 200.76
+19/04/2026 12:35"
+2026-04-17 02:39,Intercloud Limited,35.00,Expense,Other,Nagad,7587RSQX,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  35.0
+TxnID: 7587RSQX
+Balance: Tk 0.76
+17/04/2026 02:39"
+2026-04-15 17:33,ebl transaction,1673.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 1673 as AC TRANSFER THROUGH EBL CONNECT on 15-APR-26 05:32:51 PM Balance is BDT 43847 Thanks. EBL Helpline 16230
+2026-04-15 16:21,ebl transaction,172.50,Expense,Fees & Charges,Eastern Bank,,,AC 109***608 is debited with BDT 172.5 as Debit Card Annual Fee on 15-APR-26 04:21:09 PM Balance is BDT 42174 Thanks. EBL Helpline 16230
+2026-04-15 12:08,Intercloud Limited,50.00,Expense,Other,Nagad,757XPFX1,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 757XPFX1
+Balance: Tk 50.76
+15/04/2026 12:08"
+2026-04-15 11:39,Cash In (01777846410),100.00,Income,Income,Nagad,757XJSX6,Agent: 01777846410,"Cash In Received.
+Amount: Tk 100.00
+Uddokta: 01777846410
+TxnID: 757XJSX6
+Balance: 100.76
+15/04/2026 11:39"
+2026-04-12 21:52,Intercloud Limited,50.00,Expense,Other,Nagad,757J8OX8,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 757J8OX8
+Balance: Tk 0.76
+12/04/2026 21:52"
+2026-04-11 12:39,Intercloud Limited,50.00,Expense,Other,Nagad,757A5WLO,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 757A5WLO
+Balance: Tk 50.76
+11/04/2026 12:39"
+2026-04-11 12:06,Cash In (01777846410),100.00,Income,Income,Nagad,7579ZYCX,Agent: 01777846410,"Cash In Received.
+Amount: Tk 100.00
+Uddokta: 01777846410
+TxnID: 7579ZYCX
+Balance: 100.76
+11/04/2026 12:06"
+2026-04-11 01:24,Intercloud Limited,30.00,Expense,Other,Nagad,7578HVRH,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  30.0
+TxnID: 7578HVRH
+Balance: Tk 0.76
+11/04/2026 01:24"
+2026-04-10 09:18,Intercloud Limited,50.00,Expense,Other,Nagad,7573JWAG,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 7573JWAG
+Balance: Tk 50.76
+10/04/2026 09:18"
+2026-04-10 09:05,Received from Eastern Bank PLC,100.00,Income,Income,Nagad,7573IHNZ,,"Add Money from Bank is Successful.
+From: Eastern Bank PLC.
+Amount: Tk 100.0
+TxnID: 7573IHNZ
+Balance: Tk 100.76
+10/04/2026 09:05"
+2026-04-08 15:04,ebl transaction,16122.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 16122 as AC TRANSFER THROUGH EBL CONNECT on 08-APR-26 03:04:37 PM Balance is BDT 42346.5 Thanks. EBL Helpline 16230
+2026-04-04 07:43,Intercloud Limited,50.00,Expense,Other,Nagad,7564QNU9,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 7564QNU9
+Balance: Tk 0.76
+04/04/2026 07:42"
+2026-03-31 23:40,Intercloud Limited,50.00,Expense,Other,Nagad,755MKZ8A,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 755MKZ8A
+Balance: Tk 50.76
+31/03/2026 23:40"
+2026-03-30 19:51,Intercloud Limited,50.00,Expense,Other,Nagad,755F90ZQ,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  50.0
+TxnID: 755F90ZQ
+Balance: Tk 100.76
+30/03/2026 19:51"
+2026-03-29 23:56,Intercloud Limited,20.00,Expense,Other,Nagad,755B2IOT,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  20.0
+TxnID: 755B2IOT
+Balance: Tk 150.76
+29/03/2026 23:56"
+2026-03-29 21:11,Intercloud Limited,30.00,Expense,Other,Nagad,755A3YFE,,"Payment to 'Intercloud Limited' is Successful.
+Amount: Tk  30.0
+TxnID: 755A3YFE
+Balance: Tk 170.76
+29/03/2026 21:11"
+2026-03-24 21:08,ebl transaction,1408.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 1408 as AC TRANSFER THROUGH EBL CONNECT on 24-MAR-26 09:07:59 PM Balance is BDT 26224.5 Thanks. EBL Helpline 16230
+2026-03-14 15:16,ebl transaction,8500.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 8500 as AC TRANSFER THROUGH EBL CONNECT on 14-MAR-26 03:16:22 PM Balance is BDT 24816.5 Thanks. EBL Helpline 16230
+2026-03-05 18:02,ebl transaction,16122.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 16122 as AC TRANSFER THROUGH EBL CONNECT on 05-MAR-26 06:02:09 PM Balance is BDT 16316.5 Thanks. EBL Helpline 16230
+2026-02-18 12:07,ebl transaction,11500.00,Expense,Cash Withdrawal,Eastern Bank,,,AC 109***608 is debited with BDT 11500 as Cash Withdrawal through Agent Banking on 18-FEB-26 12:07:32 PM Balance is BDT 194.5 Thanks. EBL Helpline 16230
+2026-02-17 10:16,ebl transaction,1847.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 1847 as AC TRANSFER THROUGH EBL CONNECT on 17-FEB-26 10:16:45 AM Balance is BDT 11694.5 Thanks. EBL Helpline 16230
+2026-02-08 03:26,ebl transaction,8693.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 8693 as AC TRANSFER THROUGH EBL CONNECT on 08-FEB-26 03:26:27 AM Balance is BDT 9847.5 Thanks. EBL Helpline 16230
+2026-01-15 17:58,ebl transaction,966.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 966 as AC TRANSFER THROUGH EBL CONNECT on 15-JAN-26 03:10:35 PM Balance is BDT 1154.5 Thanks. EBL Helpline 16230
+2026-01-08 11:10,ebl transaction,35000.00,Expense,Cash Withdrawal,Eastern Bank,,,AC 109***608 is debited with BDT 35000 as Cash Withdrawal through Agent Banking on 08-JAN-26 11:09:56 AM Balance is BDT 188.5 Thanks. EBL Helpline 16230
+2026-01-06 13:48,ebl transaction,9360.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 9360 as AC TRANSFER THROUGH EBL CONNECT on 06-JAN-26 01:47:54 PM Balance is BDT 35188.5 Thanks. EBL Helpline 16230
+2025-12-30 14:43,ebl transaction,345.00,Expense,Fees & Charges,Eastern Bank,,,AC 109***608 is debited with BDT 345 as Transaction Alert Fee on 30-DEC-25 02:43:13 PM Balance is BDT 25828.5 Thanks. EBL Helpline 16230
+2025-12-23 11:58,ebl transaction,3000.00,Expense,Cash Withdrawal,Eastern Bank,,,AC 109***608 is debited with BDT 3000 as Cash Withdrawal through Agent Banking on 23-DEC-25 11:58:15 AM Balance is BDT 26173.5 Thanks. EBL Helpline 16230
+2025-12-15 12:35,ebl transaction,2089.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 2089 as AC TRANSFER THROUGH EBL CONNECT on 15-DEC-25 12:35:25 PM Balance is BDT 29173.5 Thanks. EBL Helpline 16230
+2025-12-07 12:45,ebl transaction,3300.00,Expense,Cash Withdrawal,Eastern Bank,,,AC 109***608 is debited with BDT 3300 as Cash Withdrawal through Agent Banking on 07-DEC-25 12:45:04 PM Balance is BDT 27084.5 Thanks. EBL Helpline 16230
+2025-12-03 18:04,ebl transaction,9360.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 9360 as AC TRANSFER THROUGH EBL CONNECT on 03-DEC-25 06:04:15 PM Balance is BDT 30384.5 Thanks. EBL Helpline 16230
+2025-11-16 10:19,ebl transaction,3500.00,Expense,Cash Withdrawal,Eastern Bank,,,AC 109***608 is debited with BDT 3500 as Cash Withdrawal through Agent Banking on 16-NOV-25 10:19:34 AM Balance is BDT 21024.5 Thanks. EBL Helpline 16230
+2025-11-15 10:49,ebl transaction,1519.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 1519 as AC TRANSFER THROUGH EBL CONNECT on 15-NOV-25 10:49:38 AM Balance is BDT 24524.5 Thanks. EBL Helpline 16230
+2025-11-11 10:31,ebl transaction,5300.00,Expense,Cash Withdrawal,Eastern Bank,,,AC 109***608 is debited with BDT 5300 as Cash Withdrawal through Agent Banking on 11-NOV-25 10:31:46 AM Balance is BDT 23005.5 Thanks. EBL Helpline 16230
+2025-11-04 15:54,ebl transaction,9360.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 9360 as AC TRANSFER THROUGH EBL CONNECT on 04-NOV-25 03:54:18 PM Balance is BDT 28305.5 Thanks. EBL Helpline 16230
+2025-10-06 15:47,ebl transaction,9360.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 9360 as AC TRANSFER THROUGH EBL CONNECT on 06-OCT-25 03:47:22 PM Balance is BDT 18945.5 Thanks. EBL Helpline 16230
+2025-09-20 12:23,DPDC,1000.00,Expense,Bills & Utilities,Primary Account,CIK6JTNI52,,Your Pay Bill request of Tk 1000.0 is being processed at 20/09/25 12:23PM Fee: Tk 0.0 TrxID: CIK6JTNI52 Org: DPDC (Prepaid) A/C: 32205988
+2025-09-08 12:13,ebl transaction,9360.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 9360 as AC TRANSFER THROUGH EBL CONNECT on 08-SEP-25 12:13:00 PM Balance is BDT 9585.5 Thanks. EBL Helpline 16230
+2025-08-19 12:49,DPDC,985.00,Expense,Bills & Utilities,Primary Account,CHJ1MM268L,,Your Pay Bill request of Tk 985.0 is being processed at 19/08/25 12:49PM Fee: Tk 0.0 TrxID: CHJ1MM268L Org: DPDC (Prepaid) A/C: 32205988
+2025-08-15 13:19,ebl transaction,103.00,Income,Income,Eastern Bank,,,AC 109***608 is credited with BDT 103 as AC TRANSFER THROUGH EBL CONNECT on 15-AUG-25 01:19:43 PM Balance is BDT 225.5 Thanks. EBL Helpline 16230
+2025-08-13 15:04,Airtel,30.00,Expense,Mobile Recharge,Primary Account,R250813.1504.370148,,Transaction number R250813.1504.370148 to recharge 30 TAKA from 1605440232 is successful and valid till 24/09/25. For best offers dial *0# for minute*4# for data
+2025-08-12 11:13,Airtel,30.00,Expense,Mobile Recharge,Primary Account,R250812.1113.510160,,Transaction number R250812.1113.510160 to recharge 30 TAKA from 1619307203 is successful and valid till 24/09/25. For best offers dial *0# for minute*4# for data
+2025-08-11 18:01,Airtel,30.00,Expense,Mobile Recharge,Primary Account,R250811.1801.37010e,,Transaction number R250811.1801.37010e to recharge 30 TAKA from 1619354292 is successful and valid till 24/09/25. For best offers dial *0# for minute*4# for data
+2025-08-10 21:08,Airtel,30.00,Expense,Mobile Recharge,Primary Account,R250810.2108.3400dc,,Transaction number R250810.2108.3400dc to recharge 30 TAKA from 1605444535 is successful and valid till 24/09/25. For best offers dial *0# for minute*4# for data
+2025-08-10 16:43,Airtel,50.00,Expense,Mobile Recharge,Primary Account,R250810.1643.38002e,,Transaction number R250810.1643.38002e to recharge 50 TAKA from 1687500049 is successful and valid till 24/09/25. For best offers dial *0# for minute*4# for data
+2025-08-04 18:38,Airtel,40.00,Expense,Mobile Recharge,Primary Account,R250804.1833.4001f2,,Transaction number R250804.1833.4001f2 to recharge 40 TAKA from 1671258721 is successful and valid till 10/09/25. For best offers dial *0# for minute*4# for data
+2025-07-31 23:51,Airtel,40.00,Expense,Mobile Recharge,Primary Account,R250731.2349.340064,,Transaction number R250731.2349.340064 to recharge 40 TAKA from 1619354290 is successful and valid till 10/09/25. For best offers dial *0# for minute*4# for data
+2025-07-27 20:20,Airtel,30.00,Expense,Mobile Recharge,Primary Account,R250727.2020.34024d,,Transaction number R250727.2020.34024d to recharge 30 TAKA from 1619318732 is successful and valid till 10/09/25. For best offers dial *0# for minute*4# for data
+2025-07-27 16:24,Airtel,50.00,Expense,Mobile Recharge,Primary Account,R250727.1624.37012b,,Transaction number R250727.1624.37012b to recharge 50 TAKA from 1671289006 is successful and valid till 10/09/25. For best offers dial *0# for minute*4# for data
+2025-07-25 22:10,Airtel,50.00,Expense,Mobile Recharge,Primary Account,R250725.2210.510124,,Transaction number R250725.2210.510124 to recharge 50 TAKA from 1687572837 is successful and valid till 08/09/25. For best offers dial *0# for minute*4# for data
+2025-07-22 17:21,Airtel,30.00,Expense,Mobile Recharge,Primary Account,R250722.1719.3901da,,Transaction number R250722.1719.3901da to recharge 30 TAKA from 1687560181 is successful and valid till 21/08/25. For best offers dial *0# for minute*4# for data
+2025-07-22 16:01,Airtel,40.00,Expense,Mobile Recharge,Primary Account,R250722.1601.380138,,Transaction number R250722.1601.380138 to recharge 40 TAKA from 1619354289 is successful and valid till 21/08/25. For best offers dial *0# for minute*4# for data
+2025-07-12 20:17,Airtel,30.00,Expense,Mobile Recharge,Primary Account,R250712.2016.350468,,Transaction number R250712.2016.350468 to recharge 30 TAKA from 1671258721 is successful and valid till 11/08/25. For best offers dial *0# for minute*4# for data
+2025-07-10 08:57,Airtel,40.00,Expense,Mobile Recharge,Primary Account,R250710.0857.350042,,Transaction number R250710.0857.350042 to recharge 40 TAKA from 1612261499 is successful and valid till 09/08/25. For best offers dial *0# for minute*4# for data
+2025-07-04 11:04,Airtel,30.00,Expense,Mobile Recharge,Primary Account,R250704.1009.36010b,,Transaction number R250704.1009.36010b to recharge 30 TAKA from 1612261499 is successful and valid till 06/08/25. For best offers dial *0# for minute*4# for data
+2025-06-29 22:25,Airtel,30.00,Expense,Mobile Recharge,Primary Account,R250629.2225.380168,,Transaction number R250629.2225.380168 to recharge 30 TAKA from 1612261499 is successful and valid till 06/08/25. For best offers dial *0# for minute*4# for data
+2025-06-11 11:03,Airtel,30.00,Expense,Mobile Recharge,Primary Account,R250611.1103.390023,,Transaction number R250611.1103.390023 to recharge 30 TAKA from 1612261499 is successful and valid till 06/08/25. For best offers dial *0# for minute*4# for data
+2025-05-28 09:11,Airtel,30.00,Expense,Mobile Recharge,Primary Account,R250528.0911.39005b,,Transaction number R250528.0911.39005b to recharge 30 TAKA from 1671258721 is successful and valid till 06/08/25. For best offers dial *0# for minute*4# for data
+2025-04-23 10:24,Airtel,50.00,Expense,Mobile Recharge,Primary Account,R250423.1024.37012e,,Transaction number R250423.1024.37012e to recharge 50 TAKA from 1671236819 is successful and valid till 06/08/25. Go MyAirtel: 2GB 38Tk & Go MyRobi: 7GB 76Tk
+2025-04-21 16:11,Airtel,30.00,Expense,Mobile Recharge,Primary Account,R250421.1611.3900ff,,Transaction number R250421.1611.3900ff to recharge 30 TAKA from 1605494784 is successful and valid till 06/08/25. Go MyAirtel: 2GB 38Tk & Go MyRobi: 7GB 76Tk
+2025-04-21 10:56,Airtel,50.00,Expense,Mobile Recharge,Primary Account,R250421.1054.510283,,Transaction number R250421.1054.510283 to recharge 50 TAKA from 1619318732 is successful and valid till 06/08/25. Go MyAirtel: 2GB 38Tk & Go MyRobi: 7GB 76Tk
+2025-01-13 23:38,DPDC,500.00,Expense,Bills & Utilities,Primary Account,CAD9VDR0R1,,Your Pay Bill request of Tk 500.0 is being processed at 13/01/25 11:38PM Fee: Tk 0.0 TrxID: CAD9VDR0R1 Org: DPDC (Prepaid) A/C: 32205988
+2025-01-06 09:35,banks-generic transaction,30.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 0106090631198951. 1513925418 has recharged your account with 30 Taka. 
+2025-01-01 09:20,banks-generic transaction,10.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 0101084936174851. 1513925313 has recharged your account with 10 Taka. 
+2024-12-26 19:11,banks-generic transaction,30.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1226184250102074. 1513925313 has recharged your account with 30 Taka. 
+2024-12-24 19:33,banks-generic transaction,20.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1224190528118494. 1513925418 has recharged your account with 20 Taka. 
+2024-12-23 18:26,banks-generic transaction,30.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1223175810178896. 1513905199 has recharged your account with 30 Taka. 
+2024-12-21 18:03,banks-generic transaction,30.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1221173448155332. 1513925418 has recharged your account with 30 Taka. 
+2024-12-19 19:04,banks-generic transaction,20.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1219183623185609. 1513925418 has recharged your account with 20 Taka. 
+2024-12-17 19:30,banks-generic transaction,20.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1217190219110818. 1513925418 has recharged your account with 20 Taka. 
+2024-12-14 18:01,banks-generic transaction,30.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1214173303100093. 1513925418 has recharged your account with 30 Taka. 
+2024-12-13 17:44,banks-generic transaction,20.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1213171602150686. 1513925418 has recharged your account with 20 Taka. 
+2024-12-12 17:21,banks-generic transaction,20.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1212165357132314. 1513925418 has recharged your account with 20 Taka. 
+2024-12-10 21:31,banks-generic transaction,20.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1210210136136707. 1513925418 has recharged your account with 20 Taka. 
+2024-11-16 17:10,banks-generic transaction,30.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1116164335181353. 1553936735 has recharged your account with 30 Taka. 
+2024-11-12 10:25,banks-generic transaction,20.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1112095853176697. 1513925415 has recharged your account with 20 Taka. 
+2024-11-10 18:09,DPDC,1000.00,Expense,Bills & Utilities,Primary Account,,,"Dear Customer, Tk. 1000 (Details : Energy Cost:957.12,VAT:47.62:Rebate Amount-4.74) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 710.64 as on 2024-11-10.  Thanking You,  DPDC."
+2024-11-10 17:46,banks-generic transaction,30.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1110172006102768. 1553936735 has recharged your account with 30 Taka. 
+2024-11-07 19:30,banks-generic transaction,30.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1107190351101513. 1513925415 has recharged your account with 30 Taka. 
+2024-11-03 18:01,banks-generic transaction,30.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1103173521132953. 1513925415 has recharged your account with 30 Taka. 
+2024-10-28 18:56,banks-generic transaction,10.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1028183050145743. 1513905199 has recharged your account with 10 Taka. 
+2024-10-26 18:38,DPDC,1000.00,Expense,Bills & Utilities,Primary Account,,,"Dear Customer, Tk. 1000 (Details : Energy Cost:957.12,VAT:47.62:Rebate Amount-4.74) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 248.5 as on 2024-10-26.  Thanking You,  DPDC."
+2024-10-26 18:25,banks-generic transaction,30.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 1026175944142741. 1553936735 has recharged your account with 30 Taka. 
+2024-10-26 18:24,nexuspay transaction,1000.00,Income,Income,Primary Account,4894852018,,"Tk1,000.00 received from A/C:018698956877 Fee:Tk0, Your A/C Balance: Tk1,005.00 TxnId:4894852018 Date:26-OCT-24 06:24:03 pm. Download https://bit.ly/nexuspay"
+2024-09-16 18:25,banks-generic transaction,30.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 0916180130160722. 1553983814 has recharged your account with 30 Taka. 
+2024-09-12 11:19,banks-generic transaction,50.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 0912105154158913. 1513925313 has recharged your account with 50 Taka. 
+2024-09-09 21:23,banks-generic transaction,15.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 0909205848187347. 1513905199 has recharged your account with 15 Taka. 
+2024-08-31 22:11,banks-generic transaction,30.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 0831214706180886. 1513905199 has recharged your account with 30 Taka. 
+2024-08-23 19:57,DPDC,500.00,Expense,Bills & Utilities,Primary Account,,,"Dear Customer, Tk. 500 (Details : Energy Cost:478.56,VAT:23.81:Rebate Amount-2.37) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 368.84 as on 2024-08-23.  Thanking You,  DPDC."
+2024-08-06 09:44,banks-generic transaction,15.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 0806092133128116. 1513905199 has recharged your account with 15 Taka. 
+2024-08-03 15:17,banks-generic transaction,105.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 0803145424150554. 1513905199 has recharged your account with 105 Taka. 
+2024-08-01 17:43,banks-generic transaction,50.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 0801172048139701. 1553947096 has recharged your account with 50 Taka. 
+2024-07-29 17:43,banks-generic transaction,100.00,Expense,Mobile Recharge,Primary Account,,,Transaction ID is 0729172125184248. 1553921701 has recharged your account with 100 Taka. 
+2024-07-27 17:51,nexuspay transaction,20.00,Expense,Mobile Recharge,Primary Account,4693043661,,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk585.00 TxnId: 4693043661 Date:27-JUL-24 05:51:46 pm. Pls download https://bit.ly/nexuspay"
+2024-07-06 18:57,DPDC,1000.00,Expense,Bills & Utilities,Primary Account,,,"Dear Customer, Tk. 1000 (Details : Energy Cost:957.12,VAT:47.62:Rebate Amount-4.74) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 922.46 as on 2024-07-06.  Thanking You,  DPDC."
+2024-06-25 18:47,DPDC,500.00,Expense,Bills & Utilities,Primary Account,,,"Dear Customer, Tk. 500 (Details : Energy Cost:478.56,VAT:23.81:Rebate Amount-2.37) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 471.18 as on 2024-06-25.  Thanking You,  DPDC."
+2024-06-01 19:43,DPDC,1000.00,Expense,Bills & Utilities,Primary Account,,,"Dear Customer, Tk. 1000 (Details : Energy Cost:957.12,VAT:47.62:Rebate Amount-4.74) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 952.42 as on 2024-06-01.  Thanking You,  DPDC."
+2024-05-20 17:38,DPDC,500.00,Expense,Bills & Utilities,Primary Account,,,"Dear Customer, Tk. 500 (Details : Energy Cost:478.56,VAT:23.81:Rebate Amount-2.37) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 550.99 as on 2024-05-20.  Thanking You,  DPDC."
+2024-05-02 21:43,DPDC,1000.00,Expense,Bills & Utilities,Primary Account,,,"Dear Customer, Tk. 1000 (Details : Energy Cost:957.12,VAT:47.62:Rebate Amount-4.74) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 949.78 as on 2024-05-02.  Thanking You,  DPDC."
+2024-04-20 18:23,nexuspay transaction,220.00,Expense,Mobile Recharge,Primary Account,4478268013,,"Tk220.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk5.00 TxnId: 4478268013 Date:20-APR-24 06:22:43 pm. Pls download https://bit.ly/nexuspay"
+2024-04-20 18:14,DPDC,500.00,Expense,Bills & Utilities,Primary Account,,,"Dear Customer, Tk. 500 (Details : Energy Cost:478.56,VAT:23.81:Rebate Amount-2.37) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 503.72 as on 2024-04-20.  Thanking You,  DPDC."
+2024-04-06 23:38,DPDC,500.00,Expense,Bills & Utilities,Primary Account,,,"Dear Customer, Tk. 500 (Details : Energy Cost:478.56,VAT:23.81:Rebate Amount-2.37) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 474.34 as on 2024-04-06.  Thanking You,  DPDC."
+2024-03-25 10:16,nexuspay transaction,20.00,Expense,Mobile Recharge,Primary Account,4412463152,,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk25.00 TxnId: 4412463152 Date:25-MAR-24 10:16:20 am. Pls download https://bit.ly/nexuspay"
+2024-03-23 09:38,DPDC,500.00,Expense,Bills & Utilities,Primary Account,,,"Dear Customer, Tk. 500 (Details : Energy Cost:478.56,VAT:23.81:Rebate Amount-2.37) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 319.25 as on 2024-03-23.  Thanking You,  DPDC."
+2024-03-06 12:45,nexuspay transaction,35.00,Expense,Mobile Recharge,Primary Account,4367133939,,"Tk35.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk5.00 TxnId: 4367133939 Date:06-MAR-24 12:45:21 pm. Pls download https://bit.ly/nexuspay"
+2024-03-04 19:00,nexuspay transaction,20.00,Expense,Mobile Recharge,Primary Account,4363593975,,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk40.00 TxnId: 4363593975 Date:04-MAR-24 07:00:44 pm. Pls download https://bit.ly/nexuspay"
+2024-03-04 18:42,DPDC,1950.00,Expense,Bills & Utilities,Primary Account,,,"Dear Customer, Tk. 1950 (Details : Energy Cost:1866.38,VAT:92.86:Rebate Amount-9.24) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 312.85 as on 2024-03-04.  Thanking You,  DPDC."
+2023-10-25 12:10,banks-generic transaction,4490.00,Income,Income,Primary Account,,,"Dear Customer, Tk. 4490.00 has been received as Last installment payment against A/C no. DSQ-H2712, Receipt No. DSQ-C6371 within cash convertible period."
+2023-08-14 18:21,banks-generic transaction,3000.00,Income,Income,Primary Account,,,"Dear Customer, Payment Installment of Tk. 3000.00 has been received against A/C no. DSQ-H2712, Receipt No. DSQ-HC14208."
+2023-07-13 11:45,banks-generic transaction,3000.00,Income,Income,Primary Account,,,"Dear Customer, Payment Installment of Tk. 3000.00 has been received against A/C no. DSQ-H2712, Receipt No. DSQ-HC13832."
+2023-07-11 20:08,banks-generic transaction,11.00,Expense,Other,Primary Account,,,"Dear Guardian, KHADIJA AKTER RUBI was absent 11-Jul-2023. If you are unaware of this, please contact college.
+- Principal, DIC"
+2023-06-14 14:30,banks-generic transaction,3000.00,Income,Income,Primary Account,,,"Dear Customer, Payment Installment of Tk. 3000.00 has been received against A/C no. DSQ-H2712, Receipt No. DSQ-HC13541."
+2023-05-14 19:40,banks-generic transaction,3010.00,Income,Income,Primary Account,,,"Dear Customer, Payment Installment of Tk. 3010.00 has been received against A/C no. DSQ-H2712, Receipt No. DSQ-HC13221."
+2023-03-31 10:49,bkash transaction,1948.50,Income,Income,bKash,ACV90ESPRP,,"You have received remittance via Pubali Bank Limited
+Total amount: Tk 1,948.50
+Principal: Tk 1900.98
+Govt. incentive: Tk 47.52
+TrxID ACV90ESPRP at 31/03/2023 10:49."
+2023-03-22 18:26,bkash transaction,25.00,Expense,Mobile Recharge,bKash,ACM9OZ12LB,,Received Recharge request of Tk 25.00 for 01581047578. Fee Tk 0.00. Balance Tk 575.87. TrxID ACM9OZ12LB at 22/03/2023 18:18. Wait for confirmation.
+2023-03-22 10:22,Cash In (01887121080),500.00,Income,Income,bKash,ACM8OG7X6M,,Cash In Tk 500.00 from 01887121080 successful. Fee Tk 0.00. Balance Tk 600.87. TrxID ACM8OG7X6M at 22/03/2023 10:22. Download App: https://bKa.sh/8app
+2023-02-28 08:50,Received from 01627711686,200.00,Income,Income,bKash,ABS6169WNA,,You have received Tk 200.00 from 01627711686. Fee Tk 0.00. Balance Tk 310.87. TrxID ABS6169WNA at 28/02/2023 08:47
+2023-02-10 23:09,bkash transaction,4117.79,Income,Income,bKash,ABA1GLQA3F,,"You have received remittance via NCC Bank Limited
+Total amount: Tk 4,117.79
+Principal: Tk 4017.36
+Govt. incentive: Tk 100.43
+TrxID ABA1GLQA3F at 10/02/2023 23:09."
+2023-01-30 11:22,Received from 01934229737,50.00,Income,Income,bKash,AAU53UXBQH,,You have received Tk 50.00 from 01934229737. Fee Tk 0.00. Balance Tk 109.08. TrxID AAU53UXBQH at 30/01/2023 11:22
+2023-01-24 19:21,bkash transaction,10.00,Expense,Mobile Recharge,bKash,AAO2VDPQEI,,Received Recharge request of Tk 10.00 for 01581047578. Fee Tk 0.00. Balance Tk 69.08. TrxID AAO2VDPQEI at 24/01/2023 19:21. Wait for confirmation.
+2023-01-23 18:32,Received from 01869977460,1500.00,Income,Income,bKash,AAN0UB6D00,,"You have received Tk 1,500.00 from 01869977460. Fee Tk 0.00. Balance Tk 1,504.98. TrxID AAN0UB6D00 at 23/01/2023 18:32"
+2023-01-05 11:47,Cash In (01830400155),310.00,Income,Income,bKash,AA59CNMHVT,,Cash In Tk 310.00 from 01830400155 successful. Fee Tk 0.00. Balance Tk 340.53. TrxID AA59CNMHVT at 05/01/2023 11:47. Download App: https://bKa.sh/8app
+2023-01-05 11:01,bkash transaction,20.00,Expense,Mobile Recharge,bKash,AA50CLNWZM,,Received Recharge request of Tk 20.00 for 01581047578. Fee Tk 0.00. Balance Tk 30.53. TrxID AA50CLNWZM at 05/01/2023 11:00. Wait for confirmation.
+2023-01-04 22:14,bkash transaction,10.00,Expense,Mobile Recharge,bKash,AA47CEOJJJ,,Received Recharge request of Tk 10.00 for 01581047578. Fee Tk 0.00. Balance Tk 50.53. TrxID AA47CEOJJJ at 04/01/2023 22:14. Wait for confirmation.
+2022-12-29 17:38,Cash In (01830400155),100.00,Income,Income,bKash,9LT16HOVTJ,,Cash In Tk 100.00 from 01830400155 successful. Fee Tk 0.00. Balance Tk 100.53. TrxID 9LT16HOVTJ at 29/12/2022 17:38. Download App: https://bKa.sh/8app
+2022-11-27 14:32,Cash In (01680802110),350.00,Income,Income,bKash,9KR8A5O2O8,,Cash In Tk 350.00 from 01680802110 successful. Fee Tk 0.00. Balance Tk 365.53. TrxID 9KR8A5O2O8 at 27/11/2022 14:32. Download App: https://bKa.sh/8app
+2022-11-19 12:07,01311073292,450.00,Expense,Cash Withdrawal,bKash,9KJ52YRM2X,,Cash Out Tk 450.00 to 01311073292 successful. Fee Tk 8.32. Balance Tk 35.53. TrxID 9KJ52YRM2X at 19/11/2022 12:07. Cash Out from Priyo Agent at 1.49%
+2022-10-26 17:09,Cash In (01970269511),50.00,Income,Income,bKash,9JQ5DONGA9,,Cash In Tk 50.00 from 01970269511 successful. Fee Tk 0.00. Balance Tk 523.97. TrxID 9JQ5DONGA9 at 26/10/2022 17:09. Download App: https://bKa.sh/8app
+2022-10-23 21:14,BEGUM ROKEYA UNIVERSITY RANGPUR-RM32400,505.00,Expense,Other,bKash,9JN5B9W265,,Payment Tk 505.00 to BEGUM ROKEYA UNIVERSITY RANGPUR-RM32400 is successful. Balance Tk 493.97. TrxID 9JN5B9W265 at 23/10/2022 21:14
+2022-10-22 06:00,sonali-bank transaction,500.00,Expense,Other,Primary Account,AB0070833,,"Your fee payment of tk 500.00 is successful. Reg. No: ,RefId: AB0070833 at 22/10/2022 05:58:49 AM"
+2022-10-22 06:00,Sonali Bank Limited-RM4513,507.50,Expense,Other,bKash,9JM99KK9B5,,Payment Tk 507.50 to Sonali Bank Limited-RM4513 is successful. Balance Tk 998.97. TrxID 9JM99KK9B5 at 22/10/2022 06:00
+2022-10-18 21:47,Jagannath University,505.00,Expense,Other,bKash,9JI36WA0IH,,"Payment Tk 505.00 to Jagannath University is successful. Balance Tk 1,506.47. TrxID 9JI36WA0IH at 18/10/2022 21:47"
+2022-10-18 17:36,SSLCOMMERZ,3152.40,Expense,Shopping,bKash,9JI56LJY87,,"Payment Tk 3,152.40 to Software Shop Limited-AG RM4673 is successful. Balance Tk 2,011.47. TrxID 9JI56LJY87 at 18/10/2022 17:36"
+2022-10-18 17:24,Cash In (01970269511),5150.00,Income,Income,bKash,9JI56L0Y5T,,"Cash In Tk 5,150.00 from 01970269511 successful. Fee Tk 0.00. Balance Tk 5,163.87. TrxID 9JI56L0Y5T at 18/10/2022 17:24. Download App: https://bKa.sh/8app"
+2022-10-12 12:13,SSLCOMMERZ,3037.97,Expense,Shopping,bKash,9JC20YTWMU,,"Payment Tk 3,037.97 to Software Shop Limited-AG RM4673 is successful. Balance Tk 13.87. TrxID 9JC20YTWMU at 12/10/2022 12:13"
+2022-10-12 11:52,Cash In (01970269511),3050.00,Income,Income,bKash,9JC10Y1LSR,,"Cash In Tk 3,050.00 from 01970269511 successful. Fee Tk 0.00. Balance Tk 3,051.84. TrxID 9JC10Y1LSR at 12/10/2022 11:52. Download App: https://bKa.sh/8app"
+2022-10-03 14:44,01970269511,7000.00,Expense,Cash Withdrawal,bKash,9J37Q36INV,,"Cash Out Tk 7,000.00 to 01970269511 successful. Fee Tk 129.50. Balance Tk 26.84. TrxID 9J37Q36INV at 03/10/2022 14:44. Cash Out from Priyo Agent at 1.49%"
+2022-09-27 20:56,bkash transaction,7175.00,Income,Income,bKash,9IR4L4XFOM,,"You have received remittance via NCC Bank Limited
+Total amount: Tk 7,175.00
+Principal: Tk 7000.00
+Govt. incentive: Tk 175.00
+TrxID 9IR4L4XFOM at 27/09/2022 20:56."
+2022-09-19 18:35,01813557400,550.00,Expense,Cash Withdrawal,bKash,9IJ4DXI8WK,,Cash Out Tk 550.00 to 01813557400 successful. Fee Tk 10.18. Balance Tk 1.34. TrxID 9IJ4DXI8WK at 19/09/2022 18:35. Cash Out from Priyo Agent at 1.49%
+2022-09-08 12:20,Cash In (01322656996),560.00,Income,Income,bKash,9I843V9SSA,,Cash In Tk 560.00 from 01322656996 successful. Fee Tk 0.00. Balance Tk 561.52. TrxID 9I843V9SSA at 08/09/2022 12:20. Download App: https://bKa.sh/8app
+2022-07-22 09:39,Send Money to 01934229737,380.00,Expense,Transfers,bKash,9GM8T73JFA,,Send Money Tk 380.00 to 01934229737 successful. Ref rayhan. Fee Tk 5.00. Balance Tk 11.52. TrxID 9GM8T73JFA at 22/07/2022 09:39
+2022-07-22 09:35,Cash In (01849422486),200.00,Income,Income,bKash,9GM6T712IE,,Cash In Tk 200.00 from 01849422486 successful. Fee Tk 0.00. Balance Tk 396.52. TrxID 9GM6T712IE at 22/07/2022 09:35. Download App: https://bKa.sh/8app
+2022-07-18 17:54,01970269511,4000.00,Expense,Cash Withdrawal,bKash,9GI8QAT9PO,,"Cash Out Tk 4,000.00 to 01970269511 successful. Fee Tk 74.00. Balance Tk 196.52. TrxID 9GI8QAT9PO at 18/07/2022 17:54. Cash Out from Priyo Agent at 1.49%"
+2022-07-17 12:23,SSLCOMMERZ,600.10,Expense,Shopping,bKash,9GH7P83U0L,,"Payment Tk 600.10 to Software Shop Limited-AG RM4673 is successful. Balance Tk 4,285.52. TrxID 9GH7P83U0L at 17/07/2022 12:23"

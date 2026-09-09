@@ -87,6 +87,56 @@ pub fn classify_safety(body: &str, sender_hint: Option<&str>) -> Option<RejectRe
         return Some(RejectReason::NotATransaction);
     }
 
+    // Bank administrative & logistics notices (not financial movements)
+    if lower.contains("debit card with ref no")
+        || lower.contains("cheque book with ref no")
+        || lower.contains("cheque book request")
+        || lower.contains("debit card request")
+        || lower.contains("uncollected debit card has been destroyed")
+        || lower.contains("please collect your debit card")
+        || lower.contains("yearly loan outstanding certificate")
+        || lower.contains("half-yearly loan outstanding certificate")
+        || lower.contains("sms alert fee has been revised")
+        || lower.contains("due to system upgrade")
+        || lower.contains("due to urgent maintenance on the npsb system")
+        || lower.contains("maintenance on the npsb system")
+        || lower.contains("half yearly deposit a/c(s) statement")
+        || lower.contains("terms and conditions of payroll banking")
+        || lower.contains("welcome to ebl insta banking")
+        || lower.contains("you are now registered on ebl skybanking")
+        || lower.contains("transaction enabled in ebl skybanking")
+        || lower.contains("account in ebl has been created")
+        || lower.contains("agent banking account is active and ready")
+        || (lower.contains("term loan of") && lower.contains("is payable"))
+        || (lower.contains("has been disbursed") && lower.contains("is payable"))
+    {
+        return Some(RejectReason::NotATransaction);
+    }
+
+    // Contact management & Priyo additions (not financial movements)
+    if lower.contains("has been added successfully as a priyo")
+        || lower.contains("as priyo agent number for cash out")
+        || lower.contains("priyo agent number:")
+        || lower.contains("has been added successfully as priyo")
+    {
+        return Some(RejectReason::NotATransaction);
+    }
+
+    // Account KYC, binding, and registration lifecycle notices
+    if lower.contains("thank you for updating your information")
+        || lower.contains("your information is submitted")
+        || lower.contains("unable to proceed your bkash account registration")
+        || lower.contains("welcome! now enjoy the rewarding experience of bkash app")
+        || lower.contains("your account binding request for")
+        || lower.contains("password for your google account")
+        || lower.contains("haj application tracking")
+        || lower.contains("cancellation request for bkash subscription")
+        || (lower.contains("subscription is successfully created")
+            && lower.contains("will be debited on"))
+    {
+        return Some(RejectReason::NotATransaction);
+    }
+
     false_or_none(trimmed)
 }
 
@@ -231,6 +281,7 @@ fn is_non_posted_financial_message(text: &str) -> bool {
                 "min amount due",
                 "payment is due",
                 "payment of",
+                "please pay",
             ]
             .iter()
             .any(|marker| lower.contains(marker))
@@ -240,7 +291,11 @@ fn is_non_posted_financial_message(text: &str) -> bool {
                     || lower.contains(" is due")
                     || lower.contains(" due by")
                     || lower.contains("minimum amount due")
-                    || lower.contains("min amount due"))));
+                    || lower.contains("min amount due")
+                    || lower.contains("through bkash")
+                    || lower.contains("through nagad")
+                    || lower.contains("order id")
+                    || lower.contains("order no"))));
 
     let loan_or_payment_reminder = !has_posted_action
         && (((lower.contains("please deposit") || lower.contains("kindly deposit"))
@@ -248,7 +303,10 @@ fn is_non_posted_financial_message(text: &str) -> bool {
                 || lower.contains("instalment")
                 || lower.contains("loan")
                 || lower.contains("sme")))
-            || lower.contains("kindly ignore if you have already made the deposit"));
+            || lower.contains("kindly ignore if you have already made the deposit")
+            || lower.contains("will be automatically deducted")
+            || lower.contains("will be deducted from your bkash account as loan instalment")
+            || lower.contains("if already repaid, please ignore"));
 
     failed || pending || request_or_reminder || loan_or_payment_reminder
 }
@@ -280,7 +338,7 @@ pub fn is_likely_financial_review(body: &str, sender_hint: Option<&str>) -> bool
         return false;
     }
 
-    // 2. Filter out non-financial apps
+    // 2. Filter out non-financial apps and external services
     let obvious_non_financial = [
         "uber",
         "pathao",
@@ -289,6 +347,8 @@ pub fn is_likely_financial_review(body: &str, sender_hint: Option<&str>) -> bool
         "mercedes-benz",
         "netflix",
         "spotify",
+        "google",
+        "ba-systems",
     ]
     .iter()
     .any(|word| {
@@ -297,6 +357,26 @@ pub fn is_likely_financial_review(body: &str, sender_hint: Option<&str>) -> bool
             && !lower.contains("credited")
     });
     if obvious_non_financial {
+        return false;
+    }
+
+    // 2b. An unparsed candidate for review must have at least an amount/financial indicator or transaction reference ID
+    let has_amount_marker = lower.contains("tk")
+        || lower.contains("bdt")
+        || lower.contains("taka")
+        || lower.contains("amount:")
+        || lower.contains("amount :")
+        || lower.contains("debit")
+        || lower.contains("credit");
+    let has_ref_marker = lower.contains("trxid")
+        || lower.contains("txnid")
+        || lower.contains("trx id")
+        || lower.contains("txn id")
+        || lower.contains("ref no");
+    let has_transaction_marker = lower.contains("financial transaction")
+        || lower.contains("transaction")
+        || (lower.contains("account") && lower.contains("balance"));
+    if !has_amount_marker && !has_ref_marker && !has_transaction_marker {
         return false;
     }
 

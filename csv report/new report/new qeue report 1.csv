@@ -1,0 +1,539 @@
+Date,Sender,Reason,Candidate Amount,Candidate Type,Candidate Party,Reference,Raw SMS
+2026-09-06 12:52,bKashNotice,SMS could not be parsed: NotATransaction,,,,,Bill successfully paid. Biller: DPDC (Prepaid) Amount: Tk 1200.0 TrxID: DI667RCDIY at 06/09/26 12:52PM Get Receipt: https://bka.sh/DI667RCDIY
+2026-09-06 07:04,Cirkle,SMS could not be parsed: NoAmountFound,,,,,"Dear Sir/Madam, your Main Account Balance validity will expire on 09/09/2026. To enjoy uninterrupted service, please recharge."
+2026-09-02 11:58,16216,SMS could not be parsed: NotATransaction,,,,,"Tk1,000.00 trf to Mob:***978 Fee:Tk.00 NetBal:Tk3.95 TxnId:6903815976  Date:02-SEP-26 11:58:14 am. Pls tell recipient to open acc to rcv money."
+2026-09-02 11:17,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,003.95.TxnId:6903714260 Date:02-SEP-26 11:17:23 am. Download https://bit.ly/nexuspay"
+2026-08-08 11:55,16216,SMS could not be parsed: NotATransaction,,,,,"Tk1,000.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:6818559471 Fee: Tk.00 Date:08-AUG-26 11:55:56 am."
+2026-08-08 11:54,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,003.95.TxnId:6818598326 Date:08-AUG-26 11:54:44 am. Download https://bit.ly/nexuspay"
+2026-07-15 10:15,EBL,SMS could not be parsed: NoAmountFound,,,,,"Dear Customer, your Half Yearly Deposit A/C(s) Statement & Balance Confirmation Certificate are sent to your registered e-mail address. Helpline 16230."
+2026-07-11 13:11,16216,Multiple matching accounts,120.00,Expense,,6728015853,"Tk120.00 debited to recharge mobile 01604711175, Your A/C Balance:Tk3.95 TxnId: 6728015853 Date:11-JUL-26 01:11:18 pm. Pls download https://bit.ly/nexuspay"
+2026-07-09 11:20,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,003.95.TxnId:6719419396 Date:09-JUL-26 11:20:36 am. Download https://bit.ly/nexuspay"
+2026-06-30 15:33,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000270046915 . 8801513905199 has recharged your account with 20.00 Taka.
+2026-06-29 01:08,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000269379232 . 8801513925313 has recharged your account with 20.00 Taka.
+2026-06-22 23:22,Telecharge,Multiple matching accounts,15.00,Expense,,,Transaction ID is 000266430199 . 8801513905199 has recharged your account with 15.00 Taka.
+2026-06-07 21:36,16216,SMS could not be parsed: NotATransaction,,,,,Tk950.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:6606104112 Fee: Tk.00 Date:07-JUN-26 09:36:30 pm.
+2026-06-07 21:33,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***302 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,003.95.TxnId:6606087726 Date:07-JUN-26 09:33:45 pm. Download https://bit.ly/nexuspay"
+2026-05-22 14:43,Telecharge,Multiple matching accounts,25.00,Expense,,,Transaction ID is 000251219907 . 8801513905199 has recharged your account with 25.00 Taka.
+2026-05-10 20:06,16216,SMS could not be parsed: NotATransaction,,,,,Tk500.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:6491958323 Fee: Tk.00 Date:10-MAY-26 08:06:27 pm.
+2026-05-10 19:35,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000245798432 . 1513925415 has recharged your account with 20.00 Taka.
+2026-05-10 19:29,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk500.00 Fee: Tk.00, Your A/C Balance: Tk503.95.TxnId:6491632476 Date:10-MAY-26 07:29:27 pm. Download https://bit.ly/nexuspay"
+2026-05-08 12:22,EBL,SMS could not be parsed: NoAmountFound,,,,,"Dear customer, due to system upgrade, ATM, SkyBanking, E-Com, Fund Transfer, POS & QR services will be unavailable on 9 May, 2026 from 2:00AM to 3:00AM."
+2026-05-06 23:02,Telecharge,Multiple matching accounts,15.00,Expense,,,Transaction ID is 000244082105 . 8801513905199 has recharged your account with 15.00 Taka.
+2026-04-17 00:25,Telecharge,Multiple matching accounts,15.00,Expense,,,Transaction ID is 000235095865 . 8801513905199 has recharged your account with 15.00 Taka.
+2026-04-14 11:12,Telecharge,Multiple matching accounts,50.00,Expense,,,Transaction ID is 000233770404 . 8801513926066 has recharged your account with 50.00 Taka.
+2026-04-12 19:30,16216,SMS could not be parsed: NotATransaction,,,,,Tk800.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:6389591048 Fee: Tk.00 Date:12-APR-26 07:30:40 pm.
+2026-04-12 19:24,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk800.00 Fee: Tk.00, Your A/C Balance: Tk803.95.TxnId:6389476752 Date:12-APR-26 07:23:58 pm. Download https://bit.ly/nexuspay"
+2026-03-27 11:12,EBL,SMS could not be parsed: NoAmountFound,,,,,"Dear valued customer,
+Please note that due to urgent maintenance on the NPSB system, services including ATM, POS, QR Code, E-Commerce, and EBL Skybanking will be temporarily unavailable on 28 March 2026 from 12:01 PM to 1:00 PM. We apologize for any inconvenience and appreciate your understanding."
+2026-03-09 13:15,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk950.00 Fee: Tk.00, Your A/C Balance: Tk953.95.TxnId:6253897323 Date:09-MAR-26 01:15:10 pm. Download https://bit.ly/nexuspay"
+2026-03-02 16:52,Telecharge,Multiple matching accounts,10.00,Expense,,,Transaction ID is 000214268907 . 8801513925317 has recharged your account with 10.00 Taka.
+2026-02-28 08:05,Telecharge,Multiple matching accounts,18.00,Expense,,,Transaction ID is 000213166525 . 8801513905199 has recharged your account with 18.00 Taka.
+2026-01-23 09:59,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk100.00 Fee: Tk.00, Your A/C Balance: Tk103.95.TxnId:6100475809 Date:23-JAN-26 09:59:11 am. Download https://bit.ly/nexuspay"
+2026-01-15 18:23,Telecharge,Multiple matching accounts,15.00,Expense,,,Transaction ID is 000194014975 . 1513925418 has recharged your account with 15.00 Taka.
+2026-01-15 10:05,Telecharge,Multiple matching accounts,22.00,Expense,,,Transaction ID is 000193747169 . 8801513905199 has recharged your account with 22.00 Taka.
+2026-01-14 06:48,Telecharge,Multiple matching accounts,15.00,Expense,,,Transaction ID is 000193235244 . 8801513905199 has recharged your account with 15.00 Taka.
+2026-01-12 18:14,EBL,SMS could not be parsed: NoAmountFound,,,,,"Dear Customer, your Yearly Deposit A/C(s) Statement & Balance Confirmation Certificate are sent to your registered e-mail address. Helpline 16230."
+2025-12-25 13:42,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000184141702 . 8801513925313 has recharged your account with 20.00 Taka.
+2025-12-14 21:10,16216,SMS could not be parsed: NotATransaction,,,,,Tk950.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:5989370400 Fee: Tk.00 Date:14-DEC-25 09:10:16 pm.
+2025-12-14 21:02,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,003.95.TxnId:5989362010 Date:14-DEC-25 09:02:48 pm. Download https://bit.ly/nexuspay"
+2025-12-11 13:19,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000177484395 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-11-26 16:38,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000170114324 . 8801513925317 has recharged your account with 20.00 Taka.
+2025-11-26 16:38,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000170114290 . 1513925418 has recharged your account with 20.00 Taka.
+2025-11-18 22:38,Telecharge,Multiple matching accounts,10.00,Expense,,,Transaction ID is 000166155651 . 8801513905199 has recharged your account with 10.00 Taka.
+2025-11-13 20:48,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000163676680 . 8801513925314 has recharged your account with 20.00 Taka.
+2025-11-12 14:35,16216,SMS could not be parsed: NotATransaction,,,,,"Tk3,425.00 paid to Kabi Nazrul Govt. College Id 4422 Bill No 2202122250147 TxnId:5897406540 Fee: Tk41.10 Date:12-NOV-25 02:34:59 pm."
+2025-11-12 14:34,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk100.00 Fee: Tk.00, Your A/C Balance: Tk3,520.05.TxnId:5897462058 Date:12-NOV-25 02:34:16 pm. Download https://bit.ly/nexuspay"
+2025-11-12 14:13,16216,SMS could not be parsed: NotATransaction,,,,,"Tk3,246.00 paid to Kabi Nazrul Govt. College Id 4422 Bill No 2202122250147 TxnId:5897446445 Fee: Tk38.95 Date:12-NOV-25 02:13:35 pm."
+2025-11-12 14:11,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***580 Tk6,500.00 Fee: Tk.00, Your A/C Balance: Tk6,705.00.TxnId:5897394463 Date:12-NOV-25 02:11:29 pm. Download https://bit.ly/nexuspay"
+2025-11-11 17:20,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk300.00 Fee: Tk.00, Your A/C Balance: Tk305.00.TxnId:5894887296 Date:11-NOV-25 05:20:27 pm. Download https://bit.ly/nexuspay"
+2025-11-11 10:22,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000162218177 . 1513925415 has recharged your account with 20.00 Taka.
+2025-11-10 09:17,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000161710178 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-11-05 21:24,16216,SMS could not be parsed: NotATransaction,,,,,Tk900.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:5871695766 Fee: Tk.00 Date:05-NOV-25 09:24:01 pm.
+2025-11-05 21:20,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,005.00.TxnId:5871527105 Date:05-NOV-25 09:20:17 pm. Download https://bit.ly/nexuspay"
+2025-11-01 22:54,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000157988691 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-11-01 20:55,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000157943783 . 8801513905199 has recharged your account with 30.00 Taka.
+2025-10-29 06:48,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000156251370 . 8801553947096 has recharged your account with 20.00 Taka.
+2025-10-29 06:48,16216,Multiple matching accounts,20.00,Expense,,5851375883,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk5.00 TxnId: 5851375883 Date:29-OCT-25 06:48:19 am. Pls download https://bit.ly/nexuspay"
+2025-10-27 20:13,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk100.00 Fee: Tk.00, Your A/C Balance: Tk105.00.TxnId:5847944198 Date:27-OCT-25 08:13:05 pm. Download https://bit.ly/nexuspay"
+2025-10-26 14:54,Telecharge,Multiple matching accounts,10.00,Expense,,,Transaction ID is 000155060907 . 8801513925314 has recharged your account with 10.00 Taka.
+2025-10-18 10:56,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000151196949 . 1513925418 has recharged your account with 20.00 Taka.
+2025-10-15 14:40,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000149842429 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-10-13 12:22,16216,SMS could not be parsed: NotATransaction,,,,,"Tk1,000.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:5809792094 Fee: Tk.00 Date:13-OCT-25 12:22:02 pm."
+2025-10-13 12:21,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,005.00.TxnId:5809791606 Date:13-OCT-25 12:21:34 pm. Download https://bit.ly/nexuspay"
+2025-10-01 23:34,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000143504758 . 8801513926066 has recharged your account with 20.00 Taka.
+2025-10-01 00:01,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000143077089 . 8801513905199 has recharged your account with 30.00 Taka.
+2025-09-29 19:24,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000142489807 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-09-27 21:43,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000141635752 . 8801513926067 has recharged your account with 30.00 Taka.
+2025-09-24 20:26,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000140249087 . 8801513926066 has recharged your account with 20.00 Taka.
+2025-09-23 18:25,Telecharge,Multiple matching accounts,25.00,Expense,,,Transaction ID is 000139724371 . 8801513926067 has recharged your account with 25.00 Taka.
+2025-09-22 22:17,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000139430757 . 8801513926066 has recharged your account with 20.00 Taka.
+2025-09-22 19:03,Telecharge,Multiple matching accounts,16.00,Expense,,,Transaction ID is 000139324036 . 8801513905199 has recharged your account with 16.00 Taka.
+2025-09-20 12:33,bKashNotice,SMS could not be parsed: NotATransaction,,,,,Bill successfully paid. Biller: DPDC (Prepaid) Contact: 01581047578 A/C: 32205988 Amount: Tk 1000.0 Fee: Tk 0.0 TrxID: CIK6JTNI52 at 20/09/25 12:23PM
+2025-09-16 00:01,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000136448115 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-09-15 06:56,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000136032294 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-09-13 18:37,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000135435668 . 8801513926067 has recharged your account with 20.00 Taka.
+2025-09-10 00:20,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000133799617 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-09-07 21:22,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000132821543 . 8801513926066 has recharged your account with 20.00 Taka.
+2025-09-07 09:38,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000132468257 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-09-05 01:00,Telecharge,Multiple matching accounts,25.00,Expense,,,Transaction ID is 000131590674 . 8801553947096 has recharged your account with 25.00 Taka.
+2025-09-05 01:00,16216,Multiple matching accounts,25.00,Expense,,5698407263,"Tk25.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk5.00 TxnId: 5698407263 Date:05-SEP-25 01:00:15 am. Pls download https://bit.ly/nexuspay"
+2025-09-04 14:21,16216,Multiple matching accounts,20.00,Expense,,5696591852,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk30.00 TxnId: 5696591852 Date:04-SEP-25 02:21:19 pm. Pls download https://bit.ly/nexuspay"
+2025-09-04 14:21,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000131306501 . 8801553947096 has recharged your account with 20.00 Taka.
+2025-09-04 14:18,16216,SMS could not be parsed: NotATransaction,,,,,"Tk3,155.00 paid to EDEN MOHILA COLLEGE, DHAKA Id 1873 Bill No 2202324340065 TxnId:5696588967 Fee: Tk Date:04-SEP-25 02:18:07 pm."
+2025-09-04 12:31,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk3,200.00 Fee: Tk.00, Your A/C Balance: Tk3,205.00.TxnId:5696247448 Date:04-SEP-25 12:31:08 pm. Download https://bit.ly/nexuspay"
+2025-09-04 08:31,+8801969926075,Multiple matching accounts,1000.00,Expense,DPDC,,"Dear Customer, Tk. 1000 (Details : Energy Cost:957.12,VAT:47.62:Rebate Amount-4.74) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 489.45 as on 2025-09-04.  Thanking You,  DPDC."
+2025-09-04 00:58,16216,SMS could not be parsed: NotATransaction,,,,,"Tk1,000.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:5695542139 Fee: Tk.00 Date:04-SEP-25 12:58:00 am."
+2025-09-03 10:03,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000130755736 . 1513925415 has recharged your account with 30.00 Taka.
+2025-09-03 09:23,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***302 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,005.00.TxnId:5693557413 Date:03-SEP-25 09:23:37 am. Download https://bit.ly/nexuspay"
+2025-08-28 15:07,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000128271377 . 1553951638 has recharged your account with 30.00 Taka.
+2025-08-27 21:24,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000128023727 . 8801513926067 has recharged your account with 20.00 Taka.
+2025-08-27 15:06,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000127830559 . 8801513926066 has recharged your account with 20.00 Taka.
+2025-08-26 23:25,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000127641160 . 1513925418 has recharged your account with 20.00 Taka.
+2025-08-26 18:24,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000127482574 . 1513925418 has recharged your account with 30.00 Taka.
+2025-08-26 00:38,Telecharge,Multiple matching accounts,12.00,Expense,,,Transaction ID is 000127223463 . 8801513905199 has recharged your account with 12.00 Taka.
+2025-08-24 17:45,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000126588531 . 8801513926067 has recharged your account with 20.00 Taka.
+2025-08-23 10:23,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000125966009 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-08-20 17:27,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000124764285 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-08-20 10:02,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000124578841 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-08-19 23:15,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000124500453 . 1513925418 has recharged your account with 20.00 Taka.
+2025-08-19 12:55,+8801969926075,Multiple matching accounts,985.00,Expense,DPDC,,"Dear Customer, Tk. 985.0 (Details : Energy Cost:942.77,VAT:46.9:Rebate Amount-4.67) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 228.42 as on 2025-08-19.  Thanking You,  DPDC."
+2025-08-19 12:50,bKashNotice,SMS could not be parsed: NotATransaction,,,,,Bill successfully paid. Biller: DPDC (Prepaid) Contact: 01581047578 A/C: 32205988 Amount: Tk 985.0 Fee: Tk 0.0 TrxID: CHJ1MM268L at 19/08/25 12:49PM
+2025-08-19 09:46,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000124111693 . 1513925418 has recharged your account with 30.00 Taka.
+2025-08-18 11:14,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000123709050 . 8801513926067 has recharged your account with 20.00 Taka.
+2025-08-17 17:26,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000123402126 . 8801513926066 has recharged your account with 30.00 Taka.
+2025-08-16 20:13,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000123062720 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-08-15 18:41,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000122580855 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-08-14 17:22,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000122131433 . 8801513905199 has recharged your account with 30.00 Taka.
+2025-08-13 19:06,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000121742455 . 1513925418 has recharged your account with 20.00 Taka.
+2025-08-12 14:13,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000121191487 . 8801513926066 has recharged your account with 20.00 Taka.
+2025-08-09 15:10,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000119917108 . 1553951638 has recharged your account with 30.00 Taka.
+2025-08-07 12:19,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000119023223 . 1553951638 has recharged your account with 30.00 Taka.
+2025-08-06 21:54,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000118856778 . 8801513905199 has recharged your account with 30.00 Taka.
+2025-08-06 15:16,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000118650151 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-08-05 22:43,Telecharge,Multiple matching accounts,10.00,Expense,,,Transaction ID is 000118439588 . 8801513905199 has recharged your account with 10.00 Taka.
+2025-08-05 21:47,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000118417284 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-08-05 17:33,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000118264165 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-08-04 18:32,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000117878204 . 1513925418 has recharged your account with 20.00 Taka.
+2025-08-04 15:07,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000117790767 . 8801513926066 has recharged your account with 30.00 Taka.
+2025-08-03 19:13,Telecharge,Multiple matching accounts,35.00,Expense,,,Transaction ID is 000117478347 . 1513925418 has recharged your account with 35.00 Taka.
+2025-08-03 07:48,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000117216543 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-08-02 21:14,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000117141774 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-08-02 15:06,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000116963425 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-08-02 13:46,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000116939162 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-08-02 09:59,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000116846750 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-08-01 23:18,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000116782866 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-08-01 22:50,Telecharge,Multiple matching accounts,10.00,Expense,,,Transaction ID is 000116777521 . 8801513905199 has recharged your account with 10.00 Taka.
+2025-08-01 11:25,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000116504084 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-07-31 14:43,Telecharge,Multiple matching accounts,10.00,Expense,,,Transaction ID is 000116170705 . 8801513905199 has recharged your account with 10.00 Taka.
+2025-07-30 17:30,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000115812469 . 8801513926067 has recharged your account with 20.00 Taka.
+2025-07-30 09:52,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000115642074 . 1513925418 has recharged your account with 30.00 Taka.
+2025-07-29 11:24,Telecharge,Multiple matching accounts,50.00,Expense,,,Transaction ID is 000115286073 . 8801513905199 has recharged your account with 50.00 Taka.
+2025-07-29 09:32,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000115240388 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-07-28 23:08,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000115182724 . 8801513926066 has recharged your account with 30.00 Taka.
+2025-07-23 17:30,Telecharge,Multiple matching accounts,11.00,Expense,,,Transaction ID is 000113010104 . 8801513905199 has recharged your account with 11.00 Taka.
+2025-07-22 16:03,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000112571644 . 8801513905199 has recharged your account with 30.00 Taka.
+2025-07-21 19:34,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000112255486 . 1513925418 has recharged your account with 30.00 Taka.
+2025-07-20 20:56,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk50.00 Fee: Tk.00, Your A/C Balance: Tk55.00.TxnId:5579904260 Date:20-JUL-25 08:56:05 pm. Download https://bit.ly/nexuspay"
+2025-07-20 10:09,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000111620612 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-07-16 23:21,Telecharge,Multiple matching accounts,10.00,Expense,,,Transaction ID is 000110422368 . 8801513905199 has recharged your account with 10.00 Taka.
+2025-07-16 09:14,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000110021917 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-07-15 12:26,16216,Multiple matching accounts,30.00,Expense,,5566936856,"Tk30.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk5.00 TxnId: 5566936856 Date:15-JUL-25 12:25:47 pm. Pls download https://bit.ly/nexuspay"
+2025-07-15 12:26,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000109645645 . 8801553947096 has recharged your account with 30.00 Taka.
+2025-07-14 14:31,16216,Multiple matching accounts,20.00,Expense,,5564767999,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk35.00 TxnId: 5564767999 Date:14-JUL-25 02:30:42 pm. Pls download https://bit.ly/nexuspay"
+2025-07-14 14:31,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000109230905 . 8801553947096 has recharged your account with 20.00 Taka.
+2025-07-13 21:50,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk100.00 Fee: Tk.00, Your A/C Balance: Tk105.00.TxnId:5563425411 Date:13-JUL-25 09:50:18 pm. Download https://bit.ly/nexuspay"
+2025-07-13 18:56,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000108889944 . 1513925418 has recharged your account with 20.00 Taka.
+2025-07-13 16:39,Telecharge,Multiple matching accounts,130.00,Expense,,,Transaction ID is 000108812954 . 1513925415 has recharged your account with 130.00 Taka.
+2025-07-13 13:48,Telecharge,Multiple matching accounts,180.00,Expense,,,Transaction ID is 000108749393 . 8801553972530 has recharged your account with 180.00 Taka.
+2025-07-13 12:29,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000108711268 . 1513925415 has recharged your account with 30.00 Taka.
+2025-07-13 10:21,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000108608455 . 1513925418 has recharged your account with 20.00 Taka.
+2025-07-11 22:09,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000107986066 . 8801513905199 has recharged your account with 20.00 Taka.
+2025-07-11 16:31,Telecharge,Multiple matching accounts,15.00,Expense,,,Transaction ID is 000107762199 . 8801513905199 has recharged your account with 15.00 Taka.
+2025-07-10 18:00,+8801969926075,Multiple matching accounts,1500.00,Expense,DPDC,,"Dear Customer, Tk. 1500 (Details : Energy Cost:1435.68,VAT:71.43:Rebate Amount-7.11) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 481.63 as on 2025-07-10.  Thanking You,  DPDC."
+2025-07-10 18:00,16216,SMS could not be parsed: NotATransaction,,,,,"Tk1,500.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:5553195904 Fee: Tk.00 Date:10-JUL-25 06:00:17 pm."
+2025-07-10 17:55,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk1,500.00 Fee: Tk.00, Your A/C Balance: Tk1,505.00.TxnId:5553192157 Date:10-JUL-25 05:55:12 pm. Download https://bit.ly/nexuspay"
+2025-07-10 08:58,Telecharge,Multiple matching accounts,10.00,Expense,,,Transaction ID is 000107085508 . 8801553947096 has recharged your account with 10.00 Taka.
+2025-07-10 08:58,16216,Multiple matching accounts,10.00,Expense,,5551120271,"Tk10.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk5.00 TxnId: 5551120271 Date:10-JUL-25 08:58:11 am. Pls download https://bit.ly/nexuspay"
+2025-07-10 08:57,16216,Multiple matching accounts,40.00,Expense,,5551119999,"Tk40.00 debited to recharge mobile 01604711175, Your A/C Balance:Tk15.00 TxnId: 5551119999 Date:10-JUL-25 08:57:10 am. Pls download https://bit.ly/nexuspay"
+2025-07-08 20:46,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk100.00 Fee: Tk.00, Your A/C Balance: Tk105.00.TxnId:5546052721 Date:08-JUL-25 08:46:36 pm. Download https://bit.ly/nexuspay"
+2025-07-07 17:29,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000105921747 . 1513925418 has recharged your account with 30.00 Taka.
+2025-07-06 18:53,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000105532138 . 1513925415 has recharged your account with 30.00 Taka.
+2025-07-06 12:59,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000105399667 . 1513925418 has recharged your account with 20.00 Taka.
+2025-07-04 10:09,16216,Multiple matching accounts,30.00,Expense,,5532820906,"Tk30.00 debited to recharge mobile 01604711175, Your A/C Balance:Tk55.00 TxnId: 5532820906 Date:04-JUL-25 10:09:25 am. Pls download https://bit.ly/nexuspay"
+2025-07-04 10:08,16216,Multiple matching accounts,20.00,Expense,,5532875105,"Tk20.00 debited to recharge mobile 01624748290, Your A/C Balance:Tk85.00 TxnId: 5532875105 Date:04-JUL-25 10:08:55 am. Pls download https://bit.ly/nexuspay"
+2025-07-04 10:07,16216,Multiple matching accounts,20.00,Expense,,5532873924,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk105.00 TxnId: 5532873924 Date:04-JUL-25 10:07:10 am. Pls download https://bit.ly/nexuspay"
+2025-07-04 10:07,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000104508979 . 8801553947096 has recharged your account with 20.00 Taka.
+2025-07-03 19:15,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000104298348 . 1513925418 has recharged your account with 30.00 Taka.
+2025-07-02 19:19,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000103842639 . 1513925418 has recharged your account with 20.00 Taka.
+2025-06-29 22:25,16216,Multiple matching accounts,30.00,Expense,,5522380263,"Tk30.00 debited to recharge mobile 01604711175, Your A/C Balance:Tk5.00 TxnId: 5522380263 Date:29-JUN-25 10:25:50 pm. Pls download https://bit.ly/nexuspay"
+2025-06-29 22:25,Telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 000102607758 . 8801553947096 has recharged your account with 20.00 Taka.
+2025-06-29 22:25,16216,Multiple matching accounts,20.00,Expense,,5522285550,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk35.00 TxnId: 5522285550 Date:29-JUN-25 10:25:31 pm. Pls download https://bit.ly/nexuspay"
+2025-06-29 22:22,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk100.00 Fee: Tk.00, Your A/C Balance: Tk105.00.TxnId:5522283435 Date:29-JUN-25 10:22:45 pm. Download https://bit.ly/nexuspay"
+2025-06-26 10:58,Telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 000100976434 . 1513925418 has recharged your account with 30.00 Taka.
+2025-06-22 21:30,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0622205341161668. 1513925418 has recharged your account with 20 Taka. 
+2025-06-17 20:34,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0617194625188843. 1513925418 has recharged your account with 20 Taka. 
+2025-06-16 20:33,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0616195700113491. 1513925415 has recharged your account with 20 Taka. 
+2025-06-15 09:43,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0615090752114061. 1513905199 has recharged your account with 20 Taka. 
+2025-06-11 11:03,16216,Multiple matching accounts,30.00,Expense,,5477550802,"Tk30.00 debited to recharge mobile 01604711175, Your A/C Balance:Tk5.00 TxnId: 5477550802 Date:11-JUN-25 11:03:04 am. Pls download https://bit.ly/nexuspay"
+2025-06-11 11:01,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0611102552195372. 1553947096 has recharged your account with 20 Taka. 
+2025-06-11 11:01,16216,Multiple matching accounts,20.00,Expense,,5477329021,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk35.00 TxnId: 5477329021 Date:11-JUN-25 11:01:31 am. Pls download https://bit.ly/nexuspay"
+2025-06-11 10:45,+8801969926075,Multiple matching accounts,500.00,Expense,DPDC,,"Dear Customer, Tk. 500 (Details : Energy Cost:478.56,VAT:23.81:Rebate Amount-2.37) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 371.23 as on 2025-06-11.  Thanking You,  DPDC."
+2025-06-11 10:44,16216,SMS could not be parsed: NotATransaction,,,,,Tk500.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:5477321842 Fee: Tk.00 Date:11-JUN-25 10:44:55 am.
+2025-06-11 10:36,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***302 Tk600.00 Fee: Tk.00, Your A/C Balance: Tk605.00.TxnId:5477513622 Date:11-JUN-25 10:36:31 am. Download https://bit.ly/nexuspay"
+2025-06-08 10:01,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0608091116177208. 1513925316 has recharged your account with 30 Taka. 
+2025-06-06 13:16,telecharge,Multiple matching accounts,40.00,Expense,,,Transaction ID is 0606120214195649. 1513925317 has recharged your account with 40 Taka. 
+2025-06-04 23:34,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0604225838199306. 1513925418 has recharged your account with 30 Taka. 
+2025-06-03 09:26,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0603085027103512. 1513925418 has recharged your account with 30 Taka. 
+2025-06-01 13:46,telecharge,Multiple matching accounts,100.00,Expense,,,Transaction ID is 0601131104159137. 1553972530 has recharged your account with 100 Taka. 
+2025-05-30 16:06,telecharge,Multiple matching accounts,100.00,Expense,,,Transaction ID is 0530153040107748. 1553972530 has recharged your account with 100 Taka. 
+2025-05-29 21:08,telecharge,Multiple matching accounts,40.00,Expense,,,Transaction ID is 0529203241146458. 1553972530 has recharged your account with 40 Taka. 
+2025-05-29 20:22,telecharge,Multiple matching accounts,10.00,Expense,,,Transaction ID is 0529194653136304. 1513925418 has recharged your account with 10 Taka. 
+2025-05-29 10:17,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0529094210108649. 1513925418 has recharged your account with 20 Taka. 
+2025-05-28 09:10,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0528083535124442. 1513925418 has recharged your account with 20 Taka. 
+2025-05-26 21:52,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0526211702144371. 1513925418 has recharged your account with 30 Taka. 
+2025-05-25 19:28,+8801969926075,Multiple matching accounts,500.00,Expense,DPDC,,"Dear Customer, Tk. 500 (Details : Energy Cost:478.56,VAT:23.81:Rebate Amount-2.37) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 358.24 as on 2025-05-25.  Thanking You,  DPDC."
+2025-05-25 19:28,16216,SMS could not be parsed: NotATransaction,,,,,Tk500.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:5425925109 Fee: Tk.00 Date:25-MAY-25 07:28:28 pm.
+2025-05-25 19:22,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk500.00 Fee: Tk.00, Your A/C Balance: Tk505.00.TxnId:5425989808 Date:25-MAY-25 07:22:23 pm. Download https://bit.ly/nexuspay"
+2025-05-25 08:41,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0525080615159689. 1513925418 has recharged your account with 30 Taka. 
+2025-05-19 13:49,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0519131427117407. 1553917720 has recharged your account with 30 Taka. 
+2025-05-18 21:38,16216,Multiple matching accounts,20.00,Expense,,5407273371,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk5.00 TxnId: 5407273371 Date:18-MAY-25 09:38:34 pm. Pls download https://bit.ly/nexuspay"
+2025-05-18 21:38,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0518210357178592. 1553947096 has recharged your account with 20 Taka. 
+2025-05-18 21:06,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0518203205157822. 1553947096 has recharged your account with 20 Taka. 
+2025-05-18 21:06,16216,Multiple matching accounts,20.00,Expense,,5407335621,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk25.00 TxnId: 5407335621 Date:18-MAY-25 09:06:41 pm. Pls download https://bit.ly/nexuspay"
+2025-05-18 00:49,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0518001503132663. 1553947096 has recharged your account with 20 Taka. 
+2025-05-18 00:49,16216,Multiple matching accounts,20.00,Expense,,5405299985,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk45.00 TxnId: 5405299985 Date:18-MAY-25 12:49:37 am. Pls download https://bit.ly/nexuspay"
+2025-05-17 21:54,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0517211902183498. 1553947096 has recharged your account with 20 Taka. 
+2025-05-17 21:53,16216,Multiple matching accounts,20.00,Expense,,5405039891,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk65.00 TxnId: 5405039891 Date:17-MAY-25 09:53:36 pm. Pls download https://bit.ly/nexuspay"
+2025-05-16 22:27,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0516215058136771. 1553947096 has recharged your account with 20 Taka. 
+2025-05-16 22:25,16216,Multiple matching accounts,20.00,Expense,,5402986638,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk85.00 TxnId: 5402986638 Date:16-MAY-25 10:25:29 pm. Pls download https://bit.ly/nexuspay"
+2025-05-16 22:25,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk100.00 Fee: Tk.00, Your A/C Balance: Tk105.00.TxnId:5402952275 Date:16-MAY-25 10:24:58 pm. Download https://bit.ly/nexuspay"
+2025-05-16 19:02,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0516182810165329. 1513925418 has recharged your account with 20 Taka. 
+2025-05-15 10:44,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0515100944191922. 1513925418 has recharged your account with 20 Taka. 
+2025-05-14 17:35,16216,Multiple matching accounts,20.00,Expense,,5397193330,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk5.00 TxnId: 5397193330 Date:14-MAY-25 05:34:55 pm. Pls download https://bit.ly/nexuspay"
+2025-05-14 17:34,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0514170030102661. 1553947096 has recharged your account with 20 Taka. 
+2025-05-13 21:16,16216,Multiple matching accounts,20.00,Expense,,5395334021,"Tk20.00 debited to recharge mobile 01974627067, Your A/C Balance:Tk25.00 TxnId: 5395334021 Date:13-MAY-25 09:16:18 pm. Pls download https://bit.ly/nexuspay"
+2025-05-12 20:04,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0512192922121021. 1553947096 has recharged your account with 20 Taka. 
+2025-05-12 20:03,16216,Multiple matching accounts,20.00,Expense,,5392165841,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk45.00 TxnId: 5392165841 Date:12-MAY-25 08:03:42 pm. Pls download https://bit.ly/nexuspay"
+2025-05-11 23:03,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0511222832149552. 1553947096 has recharged your account with 20 Taka. 
+2025-05-11 23:02,16216,Multiple matching accounts,20.00,Expense,,5389808185,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk65.00 TxnId: 5389808185 Date:11-MAY-25 11:02:50 pm. Pls download https://bit.ly/nexuspay"
+2025-05-11 21:53,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0511211932156159. 1553947096 has recharged your account with 20 Taka. 
+2025-05-11 21:53,16216,Multiple matching accounts,20.00,Expense,,5389634266,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk85.00 TxnId: 5389634266 Date:11-MAY-25 09:53:50 pm. Pls download https://bit.ly/nexuspay"
+2025-05-11 20:25,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk100.00 Fee: Tk.00, Your A/C Balance: Tk105.00.TxnId:5389318014 Date:11-MAY-25 08:25:17 pm. Download https://bit.ly/nexuspay"
+2025-05-10 11:52,telecharge,Multiple matching accounts,50.00,Expense,,,Transaction ID is 0510111820183226. 1513925415 has recharged your account with 50 Taka. 
+2025-05-10 09:54,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0510091958193564. 1513925418 has recharged your account with 20 Taka. 
+2025-05-09 23:32,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0509225753132961. 1513925418 has recharged your account with 30 Taka. 
+2025-05-09 09:02,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0509082817108631. 1553936735 has recharged your account with 30 Taka. 
+2025-05-08 13:21,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0508124647137153. 1513925415 has recharged your account with 20 Taka. 
+2025-05-08 12:21,+8801969926075,Multiple matching accounts,1000.00,Expense,DPDC,,"Dear Customer, Tk. 1000 (Details : Energy Cost:957.12,VAT:47.62:Rebate Amount-4.74) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 581.75 as on 2025-05-08.  Thanking You,  DPDC."
+2025-05-08 12:21,16216,SMS could not be parsed: NotATransaction,,,,,"Tk1,000.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:5377390354 Fee: Tk.00 Date:08-MAY-25 12:21:02 pm."
+2025-05-08 12:19,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,005.00.TxnId:5377500799 Date:08-MAY-25 12:19:49 pm. Download https://bit.ly/nexuspay"
+2025-05-04 21:46,telecharge,Multiple matching accounts,120.00,Expense,,,Transaction ID is 0504211212162807. 1553983814 has recharged your account with 120 Taka. 
+2025-05-04 13:33,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0504125855155547. 1513925418 has recharged your account with 30 Taka. 
+2025-05-03 19:20,16216,Multiple matching accounts,20.00,Expense,,5364680642,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk5.00 TxnId: 5364680642 Date:03-MAY-25 07:19:41 pm. Pls download https://bit.ly/nexuspay"
+2025-05-03 19:20,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0503184546178197. 1553947096 has recharged your account with 20 Taka. 
+2025-05-03 16:13,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0503153920179798. 1553947096 has recharged your account with 20 Taka. 
+2025-05-03 16:13,16216,Multiple matching accounts,20.00,Expense,,5364068340,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk25.00 TxnId: 5364068340 Date:03-MAY-25 04:13:15 pm. Pls download https://bit.ly/nexuspay"
+2025-05-02 21:53,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0502210551161042. 1553947096 has recharged your account with 20 Taka. 
+2025-05-02 21:39,16216,Multiple matching accounts,20.00,Expense,,5363053099,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk45.00 TxnId: 5363053099 Date:02-MAY-25 09:39:44 pm. Pls download https://bit.ly/nexuspay"
+2025-05-02 17:28,16216,Multiple matching accounts,20.00,Expense,,5362732763,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk65.00 TxnId: 5362732763 Date:02-MAY-25 05:28:13 pm. Pls download https://bit.ly/nexuspay"
+2025-05-02 17:28,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0502165421190488. 1553947096 has recharged your account with 20 Taka. 
+2025-05-02 16:47,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0502161257121316. 1553947096 has recharged your account with 20 Taka. 
+2025-05-02 16:47,16216,Multiple matching accounts,20.00,Expense,,5362422828,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk85.00 TxnId: 5362422828 Date:02-MAY-25 04:46:49 pm. Pls download https://bit.ly/nexuspay"
+2025-05-01 22:03,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0501212904113038. 1553947096 has recharged your account with 30 Taka. 
+2025-05-01 22:03,16216,Multiple matching accounts,30.00,Expense,,5361595084,"Tk30.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk105.00 TxnId: 5361595084 Date:01-MAY-25 10:02:55 pm. Pls download https://bit.ly/nexuspay"
+2025-05-01 18:54,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0501182030189949. 1553947096 has recharged your account with 20 Taka. 
+2025-05-01 18:54,16216,Multiple matching accounts,20.00,Expense,,5361093429,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk135.00 TxnId: 5361093429 Date:01-MAY-25 06:54:20 pm. Pls download https://bit.ly/nexuspay"
+2025-05-01 00:03,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0430232904187431. 1553947096 has recharged your account with 20 Taka. 
+2025-05-01 00:02,16216,Multiple matching accounts,20.00,Expense,,5359622262,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk155.00 TxnId: 5359622262 Date:01-MAY-25 12:02:53 am. Pls download https://bit.ly/nexuspay"
+2025-04-30 21:52,16216,Multiple matching accounts,30.00,Expense,,5359439097,"Tk30.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk175.00 TxnId: 5359439097 Date:30-APR-25 09:51:45 pm. Pls download https://bit.ly/nexuspay"
+2025-04-30 21:52,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0430211757173697. 1553947096 has recharged your account with 30 Taka. 
+2025-04-30 20:28,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk200.00 Fee: Tk.00, Your A/C Balance: Tk205.00.TxnId:5359113212 Date:30-APR-25 08:28:44 pm. Download https://bit.ly/nexuspay"
+2025-04-30 16:31,16216,Multiple matching accounts,30.00,Expense,,5358382966,"Tk30.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk5.00 TxnId: 5358382966 Date:30-APR-25 04:31:00 pm. Pls download https://bit.ly/nexuspay"
+2025-04-30 16:31,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0430155712142877. 1553947096 has recharged your account with 30 Taka. 
+2025-04-29 20:35,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0429200054180948. 1513925418 has recharged your account with 30 Taka. 
+2025-04-29 17:36,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0429170221192471. 1513925418 has recharged your account with 20 Taka. 
+2025-04-28 18:30,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0428175608140042. 1513925418 has recharged your account with 30 Taka. 
+2025-04-26 13:16,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0426124213198369. 1513925418 has recharged your account with 30 Taka. 
+2025-04-25 11:59,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0425112609131017. 1553983814 has recharged your account with 20 Taka. 
+2025-04-24 11:20,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0424104632116398. 1513925418 has recharged your account with 30 Taka. 
+2025-04-19 22:22,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0419214828167196. 1513925418 has recharged your account with 30 Taka. 
+2025-04-19 19:57,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0419192405105708. 1553951638 has recharged your account with 20 Taka. 
+2025-04-18 23:20,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0418224659178668. 1513925418 has recharged your account with 30 Taka. 
+2025-04-17 14:48,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0417141405103426. 1513925418 has recharged your account with 30 Taka. 
+2025-04-16 08:38,telecharge,Multiple matching accounts,50.00,Expense,,,Transaction ID is 0416080320156507. 1513925317 has recharged your account with 50 Taka. 
+2025-04-15 14:51,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0415141833134281. 1513925415 has recharged your account with 30 Taka. 
+2025-04-14 11:00,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0414102737186133. 1513925418 has recharged your account with 30 Taka. 
+2025-04-13 19:42,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0413190739151786. 1513925418 has recharged your account with 20 Taka. 
+2025-04-12 21:35,telecharge,Multiple matching accounts,10.00,Expense,,,Transaction ID is 0412210159163186. 1513925418 has recharged your account with 10 Taka. 
+2025-04-12 20:38,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0412200531153127. 1513925418 has recharged your account with 30 Taka. 
+2025-04-12 15:18,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0412144504139987. 1553951638 has recharged your account with 30 Taka. 
+2025-04-10 18:21,telecharge,Multiple matching accounts,15.00,Expense,,,Transaction ID is 0410174817157693. 1513925418 has recharged your account with 15 Taka. 
+2025-04-10 18:20,telecharge,Multiple matching accounts,10.00,Expense,,,Transaction ID is 0410174748157378. 1513925418 has recharged your account with 10 Taka. 
+2025-04-09 08:31,+8801969926075,Multiple matching accounts,900.00,Expense,DPDC,,"Dear Customer, Tk. 900 (Details : Energy Cost:861.4,VAT:42.86:Rebate Amount-4.26) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 692.71 as on 2025-04-09.  Thanking You,  DPDC."
+2025-04-09 00:31,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0408235852162624. 1553947096 has recharged your account with 20 Taka. 
+2025-04-09 00:31,16216,Multiple matching accounts,20.00,Expense,,5304662023,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk35.00 TxnId: 5304662023 Date:09-APR-25 12:31:40 am. Pls download https://bit.ly/nexuspay"
+2025-04-09 00:29,16216,SMS could not be parsed: NotATransaction,,,,,Tk900.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:5304661727 Fee: Tk.00 Date:09-APR-25 12:29:16 am.
+2025-04-08 23:21,16216,Multiple matching accounts,30.00,Expense,,5304618977,"Tk30.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk955.00 TxnId: 5304618977 Date:08-APR-25 11:20:44 pm. Pls download https://bit.ly/nexuspay"
+2025-04-08 23:21,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0408224756108302. 1553947096 has recharged your account with 30 Taka. 
+2025-04-08 22:50,16216,Multiple matching accounts,20.00,Expense,,5304571534,"Tk20.00 debited to recharge mobile 01581047578, Your A/C Balance:Tk985.00 TxnId: 5304571534 Date:08-APR-25 10:49:35 pm. Pls download https://bit.ly/nexuspay"
+2025-04-08 22:49,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0408221647138054. 1553947096 has recharged your account with 20 Taka. 
+2025-04-08 21:59,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,005.00.TxnId:5304499157 Date:08-APR-25 09:59:50 pm. Download https://bit.ly/nexuspay"
+2025-04-08 21:58,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0408212508139256. 1513925418 has recharged your account with 20 Taka. 
+2025-04-06 12:58,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0406122515151198. 1513925415 has recharged your account with 30 Taka. 
+2025-04-05 09:37,telecharge,Multiple matching accounts,50.00,Expense,,,Transaction ID is 0405090425116678. 1513925313 has recharged your account with 50 Taka. 
+2025-04-04 14:55,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0404142213170528. 1513925415 has recharged your account with 30 Taka. 
+2025-04-04 09:42,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0404090905145042. 1513905199 has recharged your account with 20 Taka. 
+2025-04-02 23:34,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0402230115121622. 1513905199 has recharged your account with 20 Taka. 
+2025-04-02 17:40,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0402170725170874. 1513905199 has recharged your account with 20 Taka. 
+2025-04-02 15:05,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0402143238168667. 1553951638 has recharged your account with 20 Taka. 
+2025-04-01 21:34,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0401210151151458. 1553951638 has recharged your account with 30 Taka. 
+2025-04-01 08:55,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0401082217145261. 1553980961 has recharged your account with 30 Taka. 
+2025-03-31 22:06,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0331213010124213. 1553972530 has recharged your account with 30 Taka. 
+2025-03-30 22:02,telecharge,Multiple matching accounts,10.00,Expense,,,Transaction ID is 0330212940106586. 1513905199 has recharged your account with 10 Taka. 
+2025-03-29 22:41,telecharge,Multiple matching accounts,35.00,Expense,,,Transaction ID is 0329220831136606. 1513905199 has recharged your account with 35 Taka. 
+2025-03-29 15:08,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0329143536153844. 1553983814 has recharged your account with 30 Taka. 
+2025-03-28 15:05,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0328143316110508. 1553951638 has recharged your account with 20 Taka. 
+2025-03-27 17:54,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0327172201114008. 1553951638 has recharged your account with 30 Taka. 
+2025-03-27 09:00,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0327082653127103. 1513925418 has recharged your account with 20 Taka. 
+2025-03-25 23:04,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0325223146114172. 1553972530 has recharged your account with 30 Taka. 
+2025-03-24 18:56,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0324182403154484. 1513925418 has recharged your account with 20 Taka. 
+2025-03-23 11:35,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0323110311156462. 1513925418 has recharged your account with 20 Taka. 
+2025-03-22 16:03,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0322153028121119. 1513925418 has recharged your account with 20 Taka. 
+2025-03-21 18:52,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0321181955144952. 1513925418 has recharged your account with 30 Taka. 
+2025-03-20 19:29,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0320185742141834. 1513925418 has recharged your account with 20 Taka. 
+2025-03-19 20:06,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0319193431170102. 1513925418 has recharged your account with 20 Taka. 
+2025-03-19 17:41,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0319170926169282. 1513925418 has recharged your account with 20 Taka. 
+2025-03-17 22:27,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0317215511123909. 1513925418 has recharged your account with 20 Taka. 
+2025-03-16 19:24,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0316185228121738. 1513925418 has recharged your account with 20 Taka. 
+2025-03-15 15:02,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0315143032188021. 1553951638 has recharged your account with 20 Taka. 
+2025-03-13 18:40,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0313180904132087. 1553951638 has recharged your account with 30 Taka. 
+2025-03-12 23:20,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0312224857191237. 1513925418 has recharged your account with 20 Taka. 
+2025-03-10 11:03,+8801969926075,Multiple matching accounts,1000.00,Expense,DPDC,,"Dear Customer, Tk. 1000 (Details : Energy Cost:957.12,VAT:47.62:Rebate Amount-4.74) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 743.02 as on 2025-03-10.  Thanking You,  DPDC."
+2025-03-10 11:03,16216,SMS could not be parsed: NotATransaction,,,,,"Tk1,000.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:5222565632 Fee: Tk.00 Date:10-MAR-25 11:03:16 am."
+2025-03-10 11:00,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***106 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,005.00.TxnId:5222634418 Date:10-MAR-25 11:00:49 am. Download https://bit.ly/nexuspay"
+2025-03-09 09:52,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0309092047122807. 1513925418 has recharged your account with 30 Taka. 
+2025-03-08 20:05,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0308193351143547. 1513925317 has recharged your account with 20 Taka. 
+2025-03-05 18:49,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0305181758176839. 1513925418 has recharged your account with 20 Taka. 
+2025-03-01 18:42,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0301181051142906. 1513925418 has recharged your account with 30 Taka. 
+2025-02-27 16:00,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0227152901124346. 1513925415 has recharged your account with 30 Taka. 
+2025-02-26 18:34,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0226180323104371. 1513925415 has recharged your account with 20 Taka. 
+2025-02-23 18:23,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0223175210165666. 1553983814 has recharged your account with 20 Taka. 
+2025-02-22 23:06,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0222223609128227. 1513925316 has recharged your account with 20 Taka. 
+2025-02-21 10:06,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0221093515167543. 1513925418 has recharged your account with 20 Taka. 
+2025-02-20 23:11,telecharge,Multiple matching accounts,25.00,Expense,,,Transaction ID is 0220224058113719. 1553951642 has recharged your account with 25 Taka. 
+2025-02-18 23:58,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0218232728133992. 1513925418 has recharged your account with 20 Taka. 
+2025-02-12 15:19,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0212144904189656. 1513925418 has recharged your account with 20 Taka. 
+2025-02-09 10:16,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0209094544178402. 1513925418 has recharged your account with 20 Taka. 
+2025-02-08 14:47,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0208141652191443. 1513925418 has recharged your account with 20 Taka. 
+2025-02-08 08:30,+8801969926075,Multiple matching accounts,500.00,Expense,DPDC,,"Dear Customer, Tk. 500 (Details : Energy Cost:478.56,VAT:23.81:Rebate Amount-2.37) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 468.01 as on 2025-02-07.  Thanking You,  DPDC."
+2025-02-07 23:52,16216,SMS could not be parsed: NotATransaction,,,,,Tk500.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:5141612336 Fee: Tk.00 Date:07-FEB-25 11:52:37 pm.
+2025-02-07 14:56,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0207142632121836. 1513925415 has recharged your account with 20 Taka. 
+2025-02-07 14:56,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: ***302 Tk500.00 Fee: Tk.00, Your A/C Balance: Tk505.00.TxnId:5139466359 Date:07-FEB-25 02:56:00 pm. Download https://bit.ly/nexuspay"
+2025-02-06 14:44,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0206141422158748. 1513925415 has recharged your account with 30 Taka. 
+2025-02-01 20:48,telecharge,Multiple matching accounts,25.00,Expense,,,Transaction ID is 0201201754151144. 1513925315 has recharged your account with 25 Taka. 
+2025-02-01 18:35,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0201180511145779. 1513925313 has recharged your account with 20 Taka. 
+2025-01-30 18:34,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0130180348134054. 1513925418 has recharged your account with 20 Taka. 
+2025-01-28 18:12,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0128174246113722. 1513925418 has recharged your account with 20 Taka. 
+2025-01-26 18:22,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0126175226179046. 1513925418 has recharged your account with 30 Taka. 
+2025-01-24 17:29,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0124165948168538. 1513925418 has recharged your account with 20 Taka. 
+2025-01-22 18:19,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0122174956149146. 1513925415 has recharged your account with 20 Taka. 
+2025-01-20 17:21,telecharge,Multiple matching accounts,30.00,Expense,,,Transaction ID is 0120165136114997. 1513925418 has recharged your account with 30 Taka. 
+2025-01-18 09:08,telecharge,Multiple matching accounts,25.00,Expense,,,Transaction ID is 0118083933154283. 1513925418 has recharged your account with 25 Taka. 
+2025-01-15 23:31,telecharge,Multiple matching accounts,20.00,Expense,,,Transaction ID is 0115230151199009. 1513925418 has recharged your account with 20 Taka. 
+2025-01-14 09:23,telecharge,Multiple matching accounts,25.00,Expense,,,Transaction ID is 0114085423170999. 1513925418 has recharged your account with 25 Taka. 
+2025-01-14 08:30,+8801969926075,Multiple matching accounts,500.00,Expense,DPDC,,"Dear Customer, Tk. 500.0 (Details : Energy Cost:478.56,VAT:23.81:Rebate Amount-2.37) is successfully recharged for Meter no 70039035 and Customer no 32205988. Your meter balance is Tk. 235.71 as on 2025-01-13.  Thanking You,  DPDC."
+2025-01-13 23:39,bKashNotice,SMS could not be parsed: NotATransaction,,,,,Bill successfully paid. Biller: DPDC (Prepaid) Contact: 01581047578 A/C: 32205988 Amount: Tk 500.0 Fee: Tk 0.0 TrxID: CAD9VDR0R1 at 13/01/25 11:38PM
+2024-11-27 18:55,FACEBOOK,SMS could not be parsed: NoAmountFound,,,,,Enter 596983 on Facebook to verify your account.
+2024-11-10 18:09,16216,SMS could not be parsed: NotATransaction,,,,,"Tk1,000.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:4931471056 Fee: Tk.00 Date:10-NOV-24 06:09:36 pm."
+2024-11-10 17:16,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: 018135574002 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,005.00.TxnId:4931291638 Date:10-NOV-24 05:16:46 pm. Download https://bit.ly/nexuspay"
+2024-10-27 17:00,16222,SMS could not be parsed: NotATransaction,,,,,Sorry! Your current balance is Tk.21.5 but required amount is Tk.223. Please refill your account and try again.
+2024-10-26 18:38,16216,SMS could not be parsed: NotATransaction,,,,,"Tk1,000.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:4894936283 Fee: Tk.00 Date:26-OCT-24 06:38:17 pm."
+2024-09-24 20:58,16216,SMS could not be parsed: NotATransaction,,,,,Tk500.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:4822405660 Fee: Tk.00 Date:24-SEP-24 08:58:28 pm.
+2024-09-24 17:07,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: 018818632072 Tk500.00 Fee: Tk.00, Your A/C Balance: Tk505.00.TxnId:4821355029 Date:24-SEP-24 12:33:35 pm. Download https://bit.ly/nexuspay"
+2024-09-19 11:40,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: 018574080809 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,005.00.TxnId:4811973297 Date:19-SEP-24 11:31:03 am. Download https://bit.ly/nexuspay"
+2024-08-01 17:35,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: 018130368695 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,005.00.TxnId:4702338976 Date:01-AUG-24 05:35:37 pm. Download https://bit.ly/nexuspay"
+2024-07-27 17:52,16216,SMS could not be parsed: NotATransaction,,,,,Tk580.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:4693043903 Fee: Tk.00 Date:27-JUL-24 05:52:17 pm.
+2024-07-27 17:33,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: 013335959302 Tk600.00 Fee: Tk.00, Your A/C Balance: Tk605.00.TxnId:4693035341 Date:27-JUL-24 05:33:16 pm. Download https://bit.ly/nexuspay"
+2024-07-06 18:57,16216,SMS could not be parsed: NotATransaction,,,,,"Tk1,000.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:4651661807 Fee: Tk.00 Date:06-JUL-24 06:57:14 pm."
+2024-07-06 18:42,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: 013335959302 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,005.00.TxnId:4651576924 Date:06-JUL-24 06:42:24 pm. Download https://bit.ly/nexuspay"
+2024-06-25 18:46,16216,SMS could not be parsed: NotATransaction,,,,,Tk500.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:4628045321 Fee: Tk.00 Date:25-JUN-24 06:46:55 pm.
+2024-06-25 17:58,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: 013335959302 Tk500.00 Fee: Tk.00, Your A/C Balance: Tk505.00.TxnId:4627909445 Date:25-JUN-24 05:58:06 pm. Download https://bit.ly/nexuspay"
+2024-06-01 19:43,16216,SMS could not be parsed: NotATransaction,,,,,"Tk1,000.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:4565475061 Fee: Tk.00 Date:01-JUN-24 07:43:24 pm."
+2024-06-01 19:26,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: 013335959302 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,005.00.TxnId:4565360788 Date:01-JUN-24 07:26:30 pm. Download https://bit.ly/nexuspay"
+2024-05-20 17:38,16216,SMS could not be parsed: NotATransaction,,,,,Tk500.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:4542645825 Fee: Tk.00 Date:20-MAY-24 05:38:02 pm.
+2024-05-20 17:33,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: 013335959302 Tk500.00 Fee: Tk.00, Your A/C Balance: Tk505.00.TxnId:4542642436 Date:20-MAY-24 05:33:52 pm. Download https://bit.ly/nexuspay"
+2024-05-02 21:43,16216,SMS could not be parsed: NotATransaction,,,,,"Tk1,000.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:4502253747 Fee: Tk.00 Date:02-MAY-24 09:42:40 pm."
+2024-05-02 20:52,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: 018135574002 Tk1,000.00 Fee: Tk.00, Your A/C Balance: Tk1,005.00.TxnId:4502268374 Date:02-MAY-24 08:52:12 pm. Download https://bit.ly/nexuspay"
+2024-04-20 18:09,16216,SMS could not be parsed: NotATransaction,,,,,Tk500.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:4478259186 Fee: Tk.00 Date:20-APR-24 06:09:27 pm.
+2024-04-20 17:54,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: 018135574002 Tk700.00 Fee: Tk.00, Your A/C Balance: Tk725.00.TxnId:4478153674 Date:20-APR-24 05:54:04 pm. Download https://bit.ly/nexuspay"
+2024-04-06 23:38,16216,SMS could not be parsed: NotATransaction,,,,,Tk500.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:4446415050 Fee: Tk.00 Date:06-APR-24 11:38:04 pm.
+2024-04-06 23:36,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: 017749513394 Tk500.00 Fee: Tk.00, Your A/C Balance: Tk525.00.TxnId:4446298196 Date:06-APR-24 11:04:33 pm. Download https://bit.ly/nexuspay"
+2024-04-06 00:04,bKash,SMS could not be parsed: NoAmountFound,,,,,"Sorry! We are unable to proceed your bKash Account Registration. Please visit nearest bKash Center. For help, call 16247"
+2024-04-06 00:01,bKash,SMS could not be parsed: NoAmountFound,,,,,<#> Your registration reference number is 987059. Expires in 2 minutes. UF94P3E4E4E76P3
+2024-04-04 00:45,bKash,SMS could not be parsed: NoAmountFound,,,,,<#> Your registration reference number is 858253. Expires in 2 minutes. CJ9C4O144R3Z4O1
+2024-04-02 07:13,bKash,SMS could not be parsed: NoAmountFound,,,,,<#> Your registration reference number is 363881. Expires in 2 minutes. Z02I380OAK5Z02I
+2024-04-02 07:10,bKash,SMS could not be parsed: NoAmountFound,,,,,<#> Your registration reference number is 633288. Expires in 2 minutes. FKQ6JM974M97FWF
+2024-03-23 09:38,16216,SMS could not be parsed: NotATransaction,,,,,Tk500.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:4408227022 Fee: Tk.00 Date:23-MAR-24 09:38:07 am.
+2024-03-22 22:13,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: 018135574002 Tk100.00 Fee: Tk.00, Your A/C Balance: Tk545.00.TxnId:4407879987 Date:22-MAR-24 10:13:25 pm. Download https://bit.ly/nexuspay"
+2024-03-21 21:33,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: 018135574002 Tk440.00 Fee: Tk.00, Your A/C Balance: Tk445.00.TxnId:4406023950 Date:21-MAR-24 09:33:51 pm. Download https://bit.ly/nexuspay"
+2024-03-04 18:42,16216,SMS could not be parsed: NotATransaction,,,,,"Tk1,950.00 paid to DPDC Id 1011 Bill No 32205988 TxnId:4363606556 Fee: Tk.00 Date:04-MAR-24 06:42:20 pm."
+2024-03-04 18:37,16216,SMS could not be parsed: NotATransaction,,,,,"Cash-In from A/C: 017749513394 Tk2,000.00 Fee: Tk.00, Your A/C Balance: Tk2,010.00.TxnId:4363551039 Date:04-MAR-24 06:37:42 pm. Download https://bit.ly/nexuspay"
+2023-08-27 11:09,bKash,SMS could not be parsed: NoAmountFound,,,,,"Priyo Agent Number:
+R S Food Corner 01813235078"
+2023-08-27 04:00,bKash,Multiple matching accounts,4190.24,Income,,AHR5PLOME9,"You have received remittance via Pubali Bank Limited
+Total amount: Tk 4,190.24
+Principal: Tk 4088.04
+Govt. incentive: Tk 102.20
+TrxID AHR5PLOME9 at 27/08/2023 04:00."
+2023-08-20 15:21,bKash,SMS could not be parsed: NotATransaction,,,,,"Bill successfully paid.
+Biller: 01309108507 
+MMYYYY/Contact: 072023
+A/C: 2202122250147 
+Amount: Tk 3,875.00 
+Fee: Tk 50.38 
+TrxID: AHK6IN4VX2 at 20/08/2023 15:21"
+2023-08-20 15:20,bKash,Multiple matching accounts,4000.00,Income,01931111331,AHK3IN3COX,"Cash In Tk 4,000.00 from 01931111331 successful. Fee Tk 0.00. Balance Tk 4,007.35. TrxID AHK3IN3COX at 20/08/2023 15:20. Download App: https://bKa.sh/8app"
+2023-08-06 13:05,bKash,Multiple matching accounts,20.00,Expense,,AH623D2A1S,Received Recharge request of Tk 20.00 for 01581047578. Fee Tk 0.00. Balance Tk 7.35. TrxID AH623D2A1S at 06/08/2023 13:03. Wait for confirmation.
+2023-08-06 09:20,bKash,SMS could not be parsed: NoAmountFound,,,,,"Congratulations! R S Food Corner 01813235078 has been added successfully as Priyo Agent Number for Cash Out.
+
+1 Priyo Agent number can be added in a calendar month."
+2023-08-06 09:13,bKash,Multiple matching accounts,2000.00,Income,01322656996,AH6233OTIU,"Cash In Tk 2,000.00 from 01322656996 successful. Fee Tk 0.00. Balance Tk 2,006.41. TrxID AH6233OTIU at 06/08/2023 09:13. Download App: https://bKa.sh/8app"
+2023-08-03 16:06,bKash,Multiple matching accounts,3000.00,Income,01322656996,AH330GJO5J,"Cash In Tk 3,000.00 from 01322656996 successful. Fee Tk 0.00. Balance Tk 3,000.80. TrxID AH330GJO5J at 03/08/2023 16:06. Download App: https://bKa.sh/8app"
+2023-08-02 18:08,+8801958049401,SMS could not be parsed: NoAmountFound,,,,,"AHZ Associates cordially invites you to attend IELTS and UK education Expo on 12th of August ( Saturday) at British Council - 5 Fuller Road, Dhaka from 10am to 5 pm.
+Map: https://goo.gl/maps/1a3J1QcQ56XDpgKE8
+
+Please bring your documents with you. Thank you!
+
+Sharmin Afroz Linda
++8801958049401
+dhaka3@ahzassociates.co.uk
+Office address Rupayan Prime, Level -7, Road-7, Green Road, Dhanmondi "
+2023-07-27 11:06,bKash,SMS could not be parsed: NotATransaction,,,,,"Bill successfully paid.
+Biller: DPDCpostpaid 
+MMYYYY/Contact: N/A
+A/C: 32205988 
+Amount: Tk 984.00 
+Fee: Tk 0.00 
+TrxID: AGR1PW0JIH at 27/07/2023 11:06"
+2023-07-27 10:45,bKash,Multiple matching accounts,1000.00,Income,01680802110,AGR2PV2KDQ,"Cash In Tk 1,000.00 from 01680802110 successful. Fee Tk 0.00. Balance Tk 1,000.80. TrxID AGR2PV2KDQ at 27/07/2023 10:45. Download App: https://bKa.sh/8app"
+2023-06-29 22:14,bKash,Multiple matching accounts,10.00,Expense,,AFT7VN05UN,Received Recharge request of Tk 10.00 for 01581047578. Fee Tk 0.00. Balance Tk 20.80. TrxID AFT7VN05UN at 29/06/2023 22:13. Wait for confirmation.
+2023-06-24 19:27,bKash,SMS could not be parsed: NotATransaction,,,,,"Bill successfully paid.
+Biller: DPDCpostpaid 
+MMYYYY/Contact: N/A
+A/C: 32205988 
+Amount: Tk 859.00 
+Fee: Tk 0.00 
+TrxID: AFO0P3GI7G at 24/06/2023 19:27"
+2023-06-24 18:40,bKash,Multiple matching accounts,900.00,Income,01680802110,AFO7P13XT1,Cash In Tk 900.00 from 01680802110 successful. Fee Tk 0.00. Balance Tk 904.80. TrxID AFO7P13XT1 at 24/06/2023 18:40. Download App: https://bKa.sh/8app
+2023-04-28 23:27,FlexiLoad,SMS could not be parsed: NotATransaction,,,,,"207X:Account refilled TK 20. Transaction ID:BD04282327190121.
+Click mygp.li/pack to get exclusive bonus on your favorite internet packs from MyGP."
+2023-04-27 15:44,bKash,SMS could not be parsed: NoAmountFound,,,,,"Congratulations! 01814711242 8801814711242 has been added successfully as a Priyo number. 
+
+Up to 5 customer numbers can be added in a calendar month."
+2023-04-25 13:19,bKash,Multiple matching accounts,500.00,Expense,01830400155,ADP9T3JKG7,"Cash Out Tk 500.00 to 01830400155 successful. Fee Tk 9.25. Balance Tk 8,720.61. TrxID ADP9T3JKG7 at 25/04/2023 13:19. Cash Out from Priyo Agent at 1.49%"
+2023-04-22 21:28,bKash,SMS could not be parsed: NoAmountFound,,,,,"Congratulations! Hasan Vi 8801627711686 has been added successfully as a Priyo number. 
+
+Up to 5 customer numbers can be added in a calendar month."
+2023-04-21 10:54,bKash,Multiple matching accounts,9526.02,Income,,ADL4OQPDJM,"You have received remittance via Pubali Bank Limited
+Total amount: Tk 9,526.02
+Principal: Tk 9293.68
+Govt. incentive: Tk 232.34
+TrxID ADL4OQPDJM at 21/04/2023 10:54."
+2023-04-07 16:21,bKash,Multiple matching accounts,1700.00,Income,iBanking of,AD718C44XP,"You have received deposit from iBanking of Tk 1,700.00 from Islami Bank. Fee Tk 0.00. Balance Tk 1,729.17. TrxID AD718C44XP at 07/04/2023 16:21"
+2023-04-05 10:27,bKash,SMS could not be parsed: NoAmountFound,,,,,"Congratulations! Bismillah Telecom 01680802110 has been added successfully as Priyo Agent Number for Cash Out.
+
+1 Priyo Agent number can be added in a calendar month."
+2023-04-05 05:54,bKash,Multiple matching accounts,9526.02,Income,,AD515JLH0T,"You have received remittance via Pubali Bank Limited
+Total amount: Tk 9,526.02
+Principal: Tk 9293.68
+Govt. incentive: Tk 232.34
+TrxID AD515JLH0T at 05/04/2023 05:53."
+2023-04-03 15:15,bKash,Multiple matching accounts,15.00,Expense,,AD353SGF49,"Received Recharge request of Tk 15.00 for 01581047578. Fee Tk 0.00. Balance Tk 1,002.37. TrxID AD353SGF49 at 03/04/2023 15:13. Wait for confirmation."
+2023-04-03 11:02,bKash,Multiple matching accounts,27.00,Expense,,AD373I35C1,"Received Recharge request of Tk 27.00 for 01581047578. Fee Tk 0.00. Balance Tk 1,017.37. TrxID AD373I35C1 at 03/04/2023 11:00. Wait for confirmation."
+2023-04-01 11:37,bKash,Multiple matching accounts,1000.00,Expense,01629898212,AD151F1QLB,"Send Money Tk 1,000.00 to 01629898212 successful. Ref rayhan. Fee Tk 5.00. Balance Tk 1,044.37. TrxID AD151F1QLB at 01/04/2023 11:37"
+2023-03-23 06:34,bKash,SMS could not be parsed: NotATransaction,,,,,"Bill successfully paid.
+Biller: DPDCpostpaid 
+MMYYYY/Contact: N/A
+A/C: 32205988 
+Amount: Tk 475.00 
+Fee: Tk 0.00 
+TrxID: ACN5PFAD4D at 23/03/2023 06:34"
+2023-03-18 10:16,+8809604900000,SMS could not be parsed: NoAmountFound,,,,,"Dear Md Kazi,
+Your Appointment is booked today at UK Education Fair at AHZ Dhanmondi Office (6th Floor, House# 02, Rupayan Prime, Road# 07, Green Rd, Dhanmondi). Join us to avail up to 100% Cashback on IELTS & up to £10,000 in Scholarships*.
+Hope to see you at the Fair In sha Allah- https://tinyurl.com/5fwd9snj
+- AHZ Associates"
+2023-02-19 10:02,+8809604900000,SMS could not be parsed: NoAmountFound,,,,,"Dear Md Kazi,
+Today you have an appointment to meet University representatives to study in the UK with scholarships (12PM-5PM).
+AHZ Associates Dhanmondi Office
+(6th Floor), House# 02, Rupayan Prime, Road# 07, Green Rd
+Inquiry: 01713558205"
+2023-02-18 17:44,+8809604900000,SMS could not be parsed: NoAmountFound,,,,,"Dear Md Kazi,
+You are invited to meet University representatives directly to study in the UK with scholarships on 19th February (12PM-5PM).
+AHZ Associates Dhanmondi Office
+(6th Floor), House# 02, Rupayan Prime, Road# 07, Green Rd
+Inquiry: 01713558205"
+2023-02-14 09:32,+8809604900000,SMS could not be parsed: NoAmountFound,,,,,"Dear Md Kazi,
+Today you have an appointment to meet representatives with London South Bank University between (11AM-5PM). Please come and avail the opportunity to study in the UK with maximum Scholarships.
+AHZ Associates Dhanmondi Office
+(6th Floor), House# 02, Rupayan Prime, Road# 07 Green Rd
+Inquiry: 01713558207"
+2023-02-13 19:06,+8809604900000,SMS could not be parsed: NoAmountFound,,,,,"Dear Md Kazi,
+You are invited to meet representatives from London South Bank University and get maximum scholarships to study in the UK on 14th February (11AM-5PM)
+AHZ Associates Dhanmondi Office
+(6th Floor), House# 02, Rupayan Prime, Road# 07 Green Rd, Dhanmondi
+Inquiry: 01713558207"
+2022-12-29 13:28,+8801322912090,SMS could not be parsed: NoAmountFound,,,,,"Greetings from AH&Z Associates.  If you want to study in the UK and need expert assistance then please visit our office directly. We are open from 10 AM to 6:30 PM.
+
+Fabiya Rahman 
+Education Consultant
+
+Address: Rupayan Prime (7th Floor),
+House# 02, Road# 07, Green Road,
+Dhanmondi- 1205 Dhaka.
+Email: dhaka1@ahzassociates.co.uk
+For Any other enquiry
+Call us: 01322912090
+Thank you"
+2022-12-28 16:03,+8801313444857,SMS could not be parsed: NoAmountFound,,,,,"Monika Akter 
+AHZ Associates 
+
+Thank you for showing interest.
+
+Please send your,
+1. All academic documents  (SSC/HSC/Bachelor/Master's Certificates & transcripts)
+2. Passport Copy
+3. Updated CV
+4. English Proficiency Certificate(IELTS/MOI/PTE)
+At
+dhaka5@ahzassociates.co.uk
+Or,WhatsApp: 01313444857
+
+If you want to visit our office directly,
+
+Address:
+Rupayan Prime (7th Floor), House# 02, Road# 07, Green Road,
+Dhanmondi- 1205 Dhaka.
+For Any other enquiry
+Call us: 01313444857
+Thank you"
+2022-11-27 14:45,bKash,SMS could not be parsed: NotATransaction,,,,,"Bill successfully paid.
+Biller: DPDCpostpaid 
+MMYYYY/Contact: N/A
+A/C: 32205988 
+Amount: Tk 354.00 
+Fee: Tk 0.00 
+TrxID: 9KR5A60EGT at 27/11/2022 14:45"
+2022-11-17 16:57,bKash,SMS could not be parsed: NotATransaction,,,,,"Bill successfully paid.
+Biller: 01309108507 
+MMYYYY/Contact: 102022
+A/C: 1021616734 
+Amount: Tk 5.00 
+Fee: Tk 0.06 
+TrxID: 9KH81JRH54 at 17/11/2022 16:57"
+2022-11-15 16:33,bKash,SMS could not be parsed: NotATransaction,,,,,"Bill successfully paid.
+Biller: 01309108507 
+MMYYYY/Contact: 102022
+A/C: 1021628229 
+Amount: Tk 5.00 
+Fee: Tk 0.06 
+TrxID: 9KF7WRHULZ at 15/11/2022 16:33"

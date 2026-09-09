@@ -14,8 +14,14 @@ use regex::Regex;
 use std::sync::LazyLock;
 
 static FEE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\b(?:Fee|Charge|Service\s+fee)(?:\s*(?:of|is|[:]))?(?:\s*(?:Tk\.?|BDT))?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)")
+    Regex::new(r"(?i)\b(?:Trx\s+Fee|Fee|Charge|Service\s+fee)(?:\s*(?:of|is|[:]))?(?:\s*(?:Tk\.?|BDT))?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)")
         .expect("valid fee regex")
+});
+
+// Key-value structured amounts (e.g. "Amount: 1500.00", "AMOUNT: 4010.00", "Amount: Tk 1,488.00")
+static KEY_VALUE_AMOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\b(?:Amount|Total\s+Amount)\s*[:\-]\s*(?:(?:Tk\.?|BDT)\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)")
+        .expect("valid key value amount regex")
 });
 
 static BALANCE_RE: LazyLock<Regex> = LazyLock::new(|| {
@@ -161,6 +167,17 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
 
     // 4b. Postfix transaction verbs (e.g. "Tk. 690 Withdrawal", "Tk. 20,000 Deposit", "Tk 500 Purchased")
     for cap in AMOUNT_POSTFIX_VERB_RE.captures_iter(text) {
+        if let Some(m) = cap.get(1) {
+            if let Some(val) = parse_amount_minor(m.as_str()) {
+                if val > 0 && !is_fee_or_balance(val, m.start(), m.end(), text, fee, balance) {
+                    return Some(val);
+                }
+            }
+        }
+    }
+
+    // 4c. Key-value structured amounts (e.g. "Amount: 1500.00", "AMOUNT: 4010.00", "Amount: Tk 1,488.00")
+    if let Some(cap) = KEY_VALUE_AMOUNT_RE.captures(text) {
         if let Some(m) = cap.get(1) {
             if let Some(val) = parse_amount_minor(m.as_str()) {
                 if val > 0 && !is_fee_or_balance(val, m.start(), m.end(), text, fee, balance) {

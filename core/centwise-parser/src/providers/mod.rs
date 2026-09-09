@@ -27,7 +27,7 @@ pub fn detect_provider(sender_hint: Option<&str>, body: &str) -> String {
     let body_lower = body.to_lowercase();
 
     // MFS providers (most distinctive)
-    if body_lower.contains("bkash") {
+    if body_lower.contains("bkash") || body_lower.contains("bka.sh") {
         return PROVIDER_BKASH.to_string();
     }
     if body_lower.contains("nagad") {
@@ -71,7 +71,10 @@ pub fn detect_provider(sender_hint: Option<&str>, body: &str) -> String {
     if body_lower.contains("airtel") || body_lower.contains("*141*") {
         return PROVIDER_AIRTEL.to_string();
     }
-    if body_lower.contains("teletalk") {
+    if body_lower.contains("teletalk")
+        || body_lower.contains("telecharge")
+        || body_lower.contains("has recharged your account with")
+    {
         return PROVIDER_TELETALK.to_string();
     }
 

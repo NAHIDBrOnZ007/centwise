@@ -21,7 +21,15 @@ pub fn is_otp_or_security_message(text: &str) -> bool {
         || lower.contains("never share")
         || lower.contains("don't share")
         || lower.contains("do not disclose")
-        || lower.contains("never disclose");
+        || lower.contains("never disclose")
+        || lower.contains("registration reference number")
+        || lower.contains("expires in 2 minutes")
+        || lower.contains("one time pin")
+        || lower.contains("token for finger enrolment")
+        || (lower.contains("token for") && lower.contains("enrolment"))
+        || lower.contains("for reset cellfin pin")
+        || (lower.contains("pin for card") && lower.contains("is set successfully"))
+        || (lower.starts_with("<#>") && lower.contains("expires in"));
 
     if !has_otp_keyword && !SECURITY_CODE_RE.is_match(text) {
         return false;

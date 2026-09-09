@@ -46,6 +46,9 @@ pub fn is_promotional_or_telco_offer(body: &str, sender_hint: Option<&str>) -> b
         || (lower.contains("call rate") && lower.contains("validity recharge"))
         || (lower.contains("paisa/minute") && lower.contains("recharge"))
         || (lower.contains("poisha/second") && lower.contains("recharge"))
+        || lower.contains("validity will expire")
+        || lower.contains("balance validity")
+        || lower.contains("to enjoy uninterrupted service, please recharge")
     {
         return true;
     }

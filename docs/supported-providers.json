@@ -7,10 +7,10 @@
       "id": "bkash",
       "name": "bKash",
       "type": "mfs",
-      "senderIds": [],
-      "parserStatus": "planned",
+      "senderIds": ["bKash", "bKashNotice", "16247"],
+      "parserStatus": "active",
       "fixtureStatus": "collected",
-      "lastReviewed": "2026-08-22"
+      "lastReviewed": "2026-09-09"
     },
     {
       "id": "nagad",
@@ -178,10 +178,10 @@
       "id": "teletalk",
       "name": "Teletalk",
       "type": "telco",
-      "senderIds": ["Teletalk"],
+      "senderIds": ["Teletalk", "Telecharge", "121"],
       "parserStatus": "active",
       "fixtureStatus": "collected",
-      "lastReviewed": "2026-09-04"
+      "lastReviewed": "2026-09-09"
     }
   ]
 }
