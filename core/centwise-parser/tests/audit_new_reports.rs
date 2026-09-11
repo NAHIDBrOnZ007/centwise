@@ -118,7 +118,10 @@ fn test_audit_transaction_reports_09_and_10() {
             );
         } else if filename == &"transaction-report-10.csv" {
             assert_eq!(rejected_count, 0, "All rows in report 3 should parse");
-            assert_eq!(parsed_count, 147, "Expected 147 parsed in transaction report 10");
+            assert_eq!(
+                parsed_count, 147,
+                "Expected 147 parsed in transaction report 10"
+            );
             // MFS transfers should now be correctly recognized as Transfers!
             assert!(
                 transfer_count >= 30,

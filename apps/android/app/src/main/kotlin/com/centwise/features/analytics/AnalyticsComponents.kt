@@ -124,7 +124,7 @@ fun AnalyticsSummaryCard(
             }
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("NET", style = CentwiseTypography.Caption, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = textSecondary)
-                Text("${if (net >= 0) "+" else ""}${CurrencyFormatter.formatBDT(net, compact = true)}", style = CentwiseTypography.Headline, fontWeight = FontWeight.Bold, color = if (net >= 0) CentwiseColors.IncomeGreen else CentwiseColors.ExpenseRed, fontSize = 15.sp)
+                Text("${if (net >= 0) "+" else ""}${CurrencyFormatter.formatBDT(net.toDouble(), compact = true)}", style = CentwiseTypography.Headline, fontWeight = FontWeight.Bold, color = if (net >= 0) CentwiseColors.IncomeGreen else CentwiseColors.ExpenseRed, fontSize = 15.sp)
             }
         }
 
@@ -146,7 +146,7 @@ fun AnalyticsSummaryCard(
             }
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("DAILY AVG", style = CentwiseTypography.Caption, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = textSecondary)
-                Text(CurrencyFormatter.formatBDT(dailyAverage, compact = true), style = CentwiseTypography.Headline, fontWeight = FontWeight.SemiBold, color = textPrimary, fontSize = 14.sp)
+                Text(CurrencyFormatter.formatBDT(dailyAverage.toDouble(), compact = true), style = CentwiseTypography.Headline, fontWeight = FontWeight.SemiBold, color = textPrimary, fontSize = 14.sp)
             }
             Column(modifier = Modifier.weight(1.1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("TOP CATEGORY", style = CentwiseTypography.Caption, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = textSecondary)
