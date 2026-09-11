@@ -52,20 +52,18 @@ fun AnalyticsSummaryCard(
     periodDays: Int = 30,
     isDark: Boolean = isSystemInDarkTheme()
 ) {
-    var animateValues by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { animateValues = true }
     val animatedSpent by animateFloatAsState(
-        targetValue = if (animateValues) spent.toFloat() else 0f,
+        targetValue = spent.toFloat(),
         animationSpec = tween(450),
         label = "analytics spent"
     )
     val animatedIncome by animateFloatAsState(
-        targetValue = if (animateValues) income.toFloat() else 0f,
+        targetValue = income.toFloat(),
         animationSpec = tween(450),
         label = "analytics income"
     )
     val animatedTransactionCount by animateIntAsState(
-        targetValue = if (animateValues) transactionCount else 0,
+        targetValue = transactionCount,
         animationSpec = tween(450),
         label = "analytics transaction count"
     )
@@ -203,13 +201,6 @@ fun CategoryPieChart(
     val sorted = remember(slices) { slices.sortedByDescending { it.value } }
     val total = remember(sorted) { sorted.sumOf { it.value } }
 
-    var appeared by remember { mutableStateOf(false) }
-    val sweepScale by animateFloatAsState(
-        targetValue = if (appeared) 1f else 0f,
-        animationSpec = tween(durationMillis = 600),
-        label = "pie"
-    )
-    LaunchedEffect(Unit) { appeared = true }
 
     Column(
         modifier = Modifier
@@ -248,7 +239,7 @@ fun CategoryPieChart(
                         val topLeft = Offset((size.width - diameter) / 2f, (size.height - diameter) / 2f)
 
                         sorted.forEach { slice ->
-                            val sweep = (slice.value / total * 360.0).toFloat() * sweepScale
+                            val sweep = (slice.value / total * 360.0).toFloat()
                             drawArc(
                                 color = slice.color,
                                 startAngle = startAngle,
@@ -326,13 +317,6 @@ fun SpendingTrendsChart(
     val rawMax = remember(points) { points.maxOfOrNull { it.value } ?: 0.0 }
     val niceMax = remember(rawMax) { calculateNiceMax(rawMax) }
 
-    var appeared by remember { mutableStateOf(false) }
-    val barScale by animateFloatAsState(
-        targetValue = if (appeared) 1f else 0f,
-        animationSpec = tween(durationMillis = 600),
-        label = "trend"
-    )
-    LaunchedEffect(Unit) { appeared = true }
 
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
 
@@ -457,7 +441,7 @@ fun SpendingTrendsChart(
                         ) {
                             points.forEachIndexed { index, point ->
                                 val ratio = if (niceMax > 0) (point.value / niceMax).toFloat().coerceIn(0f, 1f) else 0f
-                                val barHeight = 96.dp * (ratio * barScale)
+                                val barHeight = 96.dp * ratio
                                 val barWidth = when {
                                     points.size <= 3 -> 24.dp
                                     points.size <= 6 -> 18.dp

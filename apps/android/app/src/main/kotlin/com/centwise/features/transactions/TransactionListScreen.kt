@@ -72,6 +72,7 @@ fun TransactionListScreen(
     val totalNet by viewModel.totalNet.collectAsState()
 
     val categories by TransactionRepository.shared.categories.collectAsState()
+    val allTransactions by TransactionRepository.shared.transactions.collectAsState()
 
     var selectedTransaction by remember { mutableStateOf<TransactionItem?>(null) }
     var editingTransaction by remember { mutableStateOf<TransactionItem?>(null) }
@@ -438,7 +439,7 @@ fun TransactionListScreen(
             }
 
             // Totals Summary Card (3 Columns: Income, Expenses, Net)
-            if (transactions.isNotEmpty()) {
+            if (allTransactions.isNotEmpty()) {
                 item {
                     com.centwise.core.design.components.TransactionTotalsCard(
                         income = totalIncome,

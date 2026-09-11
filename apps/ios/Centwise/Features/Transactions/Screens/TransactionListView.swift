@@ -31,7 +31,7 @@ public struct TransactionListView: View {
             Section {
                 VStack(spacing: 10) {
                     filterBar
-                    if !viewModel.filteredTransactions.isEmpty {
+                    if !viewModel.allTransactions.isEmpty {
                         TransactionTotalsCard(
                             income: viewModel.totalIncome,
                             expense: viewModel.totalExpense,

@@ -4,17 +4,22 @@ public struct AnimatedNumberText: View {
     private let value: Double
     private let format: (Double) -> String
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var displayedValue = 0.0
+    @State private var displayedValue: Double
 
     public init(value: Double, format: @escaping (Double) -> String) {
         self.value = value
         self.format = format
+        self._displayedValue = State(initialValue: value)
     }
 
     public var body: some View {
         InterpolatingNumberText(value: displayedValue, format: format)
             .accessibilityLabel(format(value))
-            .onAppear { update(to: value) }
+            .onAppear {
+                if displayedValue != value {
+                    update(to: value)
+                }
+            }
             .onChange(of: value) { update(to: $0) }
     }
 

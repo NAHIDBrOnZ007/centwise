@@ -8,11 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,20 +29,18 @@ fun TransactionTotalsCard(
     modifier: Modifier = Modifier,
     isDark: Boolean = isSystemInDarkTheme()
 ) {
-    var animateValues by remember { mutableStateOf(false) }
-    LaunchedEffect(Unit) { animateValues = true }
     val animatedIncome by animateFloatAsState(
-        targetValue = if (animateValues) income.toFloat() else 0f,
+        targetValue = income.toFloat(),
         animationSpec = tween(450),
         label = "transaction income"
     )
     val animatedExpense by animateFloatAsState(
-        targetValue = if (animateValues) expense.toFloat() else 0f,
+        targetValue = expense.toFloat(),
         animationSpec = tween(450),
         label = "transaction expense"
     )
     val animatedNet by animateFloatAsState(
-        targetValue = if (animateValues) net.toFloat() else 0f,
+        targetValue = net.toFloat(),
         animationSpec = tween(450),
         label = "transaction net"
     )
