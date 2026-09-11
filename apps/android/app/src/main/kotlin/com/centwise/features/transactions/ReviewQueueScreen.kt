@@ -238,14 +238,14 @@ fun ReviewQueueScreen(
                 ) {
                     Surface(
                         shape = CircleShape,
-                        color = CentwiseColors.IncomeGreen.copy(alpha = 0.12f),
+                        color = accent.copy(alpha = 0.12f),
                         modifier = Modifier.size(72.dp)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.MarkEmailRead,
                                 contentDescription = null,
-                                tint = CentwiseColors.IncomeGreen,
+                                tint = accent,
                                 modifier = Modifier.size(36.dp)
                             )
                         }

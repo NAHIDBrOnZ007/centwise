@@ -39,6 +39,7 @@ import com.centwise.core.profile.UserPrefs
 fun SettingsScreen(
     onAppearanceClick: () -> Unit = {},
     onCurrencyClick: () -> Unit = {},
+    onLanguageClick: () -> Unit = {},
     onCategoriesClick: () -> Unit = {},
     onBudgetsClick: () -> Unit = {},
     onAccountsClick: () -> Unit = {},
@@ -169,8 +170,8 @@ fun SettingsScreen(
                     SettingsRow(
                         icon = Icons.Default.Palette,
                         iconColor = accent,
-                        title = "Appearance",
-                        subtitle = "Theme and accent color",
+                        title = if (LanguagePrefs.isBengali) "দৃশ্যপট ও থিম" else "Appearance",
+                        subtitle = if (LanguagePrefs.isBengali) "থিম ও অ্যাকসেন্ট কালার" else "Theme and accent color",
                         onClick = onAppearanceClick,
                         showDivider = true,
                         isDark = isDark
@@ -178,9 +179,18 @@ fun SettingsScreen(
                     SettingsRow(
                         icon = Icons.Default.Paid,
                         iconColor = accent,
-                        title = "Currency",
-                        subtitle = "Currency for totals and new entries",
+                        title = if (LanguagePrefs.isBengali) "মুদ্রা" else "Currency",
+                        subtitle = if (LanguagePrefs.isBengali) "টাকা ও ব্যালেন্স মুদ্রা" else "Currency for totals and new entries",
                         onClick = onCurrencyClick,
+                        showDivider = true,
+                        isDark = isDark
+                    )
+                    SettingsRow(
+                        icon = Icons.Default.Language,
+                        iconColor = accent,
+                        title = if (LanguagePrefs.isBengali) "ভাষা" else "Language",
+                        subtitle = "${LanguagePrefs.selectedLanguage.flag} ${LanguagePrefs.selectedLanguage.titleNative} (${LanguagePrefs.selectedLanguage.titleEnglish})",
+                        onClick = onLanguageClick,
                         showDivider = false,
                         isDark = isDark
                     )

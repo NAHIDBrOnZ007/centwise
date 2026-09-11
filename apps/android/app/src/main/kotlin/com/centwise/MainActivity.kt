@@ -48,6 +48,9 @@ import com.centwise.features.settings.LockScreen
 import com.centwise.features.settings.RulesScreen
 import com.centwise.features.settings.SettingsScreen
 import com.centwise.features.settings.ThemeMode
+import com.centwise.features.settings.LanguagePickerScreen
+import com.centwise.features.settings.LanguagePrefs
+import com.centwise.features.group.GroupScreen
 import com.centwise.features.subscriptions.SubscriptionsScreen
 import com.centwise.features.transactions.AddEditTransactionSheet
 import com.centwise.features.transactions.TransactionListScreen
@@ -56,6 +59,7 @@ import com.centwise.features.transactions.TransactionsViewModel
 sealed class SubScreen {
     data object Appearance : SubScreen()
     data object Currency : SubScreen()
+    data object Language : SubScreen()
     data object Categories : SubScreen()
     data object Rules : SubScreen()
     data object Budgets : SubScreen()
@@ -115,9 +119,10 @@ fun CentwiseApp(
     val context = LocalContext.current
     val activity = context as? FragmentActivity
 
-    // Load persisted appearance + lock preferences & request runtime permissions once
+    // Load persisted appearance + language + lock preferences & request runtime permissions once
     LaunchedEffect(Unit) {
         AppearancePrefs.load(context)
+        LanguagePrefs.load(context)
         AppLockManager.load(context)
         // Lock on cold start when enabled
         AppLockManager.lockNow()
@@ -239,6 +244,10 @@ fun CentwiseApp(
                             onBackClick = { subScreen = null },
                             isDark = effectiveDark
                         )
+                        is SubScreen.Language -> LanguagePickerScreen(
+                            onBackClick = { subScreen = null },
+                            isDark = effectiveDark
+                        )
                         is SubScreen.Categories -> CategoriesScreen(
                             onBackClick = { subScreen = null },
                             isDark = effectiveDark
@@ -318,6 +327,11 @@ fun CentwiseApp(
                                     isDark = effectiveDark
                                 )
                             }
+                            CentwiseTab.GROUP -> {
+                                GroupScreen(
+                                    isDark = effectiveDark
+                                )
+                            }
                             CentwiseTab.ANALYTICS -> {
                                 val analyticsViewModel: AnalyticsViewModel = viewModel()
                                 AnalyticsScreen(
@@ -329,6 +343,7 @@ fun CentwiseApp(
                                 SettingsScreen(
                                     onAppearanceClick = { subScreen = SubScreen.Appearance },
                                     onCurrencyClick = { subScreen = SubScreen.Currency },
+                                    onLanguageClick = { subScreen = SubScreen.Language },
                                     onCategoriesClick = { subScreen = SubScreen.Categories },
                                     onBudgetsClick = { subScreen = SubScreen.Budgets },
                                     onAccountsClick = { subScreen = SubScreen.Accounts },

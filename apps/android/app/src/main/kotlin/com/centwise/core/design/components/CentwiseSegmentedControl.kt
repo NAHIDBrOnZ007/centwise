@@ -21,6 +21,9 @@ import androidx.compose.ui.unit.sp
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseTypography
 
+import androidx.compose.material3.Icon
+import androidx.compose.ui.graphics.vector.ImageVector
+
 /**
  * Idiomatic Jetpack Compose Segmented Control with physics-based spring slide animation,
  * capsule pill rounding, and guaranteed crisp white text on active segments.
@@ -32,6 +35,7 @@ fun <T> CentwiseSegmentedControl(
     onItemSelected: (T) -> Unit,
     itemLabel: (T) -> String,
     modifier: Modifier = Modifier,
+    itemIcon: ((T) -> ImageVector)? = null,
     accent: Color,
     isDark: Boolean = isSystemInDarkTheme()
 ) {
@@ -44,6 +48,7 @@ fun <T> CentwiseSegmentedControl(
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
+            .height(36.dp)
             .clip(CircleShape)
             .background(containerBg)
             .padding(2.5.dp)
@@ -86,13 +91,36 @@ fun <T> CentwiseSegmentedControl(
                         ) { onItemSelected(item) },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = itemLabel(item),
-                        style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
-                        color = if (isSelected) Color.White else if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                        maxLines = 1
-                    )
+                    val icon = itemIcon?.invoke(item)
+                    val contentColor = if (isSelected) Color.White else if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
+                    if (icon != null) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = contentColor,
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Text(
+                                text = itemLabel(item),
+                                style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
+                                color = contentColor,
+                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                maxLines = 1
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = itemLabel(item),
+                            style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
+                            color = contentColor,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            maxLines = 1
+                        )
+                    }
                 }
             }
         }

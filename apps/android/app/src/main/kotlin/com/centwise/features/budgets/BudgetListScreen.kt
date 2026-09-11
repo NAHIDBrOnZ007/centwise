@@ -191,7 +191,7 @@ fun BudgetListScreen(
                             Text(
                                 "${CurrencyFormatter.formatBDT(maxOf(totalBudget - totalSpent, 0.0), compact = true)} Remaining",
                                 style = CentwiseTypography.Caption,
-                                color = CentwiseColors.IncomeGreen
+                                color = accent
                             )
                         }
                     }

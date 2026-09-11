@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -47,11 +48,23 @@ import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.features.settings.AccentOptions
 import com.centwise.features.settings.AppearancePrefs
 
-enum class CentwiseTab(val title: String, val icon: ImageVector) {
-    HOME("Home", Icons.Default.Home),
-    TRANSACTIONS("Transactions", Icons.AutoMirrored.Filled.List),
-    ANALYTICS("Analytics", Icons.Default.BarChart),
-    SETTINGS("Settings", Icons.Default.Settings)
+import com.centwise.features.settings.LanguagePrefs
+
+enum class CentwiseTab(val icon: ImageVector) {
+    HOME(Icons.Default.Home),
+    TRANSACTIONS(Icons.AutoMirrored.Filled.List),
+    GROUP(Icons.Default.Groups),
+    ANALYTICS(Icons.Default.BarChart),
+    SETTINGS(Icons.Default.Settings);
+
+    val title: String
+        get() = when (this) {
+            HOME -> if (LanguagePrefs.isBengali) "হোম" else "Home"
+            TRANSACTIONS -> if (LanguagePrefs.isBengali) "লেনদেন" else "Transactions"
+            GROUP -> if (LanguagePrefs.isBengali) "গ্রুপ" else "Group"
+            ANALYTICS -> if (LanguagePrefs.isBengali) "অ্যানালিটিক্স" else "Analytics"
+            SETTINGS -> if (LanguagePrefs.isBengali) "সেটিংস" else "Settings"
+        }
 }
 
 /**
@@ -103,7 +116,7 @@ fun FloatingTabBar(
                             stiffness = Spring.StiffnessMediumLow
                         )
                     ),
-                horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
+                horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 CentwiseTab.entries.forEach { tab ->
@@ -151,8 +164,8 @@ fun FloatingTabBar(
                                 }
                             }
                             .padding(
-                                horizontal = if (isSelected) 16.dp else 13.dp,
-                                vertical = 10.dp
+                                horizontal = if (isSelected) 14.dp else 10.dp,
+                                vertical = 9.dp
                             ),
                         contentAlignment = Alignment.Center
                     ) {
