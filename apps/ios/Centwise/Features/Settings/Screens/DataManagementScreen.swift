@@ -9,24 +9,9 @@ public struct DataManagementScreen: View {
     @State private var showExportSheet = false
     @State private var toastItem: ToastItem?
     @State private var isDatabaseOperationInProgress = false
-    @State private var refreshTrigger: Int = 0
+    @State private var databaseFileSizeString = "Loading…"
 
     public init() {}
-
-    private var databaseFileSizeString: String {
-        _ = refreshTrigger
-        let totalBytes = CentwiseRustBackend.totalDatabaseSizeBytes()
-        if totalBytes == 0 {
-            return "Clean DB"
-        }
-        let kb = Double(totalBytes) / 1024.0
-        let formatted = kb < 1024 ? String(format: "%.1f KB", kb) : String(format: "%.2f MB", kb / 1024.0)
-        if repository.transactions.isEmpty && repository.accounts.isEmpty {
-            return "Clean DB (\(formatted))"
-        } else {
-            return formatted
-        }
-    }
 
     public var body: some View {
         List {
@@ -82,7 +67,7 @@ public struct DataManagementScreen: View {
                 isDatabaseOperationInProgress = true
                 repository.loadSampleDemoDataAsync { summary in
                     isDatabaseOperationInProgress = false
-                    refreshTrigger += 1
+                    refreshDatabaseFileSize()
                     themeManager.triggerHapticFeedback(summary == nil ? .warning : .success)
                     if let summary {
                         toastItem = ToastItem("Sample data loaded (\(summary.transactions) transactions)", style: .success)
@@ -101,7 +86,7 @@ public struct DataManagementScreen: View {
                 isDatabaseOperationInProgress = true
                 repository.resetToEmptyDatabaseAsync { succeeded in
                     isDatabaseOperationInProgress = false
-                    refreshTrigger += 1
+                    refreshDatabaseFileSize()
                     themeManager.triggerHapticFeedback(succeeded ? .warning : .error)
                     toastItem = ToastItem(
                         succeeded ? "Database wiped. Starting completely clean." : "Could not reset database",
@@ -114,10 +99,10 @@ public struct DataManagementScreen: View {
             Text("Are you sure you want to delete all transactions, budgets, and subscriptions? This action cannot be undone.")
         }
         .onAppear {
-            refreshTrigger += 1
+            refreshDatabaseFileSize()
         }
         .onReceive(NotificationCenter.default.publisher(for: .centwiseTransactionsUpdated)) { _ in
-            refreshTrigger += 1
+            refreshDatabaseFileSize()
         }
     }
 
@@ -128,6 +113,26 @@ public struct DataManagementScreen: View {
                 .foregroundStyle(.secondary)
         } label: {
             Label(title, systemImage: icon)
+        }
+    }
+
+    private func refreshDatabaseFileSize() {
+        let isEmpty = repository.transactions.isEmpty && repository.accounts.isEmpty
+        DispatchQueue.global(qos: .utility).async {
+            let totalBytes = CentwiseRustBackend.totalDatabaseSizeBytes()
+            let value: String
+            if totalBytes == 0 {
+                value = "Clean DB"
+            } else {
+                let kb = Double(totalBytes) / 1024.0
+                let formatted = kb < 1024
+                    ? String(format: "%.1f KB", kb)
+                    : String(format: "%.2f MB", kb / 1024.0)
+                value = isEmpty ? "Clean DB (\(formatted))" : formatted
+            }
+            DispatchQueue.main.async {
+                databaseFileSizeString = value
+            }
         }
     }
 }

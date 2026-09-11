@@ -283,7 +283,7 @@ fun OnboardingScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(UserPrefs.AVAILABLE_AVATARS) { avatarName ->
+                        items(UserPrefs.AVAILABLE_AVATARS, key = { it }) { avatarName ->
                             val isSelected = selectedAvatar == avatarName
                             Box(
                                 modifier = Modifier

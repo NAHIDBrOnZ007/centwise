@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -53,12 +54,13 @@ class ReviewQueueRepository private constructor() {
         }
     }
 
-    fun confirmAsTransaction(item: ReviewQueueItem, transaction: TransactionItem): Boolean {
-        if (!CentwiseRustBackend.convertReviewQueueItem(item.id, transaction)) return false
-        refresh()
-        TransactionRepository.shared.loadFromRust()
-        return true
-    }
+    suspend fun confirmAsTransaction(item: ReviewQueueItem, transaction: TransactionItem): Boolean =
+        withContext(Dispatchers.IO) {
+            if (!CentwiseRustBackend.convertReviewQueueItem(item.id, transaction)) return@withContext false
+            refresh()
+            TransactionRepository.shared.loadFromRust()
+            true
+        }
 
     companion object {
         val shared = ReviewQueueRepository()

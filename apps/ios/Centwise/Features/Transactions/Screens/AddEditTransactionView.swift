@@ -4,7 +4,7 @@ public struct AddEditTransactionView: View {
     public var transactionToEdit: CentwiseTransaction?
     public var onSave: (() -> Void)?
     public var writesToRepository: Bool
-    public var onCommit: ((CentwiseTransaction) -> Bool)?
+    public var onCommit: ((CentwiseTransaction, @escaping (Bool) -> Void) -> Void)?
 
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
@@ -20,12 +20,13 @@ public struct AddEditTransactionView: View {
     @State private var date: Date = Date()
     @State private var notes: String = ""
     @State private var saveError: String?
+    @State private var isSaving = false
 
     public init(
         transactionToEdit: CentwiseTransaction? = nil,
         onSave: (() -> Void)? = nil,
         writesToRepository: Bool = true,
-        onCommit: ((CentwiseTransaction) -> Bool)? = nil
+        onCommit: ((CentwiseTransaction, @escaping (Bool) -> Void) -> Void)? = nil
     ) {
         self.transactionToEdit = transactionToEdit
         self.onSave = onSave
@@ -129,7 +130,7 @@ public struct AddEditTransactionView: View {
                     }
                     .font(CentwiseTypography.bodyMedium)
                     .foregroundColor(themeManager.accentColor)
-                    .disabled(amountString.isEmpty || title.isEmpty)
+                    .disabled(amountString.isEmpty || title.isEmpty || isSaving)
                 }
             }
             .onAppear {
@@ -174,8 +175,6 @@ public struct AddEditTransactionView: View {
             currentBalance: 0
         )
 
-        let saved: Bool
-
         if let existing = transactionToEdit {
             var updated = existing
             updated.title = title
@@ -189,9 +188,19 @@ public struct AddEditTransactionView: View {
             updated.notes = notes.isEmpty ? nil : notes
 
             if writesToRepository {
-                saved = TransactionRepository.shared.updateTransaction(updated)
+                isSaving = true
+                TransactionRepository.shared.updateTransactionAsync(updated) { saved in
+                    finishSave(saved)
+                }
+                return
             } else {
-                saved = onCommit?(updated) ?? false
+                isSaving = true
+                guard let onCommit else {
+                    finishSave(false)
+                    return
+                }
+                onCommit(updated, finishSave)
+                return
             }
         } else {
             let newTx = CentwiseTransaction(
@@ -207,12 +216,25 @@ public struct AddEditTransactionView: View {
                 isAutoTracked: false
             )
             if writesToRepository {
-                saved = TransactionRepository.shared.addTransaction(newTx)
+                isSaving = true
+                TransactionRepository.shared.addTransactionAsync(newTx) { saved in
+                    finishSave(saved)
+                }
+                return
             } else {
-                saved = onCommit?(newTx) ?? false
+                isSaving = true
+                guard let onCommit else {
+                    finishSave(false)
+                    return
+                }
+                onCommit(newTx, finishSave)
+                return
             }
         }
+    }
 
+    private func finishSave(_ saved: Bool) {
+        isSaving = false
         guard saved else {
             saveError = "Centwise could not save this transaction. Check the selected account and try again."
             themeManager.triggerHapticFeedback(.error)

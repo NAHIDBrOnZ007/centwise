@@ -658,7 +658,7 @@ private fun AnalyticsDrillDownSheet(
                         .heightIn(max = 500.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(transactions) { tx ->
+                    items(transactions, key = { it.id }) { tx ->
                         TransactionRow(
                             transaction = tx,
                             onClick = { onTransactionClick(tx) },

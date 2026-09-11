@@ -96,31 +96,31 @@ class AnalyticsViewModel(
             }
         )
     }.flowOn(Dispatchers.IO)
-        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     val totalIncome: StateFlow<Double> = snapshot.map { it?.totalIncomeMinor?.div(100.0) ?: 0.0 }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, 0.0)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0.0)
     val totalExpense: StateFlow<Double> = snapshot.map { it?.totalExpenseMinor?.div(100.0) ?: 0.0 }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, 0.0)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0.0)
     val transactionCount: StateFlow<Int> = snapshot.map { it?.transactionCount?.toInt() ?: 0 }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0)
     val categoryBreakdown: StateFlow<List<CategorySpendItem>> = snapshot.map { value ->
         val total = maxOf(value?.categoryBreakdown?.sumOf { it.totalMinor }?.div(100.0) ?: 0.0, 1.0)
         value?.categoryBreakdown?.map {
             CategorySpendItem(it.categoryName, it.totalMinor / 100.0, it.totalMinor / 100.0 / total, it.transactionCount.toInt())
         } ?: emptyList()
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val topMerchants: StateFlow<List<MerchantSpendItem>> = snapshot.map { value ->
         value?.topMerchants?.map { MerchantSpendItem(it.merchant, it.totalMinor / 100.0, it.transactionCount.toInt()) }
             ?: emptyList()
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
     val monthlyTrends: StateFlow<List<TrendPoint>> = snapshot.map { value ->
         val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
         value?.monthlyTrends?.map {
             val monthIdx = (it.month.toInt() - 1).coerceIn(0, 11)
             TrendPoint(monthNames[monthIdx], it.totalExpenseMinor / 100.0)
         } ?: emptyList()
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun transactionsForCategory(category: String): List<TransactionItem> {
         val range = getPeriodDateRange(selectedPeriod.value)

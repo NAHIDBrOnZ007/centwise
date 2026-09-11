@@ -1,8 +1,17 @@
 use centwise_parser::{is_likely_financial_review, parse_sms, ParseOutcome, RejectReason};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::path::{Path, PathBuf};
 
-fn parse_csv_rows(path: &str) -> Vec<Vec<String>> {
+fn audit_fixture(folder: &str, filename: &str) -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("fixtures/audits")
+        .join(folder)
+        .join(filename)
+}
+
+fn parse_csv_rows(path: &Path) -> Vec<Vec<String>> {
     let file = match File::open(path) {
         Ok(f) => f,
         Err(_) => return Vec::new(),
@@ -58,7 +67,7 @@ struct QueueAuditStats {
     unparsed_queued_for_review: Vec<(usize, String, String)>,
 }
 
-fn audit_file(path: &str, sender_col: usize, body_col: usize) -> QueueAuditStats {
+fn audit_file(path: &Path, sender_col: usize, body_col: usize) -> QueueAuditStats {
     let rows = parse_csv_rows(path);
     let mut stats = QueueAuditStats::default();
 
@@ -103,9 +112,13 @@ fn audit_file(path: &str, sender_col: usize, body_col: usize) -> QueueAuditStats
 #[test]
 fn test_all_three_review_queues_deep_audit() {
     println!("\n=======================================================");
-    println!("AUDITING QUEUE 1: new qeue report 1.csv");
+    println!("AUDITING REVIEW QUEUE REPORT: review-queue-report-01.csv");
     println!("=======================================================");
-    let q1 = audit_file("../../csv report/new report/new qeue report 1.csv", 1, 7);
+    let q1 = audit_file(
+        &audit_fixture("review-queue-reports", "review-queue-report-01.csv"),
+        1,
+        7,
+    );
     println!("Total Rows: {}", q1.total);
     println!("Parsed Real Transactions: {}", q1.parsed_real_tx);
     println!("Rejected Non-Transactions: {}", q1.rejected_non_tx);
@@ -123,9 +136,13 @@ fn test_all_three_review_queues_deep_audit() {
     }
 
     println!("\n=======================================================");
-    println!("AUDITING QUEUE 2: new qeue report 2.csv");
+    println!("AUDITING REVIEW QUEUE REPORT: review-queue-report-02.csv");
     println!("=======================================================");
-    let q2 = audit_file("../../csv report/new report/new qeue report 2.csv", 1, 7);
+    let q2 = audit_file(
+        &audit_fixture("review-queue-reports", "review-queue-report-02.csv"),
+        1,
+        7,
+    );
     println!("Total Rows: {}", q2.total);
     println!("Parsed Real Transactions: {}", q2.parsed_real_tx);
     println!("Rejected Non-Transactions: {}", q2.rejected_non_tx);
@@ -143,9 +160,13 @@ fn test_all_three_review_queues_deep_audit() {
     }
 
     println!("\n=======================================================");
-    println!("AUDITING QUEUE 3: report 8.csv");
+    println!("AUDITING REVIEW QUEUE REPORT: review-queue-report-03.csv");
     println!("=======================================================");
-    let q3 = audit_file("../../csv report/report 8.csv", 1, 7);
+    let q3 = audit_file(
+        &audit_fixture("review-queue-reports", "review-queue-report-03.csv"),
+        1,
+        7,
+    );
     println!("Total Rows: {}", q3.total);
     println!("Parsed Real Transactions: {}", q3.parsed_real_tx);
     println!("Rejected Non-Transactions: {}", q3.rejected_non_tx);

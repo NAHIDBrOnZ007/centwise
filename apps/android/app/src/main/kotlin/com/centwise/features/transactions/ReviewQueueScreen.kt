@@ -157,7 +157,7 @@ fun ReviewQueueScreen(
                 }
                 Spacer(modifier = Modifier.width(4.dp))
                 IconButton(
-                    onClick = { CsvExporter.shareReviewQueueExport(context) }
+                    onClick = { coroutineScope.launch { CsvExporter.shareReviewQueueExport(context) } }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Share,
@@ -323,7 +323,7 @@ fun ReviewQueueScreen(
                             color = textSecondary
                         )
                         OutlinedButton(
-                            onClick = { CsvExporter.shareReviewQueueExport(context) },
+                            onClick = { coroutineScope.launch { CsvExporter.shareReviewQueueExport(context) } },
                             shape = RoundedCornerShape(CentwiseSpacing.CornerRadiusMedium),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                             border = androidx.compose.foundation.BorderStroke(1.dp, accent.copy(alpha = 0.5f))

@@ -125,12 +125,13 @@ public struct TransactionListView: View {
         .onChange(of: viewModel.sortOrder) { _ in
             viewModel.applyFilters()
         }
+        .onAppear { viewModel.activate() }
+        .onDisappear { viewModel.deactivate() }
         .toast(item: $toastItem)
         .sheet(item: $presentedSheet) { sheet in
             switch sheet {
             case .add:
                 AddEditTransactionView {
-                    viewModel.applyFilters()
                     toastItem = ToastItem("Transaction added successfully", style: .success)
                 }
             case .detail(let transaction):
@@ -145,7 +146,6 @@ public struct TransactionListView: View {
                 )
             case .edit(let transaction):
                 AddEditTransactionView(transactionToEdit: transaction) {
-                    viewModel.applyFilters()
                     toastItem = ToastItem("Transaction updated successfully", style: .success)
                 }
             case .export:
@@ -175,12 +175,10 @@ public struct TransactionListView: View {
             Menu {
                 Button("All Types") {
                     viewModel.selectedTypeFilter = nil
-                    viewModel.applyFilters()
                 }
                 ForEach(TransactionType.allCases) { type in
                     Button(type.rawValue) {
                         viewModel.selectedTypeFilter = type
-                        viewModel.applyFilters()
                     }
                 }
             } label: {
@@ -195,12 +193,10 @@ public struct TransactionListView: View {
             Menu {
                 Button("All Categories") {
                     viewModel.selectedCategoryFilter = nil
-                    viewModel.applyFilters()
                 }
                 ForEach(repository.categories) { category in
                     Button(category.name) {
                         viewModel.selectedCategoryFilter = category.id
-                        viewModel.applyFilters()
                     }
                 }
             } label: {

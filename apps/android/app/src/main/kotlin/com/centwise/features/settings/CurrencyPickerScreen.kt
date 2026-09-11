@@ -88,9 +88,11 @@ fun CurrencyPickerScreen(
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
     val searchBg = if (isDark) CentwiseColors.DarkSearchBg else CentwiseColors.LightSearchBg
 
-    val filtered = SupportedCurrencies.all.filter {
-        it.code.lowercase().contains(searchText.lowercase()) ||
-                it.name.lowercase().contains(searchText.lowercase())
+    val filtered = remember(searchText) {
+        val query = searchText.lowercase()
+        SupportedCurrencies.all.filter {
+            it.code.lowercase().contains(query) || it.name.lowercase().contains(query)
+        }
     }
 
     Column(
@@ -155,7 +157,7 @@ fun CurrencyPickerScreen(
             contentPadding = PaddingValues(top = 16.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(filtered) { currency ->
+            items(filtered, key = { it.code }) { currency ->
                 val isSelected = currency.code == selectedCode
                 Row(
                     modifier = Modifier

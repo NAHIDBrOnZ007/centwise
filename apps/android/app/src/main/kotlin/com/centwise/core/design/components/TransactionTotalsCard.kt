@@ -1,11 +1,18 @@
 package com.centwise.core.design.components
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -26,6 +33,23 @@ fun TransactionTotalsCard(
     modifier: Modifier = Modifier,
     isDark: Boolean = isSystemInDarkTheme()
 ) {
+    var animateValues by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { animateValues = true }
+    val animatedIncome by animateFloatAsState(
+        targetValue = if (animateValues) income.toFloat() else 0f,
+        animationSpec = tween(450),
+        label = "transaction income"
+    )
+    val animatedExpense by animateFloatAsState(
+        targetValue = if (animateValues) expense.toFloat() else 0f,
+        animationSpec = tween(450),
+        label = "transaction expense"
+    )
+    val animatedNet by animateFloatAsState(
+        targetValue = if (animateValues) net.toFloat() else 0f,
+        animationSpec = tween(450),
+        label = "transaction net"
+    )
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
 
@@ -51,7 +75,7 @@ fun TransactionTotalsCard(
             // 1. Income Column
             TotalItem(
                 label = "↓ Income",
-                value = CurrencyFormatter.format(income),
+                value = CurrencyFormatter.format(animatedIncome.toDouble()),
                 color = CentwiseColors.IncomeGreen,
                 textSecondary = textSecondary
             )
@@ -59,16 +83,16 @@ fun TransactionTotalsCard(
             // 2. Expenses Column
             TotalItem(
                 label = "↑ Expenses",
-                value = CurrencyFormatter.format(expense),
+                value = CurrencyFormatter.format(animatedExpense.toDouble()),
                 color = CentwiseColors.ExpenseRed,
                 textSecondary = textSecondary
             )
 
             // 3. Net Column
             TotalItem(
-                label = if (net >= 0) "✓ Net" else "✗ Net",
-                value = (if (net >= 0) "+" else "") + CurrencyFormatter.format(net),
-                color = if (net >= 0) CentwiseColors.IncomeGreen else CentwiseColors.ExpenseRed,
+                label = if (animatedNet >= 0) "✓ Net" else "✗ Net",
+                value = (if (animatedNet >= 0) "+" else "") + CurrencyFormatter.format(animatedNet.toDouble()),
+                color = if (animatedNet >= 0) CentwiseColors.IncomeGreen else CentwiseColors.ExpenseRed,
                 textSecondary = textSecondary
             )
         }

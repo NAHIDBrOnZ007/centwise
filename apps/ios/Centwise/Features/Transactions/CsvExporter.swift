@@ -63,6 +63,8 @@ public enum CsvExporter {
 public struct CsvExportSheet: View {
     private let transactions: [CentwiseTransaction]
     @Environment(\.dismiss) private var dismiss
+    @State private var exportURL: URL?
+    @State private var exportFailed = false
 
     public init(transactions: [CentwiseTransaction]) {
         self.transactions = transactions
@@ -71,7 +73,7 @@ public struct CsvExportSheet: View {
     public var body: some View {
         NavigationStack {
             VStack(spacing: CentwiseSpacing.lg) {
-                if let url = CsvExporter.writeCsvFile(transactions) {
+                if let url = exportURL {
                     Image(systemName: "doc.text")
                         .font(.system(size: 44))
                         .foregroundColor(CentwiseColors.primaryEmerald)
@@ -90,12 +92,14 @@ public struct CsvExportSheet: View {
                     .buttonStyle(.borderedProminent)
                     .tint(CentwiseColors.primaryEmerald)
                     .padding(.horizontal, CentwiseSpacing.xl)
-                } else {
+                } else if exportFailed {
                     Image(systemName: "exclamationmark.triangle")
                         .font(.system(size: 44))
                         .foregroundColor(CentwiseColors.expenseRed)
                     Text("Export failed")
                         .font(CentwiseTypography.title3)
+                } else {
+                    ProgressView("Preparing export…")
                 }
 
                 Spacer()
@@ -108,6 +112,19 @@ public struct CsvExportSheet: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
                 }
+            }
+            .onAppear(perform: prepareExport)
+        }
+    }
+
+    private func prepareExport() {
+        guard exportURL == nil, !exportFailed else { return }
+        let snapshot = transactions
+        DispatchQueue.global(qos: .userInitiated).async {
+            let url = CsvExporter.writeCsvFile(snapshot)
+            DispatchQueue.main.async {
+                exportURL = url
+                exportFailed = url == nil
             }
         }
     }

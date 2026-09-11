@@ -41,6 +41,7 @@ public final class TransactionsViewModel: ObservableObject {
     private var cachedGroupedByMonth: [(key: String, items: [CentwiseTransaction])] = []
     private let filterQueue = DispatchQueue(label: "com.centwise.transactions-filter", qos: .userInitiated)
     private var calculationID: Int = 0
+    private var isActive = false
     private static let monthFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM yyyy"
@@ -58,19 +59,22 @@ public final class TransactionsViewModel: ObservableObject {
             .sink { [weak self] items in
                 guard let self = self else { return }
                 self.allTransactions = items
-                self.applyFilters()
+                if self.isActive { self.applyFilters() }
             }
             .store(in: &cancellables)
 
         Publishers.CombineLatest4($searchQuery, $selectedTypeFilter, $selectedCategoryFilter, $selectedPeriod)
+            .dropFirst()
             .debounce(for: .milliseconds(100), scheduler: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.applyFilters()
+                guard let self, self.isActive else { return }
+                self.applyFilters()
             }
             .store(in: &cancellables)
     }
 
     public func applyFilters() {
+        guard isActive else { return }
         calculationID += 1
         let requestID = calculationID
         let source = allTransactions
@@ -173,6 +177,17 @@ public final class TransactionsViewModel: ObservableObject {
 
     public func deleteTransaction(id: String) {
         repository.deleteTransaction(id: id)
+    }
+
+    public func activate() {
+        guard !isActive else { return }
+        isActive = true
+        applyFilters()
+    }
+
+    public func deactivate() {
+        isActive = false
+        calculationID += 1
     }
 
     /// Groups transactions by Month (e.g. "AUGUST 2026")

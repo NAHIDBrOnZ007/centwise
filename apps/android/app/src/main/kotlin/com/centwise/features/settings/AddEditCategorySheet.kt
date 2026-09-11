@@ -184,7 +184,7 @@ fun AddEditCategorySheet(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(iconChoices) { iconName ->
+                        items(iconChoices, key = { it }) { iconName ->
                             val isSelected = selectedIcon == iconName
                             Box(
                                 modifier = Modifier
@@ -229,7 +229,7 @@ fun AddEditCategorySheet(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(colorChoices) { hex ->
+                        items(colorChoices, key = { it }) { hex ->
                             val color = Color(hex)
                             val isSelected = hex == selectedColorHex
                             Box(

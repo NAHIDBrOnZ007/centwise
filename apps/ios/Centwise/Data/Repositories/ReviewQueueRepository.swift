@@ -93,13 +93,20 @@ public final class ReviewQueueRepository: ObservableObject {
         }
     }
 
-    @discardableResult
-    public func confirmAsTransaction(item: ReviewQueueItem, transaction: CentwiseTransaction) -> Bool {
-        guard CentwiseRustBackend.convertReviewQueueItem(id: item.id, transaction: transaction) else {
-            return false
+    public func confirmAsTransactionAsync(
+        item: ReviewQueueItem,
+        transaction: CentwiseTransaction,
+        completion: @escaping (Bool) -> Void
+    ) {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let succeeded = CentwiseRustBackend.convertReviewQueueItem(id: item.id, transaction: transaction)
+            if succeeded {
+                self?.refresh()
+                TransactionRepository.shared.loadFromRust()
+            }
+            DispatchQueue.main.async {
+                completion(succeeded)
+            }
         }
-        refresh()
-        TransactionRepository.shared.loadFromRust()
-        return true
     }
 }

@@ -1,8 +1,17 @@
 use centwise_parser::{parse_sms, ParseOutcome};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::path::{Path, PathBuf};
 
-fn parse_csv_rows(path: &str) -> Vec<Vec<String>> {
+fn audit_fixture(report_type: &str, filename: &str) -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("fixtures/audits")
+        .join(report_type)
+        .join(filename)
+}
+
+fn parse_csv_rows(path: &Path) -> Vec<Vec<String>> {
     let file = match File::open(path) {
         Ok(f) => f,
         Err(_) => return Vec::new(),
@@ -49,9 +58,13 @@ fn parse_csv_rows(path: &str) -> Vec<Vec<String>> {
 }
 
 #[test]
-fn test_audit_report_9() {
-    let rows = parse_csv_rows("../../csv report/report 9.csv");
-    println!("Report 9 Total rows parsed from CSV: {}", rows.len());
+fn test_audit_transaction_report_08() {
+    let rows = parse_csv_rows(&audit_fixture(
+        "transaction-reports",
+        "transaction-report-08.csv",
+    ));
+    assert!(!rows.is_empty(), "transaction report 08 fixture must exist");
+    println!("Transaction report 08 rows parsed from CSV: {}", rows.len());
     let mut total = 0;
     let mut parsed = 0;
     let mut rejected = 0;
@@ -94,15 +107,25 @@ fn test_audit_report_9() {
         }
     }
     println!(
-        "\nREPORT 9 AUDIT: Total: {}, Parsed: {}, Rejected: {}",
+        "\nTRANSACTION REPORT 08 AUDIT: Total: {}, Parsed: {}, Rejected: {}",
         total, parsed, rejected
     );
 }
 
 #[test]
-fn test_audit_report_8() {
-    let rows = parse_csv_rows("../../csv report/report 8.csv");
-    println!("Report 8 Total rows parsed from CSV: {}", rows.len());
+fn test_audit_review_queue_report_03() {
+    let rows = parse_csv_rows(&audit_fixture(
+        "review-queue-reports",
+        "review-queue-report-03.csv",
+    ));
+    assert!(
+        !rows.is_empty(),
+        "review queue report 03 fixture must exist"
+    );
+    println!(
+        "Review queue report 03 rows parsed from CSV: {}",
+        rows.len()
+    );
     let mut total = 0;
     let mut parsed = 0;
     let mut rejected = 0;
@@ -149,7 +172,7 @@ fn test_audit_report_8() {
         }
     }
     println!(
-        "\nREPORT 8 AUDIT: Total: {}, Parsed: {}, Rejected: {}",
+        "\nREVIEW QUEUE REPORT 03 AUDIT: Total: {}, Parsed: {}, Rejected: {}",
         total, parsed, rejected
     );
 }

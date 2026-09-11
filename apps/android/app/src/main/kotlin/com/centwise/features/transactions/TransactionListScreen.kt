@@ -52,6 +52,7 @@ import com.centwise.data.models.TransactionType
 import com.centwise.data.repository.TransactionRepository
 import com.centwise.features.settings.AccentOptions
 import com.centwise.features.settings.AppearancePrefs
+import kotlinx.coroutines.launch
 
 @Composable
 fun TransactionListScreen(
@@ -59,6 +60,7 @@ fun TransactionListScreen(
     viewModel: TransactionsViewModel = viewModel(),
     isDark: Boolean = isSystemInDarkTheme()
 ) {
+    val coroutineScope = rememberCoroutineScope()
     val transactions by viewModel.filteredTransactions.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedPeriod by viewModel.selectedPeriod.collectAsState()
@@ -127,7 +129,7 @@ fun TransactionListScreen(
                         onAddClick = onAddClick,
                         currentSortOrder = sortOrder,
                         onSortSelected = { viewModel.setSortOrder(it) },
-                        onExportClick = { CsvExporter.shareExport(context) },
+                        onExportClick = { coroutineScope.launch { CsvExporter.shareExport(context) } },
                         isDark = isDark
                     )
                 }

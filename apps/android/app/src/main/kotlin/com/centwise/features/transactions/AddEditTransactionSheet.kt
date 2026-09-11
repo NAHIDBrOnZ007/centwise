@@ -54,7 +54,7 @@ import java.util.Locale
 fun AddEditTransactionSheet(
     initialTransaction: TransactionItem? = null,
     onDismiss: () -> Unit,
-    onSave: (TransactionItem) -> Boolean,
+    onSave: suspend (TransactionItem) -> Boolean,
     isDark: Boolean = isSystemInDarkTheme()
 ) {
     var title by remember { mutableStateOf(initialTransaction?.title ?: "") }
@@ -72,6 +72,7 @@ fun AddEditTransactionSheet(
 
     var showCategoryMenu by remember { mutableStateOf(false) }
     var showAccountMenu by remember { mutableStateOf(false) }
+    var isSaving by remember { mutableStateOf(false) }
 
     val categories by TransactionRepository.shared.categories.collectAsState()
     val accounts by TransactionRepository.shared.accounts.collectAsState()
@@ -143,7 +144,7 @@ fun AddEditTransactionSheet(
                 title = if (initialTransaction == null) "New Transaction" else "Edit Transaction",
                 onCancel = { dismissWithAnimation {} },
                 onSave = {
-                    if (isValid) {
+                    if (isValid && !isSaving) {
                         val newTx = TransactionItem(
                             id = initialTransaction?.id ?: java.util.UUID.randomUUID().toString(),
                             title = title.trim(),
@@ -156,12 +157,19 @@ fun AddEditTransactionSheet(
                             reference = initialTransaction?.reference,
                             rawSms = initialTransaction?.rawSms
                         )
-                        dismissWithAnimation {
-                            onSave(newTx)
+                        isSaving = true
+                        scope.launch {
+                            val saved = onSave(newTx)
+                            if (saved) {
+                                sheetState.hide()
+                                onDismiss()
+                            } else {
+                                isSaving = false
+                            }
                         }
                     }
                 },
-                saveEnabled = isValid,
+                saveEnabled = isValid && !isSaving,
                 accent = accent,
                 textPrimary = textPrimary,
                 textSecondary = textSecondary,

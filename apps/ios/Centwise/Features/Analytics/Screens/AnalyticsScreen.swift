@@ -57,6 +57,8 @@ public struct AnalyticsScreen: View {
         .sheet(item: $drillDown) { drill in
             AnalyticsDrillDownSheet(drill: drill)
         }
+        .onAppear { viewModel.activate() }
+        .onDisappear { viewModel.deactivate() }
     }
 
     private var periodBinding: Binding<AnalyticsPeriod> {

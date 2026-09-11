@@ -1,8 +1,17 @@
 use centwise_parser::{parse_sms, ParseOutcome};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::path::{Path, PathBuf};
 
-fn parse_csv_rows(path: &str) -> Vec<Vec<String>> {
+fn audit_fixture(report_type: &str, filename: &str) -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("fixtures/audits")
+        .join(report_type)
+        .join(filename)
+}
+
+fn parse_csv_rows(path: &Path) -> Vec<Vec<String>> {
     let file = match File::open(path) {
         Ok(f) => f,
         Err(_) => return Vec::new(),
@@ -43,12 +52,9 @@ fn parse_csv_rows(path: &str) -> Vec<Vec<String>> {
 }
 
 #[test]
-fn test_audit_new_detected_reports() {
-    for filename in &["new report 1.csv", "new report 3.csv"] {
-        let path = format!(
-            "/Users/faysal/Documents/centwise/csv report/new report/{}",
-            filename
-        );
+fn test_audit_transaction_reports_09_and_10() {
+    for filename in &["transaction-report-09.csv", "transaction-report-10.csv"] {
+        let path = audit_fixture("transaction-reports", filename);
         let rows = parse_csv_rows(&path);
         assert!(!rows.is_empty(), "Failed to read {}", filename);
 
@@ -100,19 +106,19 @@ fn test_audit_new_detected_reports() {
         println!("RESULT {}: Total: {}, Parsed: {}, Rejected: {}, Transfers: {}, Shopping: {}, Recharge: {}",
             filename, total, parsed_count, rejected_count, transfer_count, shopping_count, recharge_count);
 
-        if filename == &"new report 1.csv" {
+        if filename == &"transaction-report-09.csv" {
             // Row 174 (KHADIJA absent notice) should now be rejected as NotATransaction!
             assert_eq!(
                 rejected_count, 1,
-                "Expected exactly 1 rejected row in new report 1 (the absent notice)"
+                "Expected exactly 1 rejected row in transaction report 09 (the absent notice)"
             );
             assert_eq!(
                 parsed_count, 205,
-                "Expected 205 legitimate transactions parsed in new report 1"
+                "Expected 205 legitimate transactions parsed in transaction report 09"
             );
-        } else if filename == &"new report 3.csv" {
+        } else if filename == &"transaction-report-10.csv" {
             assert_eq!(rejected_count, 0, "All rows in report 3 should parse");
-            assert_eq!(parsed_count, 147, "Expected 147 parsed in new report 3");
+            assert_eq!(parsed_count, 147, "Expected 147 parsed in transaction report 10");
             // MFS transfers should now be correctly recognized as Transfers!
             assert!(
                 transfer_count >= 30,
@@ -123,12 +129,12 @@ fn test_audit_new_detected_reports() {
 }
 
 #[test]
-fn test_audit_new_queue_reports() {
-    let q1_path = "/Users/faysal/Documents/centwise/csv report/new report/new qeue report 1.csv";
-    let q2_path = "/Users/faysal/Documents/centwise/csv report/new report/new qeue report 2.csv";
+fn test_audit_review_queue_reports_01_and_02() {
+    let q1_path = audit_fixture("review-queue-reports", "review-queue-report-01.csv");
+    let q2_path = audit_fixture("review-queue-reports", "review-queue-report-02.csv");
 
-    let rows_q1 = parse_csv_rows(q1_path);
-    let rows_q2 = parse_csv_rows(q2_path);
+    let rows_q1 = parse_csv_rows(&q1_path);
+    let rows_q2 = parse_csv_rows(&q2_path);
 
     println!("\n=======================================================");
     println!("AUDITING NEW QUEUE REPORTS AFTER FIXES");
@@ -172,7 +178,7 @@ fn test_audit_new_queue_reports() {
     }
 
     println!("\nREPORT 1 RESULTS: Total: {}, Parsed: {}, Rejected: {}, Telecharge Senders: {}, Teletalk Recognized: {}",
-        rows_q1.len() - 1, q1_parsed, q1_rejected, q1_telecharge_sender_count, q1_teletalk_count);
+        rows_q1.len().saturating_sub(1), q1_parsed, q1_rejected, q1_telecharge_sender_count, q1_teletalk_count);
 
     let mut q2_parsed = 0;
     let mut q2_rejected = 0;
@@ -206,7 +212,7 @@ fn test_audit_new_queue_reports() {
 
     println!(
         "\nREPORT 2 RESULTS: Total: {}, Parsed: {}, Rejected: {}",
-        rows_q2.len() - 1,
+        rows_q2.len().saturating_sub(1),
         q2_parsed,
         q2_rejected
     );

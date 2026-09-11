@@ -109,21 +109,21 @@ class TransactionsViewModel(
             TransactionSortOrder.AMOUNT_ASC -> list.sortedBy { it.amount }
         }
     }.flowOn(kotlinx.coroutines.Dispatchers.Default)
-    .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val totalIncome: StateFlow<Double> = filteredTransactions.map { list ->
         list.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, 0.0)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0.0)
 
     val totalExpense: StateFlow<Double> = filteredTransactions.map { list ->
         list.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, 0.0)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0.0)
 
     val totalNet: StateFlow<Double> = filteredTransactions.map { list ->
         val inc = list.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
         val exp = list.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
         inc - exp
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, 0.0)
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0.0)
 
     fun updateSearch(query: String) {
         _searchQuery.value = query
@@ -153,9 +153,9 @@ class TransactionsViewModel(
         }
     }
 
-    fun addTransaction(tx: TransactionItem): Boolean = repository.addTransaction(tx)
+    suspend fun addTransaction(tx: TransactionItem): Boolean = repository.addTransactionAsync(tx)
 
-    fun updateTransaction(tx: TransactionItem): Boolean = repository.updateTransaction(tx)
+    suspend fun updateTransaction(tx: TransactionItem): Boolean = repository.updateTransactionAsync(tx)
 
     fun deleteTransaction(id: String) {
         repository.deleteTransaction(id)

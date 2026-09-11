@@ -153,10 +153,6 @@ fun CentwiseApp(
         mutableStateOf(!com.centwise.features.onboarding.OnboardingPrefs.isCompleted(context))
     }
 
-    val homeViewModel: HomeViewModel = viewModel()
-    val transactionsViewModel: TransactionsViewModel = viewModel()
-    val analyticsViewModel: AnalyticsViewModel = viewModel()
-
     // Effective dark mode from persisted preference
     val effectiveDark = when (AppearancePrefs.themeMode) {
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
@@ -305,6 +301,7 @@ fun CentwiseApp(
                     saveableStateHolder.SaveableStateProvider(currentTab.name) {
                         when (currentTab) {
                             CentwiseTab.HOME -> {
+                                val homeViewModel: HomeViewModel = viewModel()
                                 HomeScreen(
                                     onSeeAllClick = { currentTab = CentwiseTab.TRANSACTIONS },
                                     onAddClick = { showAddSheet = true },
@@ -314,6 +311,7 @@ fun CentwiseApp(
                                 )
                             }
                             CentwiseTab.TRANSACTIONS -> {
+                                val transactionsViewModel: TransactionsViewModel = viewModel()
                                 TransactionListScreen(
                                     onAddClick = { showAddSheet = true },
                                     viewModel = transactionsViewModel,
@@ -321,6 +319,7 @@ fun CentwiseApp(
                                 )
                             }
                             CentwiseTab.ANALYTICS -> {
+                                val analyticsViewModel: AnalyticsViewModel = viewModel()
                                 AnalyticsScreen(
                                     viewModel = analyticsViewModel,
                                     isDark = effectiveDark
@@ -364,7 +363,7 @@ fun CentwiseApp(
             AddEditTransactionSheet(
                 onDismiss = { showAddSheet = false },
                 onSave = { tx ->
-                    val saved = TransactionRepository.shared.addTransaction(tx)
+                    val saved = TransactionRepository.shared.addTransactionAsync(tx)
                     if (saved) {
                         com.centwise.core.notifications.CentwiseNotifications.notifyNewTransaction(context, tx)
                     }

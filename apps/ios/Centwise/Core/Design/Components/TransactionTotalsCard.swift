@@ -60,7 +60,7 @@ private struct TotalColumn: View {
                     .foregroundColor(.secondary)
             }
 
-            Text(formatAmount(amount))
+            AnimatedNumberText(value: amount, format: formatAmount)
                 .font(.system(size: 16, weight: .semibold, design: .rounded))
                 .foregroundColor(color)
                 .lineLimit(1)

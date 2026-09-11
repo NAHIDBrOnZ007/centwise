@@ -1,8 +1,16 @@
 use centwise_parser::{parse_sms, ParseOutcome};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::path::{Path, PathBuf};
 
-fn audit_csv_path(path: &str) -> Option<(usize, usize, usize, usize)> {
+fn audit_fixture(filename: &str) -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("fixtures/audits/transaction-reports")
+        .join(filename)
+}
+
+fn audit_csv_path(path: &Path) -> Option<(usize, usize, usize, usize)> {
     let file = File::open(path).ok()?;
     let reader = BufReader::new(file);
 
@@ -123,80 +131,55 @@ fn audit_csv_path(path: &str) -> Option<(usize, usize, usize, usize)> {
 }
 
 #[test]
-fn test_audit_report_4_csv() {
-    let candidates = [
-        "/Users/faysal/Documents/centwise/csv report/repoet 4.csv",
-        "csv report/repoet 4.csv",
-        "../csv report/repoet 4.csv",
-    ];
-    if let Some((count, parsed, diffs, rejected)) =
-        candidates.iter().find_map(|p| audit_csv_path(p))
-    {
-        assert_eq!(count, 120);
-        assert_eq!(diffs, 0, "No amount differences allowed");
-        // Two rejected: 1 WhatsApp job scam and 1 educational admission receipt
-        assert_eq!(
-            rejected, 2,
-            "Expected 2 rejected spam/non-transaction messages"
-        );
-        assert_eq!(parsed, 118, "Expected 118 parsed transactions");
-    }
+fn test_audit_transaction_report_04() {
+    let (count, parsed, diffs, rejected) =
+        audit_csv_path(&audit_fixture("transaction-report-04.csv"))
+            .expect("transaction report 04 fixture must exist");
+    assert_eq!(count, 120);
+    assert_eq!(diffs, 0, "No amount differences allowed");
+    assert_eq!(
+        rejected, 2,
+        "Expected 2 rejected spam/non-transaction messages"
+    );
+    assert_eq!(parsed, 118, "Expected 118 parsed transactions");
 }
 
 #[test]
-fn test_audit_report_3_csv() {
-    let candidates = [
-        "/Users/faysal/Documents/centwise/csv report/report 3.csv",
-        "csv report/report 3.csv",
-        "../csv report/report 3.csv",
-    ];
-    if let Some((count, _parsed, diffs, _rejected)) =
-        candidates.iter().find_map(|p| audit_csv_path(p))
-    {
-        assert_eq!(count, 565);
-        assert_eq!(diffs, 0, "No amount differences allowed in report 3");
-    }
+fn test_audit_transaction_report_03() {
+    let (count, _parsed, diffs, _rejected) =
+        audit_csv_path(&audit_fixture("transaction-report-03.csv"))
+            .expect("transaction report 03 fixture must exist");
+    assert_eq!(count, 565);
+    assert_eq!(diffs, 0, "No amount differences allowed in report 3");
 }
 
 #[test]
-fn test_audit_report_6_csv() {
-    let candidates = [
-        "/Users/faysal/Documents/centwise/csv report/report 6.csv",
-        "csv report/report 6.csv",
-        "../csv report/report 6.csv",
-    ];
-    if let Some((count, parsed, diffs, rejected)) =
-        candidates.iter().find_map(|p| audit_csv_path(p))
-    {
-        assert_eq!(count, 130);
-        assert_eq!(
-            diffs, 1,
-            "Only 1 difference expected: row 20 account number 20 quadrillion fix"
-        );
-        assert_eq!(
-            rejected, 29,
-            "29 rejected: 26 loan reminders, 1 FD renewal, 2 promo ads"
-        );
-        assert_eq!(parsed, 101, "101 legitimate transactions parsed");
-    }
+fn test_audit_transaction_report_06() {
+    let (count, parsed, diffs, rejected) =
+        audit_csv_path(&audit_fixture("transaction-report-06.csv"))
+            .expect("transaction report 06 fixture must exist");
+    assert_eq!(count, 130);
+    assert_eq!(
+        diffs, 1,
+        "Only 1 difference expected: row 20 account number 20 quadrillion fix"
+    );
+    assert_eq!(
+        rejected, 29,
+        "29 rejected: 26 loan reminders, 1 FD renewal, 2 promo ads"
+    );
+    assert_eq!(parsed, 101, "101 legitimate transactions parsed");
 }
 
 #[test]
-fn test_audit_report_7_csv() {
-    let candidates = [
-        "/Users/faysal/Documents/centwise/csv report/report 7.csv",
-        "csv report/report 7.csv",
-        "../csv report/report 7.csv",
-    ];
-    if let Some((count, parsed, diffs, rejected)) =
-        candidates.iter().find_map(|p| audit_csv_path(p))
-    {
-        assert_eq!(count, 132);
-        assert_eq!(diffs, 0, "No amount differences allowed");
-        assert_eq!(
-            rejected, 1,
-            "Expected 1 rejected non-transaction (insurance expiry notice)"
-        );
-        assert_eq!(parsed, 131, "Expected 131 legitimate transactions parsed");
-    }
+fn test_audit_transaction_report_07() {
+    let (count, parsed, diffs, rejected) =
+        audit_csv_path(&audit_fixture("transaction-report-07.csv"))
+            .expect("transaction report 07 fixture must exist");
+    assert_eq!(count, 132);
+    assert_eq!(diffs, 0, "No amount differences allowed");
+    assert_eq!(
+        rejected, 1,
+        "Expected 1 rejected non-transaction (insurance expiry notice)"
+    );
+    assert_eq!(parsed, 131, "Expected 131 legitimate transactions parsed");
 }

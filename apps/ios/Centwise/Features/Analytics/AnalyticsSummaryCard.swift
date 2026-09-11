@@ -41,7 +41,9 @@ public struct AnalyticsSummaryCard: View {
                     .tracking(0.6)
                     .foregroundColor(.secondary)
 
-                Text(CurrencyFormatter.shared.formatBDT(spent, showSign: false))
+                AnimatedNumberText(value: spent) {
+                    CurrencyFormatter.shared.formatBDT($0, showSign: false)
+                }
                     .font(.system(size: 32, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
             }
@@ -52,19 +54,19 @@ public struct AnalyticsSummaryCard: View {
             HStack(spacing: 0) {
                 metricColumn(
                     title: "INCOME",
-                    value: CurrencyFormatter.shared.formatBDT(income, showSign: false, compact: true),
+                    value: income,
                     color: CentwiseColors.incomeGreen
                 )
 
                 metricColumn(
                     title: "EXPENSES",
-                    value: CurrencyFormatter.shared.formatBDT(spent, showSign: false, compact: true),
+                    value: spent,
                     color: CentwiseColors.expenseRed
                 )
 
                 metricColumn(
                     title: "NET",
-                    value: "\(net >= 0 ? "+" : "-")\(CurrencyFormatter.shared.formatBDT(abs(net), showSign: false, compact: true))",
+                    value: net,
                     color: net >= 0 ? CentwiseColors.incomeGreen : CentwiseColors.expenseRed
                 )
             }
@@ -75,12 +77,13 @@ public struct AnalyticsSummaryCard: View {
             HStack(spacing: 0) {
                 subMetricColumn(
                     title: "TRANSACTIONS",
-                    value: "\(transactionCount)"
+                    value: Double(transactionCount),
+                    format: { String(Int($0.rounded())) }
                 )
 
                 subMetricColumn(
                     title: "DAILY AVG",
-                    value: CurrencyFormatter.shared.formatBDT(dailyAverage, showSign: false, compact: true)
+                    value: dailyAverage
                 )
 
                 subMetricColumn(
@@ -96,14 +99,17 @@ public struct AnalyticsSummaryCard: View {
         .shadow(color: Color.black.opacity(colorScheme == .dark ? 0.2 : 0.04), radius: 6, x: 0, y: 2)
     }
 
-    private func metricColumn(title: String, value: String, color: Color) -> some View {
+    private func metricColumn(title: String, value: Double, color: Color) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(title)
                 .font(.system(size: 10, weight: .bold))
                 .tracking(0.5)
                 .foregroundColor(.secondary)
 
-            Text(value)
+            AnimatedNumberText(value: value) { amount in
+                let sign = title == "NET" ? (amount >= 0 ? "+" : "-") : ""
+                return "\(sign)\(CurrencyFormatter.shared.formatBDT(abs(amount), showSign: false, compact: true))"
+            }
                 .font(.system(size: 16, weight: .bold, design: .rounded))
                 .foregroundColor(color)
                 .lineLimit(1)
@@ -111,7 +117,13 @@ public struct AnalyticsSummaryCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func subMetricColumn(title: String, value: String, showDot: Bool = false) -> some View {
+    private func subMetricColumn(
+        title: String,
+        value: Double,
+        format: @escaping (Double) -> String = {
+            CurrencyFormatter.shared.formatBDT($0, showSign: false, compact: true)
+        }
+    ) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(title)
                 .font(.system(size: 10, weight: .bold))
@@ -119,10 +131,24 @@ public struct AnalyticsSummaryCard: View {
                 .foregroundColor(.secondary)
 
             HStack(spacing: 4) {
+                AnimatedNumberText(value: value, format: format)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.primary)
+                    .lineLimit(1)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func subMetricColumn(title: String, value: String, showDot: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(title)
+                .font(.system(size: 10, weight: .bold))
+                .tracking(0.5)
+                .foregroundColor(.secondary)
+            HStack(spacing: 4) {
                 if showDot {
-                    Circle()
-                        .fill(Color.gray)
-                        .frame(width: 6, height: 6)
+                    Circle().fill(Color.gray).frame(width: 6, height: 6)
                 }
                 Text(value)
                     .font(.system(size: 14, weight: .semibold))

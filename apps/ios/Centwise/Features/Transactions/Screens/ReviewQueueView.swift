@@ -56,12 +56,13 @@ public struct ReviewQueueView: View {
                     transactionReference: item.reference
                 ),
                 writesToRepository: false,
-                onCommit: { transaction in
-                    let success = repository.confirmAsTransaction(item: item, transaction: transaction)
-                    if success {
-                        toastItem = ToastItem("Transaction confirmed successfully", style: .success)
+                onCommit: { transaction, completion in
+                    repository.confirmAsTransactionAsync(item: item, transaction: transaction) { success in
+                        if success {
+                            toastItem = ToastItem("Transaction confirmed successfully", style: .success)
+                        }
+                        completion(success)
                     }
-                    return success
                 }
             )
         }

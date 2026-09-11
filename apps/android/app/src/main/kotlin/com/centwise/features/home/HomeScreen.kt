@@ -196,7 +196,7 @@ fun HomeScreen(
                 initialTransaction = tx,
                 onDismiss = { editingTransaction = null },
                 onSave = { updatedTx ->
-                    val saved = TransactionRepository.shared.updateTransaction(updatedTx)
+                    val saved = TransactionRepository.shared.updateTransactionAsync(updatedTx)
                     if (saved) editingTransaction = null
                     saved
                 },

@@ -181,7 +181,7 @@ fun EditProfileSheet(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(UserPrefs.AVAILABLE_AVATARS) { avatarName ->
+                items(UserPrefs.AVAILABLE_AVATARS, key = { it }) { avatarName ->
                     val isSelected = selectedAvatar == avatarName
                     Box(
                         modifier = Modifier

@@ -42,8 +42,8 @@ fun CategoriesScreen(
     var showAddSheet by remember { mutableStateOf(false) }
     var editingCategory by remember { mutableStateOf<CategoryOption?>(null) }
     val categories by TransactionRepository.shared.categories.collectAsState()
-    val systemCategories = categories.filter { it.isSystem }
-    val customCategories = categories.filterNot { it.isSystem }
+    val systemCategories = remember(categories) { categories.filter { it.isSystem } }
+    val customCategories = remember(categories) { categories.filterNot { it.isSystem } }
 
     val accent = AccentOptions.byName(AppearancePrefs.accentName).color
 

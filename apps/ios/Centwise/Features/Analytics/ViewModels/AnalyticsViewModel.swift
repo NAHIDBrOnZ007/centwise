@@ -79,6 +79,7 @@ public final class AnalyticsViewModel: ObservableObject {
     private let repository: TransactionRepository
     private let analyticsQueue = DispatchQueue(label: "com.centwise.analytics", qos: .userInitiated)
     private var calculationID = 0
+    private var isActive = false
 
     public init(repository: TransactionRepository = .shared) {
         self.repository = repository
@@ -89,22 +90,35 @@ public final class AnalyticsViewModel: ObservableObject {
         repository.$transactions
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.recalculateAnalytics()
+                guard let self, self.isActive else { return }
+                self.recalculateAnalytics()
             }
             .store(in: &cancellables)
     }
 
     public func setPeriod(_ period: AnalyticsPeriod) {
         selectedPeriod = period
-        recalculateAnalytics()
+        if isActive { recalculateAnalytics() }
     }
 
     public func setTypeFilter(_ filter: AnalyticsTypeFilter) {
         selectedTypeFilter = filter
+        if isActive { recalculateAnalytics() }
+    }
+
+    public func activate() {
+        guard !isActive else { return }
+        isActive = true
         recalculateAnalytics()
     }
 
+    public func deactivate() {
+        isActive = false
+        calculationID += 1
+    }
+
     public func recalculateAnalytics() {
+        guard isActive else { return }
         let range = selectedPeriod.dateRange
         let typeFilter: String = switch selectedTypeFilter {
         case .all: "all"

@@ -1,6 +1,7 @@
 package com.centwise.features.analytics
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateIntAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -51,13 +52,30 @@ fun AnalyticsSummaryCard(
     periodDays: Int = 30,
     isDark: Boolean = isSystemInDarkTheme()
 ) {
+    var animateValues by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { animateValues = true }
+    val animatedSpent by animateFloatAsState(
+        targetValue = if (animateValues) spent.toFloat() else 0f,
+        animationSpec = tween(450),
+        label = "analytics spent"
+    )
+    val animatedIncome by animateFloatAsState(
+        targetValue = if (animateValues) income.toFloat() else 0f,
+        animationSpec = tween(450),
+        label = "analytics income"
+    )
+    val animatedTransactionCount by animateIntAsState(
+        targetValue = if (animateValues) transactionCount else 0,
+        animationSpec = tween(450),
+        label = "analytics transaction count"
+    )
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
     val dividerColor = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000)
 
-    val net = income - spent
-    val dailyAverage = spent / maxOf(periodDays, 1)
+    val net = animatedIncome - animatedSpent
+    val dailyAverage = animatedSpent / maxOf(periodDays, 1)
 
     Column(
         modifier = Modifier
@@ -78,7 +96,7 @@ fun AnalyticsSummaryCard(
             )
 
             Text(
-                text = CurrencyFormatter.formatBDT(spent),
+                text = CurrencyFormatter.formatBDT(animatedSpent.toDouble()),
                 style = CentwiseTypography.HeroAmount.copy(fontSize = 32.sp),
                 color = textPrimary
             )
@@ -98,11 +116,11 @@ fun AnalyticsSummaryCard(
         ) {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("INCOME", style = CentwiseTypography.Caption, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = textSecondary)
-                Text(CurrencyFormatter.formatBDT(income, compact = true), style = CentwiseTypography.Headline, fontWeight = FontWeight.Bold, color = CentwiseColors.IncomeGreen, fontSize = 15.sp)
+                Text(CurrencyFormatter.formatBDT(animatedIncome.toDouble(), compact = true), style = CentwiseTypography.Headline, fontWeight = FontWeight.Bold, color = CentwiseColors.IncomeGreen, fontSize = 15.sp)
             }
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("EXPENSES", style = CentwiseTypography.Caption, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = textSecondary)
-                Text(CurrencyFormatter.formatBDT(spent, compact = true), style = CentwiseTypography.Headline, fontWeight = FontWeight.Bold, color = CentwiseColors.ExpenseRed, fontSize = 15.sp)
+                Text(CurrencyFormatter.formatBDT(animatedSpent.toDouble(), compact = true), style = CentwiseTypography.Headline, fontWeight = FontWeight.Bold, color = CentwiseColors.ExpenseRed, fontSize = 15.sp)
             }
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("NET", style = CentwiseTypography.Caption, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = textSecondary)
@@ -124,7 +142,7 @@ fun AnalyticsSummaryCard(
         ) {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("TRANSACTIONS", style = CentwiseTypography.Caption, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = textSecondary)
-                Text("$transactionCount", style = CentwiseTypography.Headline, fontWeight = FontWeight.SemiBold, color = textPrimary, fontSize = 14.sp)
+                Text("$animatedTransactionCount", style = CentwiseTypography.Headline, fontWeight = FontWeight.SemiBold, color = textPrimary, fontSize = 14.sp)
             }
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text("DAILY AVG", style = CentwiseTypography.Caption, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = textSecondary)

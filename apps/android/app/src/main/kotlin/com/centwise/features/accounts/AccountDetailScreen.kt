@@ -48,7 +48,9 @@ fun AccountDetailScreen(
     val transactions by repository.transactions.collectAsState()
 
     // Live account reference
-    val currentAccount = accounts.firstOrNull { it.id == account.id } ?: account
+    val currentAccount = remember(accounts, account) {
+        accounts.firstOrNull { it.id == account.id } ?: account
+    }
 
     var showEditSheet by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -62,15 +64,23 @@ fun AccountDetailScreen(
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
 
     val tint = providerColor(currentAccount.providerName)
-    val accountTransactions = transactions.filter {
-        it.paymentMethod.equals(currentAccount.providerName, ignoreCase = true) ||
-        it.paymentMethod.equals(currentAccount.name, ignoreCase = true)
+    val accountTransactions = remember(transactions, currentAccount) {
+        transactions.filter {
+            it.paymentMethod.equals(currentAccount.providerName, ignoreCase = true) ||
+                it.paymentMethod.equals(currentAccount.name, ignoreCase = true)
+        }
     }
 
-    val moneyIn = accountTransactions.filter { it.type == com.centwise.data.models.TransactionType.INCOME }
-        .sumOf { it.amount }
-    val moneyOut = accountTransactions.filter { it.type == com.centwise.data.models.TransactionType.EXPENSE }
-        .sumOf { it.amount }
+    val moneyIn = remember(accountTransactions) {
+        accountTransactions.sumOf {
+            if (it.type == com.centwise.data.models.TransactionType.INCOME) it.amount else 0.0
+        }
+    }
+    val moneyOut = remember(accountTransactions) {
+        accountTransactions.sumOf {
+            if (it.type == com.centwise.data.models.TransactionType.EXPENSE) it.amount else 0.0
+        }
+    }
 
     if (showDeleteDialog) {
         AlertDialog(
@@ -346,7 +356,7 @@ fun AccountDetailScreen(
             initialTransaction = tx,
             onDismiss = { editingTransaction = null },
             onSave = { updatedTx ->
-                val saved = repository.updateTransaction(updatedTx)
+                val saved = repository.updateTransactionAsync(updatedTx)
                 if (saved) editingTransaction = null
                 saved
             },

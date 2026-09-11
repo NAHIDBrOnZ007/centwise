@@ -75,30 +75,24 @@ fun DataManagementScreen(
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
     val dividerColor = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000)
 
-    val dbSizeString = remember(refreshCounter, transactions.size, accounts.size, budgets.size, subscriptions.size) {
-        val dir = context.noBackupFilesDir
-        val dbFile = dir.resolve("centwise.db")
-        val walFile = dir.resolve("centwise.db-wal")
-        val shmFile = dir.resolve("centwise.db-shm")
+    var dbSizeString by remember { mutableStateOf("Loading…") }
+    LaunchedEffect(refreshCounter, transactions.size, accounts.size, budgets.size, subscriptions.size) {
+        val isEmpty = transactions.isEmpty() && accounts.isEmpty()
+        dbSizeString = withContext(Dispatchers.IO) {
+            val dir = context.noBackupFilesDir
+            val totalBytes = listOf("centwise.db", "centwise.db-wal", "centwise.db-shm")
+                .sumOf { name -> dir.resolve(name).takeIf { it.exists() }?.length() ?: 0L }
 
-        var totalBytes = 0L
-        if (dbFile.exists()) totalBytes += dbFile.length()
-        if (walFile.exists()) totalBytes += walFile.length()
-        if (shmFile.exists()) totalBytes += shmFile.length()
-
-        if (totalBytes == 0L) {
-            "Clean DB"
-        } else {
-            val kb = totalBytes / 1024.0
-            val formatted = if (kb < 1024) {
-                String.format(Locale.US, "%.1f KB", kb)
+            if (totalBytes == 0L) {
+                "Clean DB"
             } else {
-                String.format(Locale.US, "%.2f MB", kb / 1024.0)
-            }
-            if (transactions.isEmpty() && accounts.isEmpty()) {
-                "Clean DB ($formatted)"
-            } else {
-                formatted
+                val kb = totalBytes / 1024.0
+                val formatted = if (kb < 1024) {
+                    String.format(Locale.US, "%.1f KB", kb)
+                } else {
+                    String.format(Locale.US, "%.2f MB", kb / 1024.0)
+                }
+                if (isEmpty) "Clean DB ($formatted)" else formatted
             }
         }
     }
@@ -538,7 +532,9 @@ fun DataManagementScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .iosBounceClick {
-                                    com.centwise.features.transactions.CsvExporter.shareExport(context)
+                                    coroutineScope.launch {
+                                        com.centwise.features.transactions.CsvExporter.shareExport(context)
+                                    }
                                 }
                                 .padding(horizontal = 16.dp, vertical = 14.dp),
                             verticalAlignment = Alignment.CenterVertically
@@ -571,7 +567,9 @@ fun DataManagementScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .iosBounceClick {
-                                    com.centwise.features.transactions.CsvExporter.shareReviewQueueExport(context)
+                                    coroutineScope.launch {
+                                        com.centwise.features.transactions.CsvExporter.shareReviewQueueExport(context)
+                                    }
                                 }
                                 .padding(horizontal = 16.dp, vertical = 14.dp),
                             verticalAlignment = Alignment.CenterVertically

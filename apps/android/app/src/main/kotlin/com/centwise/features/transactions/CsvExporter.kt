@@ -9,6 +9,8 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 object CsvExporter {
 
@@ -90,15 +92,12 @@ object CsvExporter {
     }
 
     /** Exports current transactions and opens the system share sheet. */
-    fun shareExport(context: Context): Boolean {
+    suspend fun shareExport(context: Context): Boolean {
         val transactions = TransactionRepository.shared.transactions.value
-        val file = writeCsvFile(context, transactions) ?: return false
-
-        val uri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
-            file
-        )
+        val uri = withContext(Dispatchers.IO) {
+            val file = writeCsvFile(context, transactions) ?: return@withContext null
+            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+        } ?: return false
 
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/csv"
@@ -111,23 +110,16 @@ object CsvExporter {
     }
 
     /** Exports review queue items and opens the system share sheet. */
-    fun shareReviewQueueExport(context: Context): Boolean {
-        var items = com.centwise.data.repository.ReviewQueueRepository.shared.items.value
-        if (items.isEmpty()) {
-            com.centwise.data.repository.ReviewQueueRepository.shared.refresh()
-            items = com.centwise.data.repository.ReviewQueueRepository.shared.items.value
-        }
+    suspend fun shareReviewQueueExport(context: Context): Boolean {
+        val items = com.centwise.data.repository.ReviewQueueRepository.shared.items.value
         if (items.isEmpty()) {
             android.widget.Toast.makeText(context, "Review queue is empty", android.widget.Toast.LENGTH_SHORT).show()
             return false
         }
-        val file = writeReviewQueueCsvFile(context, items) ?: return false
-
-        val uri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
-            file
-        )
+        val uri = withContext(Dispatchers.IO) {
+            val file = writeReviewQueueCsvFile(context, items) ?: return@withContext null
+            FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+        } ?: return false
 
         val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/csv"

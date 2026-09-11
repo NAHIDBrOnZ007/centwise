@@ -57,7 +57,9 @@ fun BudgetDetailScreen(
     val budgets by repository.budgets.collectAsState()
     val transactions by repository.transactions.collectAsState()
 
-    val currentBudget = budgets.firstOrNull { it.id == budget.id } ?: budget
+    val currentBudget = remember(budgets, budget) {
+        budgets.firstOrNull { it.id == budget.id } ?: budget
+    }
 
     var showEditSheet by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -76,10 +78,12 @@ fun BudgetDetailScreen(
     } else 0f
     val isOverBudget = currentBudget.spentAmount > currentBudget.allocatedAmount
 
-    val categoryTransactions = transactions.filter {
-        it.category.equals(currentBudget.categoryName, ignoreCase = true) &&
+    val categoryTransactions = remember(transactions, currentBudget.categoryName) {
+        transactions.filter {
+            it.category.equals(currentBudget.categoryName, ignoreCase = true) &&
                 it.type == com.centwise.data.models.TransactionType.EXPENSE
-    }.sortedByDescending { it.timestamp }
+        }.sortedByDescending { it.timestamp }
+    }
 
     val daysLeft = run {
         val calendar = Calendar.getInstance()
