@@ -86,8 +86,10 @@ public final class ReviewQueueRepository: ObservableObject {
     }
 
     public func dismissItem(id: String) {
-        if CentwiseRustBackend.dismissReviewQueueItem(id: id) {
-            refresh()
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            if CentwiseRustBackend.dismissReviewQueueItem(id: id) {
+                self?.refresh()
+            }
         }
     }
 

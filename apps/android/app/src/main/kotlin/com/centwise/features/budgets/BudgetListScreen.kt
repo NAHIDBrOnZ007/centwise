@@ -61,9 +61,9 @@ fun BudgetListScreen(
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
     val trackBg = if (isDark) CentwiseColors.DarkSearchBg else CentwiseColors.LightSearchBg
 
-    val totalBudget = budgets.sumOf { it.allocatedAmount }
-    val totalSpent = budgets.sumOf { it.spentAmount }
-    val totalPct = if (totalBudget > 0) (totalSpent / totalBudget).toFloat() else 0f
+    val totalBudget = remember(budgets) { budgets.sumOf { it.allocatedAmount } }
+    val totalSpent = remember(budgets) { budgets.sumOf { it.spentAmount } }
+    val totalPct = remember(totalBudget, totalSpent) { if (totalBudget > 0) (totalSpent / totalBudget).toFloat() else 0f }
 
     Column(
         modifier = Modifier

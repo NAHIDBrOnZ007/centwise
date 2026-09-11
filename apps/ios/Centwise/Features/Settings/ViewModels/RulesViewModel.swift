@@ -19,7 +19,7 @@ public final class RulesViewModel: ObservableObject {
             NotificationCenter.default.addObserver(
                 forName: .centwiseTransactionsUpdated,
                 object: nil,
-                queue: .main
+                queue: nil
             ) { [weak self] _ in
                 self?.loadRules()
             }
@@ -76,23 +76,31 @@ public final class RulesViewModel: ObservableObject {
     }
 
     public func restoreDefaultRules() {
-        _ = CentwiseRustBackend.restoreDefaultRules()
-        loadRules()
+        loadQueue.async { [weak self] in
+            _ = CentwiseRustBackend.restoreDefaultRules()
+            self?.loadRules()
+        }
     }
 
     public func addRule(_ rule: SmartRule) {
-        guard CentwiseRustBackend.insertRule(rule) else { return }
-        loadRules()
+        loadQueue.async { [weak self] in
+            guard CentwiseRustBackend.insertRule(rule) else { return }
+            self?.loadRules()
+        }
     }
 
     public func updateRule(_ rule: SmartRule) {
-        guard CentwiseRustBackend.updateRule(rule) else { return }
-        loadRules()
+        loadQueue.async { [weak self] in
+            guard CentwiseRustBackend.updateRule(rule) else { return }
+            self?.loadRules()
+        }
     }
 
     public func deleteRule(id: String) {
-        guard CentwiseRustBackend.deleteRule(id: id) else { return }
-        loadRules()
+        loadQueue.async { [weak self] in
+            guard CentwiseRustBackend.deleteRule(id: id) else { return }
+            self?.loadRules()
+        }
     }
 
     public func toggleRule(id: String, isEnabled: Bool) {

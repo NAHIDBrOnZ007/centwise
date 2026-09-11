@@ -27,10 +27,12 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
     @Published public private(set) var budgets: [CategoryBudget] = []
     @Published public private(set) var subscriptions: [RecurringSubscription] = []
     @Published public private(set) var categories: [TransactionCategory] = []
+    @Published public private(set) var homeDashboard: HomeDashboardRecord? = nil
     private var notificationObservers: [NSObjectProtocol] = []
     private let loadQueue = DispatchQueue(label: "com.centwise.repository-load", qos: .userInitiated)
     private var isLoading = false
     private var refreshPending = false
+    private var refreshWorkItem: DispatchWorkItem?
 
     public init() {
         loadFromRust()
@@ -41,14 +43,14 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
         notificationObservers.append(NotificationCenter.default.addObserver(
             forName: UIApplication.willEnterForegroundNotification,
             object: nil,
-            queue: .main
+            queue: nil
         ) { [weak self] _ in self?.loadFromRust() }
         )
 
         notificationObservers.append(NotificationCenter.default.addObserver(
             forName: .centwiseTransactionsUpdated,
             object: nil,
-            queue: .main
+            queue: nil
         ) { [weak self] _ in self?.loadFromRust() }
         )
     }
@@ -60,107 +62,125 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
     public func loadFromRust() {
         loadQueue.async { [weak self] in
             guard let self else { return }
-            guard !self.isLoading else {
-                self.refreshPending = true
-                return
+            self.refreshWorkItem?.cancel()
+            let workItem = DispatchWorkItem { [weak self] in
+                self?.performLoadFromRust()
             }
-            self.isLoading = true
-            guard CentwiseRustBackend.isAvailable() else {
-                DispatchQueue.main.async {
-                    self.transactions = []
-                    self.accounts = []
-                    self.budgets = []
-                    self.subscriptions = []
-                    self.categories = []
-                }
-                self.finishLoad()
-                return
-            }
-
-            let categoryRecords = CentwiseRustBackend.listCategories()
-            let loadedCategories = categoryRecords.map { record in
-                TransactionCategory(
-                    id: record.id,
-                    name: record.name,
-                    icon: record.icon,
-                    colorHex: record.colorHex,
-                    isSystem: record.isSystem
-                )
-            }
-            let accountRecords = CentwiseRustBackend.listAccounts()
-            let loadedAccounts = accountRecords.map { account in
-                let providerValue = self.provider(account.provider)
-                return FinancialAccount(
-                    id: account.id,
-                    name: account.name,
-                    provider: providerValue,
-                    type: self.accountType(providerValue),
-                    lastFourDigits: account.lastFour,
-                    currentBalance: Double(account.balanceMinor) / 100,
-                    isArchived: account.archived
-                )
-            }
-            let accountsById = Dictionary(uniqueKeysWithValues: accountRecords.map { ($0.id, $0) })
-            let categoriesById = Dictionary(uniqueKeysWithValues: loadedCategories.map { ($0.id, $0) })
-            let loadedTransactions = CentwiseRustBackend.listTransactions().map { transaction in
-                let account = accountsById[transaction.accountId]
-                let cat = categoriesById[transaction.categoryId] ?? TransactionCategory(
-                    id: transaction.categoryId,
-                    name: "Other",
-                    icon: "square.grid.2x2",
-                    colorHex: "#6B7280",
-                    isSystem: true
-                )
-                return CentwiseTransaction(
-                    id: transaction.id,
-                    title: transaction.title,
-                    amount: Double(transaction.amountMinor) / 100,
-                    currency: transaction.currency,
-                    type: self.transactionType(transaction.kind),
-                    category: cat,
-                    date: Date(timeIntervalSince1970: TimeInterval(transaction.occurredAtEpochMs) / 1000),
-                    accountId: transaction.accountId,
-                    accountName: account?.name ?? "Unknown account",
-                    provider: self.provider(account?.provider),
-                    rawSmsBody: transaction.rawSms,
-                    transactionReference: transaction.reference,
-                    balanceAfter: transaction.balanceAfterMinor.map { Double($0) / 100 },
-                    notes: transaction.notes,
-                    isAutoTracked: transaction.isAutoTracked
-                )
-            }
-            let loadedBudgets = CentwiseRustBackend.listBudgets().map { budget in
-                let cat = categoriesById[budget.categoryId]
-                return CategoryBudget(
-                    id: budget.id,
-                    categoryId: budget.categoryId,
-                    categoryName: budget.categoryName,
-                    categoryIcon: cat?.icon ?? "square.grid.2x2",
-                    categoryColorHex: cat?.colorHex ?? "#6B7280",
-                    budgetLimit: Double(budget.limitMinor) / 100,
-                    currentSpent: Double(budget.spentMinor) / 100
-                )
-            }
-            let loadedSubscriptions = CentwiseRustBackend.listSubscriptions().map { subscription in
-                RecurringSubscription(
-                    id: subscription.id,
-                    name: subscription.name,
-                    amount: Double(subscription.amountMinor) / 100,
-                    billingCycle: subscription.billingCycle,
-                    nextDueDate: Date(timeIntervalSince1970: TimeInterval(subscription.nextDueEpochMs) / 1000),
-                    isActive: subscription.isActive
-                )
-            }
-
-            DispatchQueue.main.async {
-                self.categories = loadedCategories
-                self.accounts = loadedAccounts
-                self.transactions = loadedTransactions
-                self.budgets = loadedBudgets
-                self.subscriptions = loadedSubscriptions
-            }
-            self.finishLoad()
+            self.refreshWorkItem = workItem
+            self.loadQueue.asyncAfter(deadline: .now() + .milliseconds(50), execute: workItem)
         }
+    }
+
+    private func performLoadFromRust() {
+        guard !isLoading else {
+            refreshPending = true
+            return
+        }
+        isLoading = true
+        guard CentwiseRustBackend.isAvailable() else {
+            DispatchQueue.main.async {
+                self.transactions = []
+                self.accounts = []
+                self.budgets = []
+                self.subscriptions = []
+                self.categories = []
+                self.homeDashboard = nil
+            }
+            finishLoad()
+            return
+        }
+
+        let categoryRecords = CentwiseRustBackend.listCategories()
+        let loadedCategories = categoryRecords.map { record in
+            TransactionCategory(
+                id: record.id,
+                name: record.name,
+                icon: record.icon,
+                colorHex: record.colorHex,
+                isSystem: record.isSystem
+            )
+        }
+        let accountRecords = CentwiseRustBackend.listAccounts()
+        let loadedAccounts = accountRecords.map { account in
+            let providerValue = self.provider(account.provider)
+            return FinancialAccount(
+                id: account.id,
+                name: account.name,
+                provider: providerValue,
+                type: self.accountType(providerValue),
+                lastFourDigits: account.lastFour,
+                currentBalance: Double(account.balanceMinor) / 100,
+                isArchived: account.archived
+            )
+        }
+        let accountsById = Dictionary(uniqueKeysWithValues: accountRecords.map { ($0.id, $0) })
+        let categoriesById = Dictionary(uniqueKeysWithValues: loadedCategories.map { ($0.id, $0) })
+        let loadedTransactions = CentwiseRustBackend.listTransactions().map { transaction in
+            let account = accountsById[transaction.accountId]
+            let cat = categoriesById[transaction.categoryId] ?? TransactionCategory(
+                id: transaction.categoryId,
+                name: "Other",
+                icon: "square.grid.2x2",
+                colorHex: "#6B7280",
+                isSystem: true
+            )
+            return CentwiseTransaction(
+                id: transaction.id,
+                title: transaction.title,
+                amount: Double(transaction.amountMinor) / 100,
+                currency: transaction.currency,
+                type: self.transactionType(transaction.kind),
+                category: cat,
+                date: Date(timeIntervalSince1970: TimeInterval(transaction.occurredAtEpochMs) / 1000),
+                accountId: transaction.accountId,
+                accountName: account?.name ?? "Unknown account",
+                provider: self.provider(account?.provider),
+                rawSmsBody: transaction.rawSms,
+                transactionReference: transaction.reference,
+                balanceAfter: transaction.balanceAfterMinor.map { Double($0) / 100 },
+                notes: transaction.notes,
+                isAutoTracked: transaction.isAutoTracked
+            )
+        }
+        let loadedBudgets = CentwiseRustBackend.listBudgets().map { budget in
+            let cat = categoriesById[budget.categoryId]
+            return CategoryBudget(
+                id: budget.id,
+                categoryId: budget.categoryId,
+                categoryName: budget.categoryName,
+                categoryIcon: cat?.icon ?? "square.grid.2x2",
+                categoryColorHex: cat?.colorHex ?? "#6B7280",
+                budgetLimit: Double(budget.limitMinor) / 100,
+                currentSpent: Double(budget.spentMinor) / 100
+            )
+        }
+        let loadedSubscriptions = CentwiseRustBackend.listSubscriptions().map { subscription in
+            RecurringSubscription(
+                id: subscription.id,
+                name: subscription.name,
+                amount: Double(subscription.amountMinor) / 100,
+                billingCycle: subscription.billingCycle,
+                nextDueDate: Date(timeIntervalSince1970: TimeInterval(subscription.nextDueEpochMs) / 1000),
+                isActive: subscription.isActive
+            )
+        }
+
+        let calendar = Calendar.current
+        let now = Date()
+        let components = calendar.dateComponents([.year, .month], from: now)
+        let startOfMonth = calendar.date(from: components) ?? now
+        let nextMonth = calendar.date(byAdding: .month, value: 1, to: startOfMonth) ?? now
+        let loadedDashboard = CentwiseRustBackend.homeDashboard(start: startOfMonth, end: nextMonth)
+
+        DispatchQueue.main.async {
+            self.categories = loadedCategories
+            self.accounts = loadedAccounts
+            self.transactions = loadedTransactions
+            self.budgets = loadedBudgets
+            self.subscriptions = loadedSubscriptions
+            self.homeDashboard = loadedDashboard
+        }
+        finishLoad()
     }
 
     /// Runs on `loadQueue`; coalesces notifications received during a refresh.
@@ -185,6 +205,21 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
         return true
     }
 
+    public func addTransactionAsync(_ transaction: CentwiseTransaction, completion: ((Bool) -> Void)? = nil) {
+        loadQueue.async {
+            let ok = CentwiseRustBackend.insertTransaction(transaction)
+            if ok {
+                CentwiseNotifications.notifyNewTransaction(transaction)
+                NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+            }
+            if let completion {
+                DispatchQueue.main.async {
+                    completion(ok)
+                }
+            }
+        }
+    }
+
     @discardableResult
     public func updateTransaction(_ transaction: CentwiseTransaction) -> Bool {
         guard CentwiseRustBackend.updateTransaction(transaction) else { return false }
@@ -192,70 +227,111 @@ public final class TransactionRepository: TransactionRepositoryProtocol, Observa
         return true
     }
 
+    public func updateTransactionAsync(_ transaction: CentwiseTransaction, completion: ((Bool) -> Void)? = nil) {
+        loadQueue.async {
+            let ok = CentwiseRustBackend.updateTransaction(transaction)
+            if ok {
+                NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+            }
+            if let completion {
+                DispatchQueue.main.async {
+                    completion(ok)
+                }
+            }
+        }
+    }
+
     public func deleteTransaction(id: String) {
-        guard CentwiseRustBackend.deleteTransaction(id: id) else { return }
-        NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        loadQueue.async {
+            guard CentwiseRustBackend.deleteTransaction(id: id) else { return }
+            NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        }
     }
 
     public func addAccount(_ account: FinancialAccount) {
-        guard CentwiseRustBackend.insertAccount(account) else { return }
-        NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        loadQueue.async {
+            guard CentwiseRustBackend.insertAccount(account) else { return }
+            NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        }
     }
 
     public func updateAccount(_ account: FinancialAccount) {
-        guard CentwiseRustBackend.updateAccount(account) else { return }
-        NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        loadQueue.async {
+            guard CentwiseRustBackend.updateAccount(account) else { return }
+            NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        }
     }
 
     public func deleteAccount(id: String) {
-        guard CentwiseRustBackend.deleteAccount(id: id) else { return }
-        NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        loadQueue.async {
+            guard CentwiseRustBackend.deleteAccount(id: id) else { return }
+            NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        }
     }
 
     public func addBudget(_ budget: CategoryBudget) {
-        guard CentwiseRustBackend.insertBudget(budget) else { return }
-        NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        loadQueue.async {
+            guard CentwiseRustBackend.insertBudget(budget) else { return }
+            NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        }
     }
 
     public func updateBudget(_ budget: CategoryBudget) {
-        guard CentwiseRustBackend.updateBudget(budget) else { return }
-        NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        loadQueue.async {
+            guard CentwiseRustBackend.updateBudget(budget) else { return }
+            NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        }
     }
 
     public func deleteBudget(id: String) {
-        guard CentwiseRustBackend.deleteBudget(id: id) else { return }
-        NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        loadQueue.async {
+            guard CentwiseRustBackend.deleteBudget(id: id) else { return }
+            NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        }
     }
 
     public func addSubscription(_ subscription: RecurringSubscription) {
-        guard CentwiseRustBackend.insertSubscription(subscription) else { return }
-        NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        loadQueue.async {
+            guard CentwiseRustBackend.insertSubscription(subscription) else { return }
+            NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        }
     }
 
     public func updateSubscription(_ subscription: RecurringSubscription) {
-        guard CentwiseRustBackend.updateSubscription(subscription) else { return }
-        NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        loadQueue.async {
+            guard CentwiseRustBackend.updateSubscription(subscription) else { return }
+            NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        }
     }
 
     public func deleteSubscription(id: String) {
-        guard CentwiseRustBackend.deleteSubscription(id: id) else { return }
-        NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        loadQueue.async {
+            guard CentwiseRustBackend.deleteSubscription(id: id) else { return }
+            NotificationCenter.default.post(name: .centwiseTransactionsUpdated, object: nil)
+        }
     }
 
     public func addCategory(_ category: TransactionCategory) {
-        guard CentwiseRustBackend.insertCategory(category) else { return }
-        loadFromRust()
+        loadQueue.async { [weak self] in
+            guard CentwiseRustBackend.insertCategory(category) else { return }
+            self?.loadFromRust()
+        }
     }
 
     public func updateCategory(_ category: TransactionCategory) {
-        guard !category.isSystem, CentwiseRustBackend.updateCategory(category) else { return }
-        loadFromRust()
+        loadQueue.async { [weak self] in
+            guard !category.isSystem, CentwiseRustBackend.updateCategory(category) else { return }
+            self?.loadFromRust()
+        }
     }
 
     public func deleteCategory(id: String) {
-        guard let category = categories.first(where: { $0.id == id }), !category.isSystem else { return }
-        guard CentwiseRustBackend.deleteCategory(id: id) else { return }
-        loadFromRust()
+        loadQueue.async { [weak self] in
+            guard let self else { return }
+            guard let category = self.categories.first(where: { $0.id == id }), !category.isSystem else { return }
+            guard CentwiseRustBackend.deleteCategory(id: id) else { return }
+            self.loadFromRust()
+        }
     }
 
     @discardableResult

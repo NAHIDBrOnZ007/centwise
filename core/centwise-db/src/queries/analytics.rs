@@ -148,29 +148,83 @@ impl<'a> Queries<'a> {
         months_back: u32,
         anchor_epoch_ms: i64,
     ) -> DbResult<Vec<MonthlySpend>> {
-        let window_modifier = format!("-{} months", months_back.saturating_sub(1));
-        let anchor_seconds = anchor_epoch_ms / 1000;
+        // Compute the cutoff in Rust using UTC arithmetic instead of SQLite strftime.
+        let cutoff_epoch_ms =
+            month_start_n_months_ago(anchor_epoch_ms, months_back.saturating_sub(1));
 
         let mut statement = self.connection.prepare(
-            "SELECT
-                CAST(strftime('%Y', occurred_at_epoch_ms / 1000, 'unixepoch') AS INTEGER) AS y,
-                CAST(strftime('%m', occurred_at_epoch_ms / 1000, 'unixepoch') AS INTEGER) AS m,
-                COALESCE(SUM(amount_minor), 0) AS total
+            "SELECT occurred_at_epoch_ms, amount_minor
              FROM transactions
              WHERE transaction_type = 'expense'
-               AND occurred_at_epoch_ms >= strftime('%s', ?1, 'unixepoch', 'start of month', ?2) * 1000
-             GROUP BY y, m
-             ORDER BY y ASC, m ASC",
+               AND occurred_at_epoch_ms >= ?1
+             ORDER BY occurred_at_epoch_ms ASC",
         )?;
 
-        let rows = statement.query_map(params![anchor_seconds, window_modifier], |row| {
-            Ok(MonthlySpend {
-                year: row.get::<_, i64>(0)? as i32,
-                month: row.get::<_, i64>(1)? as u32,
-                total_expense_minor: row.get(2)?,
-            })
-        })?;
+        // Aggregate year/month buckets in Rust — avoids per-row strftime in SQLite.
+        let mut buckets: std::collections::BTreeMap<(i32, u32), i64> =
+            std::collections::BTreeMap::new();
+        let mut rows = statement.query(params![cutoff_epoch_ms])?;
+        while let Some(row) = rows.next()? {
+            let epoch_ms: i64 = row.get(0)?;
+            let amount: i64 = row.get(1)?;
+            let (year, month) = epoch_ms_to_year_month(epoch_ms);
+            *buckets.entry((year, month)).or_insert(0) += amount;
+        }
 
-        collect(rows)
+        Ok(buckets
+            .into_iter()
+            .map(|((year, month), total)| MonthlySpend {
+                year,
+                month,
+                total_expense_minor: total,
+            })
+            .collect())
     }
+}
+
+/// Extracts UTC (year, month) from an epoch-ms timestamp using pure arithmetic.
+fn epoch_ms_to_year_month(epoch_ms: i64) -> (i32, u32) {
+    // Days since Unix epoch (1970-01-01).
+    let total_days = (epoch_ms / 86_400_000) as i32;
+    // Civil date from day count using the algorithm from
+    // Howard Hinnant (public domain).
+    let z = total_days + 719_468;
+    let era = (if z >= 0 { z } else { z - 146_096 }) / 146_097;
+    let doe = (z - era * 146_097) as u32; // day of era [0, 146096]
+    let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146_096) / 365; // year of era [0, 399]
+    let y = yoe as i32 + era * 400;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100); // day of year [0, 365]
+    let mp = (5 * doy + 2) / 153; // [0, 11]
+    let m = if mp < 10 { mp + 3 } else { mp - 9 }; // [1, 12]
+    let year = if m <= 2 { y + 1 } else { y };
+    (year, m)
+}
+
+/// Returns the epoch-ms of the first millisecond of the month that is
+/// `n` calendar months before the month containing `anchor_epoch_ms`.
+fn month_start_n_months_ago(anchor_epoch_ms: i64, n: u32) -> i64 {
+    let (year, month) = epoch_ms_to_year_month(anchor_epoch_ms);
+    let n = n as i32;
+    // Subtract n months.
+    let total_months = year * 12 + month as i32 - 1 - n;
+    let target_year = total_months.div_euclid(12);
+    let target_month = (total_months.rem_euclid(12) + 1) as u32;
+    // Convert back to epoch-ms using the inverse civil→days algorithm.
+    let y = if target_month <= 2 {
+        target_year - 1
+    } else {
+        target_year
+    };
+    let era = (if y >= 0 { y } else { y - 399 }) / 400;
+    let yoe = (y - era * 400) as u32;
+    let doy =
+        (153 * (if target_month > 2 {
+            target_month - 3
+        } else {
+            target_month + 9
+        }) + 2)
+            / 5;
+    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+    let days = era * 146_097 + doe as i32 - 719_468;
+    days as i64 * 86_400_000
 }

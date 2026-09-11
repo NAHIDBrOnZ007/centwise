@@ -39,6 +39,13 @@ public final class TransactionsViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private let repository: TransactionRepository
     private var cachedGroupedByMonth: [(key: String, items: [CentwiseTransaction])] = []
+    private let filterQueue = DispatchQueue(label: "com.centwise.transactions-filter", qos: .userInitiated)
+    private var calculationID: Int = 0
+    private static let monthFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        return formatter
+    }()
 
     public init(repository: TransactionRepository = .shared) {
         self.repository = repository
@@ -64,74 +71,104 @@ public final class TransactionsViewModel: ObservableObject {
     }
 
     public func applyFilters() {
-        var result = allTransactions
-        let calendar = Calendar.current
-        let today = Date()
+        calculationID += 1
+        let requestID = calculationID
+        let source = allTransactions
+        let query = searchQuery.trimmingCharacters(in: .whitespaces)
+        let period = selectedPeriod
+        let typeFilter = selectedTypeFilter
+        let categoryFilter = selectedCategoryFilter
+        let providerFilter = selectedProviderFilter
+        let sort = sortOrder
 
-        // Date period filter
-        switch selectedPeriod {
-        case .thisMonth:
-            if let start = calendar.date(from: calendar.dateComponents([.year, .month], from: today)) {
-                result = result.filter { $0.date >= start }
+        filterQueue.async { [weak self] in
+            var result = source
+            let calendar = Calendar.current
+            let today = Date()
+
+            // Date period filter
+            switch period {
+            case .thisMonth:
+                if let start = calendar.date(from: calendar.dateComponents([.year, .month], from: today)) {
+                    result = result.filter { $0.date >= start }
+                }
+            case .lastMonth:
+                if let thisMonthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: today)),
+                   let lastMonthStart = calendar.date(byAdding: .month, value: -1, to: thisMonthStart) {
+                    result = result.filter { $0.date >= lastMonthStart && $0.date < thisMonthStart }
+                }
+            case .allTime:
+                break
             }
-        case .lastMonth:
-            if let thisMonthStart = calendar.date(from: calendar.dateComponents([.year, .month], from: today)),
-               let lastMonthStart = calendar.date(byAdding: .month, value: -1, to: thisMonthStart) {
-                result = result.filter { $0.date >= lastMonthStart && $0.date < thisMonthStart }
+
+            if !query.isEmpty {
+                let q = query.lowercased()
+                result = result.filter {
+                    $0.title.lowercased().contains(q) ||
+                    $0.accountName.lowercased().contains(q) ||
+                    $0.category.name.lowercased().contains(q) ||
+                    ($0.transactionReference?.lowercased().contains(q) ?? false)
+                }
             }
-        case .allTime:
-            break
-        }
 
-        if !searchQuery.trimmingCharacters(in: .whitespaces).isEmpty {
-            let q = searchQuery.lowercased()
-            result = result.filter {
-                $0.title.lowercased().contains(q) ||
-                $0.accountName.lowercased().contains(q) ||
-                $0.category.name.lowercased().contains(q) ||
-                ($0.transactionReference?.lowercased().contains(q) ?? false)
+            if let type = typeFilter {
+                result = result.filter { $0.type == type }
+            }
+
+            if let catId = categoryFilter {
+                result = result.filter { $0.category.id == catId }
+            }
+
+            if let provider = providerFilter {
+                result = result.filter { $0.provider == provider }
+            }
+
+            switch sort {
+            case .newestFirst:
+                result.sort { $0.date > $1.date }
+            case .oldestFirst:
+                result.sort { $0.date < $1.date }
+            case .amountHigh:
+                result.sort { $0.amount > $1.amount }
+            case .amountLow:
+                result.sort { $0.amount < $1.amount }
+            }
+
+            // Calculate Totals
+            var income = 0.0
+            var expense = 0.0
+            for tx in result {
+                if tx.type == .income {
+                    income += tx.amount
+                } else if tx.type == .expense {
+                    expense += tx.amount
+                }
+            }
+
+            // Rebuild month groups off main thread
+            var groups: [String: [CentwiseTransaction]] = [:]
+            var order: [String] = []
+
+            for item in result {
+                let monthKey = Self.monthFormatter.string(from: item.date).uppercased()
+                if groups[monthKey] == nil {
+                    groups[monthKey] = []
+                    order.append(monthKey)
+                }
+                groups[monthKey]?.append(item)
+            }
+
+            let monthGroups = order.map { (key: $0, items: groups[$0] ?? []) }
+
+            DispatchQueue.main.async {
+                guard let self = self, self.calculationID == requestID else { return }
+                self.filteredTransactions = result
+                self.totalIncome = income
+                self.totalExpense = expense
+                self.totalNet = income - expense
+                self.cachedGroupedByMonth = monthGroups
             }
         }
-
-        if let type = selectedTypeFilter {
-            result = result.filter { $0.type == type }
-        }
-
-        if let catId = selectedCategoryFilter {
-            result = result.filter { $0.category.id == catId }
-        }
-
-        if let provider = selectedProviderFilter {
-            result = result.filter { $0.provider == provider }
-        }
-
-        switch sortOrder {
-        case .newestFirst:
-            result.sort { $0.date > $1.date }
-        case .oldestFirst:
-            result.sort { $0.date < $1.date }
-        case .amountHigh:
-            result.sort { $0.amount > $1.amount }
-        case .amountLow:
-            result.sort { $0.amount < $1.amount }
-        }
-
-        self.filteredTransactions = result
-
-        // Calculate Totals
-        var income = 0.0
-        var expense = 0.0
-        for tx in result {
-            if tx.type == .income {
-                income += tx.amount
-            } else if tx.type == .expense {
-                expense += tx.amount
-            }
-        }
-        self.totalIncome = income
-        self.totalExpense = expense
-        self.totalNet = income - expense
-        rebuildMonthGroups()
     }
 
     public func deleteTransaction(id: String) {
@@ -141,24 +178,5 @@ public final class TransactionsViewModel: ObservableObject {
     /// Groups transactions by Month (e.g. "AUGUST 2026")
     public var groupedByMonth: [(key: String, items: [CentwiseTransaction])] {
         cachedGroupedByMonth
-    }
-
-    private func rebuildMonthGroups() {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
-
-        var groups: [String: [CentwiseTransaction]] = [:]
-        var order: [String] = []
-
-        for item in filteredTransactions {
-            let monthKey = formatter.string(from: item.date).uppercased()
-            if groups[monthKey] == nil {
-                groups[monthKey] = []
-                order.append(monthKey)
-            }
-            groups[monthKey]?.append(item)
-        }
-
-        cachedGroupedByMonth = order.map { (key: $0, items: groups[$0] ?? []) }
     }
 }

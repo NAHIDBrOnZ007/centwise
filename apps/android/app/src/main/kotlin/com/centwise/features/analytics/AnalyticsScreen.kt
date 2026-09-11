@@ -320,8 +320,8 @@ fun AnalyticsScreen(
 
         // 4. Category Pie / Donut Chart (Matching iOS CategoryPieChart 1:1)
         item {
-            CategoryPieChart(
-                slices = categoryBreakdown.mapIndexed { index, item ->
+            val slices = remember(categoryBreakdown, categories) {
+                categoryBreakdown.mapIndexed { index, item ->
                     CategorySlice(
                         name = item.category,
                         value = item.totalAmount,
@@ -329,7 +329,10 @@ fun AnalyticsScreen(
                             .firstOrNull { it.name.equals(item.category, ignoreCase = true) }?.color
                             ?: CategorySliceColors.palette[index % CategorySliceColors.palette.size]
                     )
-                },
+                }
+            }
+            CategoryPieChart(
+                slices = slices,
                 isDark = isDark
             )
         }

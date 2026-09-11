@@ -22,7 +22,7 @@ public final class HomeViewModel: ObservableObject {
     }
 
     public func loadHome() {
-        calculateMetrics()
+        repository.loadFromRust()
     }
 
     private func bindRepository() {
@@ -31,7 +31,24 @@ public final class HomeViewModel: ObservableObject {
             .sink { [weak self] items in
                 guard let self = self else { return }
                 self.recentTransactions = Array(items.prefix(5))
-                self.calculateMetrics()
+            }
+            .store(in: &cancellables)
+
+        repository.$homeDashboard
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] dashboard in
+                guard let self = self else { return }
+                if let dashboard = dashboard {
+                    let exp = Double(dashboard.periodExpenseMinor) / 100.0
+                    let inc = Double(dashboard.periodIncomeMinor) / 100.0
+                    self.monthlyExpense = exp
+                    self.monthlyIncome = inc
+                    self.monthlyNet = inc - exp
+                } else {
+                    self.monthlyExpense = 0.0
+                    self.monthlyIncome = 0.0
+                    self.monthlyNet = 0.0
+                }
             }
             .store(in: &cancellables)
 
@@ -51,25 +68,5 @@ public final class HomeViewModel: ObservableObject {
         repository.$subscriptions
             .receive(on: DispatchQueue.main)
             .assign(to: &$subscriptions)
-    }
-
-    private func calculateMetrics() {
-        var expense = 0.0
-        var income = 0.0
-
-        for item in repository.transactions {
-            switch item.type {
-            case .expense:
-                expense += item.amount
-            case .income:
-                income += item.amount
-            case .transfer, .refund:
-                break
-            }
-        }
-
-        self.monthlyExpense = expense
-        self.monthlyIncome = income
-        self.monthlyNet = income - expense
     }
 }

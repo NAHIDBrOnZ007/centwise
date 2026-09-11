@@ -90,6 +90,13 @@ fun TransactionListScreen(
     val listState = rememberLazyListState()
     DismissKeyboardOnScroll(listState)
 
+    val monthFormat = remember { java.text.SimpleDateFormat("MMMM yyyy", java.util.Locale.US) }
+    val groupedTransactions = remember(transactions) {
+        transactions.groupBy { tx ->
+            monthFormat.format(java.util.Date(tx.timestamp)).uppercase()
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -454,13 +461,8 @@ fun TransactionListScreen(
                     )
                 }
             } else {
-                val grouped = transactions.groupBy { tx ->
-                    val monthFormat = java.text.SimpleDateFormat("MMMM yyyy", java.util.Locale.US)
-                    monthFormat.format(java.util.Date(tx.timestamp)).uppercase()
-                }
-
-                grouped.forEach { (monthKey, itemsInMonth) ->
-                    item {
+                groupedTransactions.forEach { (monthKey, itemsInMonth) ->
+                    item(key = "header_$monthKey") {
                         Text(
                             text = monthKey,
                             style = CentwiseTypography.Caption,

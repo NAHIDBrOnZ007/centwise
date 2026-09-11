@@ -25,6 +25,12 @@ import com.centwise.data.models.TransactionItem
 import com.centwise.data.models.TransactionType
 import com.centwise.features.settings.AccentOptions
 import com.centwise.features.settings.AppearancePrefs
+import java.text.SimpleDateFormat
+import java.util.Locale
+
+private val rowDateFormat = object : ThreadLocal<SimpleDateFormat>() {
+    override fun initialValue(): SimpleDateFormat = SimpleDateFormat("dd MMM yyyy", Locale.US)
+}
 
 @Composable
 fun TransactionRow(
@@ -93,9 +99,9 @@ fun TransactionRow(
                     color = textSecondary,
                     maxLines = 1
                 )
-                val dateFormat = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.US)
+                val formattedDate = rowDateFormat.get()?.format(transaction.date) ?: ""
                 Text(
-                    text = " • ${dateFormat.format(transaction.date)}",
+                    text = " • $formattedDate",
                     style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
                     color = textSecondary,
                     maxLines = 1

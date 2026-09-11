@@ -22,6 +22,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -164,50 +165,163 @@ class TransactionRepository private constructor() {
     fun addTransaction(tx: TransactionItem): Boolean =
         CentwiseRustBackend.insertTransaction(tx).also { if (it) loadFromRust() }
 
+    suspend fun addTransactionAsync(tx: TransactionItem): Boolean = withContext(Dispatchers.IO) {
+        refreshMutex.withLock {
+            val ok = CentwiseRustBackend.insertTransaction(tx)
+            if (ok) refreshFromRust()
+            ok
+        }
+    }
+
     fun updateTransaction(tx: TransactionItem): Boolean =
         CentwiseRustBackend.updateTransaction(tx).also { if (it) loadFromRust() }
 
-    fun deleteTransaction(id: String): Boolean =
-        CentwiseRustBackend.deleteTransaction(id).also { if (it) loadFromRust() }
+    suspend fun updateTransactionAsync(tx: TransactionItem): Boolean = withContext(Dispatchers.IO) {
+        refreshMutex.withLock {
+            val ok = CentwiseRustBackend.updateTransaction(tx)
+            if (ok) refreshFromRust()
+            ok
+        }
+    }
 
-    fun addAccount(account: AccountItem): Boolean =
-        CentwiseRustBackend.insertAccount(account).also { if (it) loadFromRust() }
+    fun deleteTransaction(id: String) {
+        repositoryScope.launch {
+            refreshMutex.withLock {
+                if (CentwiseRustBackend.deleteTransaction(id)) {
+                    refreshFromRust()
+                }
+            }
+        }
+    }
 
-    fun updateAccount(account: AccountItem): Boolean =
-        CentwiseRustBackend.updateAccount(account).also { if (it) loadFromRust() }
+    fun addAccount(account: AccountItem) {
+        repositoryScope.launch {
+            refreshMutex.withLock {
+                if (CentwiseRustBackend.insertAccount(account)) {
+                    refreshFromRust()
+                }
+            }
+        }
+    }
 
-    fun deleteAccount(id: String): Boolean =
-        CentwiseRustBackend.deleteAccount(id).also { if (it) loadFromRust() }
+    fun updateAccount(account: AccountItem) {
+        repositoryScope.launch {
+            refreshMutex.withLock {
+                if (CentwiseRustBackend.updateAccount(account)) {
+                    refreshFromRust()
+                }
+            }
+        }
+    }
 
-    fun addBudget(budget: BudgetItem): Boolean =
-        CentwiseRustBackend.insertBudget(budget).also { if (it) loadFromRust() }
+    fun deleteAccount(id: String) {
+        repositoryScope.launch {
+            refreshMutex.withLock {
+                if (CentwiseRustBackend.deleteAccount(id)) {
+                    refreshFromRust()
+                }
+            }
+        }
+    }
 
-    fun updateBudget(budget: BudgetItem): Boolean =
-        CentwiseRustBackend.updateBudget(budget).also { if (it) loadFromRust() }
+    fun addBudget(budget: BudgetItem) {
+        repositoryScope.launch {
+            refreshMutex.withLock {
+                if (CentwiseRustBackend.insertBudget(budget)) {
+                    refreshFromRust()
+                }
+            }
+        }
+    }
 
-    fun deleteBudget(id: String): Boolean =
-        CentwiseRustBackend.deleteBudget(id).also { if (it) loadFromRust() }
+    fun updateBudget(budget: BudgetItem) {
+        repositoryScope.launch {
+            refreshMutex.withLock {
+                if (CentwiseRustBackend.updateBudget(budget)) {
+                    refreshFromRust()
+                }
+            }
+        }
+    }
 
-    fun addSubscription(subscription: SubscriptionItem): Boolean =
-        CentwiseRustBackend.insertSubscription(subscription).also { if (it) loadFromRust() }
+    fun deleteBudget(id: String) {
+        repositoryScope.launch {
+            refreshMutex.withLock {
+                if (CentwiseRustBackend.deleteBudget(id)) {
+                    refreshFromRust()
+                }
+            }
+        }
+    }
 
-    fun updateSubscription(subscription: SubscriptionItem): Boolean =
-        CentwiseRustBackend.updateSubscription(subscription).also { if (it) loadFromRust() }
+    fun addSubscription(subscription: SubscriptionItem) {
+        repositoryScope.launch {
+            refreshMutex.withLock {
+                if (CentwiseRustBackend.insertSubscription(subscription)) {
+                    refreshFromRust()
+                }
+            }
+        }
+    }
 
-    fun deleteSubscription(id: String): Boolean =
-        CentwiseRustBackend.deleteSubscription(id).also { if (it) loadFromRust() }
+    fun updateSubscription(subscription: SubscriptionItem) {
+        repositoryScope.launch {
+            refreshMutex.withLock {
+                if (CentwiseRustBackend.updateSubscription(subscription)) {
+                    refreshFromRust()
+                }
+            }
+        }
+    }
 
-    fun insertCategory(category: CategoryOption): Boolean =
-        CentwiseRustBackend.insertCategory(category.toRustInput()).also { if (it) loadFromRust() }
+    fun deleteSubscription(id: String) {
+        repositoryScope.launch {
+            refreshMutex.withLock {
+                if (CentwiseRustBackend.deleteSubscription(id)) {
+                    refreshFromRust()
+                }
+            }
+        }
+    }
 
-    fun updateCategory(category: CategoryOption): Boolean =
-        CentwiseRustBackend.updateCategory(category.toRustInput()).also { if (it) loadFromRust() }
+    fun insertCategory(category: CategoryOption) {
+        repositoryScope.launch {
+            refreshMutex.withLock {
+                if (CentwiseRustBackend.insertCategory(category.toRustInput())) {
+                    refreshFromRust()
+                }
+            }
+        }
+    }
 
-    fun deleteCategory(id: String): Boolean =
-        CentwiseRustBackend.deleteCategory(id).also { if (it) loadFromRust() }
+    fun updateCategory(category: CategoryOption) {
+        repositoryScope.launch {
+            refreshMutex.withLock {
+                if (CentwiseRustBackend.updateCategory(category.toRustInput())) {
+                    refreshFromRust()
+                }
+            }
+        }
+    }
+
+    fun deleteCategory(id: String) {
+        repositoryScope.launch {
+            refreshMutex.withLock {
+                if (CentwiseRustBackend.deleteCategory(id)) {
+                    refreshFromRust()
+                }
+            }
+        }
+    }
 
     fun resetToEmptyDatabase() {
-        if (CentwiseRustBackend.resetToEmptyDatabase()) loadFromRust()
+        repositoryScope.launch {
+            refreshMutex.withLock {
+                if (CentwiseRustBackend.resetToEmptyDatabase()) {
+                    refreshFromRust()
+                }
+            }
+        }
     }
 
     /** There is no native store to clear after the migration. */

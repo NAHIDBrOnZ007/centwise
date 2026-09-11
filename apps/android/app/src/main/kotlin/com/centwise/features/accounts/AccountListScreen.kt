@@ -78,7 +78,7 @@ fun AccountListScreen(
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
 
-    val totalBalance = accounts.sumOf { it.balance }
+    val totalBalance = remember(accounts) { accounts.sumOf { it.balance } }
 
     Column(
         modifier = Modifier

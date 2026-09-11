@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -31,6 +32,7 @@ import com.centwise.data.models.BudgetItem
 import com.centwise.features.accounts.AccountDetailScreen
 import com.centwise.features.accounts.AccountListScreen
 import com.centwise.features.analytics.AnalyticsScreen
+import com.centwise.features.analytics.AnalyticsViewModel
 import com.centwise.features.budgets.BudgetDetailScreen
 import com.centwise.features.budgets.BudgetListScreen
 import com.centwise.features.home.HomeScreen
@@ -144,6 +146,7 @@ fun CentwiseApp(
     }
 
     var currentTab by remember { mutableStateOf(CentwiseTab.HOME) }
+    val saveableStateHolder = rememberSaveableStateHolder()
     var subScreen by remember { mutableStateOf<SubScreen?>(null) }
     var showAddSheet by remember { mutableStateOf(false) }
     var showOnboarding by remember {
@@ -152,6 +155,7 @@ fun CentwiseApp(
 
     val homeViewModel: HomeViewModel = viewModel()
     val transactionsViewModel: TransactionsViewModel = viewModel()
+    val analyticsViewModel: AnalyticsViewModel = viewModel()
 
     // Effective dark mode from persisted preference
     val effectiveDark = when (AppearancePrefs.themeMode) {
@@ -298,41 +302,46 @@ fun CentwiseApp(
             else -> {
                 // Main Active Screen Viewport
                 Box(modifier = Modifier.fillMaxSize()) {
-                    when (currentTab) {
-                        CentwiseTab.HOME -> {
-                            HomeScreen(
-                                onSeeAllClick = { currentTab = CentwiseTab.TRANSACTIONS },
-                                onAddClick = { showAddSheet = true },
-                                onProfileClick = { currentTab = CentwiseTab.SETTINGS },
-                                viewModel = homeViewModel,
-                                isDark = effectiveDark
-                            )
-                        }
-                        CentwiseTab.TRANSACTIONS -> {
-                            TransactionListScreen(
-                                onAddClick = { showAddSheet = true },
-                                viewModel = transactionsViewModel,
-                                isDark = effectiveDark
-                            )
-                        }
-                        CentwiseTab.ANALYTICS -> {
-                            AnalyticsScreen(isDark = effectiveDark)
-                        }
-                        CentwiseTab.SETTINGS -> {
-                            SettingsScreen(
-                                onAppearanceClick = { subScreen = SubScreen.Appearance },
-                                onCurrencyClick = { subScreen = SubScreen.Currency },
-                                onCategoriesClick = { subScreen = SubScreen.Categories },
-                                onBudgetsClick = { subScreen = SubScreen.Budgets },
-                                onAccountsClick = { subScreen = SubScreen.Accounts },
-                                onSubscriptionsClick = { subScreen = SubScreen.Subscriptions },
-                                onSmartRulesClick = { subScreen = SubScreen.Rules },
-                                onReviewQueueClick = { subScreen = SubScreen.ReviewQueue },
-                                onDataManagementClick = { subScreen = SubScreen.DataManagement },
-                                onFAQClick = { subScreen = SubScreen.FAQ },
-                                onAboutClick = { subScreen = SubScreen.About },
-                                isDark = effectiveDark
-                            )
+                    saveableStateHolder.SaveableStateProvider(currentTab.name) {
+                        when (currentTab) {
+                            CentwiseTab.HOME -> {
+                                HomeScreen(
+                                    onSeeAllClick = { currentTab = CentwiseTab.TRANSACTIONS },
+                                    onAddClick = { showAddSheet = true },
+                                    onProfileClick = { currentTab = CentwiseTab.SETTINGS },
+                                    viewModel = homeViewModel,
+                                    isDark = effectiveDark
+                                )
+                            }
+                            CentwiseTab.TRANSACTIONS -> {
+                                TransactionListScreen(
+                                    onAddClick = { showAddSheet = true },
+                                    viewModel = transactionsViewModel,
+                                    isDark = effectiveDark
+                                )
+                            }
+                            CentwiseTab.ANALYTICS -> {
+                                AnalyticsScreen(
+                                    viewModel = analyticsViewModel,
+                                    isDark = effectiveDark
+                                )
+                            }
+                            CentwiseTab.SETTINGS -> {
+                                SettingsScreen(
+                                    onAppearanceClick = { subScreen = SubScreen.Appearance },
+                                    onCurrencyClick = { subScreen = SubScreen.Currency },
+                                    onCategoriesClick = { subScreen = SubScreen.Categories },
+                                    onBudgetsClick = { subScreen = SubScreen.Budgets },
+                                    onAccountsClick = { subScreen = SubScreen.Accounts },
+                                    onSubscriptionsClick = { subScreen = SubScreen.Subscriptions },
+                                    onSmartRulesClick = { subScreen = SubScreen.Rules },
+                                    onReviewQueueClick = { subScreen = SubScreen.ReviewQueue },
+                                    onDataManagementClick = { subScreen = SubScreen.DataManagement },
+                                    onFAQClick = { subScreen = SubScreen.FAQ },
+                                    onAboutClick = { subScreen = SubScreen.About },
+                                    isDark = effectiveDark
+                                )
+                            }
                         }
                     }
                 }

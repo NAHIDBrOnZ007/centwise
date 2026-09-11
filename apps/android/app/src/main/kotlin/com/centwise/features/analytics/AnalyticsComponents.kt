@@ -182,8 +182,8 @@ fun CategoryPieChart(
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
 
-    val sorted = slices.sortedByDescending { it.value }
-    val total = sorted.sumOf { it.value }
+    val sorted = remember(slices) { slices.sortedByDescending { it.value } }
+    val total = remember(sorted) { sorted.sumOf { it.value } }
 
     var appeared by remember { mutableStateOf(false) }
     val sweepScale by animateFloatAsState(
@@ -305,8 +305,8 @@ fun SpendingTrendsChart(
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
     val gridLineColor = if (isDark) Color(0x14FFFFFF) else Color(0x0F000000)
 
-    val rawMax = points.maxOfOrNull { it.value } ?: 0.0
-    val niceMax = calculateNiceMax(rawMax)
+    val rawMax = remember(points) { points.maxOfOrNull { it.value } ?: 0.0 }
+    val niceMax = remember(rawMax) { calculateNiceMax(rawMax) }
 
     var appeared by remember { mutableStateOf(false) }
     val barScale by animateFloatAsState(
@@ -319,21 +319,24 @@ fun SpendingTrendsChart(
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
 
     // Trend direction calculation matching iOS 1:1
-    var trendLabel: String? = null
-    var trendUp = false
-    if (points.size >= 2) {
-        val last = points.last().value
-        val previous = points[points.size - 2].value
-        if (previous > 0) {
-            val change = (last - previous) / previous
-            if (change > 0.05) {
-                trendLabel = "${(change * 100).toInt()}%"
-                trendUp = true
-            } else if (change < -0.05) {
-                trendLabel = "${(kotlin.math.abs(change) * 100).toInt()}%"
-                trendUp = false
+    val (trendLabel, trendUp) = remember(points) {
+        var label: String? = null
+        var up = false
+        if (points.size >= 2) {
+            val last = points.last().value
+            val previous = points[points.size - 2].value
+            if (previous > 0) {
+                val change = (last - previous) / previous
+                if (change > 0.05) {
+                    label = "${(change * 100).toInt()}%"
+                    up = true
+                } else if (change < -0.05) {
+                    label = "${(kotlin.math.abs(change) * 100).toInt()}%"
+                    up = false
+                }
             }
         }
+        Pair(label, up)
     }
 
     Column(

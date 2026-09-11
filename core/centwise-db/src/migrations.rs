@@ -159,6 +159,17 @@ CREATE INDEX idx_merchant_category_mappings_category
         name: "seed bangladesh smart rules",
         sql: r#"-- Default smart rules are updated for Bangladesh brands."#,
     },
+    Migration {
+        version: 6,
+        name: "composite indexes for analytics and budget queries",
+        sql: r#"
+CREATE INDEX IF NOT EXISTS idx_transactions_type_occurred
+    ON transactions(transaction_type, occurred_at_epoch_ms);
+
+CREATE INDEX IF NOT EXISTS idx_transactions_cat_type_occurred
+    ON transactions(category_id, transaction_type, occurred_at_epoch_ms);
+"#,
+    },
 ];
 
 /// Latest schema version available in this build.
