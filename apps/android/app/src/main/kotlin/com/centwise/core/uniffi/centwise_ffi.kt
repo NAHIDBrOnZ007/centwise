@@ -18,7 +18,6 @@ package com.centwise.core.uniffi
 // helpers directly inline like we're doing here.
 
 import com.sun.jna.Library
-import com.sun.jna.IntegerType
 import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.Structure

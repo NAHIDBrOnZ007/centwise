@@ -9,7 +9,6 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.ExistingWorkPolicy
 import androidx.work.workDataOf
-import com.centwise.core.backend.CentwiseRustBackend
 
 /** Runs the Rust-backed inbox scan away from the Compose/UI lifecycle. */
 class SmsScanWorker(

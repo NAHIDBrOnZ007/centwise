@@ -1,12 +1,8 @@
 package com.centwise.features.accounts
 
 import kotlinx.coroutines.launch
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -20,7 +16,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -31,7 +26,6 @@ import androidx.compose.ui.unit.sp
 import com.centwise.core.design.components.DismissKeyboardOnScroll
 import com.centwise.core.design.components.clearFocusOnTapOutside
 import com.centwise.core.design.theme.CentwiseColors
-import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.data.models.AccountItem
 import com.centwise.features.settings.AccentOptions

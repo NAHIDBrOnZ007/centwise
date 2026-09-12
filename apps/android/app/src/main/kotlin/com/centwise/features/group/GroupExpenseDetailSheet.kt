@@ -2,9 +2,7 @@ package com.centwise.features.group
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -12,7 +10,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,7 +27,6 @@ import com.centwise.core.design.components.iosBounceClick
 import com.centwise.core.design.formatters.CurrencyFormatter
 import com.centwise.core.design.theme.CentwiseColors
 import com.centwise.core.design.theme.CentwiseTypography
-import com.centwise.features.settings.AppearancePrefs
 import com.centwise.features.settings.LanguagePrefs
 import com.centwise.core.profile.UserPrefs
 import kotlinx.coroutines.launch

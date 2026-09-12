@@ -24,7 +24,6 @@ import com.centwise.core.design.components.GreetingCard
 import com.centwise.core.design.components.SpendingSummaryCard
 import com.centwise.core.design.components.TransactionRow
 import com.centwise.core.design.theme.CentwiseColors
-import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.data.models.TransactionItem
 import com.centwise.data.repository.TransactionRepository

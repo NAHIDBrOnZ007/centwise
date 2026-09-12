@@ -3,7 +3,6 @@ package com.centwise.features.group
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -39,7 +38,6 @@ import com.centwise.core.design.components.ModalSheetTopBar
 import com.centwise.core.design.components.clearFocusOnTapOutside
 import com.centwise.core.design.formatters.CurrencyFormatter
 import com.centwise.core.design.theme.CentwiseColors
-import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.core.profile.UserPrefs
 import com.centwise.features.settings.AccentOptions

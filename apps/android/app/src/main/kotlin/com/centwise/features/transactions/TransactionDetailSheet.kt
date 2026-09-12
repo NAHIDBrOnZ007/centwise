@@ -1,8 +1,6 @@
 package com.centwise.features.transactions
 
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -24,7 +22,6 @@ import androidx.compose.ui.unit.sp
 import com.centwise.core.design.components.iosBounceClick
 import com.centwise.core.design.formatters.CurrencyFormatter
 import com.centwise.core.design.theme.CentwiseColors
-import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.data.models.TransactionItem
 import com.centwise.data.models.TransactionType

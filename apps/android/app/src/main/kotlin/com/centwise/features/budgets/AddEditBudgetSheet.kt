@@ -1,12 +1,9 @@
 package com.centwise.features.budgets
 
 import kotlinx.coroutines.launch
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -34,7 +31,6 @@ import com.centwise.core.design.components.DismissKeyboardOnScroll
 import com.centwise.core.design.components.clearFocusOnTapOutside
 import com.centwise.core.design.formatters.CurrencyFormatter
 import com.centwise.core.design.theme.CentwiseColors
-import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.data.models.BudgetItem
 import com.centwise.data.repository.TransactionRepository

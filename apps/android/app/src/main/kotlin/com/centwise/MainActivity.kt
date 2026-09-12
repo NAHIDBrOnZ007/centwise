@@ -25,7 +25,6 @@ import com.centwise.core.design.components.CentwiseTab
 import com.centwise.core.design.components.FloatingTabBar
 import com.centwise.core.design.components.clearFocusOnTapOutside
 import com.centwise.core.design.theme.CentwiseColors
-import com.centwise.core.backend.CentwiseRustBackend
 import com.centwise.data.repository.TransactionRepository
 import com.centwise.data.models.AccountItem
 import com.centwise.data.models.BudgetItem

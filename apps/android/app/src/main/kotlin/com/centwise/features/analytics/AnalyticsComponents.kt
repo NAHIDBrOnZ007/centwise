@@ -15,7 +15,6 @@ import androidx.compose.material.icons.automirrored.filled.TrendingUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,7 +37,6 @@ import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.features.settings.AccentOptions
 import com.centwise.features.settings.AppearancePrefs
-import kotlin.math.min
 
 data class CategorySlice(val name: String, val value: Double, val color: Color)
 data class TrendPoint(val label: String, val value: Double)

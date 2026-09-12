@@ -39,10 +39,8 @@ import com.centwise.core.design.components.TransactionRow
 import com.centwise.core.design.components.iosBounceClick
 import com.centwise.core.design.formatters.CurrencyFormatter
 import com.centwise.core.design.theme.CentwiseColors
-import com.centwise.core.design.theme.CentwiseSpacing
 import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.data.repository.TransactionRepository
-import com.centwise.data.models.TransactionType
 import com.centwise.features.settings.AccentOptions
 import com.centwise.features.settings.AppearancePrefs
 
