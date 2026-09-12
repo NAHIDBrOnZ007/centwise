@@ -1,0 +1,16 @@
+Date,Sender,Reason,Candidate Amount,Candidate Type,Candidate Party,Reference,Raw SMS
+2026-08-27 21:29,bKash,Multiple matching accounts,1000.00,Income,01612258127,DHR2UGXSAU,"You have received Tk 1,000.00 from 01612258127. Fee Tk 0.00. Balance Tk 1,012.19. TrxID DHR2UGXSAU at 27/08/2026 21:29"
+2026-08-25 23:04,bKash,Multiple matching accounts,500.00,Income,01845370329,DHP4SEXB3A,Cash In Tk 500.00 from 01845370329 successful. Fee Tk 0.00. Balance Tk 512.19. TrxID DHP4SEXB3A at 25/08/2026 23:04. Download App: https://bKa.sh/8app
+2026-07-25 11:24,bKash,Multiple matching accounts,420.00,Expense,,DGP0P76EOO,Payment of Tk 420.00 is being reserved for Shohoj Limited-1-RM46212. Balance Tk 184.94. TrxID DGP0P76EOO at 25/07/2026 11:24
+2026-07-24 22:54,bKash,Multiple matching accounts,300.00,Income,01880831424,DGO1OUWX8T,You have received Tk 300.00 from 01880831424. Fee Tk 0.00. Balance Tk 604.94. TrxID DGO1OUWX8T at 24/07/2026 22:54
+2026-07-10 16:36,bKash,Multiple matching accounts,1000.00,Income,01717599950,DGA58UEOGN,"You have received Tk 1,000.00 from 01717599950. Fee Tk 0.00. Balance Tk 1,018.26. TrxID DGA58UEOGN at 10/07/2026 16:36"
+2026-07-01 20:19,16216,SMS could not be parsed: NoAmountFound,,,,,Balance of your A/C:***6411 is BDT .76 as on 30/06/26. To download statement click https://app.dutchbanglabank.com/cbsstatement . For query call 16216
+2026-03-18 23:11,bKash,Multiple matching accounts,780.00,Income,01833511314,DCI39XOBBZ,Cash In Tk 780.00 from 01833511314 successful. Fee Tk 0.00. Balance Tk 851.68. TrxID DCI39XOBBZ at 18/03/2026 23:11. Download App: https://bKa.sh/8app
+2026-02-15 23:43,16216,SMS could not be parsed: NoAmountFound,,,,,Your ROCKET A/C has been approved and credited vCommAmountText for A/C opening. Enjoy DBBL services.
+2026-01-02 00:53,16216,SMS could not be parsed: NotATransaction,,,,,Balance of your A/C:***6411 is BDT 259.10 as on 31/12/25. To download statement click https://app.dutchbanglabank.com/cbsstatement . For query call 16216
+2024-07-21 09:34,Airtel,SMS could not be parsed: NoAmountFound,,,,,"Airtel'e recharge kore minute kinun *247# (bKash) *167# (Nagad):
+129Tk - 200 minute (10 din)
+53Tk - 75 minute (5 din)
+48Tk - 60 minute (4 din)
+28Tk - 40 minute (2 din)
+19Tk - 25 minute (2 din)"

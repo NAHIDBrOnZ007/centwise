@@ -43,6 +43,12 @@ static BILL_PAYMENT_RE: LazyLock<Regex> = LazyLock::new(|| {
         .expect("valid bill payment regex")
 });
 
+// Reservation payments: "Payment of Tk 420.00 is being reserved for Shohoj Limited-1-RM46212. Balance..."
+static RESERVED_FOR_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\b(?:is\s+being\s+)?reserved\s+for\s+([0-9A-Za-z\s'.-]+?)(?:\s+(?:Tk\.?|BDT)\b|\s+Balance|\s*[.,])")
+        .expect("valid reserved for regex")
+});
+
 // CellFin/Upay transfer: "to bKash 017XXXXXXXX" or "to Bank 017XXXXXXXX"
 static TRANSFER_TO_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?i)\bto\s+(?:bKash|Nagad|Rocket|Bank)\s+(01[3-9][0-9X]{8})\b")
@@ -170,6 +176,17 @@ pub fn extract_party(text: &str) -> Option<String> {
     // 1. Bill Payment biller extraction (highest priority for bill flows)
     if lower.contains("bill pay") || lower.contains("pay bill") {
         if let Some(cap) = BILL_PAYMENT_RE.captures(text) {
+            if let Some(m) = cap.get(1) {
+                if let Some(clean) = clean_party_candidate(m.as_str()) {
+                    return Some(clean);
+                }
+            }
+        }
+    }
+
+    // 1b. Reservation payments: "Payment of Tk 420.00 is being reserved for Shohoj Limited-1-RM46212."
+    if lower.contains("reserved for") {
+        if let Some(cap) = RESERVED_FOR_RE.captures(text) {
             if let Some(m) = cap.get(1) {
                 if let Some(clean) = clean_party_candidate(m.as_str()) {
                     return Some(clean);
@@ -426,5 +443,14 @@ mod tests {
 
         let recharge = "Mobile Recharge Request Received. Amount: Tk 50.00 Mobile:01851096720 TxnID: 74E22XY4 Balance: Tk 4.16 23/09/2025 12:19";
         assert_eq!(extract_party(recharge), Some("01851096720".to_string()));
+    }
+
+    #[test]
+    fn extracts_reservation_payment_party() {
+        let text = "Payment of Tk 420.00 is being reserved for Shohoj Limited-1-RM46212. Balance Tk 184.94. TrxID DGP0P76EOO at 25/07/2026 11:24";
+        assert_eq!(
+            extract_party(text),
+            Some("Shohoj Limited-1-RM46212".to_string())
+        );
     }
 }

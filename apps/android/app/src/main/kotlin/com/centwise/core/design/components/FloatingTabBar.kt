@@ -52,16 +52,16 @@ import com.centwise.features.settings.LanguagePrefs
 
 enum class CentwiseTab(val icon: ImageVector) {
     HOME(Icons.Default.Home),
-    TRANSACTIONS(Icons.AutoMirrored.Filled.List),
     GROUP(Icons.Default.Groups),
+    TRANSACTIONS(Icons.AutoMirrored.Filled.List),
     ANALYTICS(Icons.Default.BarChart),
     SETTINGS(Icons.Default.Settings);
 
     val title: String
         get() = when (this) {
             HOME -> if (LanguagePrefs.isBengali) "হোম" else "Home"
-            TRANSACTIONS -> if (LanguagePrefs.isBengali) "লেনদেন" else "Transactions"
             GROUP -> if (LanguagePrefs.isBengali) "গ্রুপ" else "Group"
+            TRANSACTIONS -> if (LanguagePrefs.isBengali) "লেনদেন" else "Transactions"
             ANALYTICS -> if (LanguagePrefs.isBengali) "অ্যানালিটিক্স" else "Analytics"
             SETTINGS -> if (LanguagePrefs.isBengali) "সেটিংস" else "Settings"
         }

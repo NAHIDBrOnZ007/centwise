@@ -1,9 +1,14 @@
 package com.centwise.features.group
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -37,6 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.DpOffset
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.centwise.core.design.formatters.CurrencyFormatter
 import com.centwise.core.design.theme.CentwiseColors
@@ -106,147 +112,157 @@ fun GroupScreen(
                 contentPadding = PaddingValues(top = 16.dp, bottom = 140.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // 1. Header (Title, Subtitle & Action Pills)
+                // 1. Top Header: Group Switcher Chips & Options (Direct on screen without white card)
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 2.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
+                            // Horizontal Group Switcher Chips
+                            LazyRow(
+                                modifier = Modifier.weight(1f),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable {
-                                        showGroupSwitcherSheet = true
-                                        if (AppearancePrefs.hapticsEnabled) {
-                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                        }
-                                    }
+                                contentPadding = PaddingValues(horizontal = 2.dp, vertical = 2.dp)
                             ) {
-                                GroupIconBadge(
-                                    type = group.type,
-                                    size = 36.dp,
-                                    iconSize = 20.dp,
-                                    accent = accent
-                                )
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                items(allGroups) { g ->
+                                    val isActive = g.id == group.id
+                                    GroupChipItem(
+                                        group = g,
+                                        isActive = isActive,
+                                        accent = accent,
+                                        cardBg = cardBg,
+                                        textPrimary = textPrimary,
+                                        textSecondary = textSecondary,
+                                        isDark = isDark,
+                                        onClick = {
+                                            if (!isActive) {
+                                                viewModel.selectGroup(g.id)
+                                                if (AppearancePrefs.hapticsEnabled) {
+                                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                                }
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            // Options Menu (Round Three-Dot Button matching chip height)
+                            Box {
+                                Surface(
+                                    shape = CircleShape,
+                                    color = if (isDark) CentwiseColors.DarkSurface else Color.White,
+                                    border = BorderStroke(1.dp, if (isDark) Color(0x26FFFFFF) else Color(0x14000000)),
+                                    shadowElevation = if (isDark) 4.dp else 2.dp,
+                                    modifier = Modifier
+                                        .size(38.dp)
+                                        .clip(CircleShape)
+                                        .iosBounceClick {
+                                            if (AppearancePrefs.hapticsEnabled) {
+                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                            }
+                                            showOptionsMenu = true
+                                        }
                                 ) {
-                                    Text(
-                                        text = group.displayName,
-                                        style = CentwiseTypography.LargeTitle.copy(fontSize = 21.sp),
-                                        color = textPrimary,
-                                        maxLines = 1,
-                                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
-                                    )
-                                    Icon(
-                                        imageVector = Icons.Default.KeyboardArrowDown,
-                                        contentDescription = "Switch Group",
-                                        tint = textSecondary,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    if (hasAnyOtherGroupNewActivity) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(8.dp)
-                                                .clip(CircleShape)
-                                                .background(accent)
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                        modifier = Modifier.fillMaxSize()
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.MoreHoriz,
+                                            contentDescription = "Menu",
+                                            tint = accent,
+                                            modifier = Modifier.size(20.dp)
                                         )
                                     }
                                 }
-                            }
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = "${group.monthName} • ${group.members.size} " +
-                                        (if (LanguagePrefs.isBengali) "জন সদস্য" else "members") +
-                                        if (group.description.isNotBlank()) " • ${group.description}" else "",
-                                style = CentwiseTypography.Caption,
-                                color = textSecondary
-                            )
-                        }
 
-                        // Top Action Icons
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            // QR Invite Pill
-                            Row(
-                                modifier = Modifier
-                                    .clip(CircleShape)
-                                    .background(accent.copy(alpha = 0.14f))
-                                    .border(1.dp, accent.copy(alpha = 0.3f), CircleShape)
-                                    .clickable {
-                                        showInviteSheet = true
-                                        if (AppearancePrefs.hapticsEnabled) {
-                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                        }
-                                    }
-                                    .padding(horizontal = 10.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.QrCode2,
-                                    contentDescription = "Invite",
-                                    tint = accent,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "QR",
-                                    style = CentwiseTypography.Caption.copy(fontWeight = FontWeight.Bold),
-                                    color = accent
-                                )
-                            }
-
-                            // Options Menu
-                            Box {
-                                IconButton(
-                                    onClick = { showOptionsMenu = true },
-                                    modifier = Modifier.size(36.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.MoreVert,
-                                        contentDescription = "Menu",
-                                        tint = textSecondary,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
+                                val menuBg = if (isDark) Color(0xFF2C2C2E) else Color.White
+                                val menuBorder = BorderStroke(1.dp, if (isDark) Color(0x14FFFFFF) else Color(0x0F000000))
 
                                 DropdownMenu(
                                     expanded = showOptionsMenu,
                                     onDismissRequest = { showOptionsMenu = false },
-                                    modifier = Modifier.background(cardBg)
+                                    offset = DpOffset(0.dp, 8.dp),
+                                    shape = RoundedCornerShape(18.dp),
+                                    containerColor = menuBg,
+                                    shadowElevation = 8.dp,
+                                    border = menuBorder
                                 ) {
+                                    // 1. Group QR Code
                                     DropdownMenuItem(
-                                        text = { Text(if (LanguagePrefs.isBengali) "নতুন গ্রুপ তৈরি বা জয়েন" else "Create or Join Group", color = textPrimary) },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.GroupAdd, contentDescription = null, tint = accent)
+                                        text = {
+                                            Text(
+                                                text = GroupStrings.groupQrCode,
+                                                style = CentwiseTypography.Body.copy(fontSize = 14.sp),
+                                                color = textPrimary
+                                            )
                                         },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.QrCode2, contentDescription = null, tint = accent, modifier = Modifier.size(18.dp))
+                                        },
+                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                                        onClick = {
+                                            showOptionsMenu = false
+                                            showInviteSheet = true
+                                        }
+                                    )
+
+                                    // 2. Create or Join Group
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = if (LanguagePrefs.isBengali) "নতুন গ্রুপ তৈরি বা জয়েন" else "Create or Join Group",
+                                                style = CentwiseTypography.Body.copy(fontSize = 14.sp),
+                                                color = textPrimary
+                                            )
+                                        },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.GroupAdd, contentDescription = null, tint = accent, modifier = Modifier.size(18.dp))
+                                        },
+                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                                         onClick = {
                                             showOptionsMenu = false
                                             showCreateJoinSheet = true
                                         }
                                     )
+
+                                    // 3. Reset Demo Data
                                     DropdownMenuItem(
-                                        text = { Text(if (LanguagePrefs.isBengali) "ডেমো ডাটা রিসেট" else "Reset Demo Data", color = textPrimary) },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.Refresh, contentDescription = null, tint = accent)
+                                        text = {
+                                            Text(
+                                                text = if (LanguagePrefs.isBengali) "ডেমো ডাটা রিসেট" else "Reset Demo Data",
+                                                style = CentwiseTypography.Body.copy(fontSize = 14.sp),
+                                                color = textPrimary
+                                            )
                                         },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.Refresh, contentDescription = null, tint = accent, modifier = Modifier.size(18.dp))
+                                        },
+                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                                         onClick = {
                                             showOptionsMenu = false
                                             viewModel.resetToMockData()
                                         }
                                     )
+
+                                    // 4. Test Empty State
                                     DropdownMenuItem(
-                                        text = { Text(if (LanguagePrefs.isBengali) "খালি অবস্থা দেখুন (পরীক্ষার জন্য)" else "View Empty State (Test)", color = CentwiseColors.ExpenseRed) },
-                                        leadingIcon = {
-                                            Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = CentwiseColors.ExpenseRed)
+                                        text = {
+                                            Text(
+                                                text = if (LanguagePrefs.isBengali) "খালি অবস্থা দেখুন (টেস্ট)" else "View Empty State (Test)",
+                                                style = CentwiseTypography.Body.copy(fontSize = 14.sp),
+                                                color = CentwiseColors.ExpenseRed
+                                            )
                                         },
+                                        leadingIcon = {
+                                            Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = CentwiseColors.ExpenseRed, modifier = Modifier.size(18.dp))
+                                        },
+                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                                         onClick = {
                                             showOptionsMenu = false
                                             viewModel.clearGroupForTesting()
@@ -256,7 +272,6 @@ fun GroupScreen(
                             }
                         }
                     }
-                }
 
                 // 2. Financial Overview Card
                 item {
@@ -271,20 +286,7 @@ fun GroupScreen(
                     )
                 }
 
-                // 2.5. Weekly Spending Breakdown Card
-                item {
-                    WeeklySpendingCard(
-                        group = group,
-                        accent = accent,
-                        cardBg = cardBg,
-                        cardBorder = cardBorder,
-                        textPrimary = textPrimary,
-                        textSecondary = textSecondary,
-                        isDark = isDark
-                    )
-                }
-
-                // 3. Member Balances Section
+                // 2.5. Member Balances Section (Moved before Weekly Spending)
                 item {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
@@ -350,6 +352,19 @@ fun GroupScreen(
                             }
                         }
                     }
+                }
+
+                // 3. Weekly Spending Breakdown Card
+                item {
+                    WeeklySpendingCard(
+                        group = group,
+                        accent = accent,
+                        cardBg = cardBg,
+                        cardBorder = cardBorder,
+                        textPrimary = textPrimary,
+                        textSecondary = textSecondary,
+                        isDark = isDark
+                    )
                 }
 
                 // 4. Weekly Expenses Section Header with "View all" Button (Matching HomeScreen 1:1, No Leading Icon)
@@ -752,40 +767,11 @@ private fun WeeklySpendingCard(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.DateRange,
-                        contentDescription = null,
-                        tint = accent,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Text(
-                        text = GroupStrings.weeklyBreakdown,
-                        style = CentwiseTypography.Headline.copy(fontSize = 15.sp),
-                        color = textPrimary
-                    )
-                }
-
-                Surface(
-                    shape = CircleShape,
-                    color = accent.copy(alpha = 0.12f)
-                ) {
-                    Text(
-                        text = CurrencyFormatter.formatBDT(group.currentWeekExpense, useBengaliNumerals = LanguagePrefs.isBengali) + " " + GroupStrings.thisWeek,
-                        style = CentwiseTypography.Caption.copy(fontWeight = FontWeight.Bold),
-                        color = accent,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                    )
-                }
-            }
+            Text(
+                text = GroupStrings.weeklyBreakdown,
+                style = CentwiseTypography.Headline.copy(fontSize = 15.sp),
+                color = textPrimary
+            )
 
             HorizontalDivider(color = cardBorder, thickness = 0.8.dp)
 
@@ -899,8 +885,8 @@ private fun MemberBalanceCard(
             .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
             .background(cardBg)
             .border(
-                width = if (isSpenderToday) 1.5.dp else 1.dp,
-                color = if (isSpenderToday) accent.copy(alpha = 0.45f) else cardBorder,
+                width = 1.dp,
+                color = cardBorder,
                 shape = RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge)
             )
             .clickable { onDepositClick() }
@@ -1259,3 +1245,88 @@ private fun GroupEmptyOnboardingState(
         }
     }
 }
+
+/**
+ * Sleek modern fintech pill chip for switching groups at the top.
+ * Replaces oversized story circles with compact horizontal capsules that
+ * naturally align with the three-dot button and eliminate awkward whitespace.
+ */
+@Composable
+private fun GroupChipItem(
+    group: SharedGroup,
+    isActive: Boolean,
+    accent: Color,
+    cardBg: Color,
+    textPrimary: Color,
+    textSecondary: Color,
+    isDark: Boolean,
+    onClick: () -> Unit
+) {
+    val shortName = remember(group.displayName) {
+        val name = group.displayName.trim()
+        if (name.startsWith("Our Family", ignoreCase = true)) {
+            "Family"
+        } else {
+            name.split(" ").firstOrNull() ?: name
+        }
+    }
+
+    val activePillBg = if (isDark) accent.copy(alpha = 0.22f) else accent.copy(alpha = 0.14f)
+    val inactiveColor = if (isDark) {
+        CentwiseColors.DarkTextSecondary.copy(alpha = 0.70f)
+    } else {
+        CentwiseColors.LightTextSecondary.copy(alpha = 0.70f)
+    }
+
+    Surface(
+        shape = CircleShape,
+        color = if (isActive) activePillBg else (if (isDark) CentwiseColors.DarkSurface else Color.White),
+        shadowElevation = if (isActive) 0.dp else (if (isDark) 2.dp else 1.dp),
+        border = if (isActive) null else BorderStroke(1.dp, if (isDark) Color(0x26FFFFFF) else Color(0x14000000)),
+        modifier = Modifier
+            .height(38.dp)
+            .clip(CircleShape)
+            .iosBounceClick { onClick() }
+    ) {
+        Row(
+            modifier = Modifier
+                .animateContentSize(
+                    animationSpec = spring(
+                        dampingRatio = 0.8f,
+                        stiffness = Spring.StiffnessMediumLow
+                    )
+                )
+                .padding(horizontal = if (isActive) 14.dp else 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Icon(
+                imageVector = group.type.vectorIcon,
+                contentDescription = group.displayName,
+                tint = if (isActive) accent else inactiveColor,
+                modifier = Modifier.size(18.dp)
+            )
+
+            AnimatedVisibility(
+                visible = isActive,
+                enter = fadeIn(spring(stiffness = Spring.StiffnessMediumLow)) +
+                        expandHorizontally(spring(stiffness = Spring.StiffnessMediumLow)),
+                exit = fadeOut(spring(stiffness = Spring.StiffnessMediumLow)) +
+                       shrinkHorizontally(spring(stiffness = Spring.StiffnessMediumLow))
+            ) {
+                Text(
+                    text = shortName,
+                    style = CentwiseTypography.Caption.copy(
+                        fontSize = 13.5.sp,
+                        fontWeight = FontWeight.SemiBold
+                    ),
+                    color = accent,
+                    modifier = Modifier.padding(start = 7.dp),
+                    maxLines = 1
+                )
+            }
+        }
+    }
+}
+
+

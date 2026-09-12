@@ -255,7 +255,7 @@ const DEFAULT_MERCHANT_CATEGORIES: &[DefaultMerchantCategory] = &[
     DefaultMerchantCategory {
         id: "shohoz",
         name: "Shohoz",
-        keywords: &["shohoz"],
+        keywords: &["shohoz", "shohoj"],
         category_id: "transport",
     },
     DefaultMerchantCategory {

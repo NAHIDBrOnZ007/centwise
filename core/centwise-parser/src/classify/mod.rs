@@ -101,6 +101,10 @@ pub fn classify_safety(body: &str, sender_hint: Option<&str>) -> Option<RejectRe
         || lower.contains("due to urgent maintenance on the npsb system")
         || lower.contains("maintenance on the npsb system")
         || lower.contains("half yearly deposit a/c(s) statement")
+        || (lower.contains("balance of your a/c")
+            && (lower.contains("statement") || lower.contains("cbsstatement")))
+        || lower.contains("to download statement")
+        || lower.contains("cbsstatement")
         || lower.contains("terms and conditions of payroll banking")
         || lower.contains("welcome to ebl insta banking")
         || lower.contains("you are now registered on ebl skybanking")
@@ -131,6 +135,7 @@ pub fn classify_safety(body: &str, sender_hint: Option<&str>) -> Option<RejectRe
         || lower.contains("password for your google account")
         || lower.contains("haj application tracking")
         || lower.contains("cancellation request for bkash subscription")
+        || lower.contains("vcommamounttext")
         || (lower.contains("subscription is successfully created")
             && lower.contains("will be debited on"))
     {
@@ -490,5 +495,25 @@ mod tests {
             Some(RejectReason::PromotionOrSpam)
         );
         assert!(!is_likely_financial_review(bangla_sms, Some("bKash")));
+    }
+
+    #[test]
+    fn rejects_bank_statement_advisory_from_review_queue() {
+        let statement_sms = "Balance of your A/C:***6411 is BDT .76 as on 30/06/26. To download statement click https://app.dutchbanglabank.com/cbsstatement . For query call 16216";
+        assert_eq!(
+            classify_safety(statement_sms, Some("16216")),
+            Some(RejectReason::NotATransaction)
+        );
+        assert!(!is_likely_financial_review(statement_sms, Some("16216")));
+    }
+
+    #[test]
+    fn rejects_unexpanded_template_tokens_from_review_queue() {
+        let template_sms = "Your ROCKET A/C has been approved and credited vCommAmountText for A/C opening. Enjoy DBBL services.";
+        assert_eq!(
+            classify_safety(template_sms, Some("16216")),
+            Some(RejectReason::NotATransaction)
+        );
+        assert!(!is_likely_financial_review(template_sms, Some("16216")));
     }
 }

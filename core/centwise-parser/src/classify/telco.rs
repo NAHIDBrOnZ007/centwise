@@ -14,6 +14,11 @@ static BUNDLE_MENU_RE: LazyLock<Regex> = LazyLock::new(|| {
         .expect("valid bundle menu regex")
 });
 
+static PRICE_PACKAGE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)[0-9]+\s*(?:tk|taka)\s*-\s*[0-9]+\s*(?:minute|min|mb|gb)")
+        .expect("valid price package regex")
+});
+
 /// Checks if an SMS is a telecom promotional message, offer list, loan invitation,
 /// bonus/free-data notice, VAS subscription, congratulations marketing,
 /// or system upsell notice that must be discarded immediately.
@@ -137,6 +142,15 @@ pub fn is_telco_bundle_menu(lower: &str, sender: &str) -> bool {
         return true;
     }
 
+    if lower.contains("recharge kore")
+        && (lower.contains("kinun")
+            || lower.contains("minute")
+            || lower.contains("offer")
+            || lower.contains("pack"))
+    {
+        return true;
+    }
+
     let is_telco_sender = sender.contains("gp")
         || sender.contains("robi")
         || sender.contains("bl")
@@ -150,6 +164,11 @@ pub fn is_telco_bundle_menu(lower: &str, sender: &str) -> bool {
     // Check for bundle menu patterns like "1) 208TK 15GB", "@299TK", "@TK44 Recharge", "1P/sec(+tax)"
     let menu_matches = BUNDLE_MENU_RE.find_iter(lower).count();
     if menu_matches >= 2 || (is_telco_sender && menu_matches >= 1 && lower.contains("dial *")) {
+        return true;
+    }
+
+    let price_matches = PRICE_PACKAGE_RE.find_iter(lower).count();
+    if price_matches >= 2 || (is_telco_sender && price_matches >= 1) {
         return true;
     }
 
@@ -364,5 +383,11 @@ mod tests {
     fn allows_confirmed_recharge_even_with_enjoy_keyword() {
         let text = "Recharge of Tk 100.00 on 017XXXXXXXX successful. Enjoy calling at reduced rates. TrxID: GP987654321";
         assert!(!is_promotional_or_telco_offer(text, Some("GP")));
+    }
+
+    #[test]
+    fn rejects_airtel_minute_pack_menu() {
+        let text = "Airtel'e recharge kore minute kinun *247# (bKash) *167# (Nagad):\n129Tk - 200 minute (10 din)\n53Tk - 75 minute (5 din)\n48Tk - 60 minute (4 din)\n28Tk - 40 minute (2 din)\n19Tk - 25 minute (2 din)";
+        assert!(is_promotional_or_telco_offer(text, Some("Airtel")));
     }
 }

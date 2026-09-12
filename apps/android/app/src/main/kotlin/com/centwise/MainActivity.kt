@@ -319,16 +319,16 @@ fun CentwiseApp(
                                     isDark = effectiveDark
                                 )
                             }
+                            CentwiseTab.GROUP -> {
+                                GroupScreen(
+                                    isDark = effectiveDark
+                                )
+                            }
                             CentwiseTab.TRANSACTIONS -> {
                                 val transactionsViewModel: TransactionsViewModel = viewModel()
                                 TransactionListScreen(
                                     onAddClick = { showAddSheet = true },
                                     viewModel = transactionsViewModel,
-                                    isDark = effectiveDark
-                                )
-                            }
-                            CentwiseTab.GROUP -> {
-                                GroupScreen(
                                     isDark = effectiveDark
                                 )
                             }

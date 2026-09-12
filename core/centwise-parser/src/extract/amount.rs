@@ -14,26 +14,26 @@ use regex::Regex;
 use std::sync::LazyLock;
 
 static FEE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\b(?:Trx\s+Fee|Fee|Charge|Service\s+fee)(?:\s*(?:of|is|[:]))?(?:\s*(?:Tk\.?|BDT))?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)")
+    Regex::new(r"(?i)\b(?:Trx\s+Fee|Fee|Charge|Service\s+fee)(?:\s*(?:of|is|[:]))?(?:\s*(?:Tk\.?|BDT))?\s*(\.[0-9]{1,2}|[0-9][0-9,]*(?:\.[0-9]{1,2})?)")
         .expect("valid fee regex")
 });
 
 // Key-value structured amounts (e.g. "Amount: 1500.00", "AMOUNT: 4010.00", "Amount: Tk 1,488.00")
 static KEY_VALUE_AMOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\b(?:Amount|Total\s+Amount)\s*[:\-]\s*(?:(?:Tk\.?|BDT)\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)")
+    Regex::new(r"(?i)\b(?:Amount|Total\s+Amount)\s*[:\-]\s*(?:(?:Tk\.?|BDT)\s*)?(\.[0-9]{1,2}|[0-9][0-9,]*(?:\.[0-9]{1,2})?)")
         .expect("valid key value amount regex")
 });
 
 static BALANCE_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)(?:Available\s+Balance|Avail(?:able)?\.?\s*Bal(?:ance)?|Avl\.?\s*Bal(?:ance)?|Closing\s+Balance|\bC/B\b|Ledger\s+Bal(?:ance)?|New\s+(?:main\s+)?Bal(?:ance)?|Main\s+Bal(?:ance)?|\bBal(?:ance)?\b|Current\s+Balance)(?:\s*(?:is\s*)?[:\-]|\s+is)?\s*(?:Tk\.?|BDT)?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?:\s*(?:Tk\.?|BDT))?",
+        r"(?i)(?:Available\s+Balance|Avail(?:able)?\.?\s*Bal(?:ance)?|Avl\.?\s*Bal(?:ance)?|Closing\s+Balance|\bC/B\b|Ledger\s+Bal(?:ance)?|New\s+(?:main\s+)?Bal(?:ance)?|Main\s+Bal(?:ance)?|\bBal(?:ance)?\b|Current\s+Balance)(?:\s+of\s+(?:your\s+)?(?:A/C|account)[^\s]*)?(?:\s*(?:is\s*)?[:\-]|\s+is)?\s*(?:Tk\.?|BDT)?\s*(\.[0-9]{1,2}|[0-9][0-9,]*(?:\.[0-9]{1,2})?)(?:\s*(?:Tk\.?|BDT))?",
     )
     .expect("valid balance regex")
 });
 
 static BALANCE_POSTFIX_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)(?:(?:Tk\.?|BDT)\s*-?\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s*(?:Tk\.?|BDT)?\s*\b(?:Available\s+Balance|Balance|Bal)\b",
+        r"(?i)(?:(?:Tk\.?|BDT)\s*-?\s*)?(\.[0-9]{1,2}|[0-9][0-9,]*(?:\.[0-9]{1,2})?)\s*(?:Tk\.?|BDT)?\s*\b(?:Available\s+Balance|Balance|Bal)\b",
     )
     .expect("valid postfix balance regex")
 });
@@ -41,7 +41,7 @@ static BALANCE_POSTFIX_RE: LazyLock<Regex> = LazyLock::new(|| {
 // Postfix transaction verbs: "Tk. 500 Withdrawal", "BDT 1,000 Deposit", "Tk 500 Purchased"
 static AMOUNT_POSTFIX_VERB_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)\b(?:(?:Tk\.?|BDT)[ \t]*-?[ \t]*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)[ \t]*(?:Tk\.?|BDT)?[ \t]+(?:Withdrawal|Withdrawn|Deposit|Deposited|Purchased)\b",
+        r"(?i)\b(?:(?:Tk\.?|BDT)[ \t]*-?[ \t]*)?(\.[0-9]{1,2}|[0-9][0-9,]*(?:\.[0-9]{1,2})?)[ \t]*(?:Tk\.?|BDT)?[ \t]+(?:Withdrawal|Withdrawn|Deposit|Deposited|Purchased)\b",
     )
     .expect("valid amount postfix verb regex")
 });
@@ -49,7 +49,7 @@ static AMOUNT_POSTFIX_VERB_RE: LazyLock<Regex> = LazyLock::new(|| {
 // Bank verbs: debited with/by/for, credited with/by/for (even without currency symbol)
 static BANK_DEBIT_CREDIT_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)\b(?:debited|credited)(?:\s*\([^)]*\))?\s+(?:with|by|for)\s+(?:(?:Tk\.?|BDT)\s*-?\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)",
+        r"(?i)\b(?:debited|credited)(?:\s*\([^)]*\))?\s+(?:with|by|for)\s+(?:(?:Tk\.?|BDT)\s*-?\s*)?(\.[0-9]{1,2}|[0-9][0-9,]*(?:\.[0-9]{1,2})?)",
     )
     .expect("valid bank debit credit regex")
 });
@@ -57,7 +57,7 @@ static BANK_DEBIT_CREDIT_RE: LazyLock<Regex> = LazyLock::new(|| {
 // Card purchase: "used at ... for BDT 500" or "used for BDT 500"
 static CARD_USAGE_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)\bused(?:\s+at\s+[^.]+?)?\s+for\s+(?:(?:Tk\.?|BDT)\s*-?\s*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)",
+        r"(?i)\bused(?:\s+at\s+[^.]+?)?\s+for\s+(?:(?:Tk\.?|BDT)\s*-?\s*)?(\.[0-9]{1,2}|[0-9][0-9,]*(?:\.[0-9]{1,2})?)",
     )
     .expect("valid card usage regex")
 });
@@ -65,26 +65,28 @@ static CARD_USAGE_RE: LazyLock<Regex> = LazyLock::new(|| {
 // Primary transaction verbs: Cash in, Cash out, Payment, Recharge, etc.
 static VERB_AMOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)(?:Cash\s+In|Cash\s+Out|Cash\s+Deposit|Deposit\s+Amount|Send\s+Money|sent|Payment|Bill\s+Pay(?:ment)?|Pay\s+Bill|Recharge|Withdrawal|Withdrawn|received|deposited|transferred|Transfer\s+Money|Fund\s+Transfer|Remittance|Auto\s+Debit|Loan\s+Repayment|spent|charged|(?:DR|CR)\.?\s+transaction|Txn|added\s+to\s+your\s+account|EMI\s+of|Cashback(?:/Interest)?\s+of|Excise\s+Duty|Annual\s+(?:Card\s+)?Fee|SMS\s+Alert\s+Fee|Maintenance\s+Fee|Add\s+Money|recovered\s+for\s+emergency\s+loan)[ \t]*[:\-]?[ \t]*(?:of[ \t]+)?(?:(?:Tk\.?|BDT)[ \t]*-?[ \t]*)?([0-9][0-9,]*(?:\.[0-9]{1,2})?)(?:[ \t]*(?:Tk\.?|BDT))?",
+        r"(?i)(?:Cash\s+In|Cash\s+Out|Cash\s+Deposit|Deposit\s+Amount|Send\s+Money|sent|Payment|Bill\s+Pay(?:ment)?|Pay\s+Bill|Recharge|Withdrawal|Withdrawn|received|deposited|transferred|Transfer\s+Money|Fund\s+Transfer|Remittance|Auto\s+Debit|Loan\s+Repayment|spent|charged|(?:DR|CR)\.?\s+transaction|Txn|added\s+to\s+your\s+account|EMI\s+of|Cashback(?:/Interest)?\s+of|Excise\s+Duty|Annual\s+(?:Card\s+)?Fee|SMS\s+Alert\s+Fee|Maintenance\s+Fee|Add\s+Money|recovered\s+for\s+emergency\s+loan)[ \t]*[:\-]?[ \t]*(?:of[ \t]+)?(?:(?:Tk\.?|BDT)[ \t]*-?[ \t]*)?(\.[0-9]{1,2}|[0-9][0-9,]*(?:\.[0-9]{1,2})?)(?:[ \t]*(?:Tk\.?|BDT))?",
     )
     .expect("valid verb amount regex")
 });
 
 // Telco "recharge <amount> TAKA" pattern
 static RECHARGE_TAKA_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\brecharge\s+([0-9][0-9,]*(?:\.[0-9]{1,2})?)\s*(?:TAKA|Tk\.?|BDT)")
-        .expect("valid recharge taka regex")
+    Regex::new(
+        r"(?i)\brecharge\s+(\.[0-9]{1,2}|[0-9][0-9,]*(?:\.[0-9]{1,2})?)\s*(?:TAKA|Tk\.?|BDT)",
+    )
+    .expect("valid recharge taka regex")
 });
 
 // Postfix currency: "5000 taka" (strictly taka/TAKA with word boundary, never prefix Tk/BDT)
 static TAKA_SUFFIX_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\b([0-9]+(?:,[0-9]+)*(?:\.[0-9]{1,2})?)\s*(?:taka|TAKA)\b")
+    Regex::new(r"(?i)\b(\.[0-9]{1,2}|[0-9]+(?:,[0-9]+)*(?:\.[0-9]{1,2})?)\s*(?:taka|TAKA)\b")
         .expect("valid currency suffix regex")
 });
 
 // Generic currency amounts (Tk 500, BDT 500, Tk-500)
 static CURRENCY_AMOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\b(?:Tk\.?|BDT)\s*-?\s*([0-9][0-9,]*(?:\.[0-9]{1,2})?)")
+    Regex::new(r"(?i)\b(?:Tk\.?|BDT)\s*-?\s*(\.[0-9]{1,2}|[0-9][0-9,]*(?:\.[0-9]{1,2})?)")
         .expect("valid currency amount regex")
 });
 
@@ -458,5 +460,16 @@ mod tests {
         assert_eq!(bal, Some(117_200));
         let amount = extract_main_amount(text, None, bal);
         assert_eq!(amount, Some(69_000));
+    }
+
+    #[test]
+    fn parses_amount_and_balance_without_leading_zero() {
+        let text = "Balance of your A/C:***6411 is BDT .76 as on 30/06/26.";
+        let bal = extract_balance(text);
+        assert_eq!(bal, Some(76));
+
+        let debited_text = "Your A/C:***6411 has been debited BDT .50 for service.";
+        let amount = extract_main_amount(debited_text, None, None);
+        assert_eq!(amount, Some(50));
     }
 }

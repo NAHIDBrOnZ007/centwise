@@ -170,6 +170,9 @@ object GroupStrings {
     val createNewGroupBtn: String get() = if (bn) "+ নতুন গ্রুপ তৈরি করুন" else "+ Create New Group"
     val joinGroupCodeBtn: String get() = if (bn) "কোড দিয়ে যুক্ত হন" else "Join with Code"
     val settledUp: String get() = if (bn) "হিসাব সমান (৳০)" else "Settled up (৳0)"
+    val inviteShort: String get() = if (bn) "ইনভাইট" else "Invite"
+    val groupQrCode: String get() = if (bn) "গ্রুপ কিউআর কোড" else "Group QR Code"
+    val groupInfoAndInvite: String get() = if (bn) "গ্রুপের তথ্য ও কিউআর" else "Group Info & QR"
     fun membersCountText(count: Int): String {
         return if (bn) {
             val bengaliDigits = charArrayOf('০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯')
