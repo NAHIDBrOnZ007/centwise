@@ -8,7 +8,7 @@ import java.util.UUID
 
 enum class GroupType(val titleBn: String, val icon: String, val vectorIcon: ImageVector) {
     MESS("মেস / ব্যাচেলর", "🏢", Icons.Default.Apartment),
-    FAMILY("পারিবারিক সংসার", "🏠", Icons.Default.Home),
+    FAMILY("পারিবারিক সংসার", "👨‍👩‍👧", Icons.Default.FamilyRestroom),
     FLATMATES("ফ্ল্যাটমেট ও রুম", "🛋️", Icons.Default.Weekend),
     TRIP("ট্যুর ও ভ্রমণ", "✈️", Icons.Default.Flight),
     OTHER("অন্যান্য গ্রুপ", "👥", Icons.Default.Groups);

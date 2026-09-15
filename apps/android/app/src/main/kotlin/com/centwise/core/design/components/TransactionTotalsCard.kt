@@ -27,7 +27,10 @@ fun TransactionTotalsCard(
     expense: Double,
     net: Double,
     modifier: Modifier = Modifier,
-    isDark: Boolean = isSystemInDarkTheme()
+    isDark: Boolean = isSystemInDarkTheme(),
+    incomeLabel: String? = null,
+    expenseLabel: String? = null,
+    netLabel: String? = null
 ) {
     val animatedIncome by animateFloatAsState(
         targetValue = income.toFloat(),
@@ -68,7 +71,7 @@ fun TransactionTotalsCard(
         ) {
             // 1. Income Column
             TotalItem(
-                label = "↓ Income",
+                label = incomeLabel ?: "↓ Income",
                 value = CurrencyFormatter.format(animatedIncome.toDouble()),
                 color = CentwiseColors.IncomeGreen,
                 textSecondary = textSecondary
@@ -76,7 +79,7 @@ fun TransactionTotalsCard(
 
             // 2. Expenses Column
             TotalItem(
-                label = "↑ Expenses",
+                label = expenseLabel ?: "↑ Expenses",
                 value = CurrencyFormatter.format(animatedExpense.toDouble()),
                 color = CentwiseColors.ExpenseRed,
                 textSecondary = textSecondary
@@ -84,8 +87,8 @@ fun TransactionTotalsCard(
 
             // 3. Net Column
             TotalItem(
-                label = if (animatedNet >= 0) "✓ Net" else "✗ Net",
-                value = (if (animatedNet >= 0) "+" else "") + CurrencyFormatter.format(animatedNet.toDouble()),
+                label = netLabel ?: if (animatedNet >= 0) "✓ Net" else "✗ Net",
+                value = CurrencyFormatter.formatBDT(animatedNet.toDouble(), showSign = true),
                 color = if (animatedNet >= 0) CentwiseColors.IncomeGreen else CentwiseColors.ExpenseRed,
                 textSecondary = textSecondary
             )

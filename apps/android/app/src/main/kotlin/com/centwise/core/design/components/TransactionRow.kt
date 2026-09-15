@@ -44,9 +44,18 @@ fun TransactionRow(
     val textSecondary = if (isDark) CentwiseColors.DarkTextSecondary else CentwiseColors.LightTextSecondary
     val accent = AccentOptions.byName(AppearancePrefs.accentName).color
 
-    val isIncome = transaction.type == TransactionType.INCOME
-    val amountColor = if (isIncome) CentwiseColors.IncomeGreen else CentwiseColors.ExpenseRed
-    val amountPrefix = if (isIncome) "+ " else "- "
+    val isIncome = transaction.type == TransactionType.INCOME || transaction.type == TransactionType.CREDIT
+    val isTransfer = transaction.type == TransactionType.TRANSFER
+    val amountColor = when {
+        isIncome -> CentwiseColors.IncomeGreen
+        isTransfer -> CentwiseColors.TransferBlue
+        else -> CentwiseColors.ExpenseRed
+    }
+    val amountPrefix = when {
+        isIncome -> "+ "
+        isTransfer -> ""
+        else -> "- "
+    }
 
     val rowModifier = if (showBackground) {
         modifier

@@ -23,6 +23,12 @@ import com.centwise.core.uniffi.TransactionInput
 import com.centwise.core.uniffi.TransactionKind
 import com.centwise.core.uniffi.TransactionRecord
 import com.centwise.core.uniffi.AnalyticsSnapshotRecord
+import com.centwise.core.uniffi.GroupAnalyticsRecord
+import com.centwise.core.uniffi.GroupDepositRecord
+import com.centwise.core.uniffi.GroupExpenseItemInput
+import com.centwise.core.uniffi.GroupExpenseRecord
+import com.centwise.core.uniffi.GroupMemberRecord
+import com.centwise.core.uniffi.GroupRecord
 import com.centwise.data.models.TransactionItem
 import com.centwise.data.repository.TransactionRepository
 import java.text.SimpleDateFormat
@@ -237,6 +243,138 @@ object CentwiseRustBackend {
         false
     }
 
+    fun listGroups(): List<GroupRecord> = try {
+        core?.listGroups() ?: emptyList()
+    } catch (error: Throwable) {
+        Log.e(TAG, "Rust list groups failed", error)
+        emptyList()
+    }
+
+    fun getGroup(groupId: String): GroupRecord? = try {
+        core?.getGroup(groupId)
+    } catch (error: Throwable) {
+        Log.e(TAG, "Rust get group failed", error)
+        null
+    }
+
+    fun createGroup(
+        id: String,
+        name: String,
+        groupType: String,
+        description: String,
+        joinCode: String,
+        monthName: String,
+        monthlyTargetMinor: Long,
+        creatorName: String,
+        creatorAvatar: String
+    ): GroupRecord? = try {
+        core?.createGroup(
+            id = id,
+            name = name,
+            groupType = groupType,
+            description = description,
+            joinCode = joinCode,
+            monthName = monthName,
+            monthlyTargetMinor = monthlyTargetMinor,
+            creatorName = creatorName,
+            creatorAvatar = creatorAvatar
+        )
+    } catch (error: Throwable) {
+        Log.e(TAG, "Rust create group failed", error)
+        null
+    }
+
+    fun joinGroup(
+        joinCode: String,
+        memberName: String,
+        memberAvatar: String
+    ): GroupRecord? = try {
+        core?.joinGroup(joinCode, memberName, memberAvatar)
+    } catch (error: Throwable) {
+        Log.e(TAG, "Rust join group failed", error)
+        null
+    }
+
+    fun addGroupExpense(
+        groupId: String,
+        spenderId: String,
+        items: List<GroupExpenseItemInput>,
+        notes: String,
+        occurredAtEpochMs: Long,
+        dateFormatted: String
+    ): String? = try {
+        core?.addGroupExpense(
+            groupId = groupId,
+            spenderId = spenderId,
+            items = items,
+            notes = notes,
+            occurredAtEpochMs = occurredAtEpochMs,
+            dateFormatted = dateFormatted
+        )
+    } catch (error: Throwable) {
+        Log.e(TAG, "Rust add group expense failed", error)
+        null
+    }
+
+    fun deleteGroupExpense(groupId: String, expenseId: String): Boolean = try {
+        core?.deleteGroupExpense(groupId, expenseId) ?: false
+    } catch (error: Throwable) {
+        Log.e(TAG, "Rust delete group expense failed", error)
+        false
+    }
+
+    fun addGroupDeposit(
+        groupId: String,
+        memberId: String,
+        amountMinor: Long,
+        paymentMethod: String,
+        note: String,
+        occurredAtEpochMs: Long,
+        dateFormatted: String
+    ): String? = try {
+        core?.addGroupDeposit(
+            groupId = groupId,
+            memberId = memberId,
+            amountMinor = amountMinor,
+            paymentMethod = paymentMethod,
+            note = note,
+            occurredAtEpochMs = occurredAtEpochMs,
+            dateFormatted = dateFormatted
+        )
+    } catch (error: Throwable) {
+        Log.e(TAG, "Rust add group deposit failed", error)
+        null
+    }
+
+    fun groupAnalytics(
+        groupId: String,
+        startEpochMs: Long,
+        endEpochMs: Long,
+        monthsBack: UInt = 6u,
+        typeFilter: String = "all"
+    ): GroupAnalyticsRecord? = try {
+        core?.groupAnalytics(groupId, startEpochMs, endEpochMs, monthsBack, typeFilter)
+    } catch (error: Throwable) {
+        Log.e(TAG, "Rust group analytics failed", error)
+        null
+    }
+
+    fun deleteAllGroups(): Boolean = try {
+        core?.deleteAllGroups()
+        true
+    } catch (error: Throwable) {
+        Log.e(TAG, "Rust delete all groups failed", error)
+        false
+    }
+
+    fun seedDemoGroups(): Boolean = try {
+        core?.seedDemoGroups()
+        true
+    } catch (error: Throwable) {
+        Log.e(TAG, "Rust seed demo groups failed", error)
+        false
+    }
+
     fun convertReviewQueueItem(itemId: String, transaction: TransactionItem): Boolean {
         val rustCore = core
         if (rustCore == null) {
@@ -259,7 +397,7 @@ object CentwiseRustBackend {
                 TransactionInput(
                     id = transaction.id,
                     title = transaction.title,
-                    amountMinor = (transaction.amount * 100).toLong(),
+                    amountMinor = Math.round(transaction.amount * 100.0),
                     currency = "BDT",
                     kind = transaction.type.toRustKind(),
                     categoryId = categoryId(transaction.category),
@@ -412,7 +550,7 @@ object CentwiseRustBackend {
         name = name,
         provider = canonicalProvider(providerName),
         lastFour = accountNumber.takeLast(4).takeIf { value -> value.all { it.isDigit() } },
-        startingBalanceMinor = (balance * 100).toLong(),
+        startingBalanceMinor = Math.round(balance * 100.0),
         archived = archived
     )
 
@@ -424,7 +562,7 @@ object CentwiseRustBackend {
         return TransactionInput(
             id = id,
             title = title,
-            amountMinor = (amount * 100).toLong(),
+            amountMinor = Math.round(amount * 100.0),
             currency = "BDT",
             kind = type.toRustKind(),
             categoryId = categoryId(category),
@@ -447,7 +585,7 @@ object CentwiseRustBackend {
     private fun com.centwise.data.models.BudgetItem.toRustInput() = BudgetInput(
         id = id,
         categoryId = categoryId.ifBlank { categoryId(categoryName) },
-        limitMinor = (allocatedAmount * 100).toLong(),
+        limitMinor = Math.round(allocatedAmount * 100.0),
         period = period.lowercase(),
         startEpochMs = startEpochMs,
         endEpochMs = endEpochMs
@@ -456,7 +594,7 @@ object CentwiseRustBackend {
     private fun com.centwise.data.models.SubscriptionItem.toRustInput() = SubscriptionInput(
         id = id,
         name = name,
-        amountMinor = (amount * 100).toLong(),
+        amountMinor = Math.round(amount * 100.0),
         billingCycle = billingCycle.lowercase(),
         nextDueEpochMs = nextDueEpochMs.takeIf { it > 0 } ?: parseDate(nextBillingDate),
         isActive = isActive
@@ -833,7 +971,7 @@ internal class FallbackBackend {
             TransactionInput(
                 id = transaction.id,
                 title = transaction.title,
-                amountMinor = (transaction.amount * 100).toLong(),
+                amountMinor = Math.round(transaction.amount * 100.0),
                 currency = "BDT",
                 kind = when (transaction.type) {
                     com.centwise.data.models.TransactionType.INCOME -> TransactionKind.INCOME

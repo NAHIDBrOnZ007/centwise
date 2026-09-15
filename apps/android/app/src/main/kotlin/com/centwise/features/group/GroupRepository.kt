@@ -1,5 +1,8 @@
 package com.centwise.features.group
 
+import com.centwise.core.backend.CentwiseRustBackend
+import com.centwise.core.uniffi.GroupExpenseItemInput
+import com.centwise.core.uniffi.GroupRecord
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -10,13 +13,13 @@ import java.util.UUID
 
 class GroupRepository private constructor() {
 
-    private val _allGroups = MutableStateFlow<List<SharedGroup>>(createDefaultMockGroups())
+    private val _allGroups = MutableStateFlow<List<SharedGroup>>(emptyList())
     val allGroups: StateFlow<List<SharedGroup>> = _allGroups.asStateFlow()
 
-    private val _selectedGroupId = MutableStateFlow<String>(_allGroups.value.firstOrNull()?.id ?: "")
+    private val _selectedGroupId = MutableStateFlow<String>("")
     val selectedGroupId: StateFlow<String> = _selectedGroupId.asStateFlow()
 
-    private val _currentGroup = MutableStateFlow<SharedGroup?>(_allGroups.value.firstOrNull())
+    private val _currentGroup = MutableStateFlow<SharedGroup?>(null)
     val currentGroup: StateFlow<SharedGroup?> = _currentGroup.asStateFlow()
 
     fun selectGroup(groupId: String) {
@@ -28,6 +31,29 @@ class GroupRepository private constructor() {
         _currentGroup.value = marked
     }
 
+    init {
+        refreshFromRust()
+    }
+
+    fun refreshFromRust() {
+        if (!CentwiseRustBackend.isAvailable()) return
+        val records = CentwiseRustBackend.listGroups()
+        val mapped = records.map { mapRecordToSharedGroup(it) }
+        _allGroups.value = mapped
+        val selId = _selectedGroupId.value
+        val current = mapped.find { it.id == selId } ?: mapped.firstOrNull()
+        _selectedGroupId.value = current?.id ?: ""
+        _currentGroup.value = current
+    }
+
+    fun getGroupAnalytics(
+        groupId: String,
+        startEpochMs: Long,
+        endEpochMs: Long,
+        monthsBack: UInt = 6u,
+        typeFilter: String = "all"
+    ) = CentwiseRustBackend.groupAnalytics(groupId, startEpochMs, endEpochMs, monthsBack, typeFilter)
+
     private fun updateActiveGroup(updated: SharedGroup) {
         _allGroups.value = _allGroups.value.map {
             if (it.id == updated.id) updated else it
@@ -38,6 +64,36 @@ class GroupRepository private constructor() {
     }
 
     fun createGroup(name: String, type: GroupType, description: String, monthlyTarget: Double, creatorName: String) {
+        val groupId = "group_" + System.currentTimeMillis()
+        val joinCode = "GRP-" + (1000..9999).random()
+        val monthName = getCurrentMonthYear()
+        val monthlyTargetMinor = Math.round(monthlyTarget * 100.0)
+
+        if (CentwiseRustBackend.isAvailable()) {
+            val groupTypeStr = when (type) {
+                GroupType.MESS -> "mess"
+                GroupType.FAMILY -> "family"
+                GroupType.FLATMATES -> "flatmates"
+                GroupType.TRIP -> "trip"
+                GroupType.OTHER -> "other"
+            }
+            val record = CentwiseRustBackend.createGroup(
+                id = groupId,
+                name = name.ifBlank { "আমাদের গ্রুপ" },
+                groupType = groupTypeStr,
+                description = description.ifBlank { "" },
+                joinCode = joinCode,
+                monthName = monthName,
+                monthlyTargetMinor = monthlyTargetMinor,
+                creatorName = creatorName.ifBlank { "You" },
+                creatorAvatar = "avatar_1"
+            )
+            if (record != null) {
+                refreshFromRust()
+                _selectedGroupId.value = record.id
+                return
+            }
+        }
         val creator = GroupMember(
             id = UUID.randomUUID().toString(),
             name = creatorName.ifBlank { "You" },
@@ -75,6 +131,18 @@ class GroupRepository private constructor() {
     }
 
     fun joinGroup(joinCode: String, newMemberName: String): Boolean {
+        if (CentwiseRustBackend.isAvailable()) {
+            val joined = CentwiseRustBackend.joinGroup(
+                joinCode = joinCode,
+                memberName = newMemberName.ifBlank { "New Member" },
+                memberAvatar = "avatar_5"
+            )
+            if (joined != null) {
+                refreshFromRust()
+                return true
+            }
+        }
+
         val group = _currentGroup.value ?: _allGroups.value.firstOrNull() ?: return false
         val newMember = GroupMember(
             id = UUID.randomUUID().toString(),
@@ -97,6 +165,28 @@ class GroupRepository private constructor() {
     ) {
         val group = _currentGroup.value ?: return
         if (items.isEmpty()) return
+
+        if (CentwiseRustBackend.isAvailable()) {
+            val rustItems = items.map {
+                GroupExpenseItemInput(
+                    name = it.name,
+                    quantity = it.quantity,
+                    priceMinor = Math.round(it.price * 100.0)
+                )
+            }
+            val res = CentwiseRustBackend.addGroupExpense(
+                groupId = group.id,
+                spenderId = spenderId,
+                items = rustItems,
+                notes = notes,
+                occurredAtEpochMs = System.currentTimeMillis(),
+                dateFormatted = getCurrentDateFormatted()
+            )
+            if (res != null) {
+                refreshFromRust()
+                return
+            }
+        }
 
         val spender = group.members.find { it.id == spenderId } ?: group.members.firstOrNull() ?: return
         val total = items.sumOf { it.price }
@@ -172,6 +262,12 @@ class GroupRepository private constructor() {
 
     fun deleteExpenseEntry(entryId: String) {
         val group = _currentGroup.value ?: return
+        if (CentwiseRustBackend.isAvailable()) {
+            CentwiseRustBackend.deleteGroupExpense(group.id, entryId)
+            refreshFromRust()
+            return
+        }
+
         val target = group.dailyExpenses.find { it.id == entryId } ?: return
 
         val splitShare = target.splitPerMember
@@ -210,6 +306,22 @@ class GroupRepository private constructor() {
         note: String = ""
     ) {
         val group = _currentGroup.value ?: return
+        if (CentwiseRustBackend.isAvailable()) {
+            val res = CentwiseRustBackend.addGroupDeposit(
+                groupId = group.id,
+                memberId = memberId,
+                amountMinor = Math.round(amount * 100.0),
+                paymentMethod = paymentMethod,
+                note = note,
+                occurredAtEpochMs = System.currentTimeMillis(),
+                dateFormatted = getCurrentDateFormatted()
+            )
+            if (res != null) {
+                refreshFromRust()
+                return
+            }
+        }
+
         val member = group.members.find { it.id == memberId } ?: return
 
         val newDeposit = MemberDeposit(
@@ -235,6 +347,11 @@ class GroupRepository private constructor() {
     }
 
     fun resetToMockData() {
+        if (CentwiseRustBackend.isAvailable()) {
+            CentwiseRustBackend.seedDemoGroups()
+            refreshFromRust()
+            return
+        }
         val mocks = createDefaultMockGroups()
         _allGroups.value = mocks
         _selectedGroupId.value = mocks.first().id
@@ -242,6 +359,13 @@ class GroupRepository private constructor() {
     }
 
     fun clearGroupForTesting() {
+        clearAllGroups()
+    }
+
+    fun clearAllGroups() {
+        if (CentwiseRustBackend.isAvailable()) {
+            CentwiseRustBackend.deleteAllGroups()
+        }
         _allGroups.value = emptyList()
         _selectedGroupId.value = ""
         _currentGroup.value = null
@@ -621,5 +745,78 @@ class GroupRepository private constructor() {
                 hasNewActivity = false
             )
         }
+
+        fun mapRecordToSharedGroup(record: GroupRecord): SharedGroup {
+            val groupType = when (record.groupType.lowercase()) {
+                "mess" -> GroupType.MESS
+                "family" -> GroupType.FAMILY
+                "flatmates" -> GroupType.FLATMATES
+                "trip" -> GroupType.TRIP
+                else -> GroupType.OTHER
+            }
+
+            val members = record.members.map { m ->
+                GroupMember(
+                    id = m.id,
+                    name = m.name,
+                    avatar = m.avatar,
+                    phone = m.phone,
+                    isAdmin = m.isAdmin,
+                    depositPaid = m.depositPaidMinor / 100.0,
+                    totalSpentShare = m.totalSpentShareMinor / 100.0
+                )
+            }
+
+            val dailyExpenses = record.dailyExpenses.map { e ->
+                val items = e.items.map { itm ->
+                    ExpenseItem(
+                        id = itm.id,
+                        name = itm.name,
+                        quantity = itm.quantity,
+                        price = itm.priceMinor / 100.0
+                    )
+                }
+                DailyExpenseEntry(
+                    id = e.id,
+                    date = e.dateFormatted,
+                    timestamp = e.occurredAtEpochMs,
+                    spenderId = e.spenderId,
+                    spenderName = e.spenderName,
+                    spenderAvatar = e.spenderAvatar,
+                    items = items,
+                    totalAmount = e.totalAmountMinor / 100.0,
+                    splitPerMember = e.splitPerMemberMinor / 100.0,
+                    notes = e.notes
+                )
+            }
+
+            val deposits = record.deposits.map { d ->
+                MemberDeposit(
+                    id = d.id,
+                    memberId = d.memberId,
+                    memberName = d.memberName,
+                    memberAvatar = d.memberAvatar,
+                    amount = d.amountMinor / 100.0,
+                    date = d.dateFormatted,
+                    paymentMethod = d.paymentMethod,
+                    note = d.note
+                )
+            }
+
+            return SharedGroup(
+                id = record.id,
+                name = record.name,
+                type = groupType,
+                description = record.description,
+                joinCode = record.joinCode,
+                monthName = record.monthName,
+                monthlyTarget = record.monthlyTargetMinor / 100.0,
+                members = members,
+                dailyExpenses = dailyExpenses,
+                deposits = deposits,
+                hasNewActivity = record.hasNewActivity
+            )
+        }
     }
 }
+

@@ -98,6 +98,24 @@ fn home_dashboard_sums_period_and_orders_recent() {
     assert_eq!(dashboard.period_expense_minor, 200_000);
     assert_eq!(dashboard.period_income_minor, 500_000);
 
+    // Refunds/reversals count toward period income/inflows.
+    database
+        .write(|queries| {
+            queries.insert_transaction(&tx(
+                "ref-1",
+                45_000,
+                TransactionType::Refund,
+                january_start + 5_000,
+            ))
+        })
+        .expect("refund");
+
+    let dashboard = database
+        .read(|queries| queries.home_dashboard(january_start, january_end, 10))
+        .expect("dashboard");
+    assert_eq!(dashboard.period_expense_minor, 200_000);
+    assert_eq!(dashboard.period_income_minor, 545_000);
+
     // Recent list is newest-first and joins category data.
     let recent_ids: Vec<&str> = dashboard
         .recent_transactions
@@ -105,9 +123,9 @@ fn home_dashboard_sums_period_and_orders_recent() {
         .filter(|summary| summary.occurred_at_epoch_ms < january_end)
         .map(|summary| summary.id.as_str())
         .collect();
-    assert_eq!(recent_ids, ["move-1", "out-2", "out-1", "in-1"]);
+    assert_eq!(recent_ids, ["ref-1", "move-1", "out-2", "out-1", "in-1"]);
     assert_eq!(
-        dashboard.recent_transactions[1].category_name,
+        dashboard.recent_transactions[2].category_name,
         "Food & Dining"
     );
 }

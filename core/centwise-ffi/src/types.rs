@@ -293,3 +293,122 @@ pub struct DemoDataSummaryRecord {
     pub budgets: u32,
     pub subscriptions: u32,
 }
+
+#[derive(uniffi::Record)]
+pub struct GroupMemberRecord {
+    pub id: String,
+    pub group_id: String,
+    pub name: String,
+    pub avatar: String,
+    pub phone: String,
+    pub is_admin: bool,
+    pub deposit_paid_minor: i64,
+    pub total_spent_share_minor: i64,
+    pub net_balance_minor: i64,
+}
+
+#[derive(uniffi::Record)]
+pub struct GroupExpenseItemRecord {
+    pub id: String,
+    pub expense_id: String,
+    pub group_id: String,
+    pub name: String,
+    pub quantity: String,
+    pub price_minor: i64,
+}
+
+#[derive(uniffi::Record)]
+pub struct GroupExpenseRecord {
+    pub id: String,
+    pub group_id: String,
+    pub spender_id: String,
+    pub spender_name: String,
+    pub spender_avatar: String,
+    pub occurred_at_epoch_ms: i64,
+    pub date_formatted: String,
+    pub total_amount_minor: i64,
+    pub split_per_member_minor: i64,
+    pub notes: String,
+    pub items: Vec<GroupExpenseItemRecord>,
+}
+
+#[derive(uniffi::Record)]
+pub struct GroupDepositRecord {
+    pub id: String,
+    pub group_id: String,
+    pub member_id: String,
+    pub member_name: String,
+    pub member_avatar: String,
+    pub amount_minor: i64,
+    pub occurred_at_epoch_ms: i64,
+    pub date_formatted: String,
+    pub payment_method: String,
+    pub note: String,
+}
+
+#[derive(uniffi::Record)]
+pub struct GroupRecord {
+    pub id: String,
+    pub name: String,
+    pub group_type: String,
+    pub description: String,
+    pub join_code: String,
+    pub month_name: String,
+    pub monthly_target_minor: i64,
+    pub members: Vec<GroupMemberRecord>,
+    pub daily_expenses: Vec<GroupExpenseRecord>,
+    pub deposits: Vec<GroupDepositRecord>,
+    pub has_new_activity: bool,
+    pub created_at_epoch_ms: i64,
+}
+
+#[derive(uniffi::Record)]
+pub struct GroupExpenseItemInput {
+    pub name: String,
+    pub quantity: String,
+    pub price_minor: i64,
+}
+
+#[derive(uniffi::Record)]
+pub struct GroupMemberShareRecord {
+    pub member_id: String,
+    pub member_name: String,
+    pub member_avatar: String,
+    pub deposit_paid_minor: i64,
+    pub total_spent_share_minor: i64,
+    pub net_balance_minor: i64,
+}
+
+#[derive(uniffi::Record)]
+pub struct GroupItemCategorySpendRecord {
+    pub category_name: String,
+    pub total_minor: i64,
+    pub percentage: f64,
+    pub item_count: i64,
+}
+
+#[derive(uniffi::Record)]
+pub struct GroupSettlementRecord {
+    pub from_member_id: String,
+    pub from_member_name: String,
+    pub to_member_id: String,
+    pub to_member_name: String,
+    pub amount_minor: i64,
+}
+
+#[derive(uniffi::Record)]
+pub struct GroupAnalyticsRecord {
+    pub group_id: String,
+    pub group_name: String,
+    pub total_deposit_minor: i64,
+    pub total_expense_minor: i64,
+    pub remaining_balance_minor: i64,
+    pub transaction_count: i64,
+    pub expense_count: i64,
+    pub deposit_count: i64,
+    pub member_shares: Vec<GroupMemberShareRecord>,
+    pub category_breakdown: Vec<GroupItemCategorySpendRecord>,
+    pub top_spenders: Vec<AnalyticsMerchantRecord>,
+    pub monthly_trends: Vec<AnalyticsMonthlyRecord>,
+    pub settlements: Vec<GroupSettlementRecord>,
+}

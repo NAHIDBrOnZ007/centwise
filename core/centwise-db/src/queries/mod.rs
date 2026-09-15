@@ -2,6 +2,7 @@ pub mod accounts;
 pub mod analytics;
 pub mod budgets;
 pub mod categories;
+pub mod groups;
 pub mod merchant_mappings;
 pub mod review_queue;
 pub mod rules;
@@ -31,6 +32,11 @@ impl<'a> Queries<'a> {
              DELETE FROM budgets;
              DELETE FROM subscriptions;
              DELETE FROM accounts;
+             DELETE FROM group_expense_items;
+             DELETE FROM group_expenses;
+             DELETE FROM group_deposits;
+             DELETE FROM group_members;
+             DELETE FROM groups;
              DELETE FROM categories WHERE is_system = 0;",
         )?;
 

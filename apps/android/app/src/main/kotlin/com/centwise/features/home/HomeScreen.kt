@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.centwise.core.design.components.EmptyStateView
 import com.centwise.core.design.components.GreetingCard
+import com.centwise.core.design.components.SeeAllButton
 import com.centwise.core.design.components.SpendingSummaryCard
 import com.centwise.core.design.components.TransactionRow
 import com.centwise.core.design.theme.CentwiseColors
@@ -31,6 +32,7 @@ import com.centwise.core.profile.UserPrefs
 import com.centwise.features.settings.AccentOptions
 import com.centwise.features.settings.AppearancePrefs
 import com.centwise.features.settings.EditProfileSheet
+import com.centwise.features.settings.LanguagePrefs
 import com.centwise.features.transactions.AddEditTransactionSheet
 import com.centwise.features.transactions.TransactionDetailSheet
 
@@ -70,7 +72,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp),
-            contentPadding = PaddingValues(top = 16.dp, bottom = 140.dp),
+            contentPadding = PaddingValues(top = 16.dp, bottom = 200.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // App Title Header
@@ -120,15 +122,13 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Recent Transactions",
+                        text = if (LanguagePrefs.isBengali) "সাম্প্রতিক লেনদেন" else "Recent Transactions",
                         style = CentwiseTypography.Headline,
                         color = textPrimary
                     )
-                    Text(
-                        text = "See all",
-                        style = CentwiseTypography.Subheadline,
-                        color = accent,
-                        modifier = Modifier.clickable { onSeeAllClick() }
+                    SeeAllButton(
+                        onClick = onSeeAllClick,
+                        accentColor = accent
                     )
                 }
             }
@@ -163,7 +163,8 @@ fun HomeScreen(
             contentColor = Color.White,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 20.dp, bottom = 90.dp)
+                .navigationBarsPadding()
+                .padding(end = 20.dp, bottom = 120.dp)
                 .size(56.dp)
         ) {
             Icon(

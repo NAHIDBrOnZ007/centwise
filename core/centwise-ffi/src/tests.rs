@@ -573,4 +573,74 @@ mod ingestion_tests {
         assert_eq!(after_update[0].amount_minor, 76_000);
         assert_eq!(after_update[0].category_id, "transport");
     }
+
+    #[test]
+    fn test_group_ffi_lifecycle() {
+        let core = CentwiseCore::open(":memory:".into()).expect("open core");
+        let groups = core.list_groups().expect("list groups");
+        assert!(!groups.is_empty());
+
+        let created = core
+            .create_group(
+                "g_ffi_1".into(),
+                "Mess Budget".into(),
+                "mess".into(),
+                "Dhanmondi".into(),
+                "MESS-99".into(),
+                "September 2026".into(),
+                500_000,
+                "Faysal".into(),
+                "avatar_1".into(),
+            )
+            .expect("create group");
+        assert_eq!(created.name, "Mess Budget");
+        assert_eq!(created.members.len(), 1);
+
+        let joined = core
+            .join_group("MESS-99".into(), "Tanvir".into(), "avatar_2".into())
+            .expect("join")
+            .expect("group");
+        assert_eq!(joined.members.len(), 2);
+
+        let exp_id = core
+            .add_group_expense(
+                "g_ffi_1".into(),
+                created.members[0].id.clone(),
+                vec![crate::types::GroupExpenseItemInput {
+                    name: "মিনিকেট চাল".into(),
+                    quantity: "5kg".into(),
+                    price_minor: 40_000,
+                }],
+                "Dinner items".into(),
+                1_700_000_000_000,
+                "13 Sep 2026".into(),
+            )
+            .expect("add expense");
+        assert!(!exp_id.is_empty());
+
+        let analytics = core
+            .group_analytics("g_ffi_1".into(), 0, i64::MAX, 6, "all".into())
+            .expect("analytics");
+        assert_eq!(analytics.total_expense_minor, 40_000);
+        assert_eq!(analytics.transaction_count, 2); // 1 initial deposit + 1 expense
+        assert!(!analytics.category_breakdown.is_empty());
+        assert!(!analytics.top_spenders.is_empty());
+
+        let debit_analytics = core
+            .group_analytics("g_ffi_1".into(), 0, i64::MAX, 6, "debit".into())
+            .expect("debit analytics");
+        assert_eq!(debit_analytics.total_deposit_minor, 0);
+        assert_eq!(debit_analytics.transaction_count, 1);
+
+        let credit_analytics = core
+            .group_analytics("g_ffi_1".into(), 0, i64::MAX, 6, "credit".into())
+            .expect("credit analytics");
+        assert_eq!(credit_analytics.total_expense_minor, 0);
+        assert_eq!(credit_analytics.transaction_count, 1);
+
+        let deleted = core
+            .delete_group_expense("g_ffi_1".into(), exp_id)
+            .expect("delete");
+        assert!(deleted);
+    }
 }

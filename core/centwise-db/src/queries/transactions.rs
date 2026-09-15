@@ -353,7 +353,7 @@ impl<'a> Queries<'a> {
         let totals = self.connection.query_row(
             "SELECT
                 COALESCE(SUM(CASE WHEN transaction_type = 'expense' THEN amount_minor ELSE 0 END), 0),
-                COALESCE(SUM(CASE WHEN transaction_type = 'income' THEN amount_minor ELSE 0 END), 0)
+                COALESCE(SUM(CASE WHEN transaction_type IN ('income', 'refund') THEN amount_minor ELSE 0 END), 0)
              FROM transactions
              WHERE occurred_at_epoch_ms >= ?1 AND occurred_at_epoch_ms < ?2",
             params![start_epoch_ms, end_epoch_ms],

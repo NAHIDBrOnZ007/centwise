@@ -9,10 +9,9 @@ public final class CurrencyFormatter {
     private let standardFormatter: NumberFormatter = {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
-        formatter.minimumFractionDigits = 2
-        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 0
         formatter.groupingSeparator = ","
-        formatter.decimalSeparator = "."
         return formatter
     }()
 
@@ -27,8 +26,8 @@ public final class CurrencyFormatter {
 
     public func formatBDT(_ amount: Double, showSign: Bool = false, compact: Bool = false) -> String {
         let formatter = compact ? compactFormatter : standardFormatter
-        let absoluteAmount = abs(amount)
-        let formattedNumber = formatter.string(from: NSNumber(value: absoluteAmount)) ?? String(format: "%.2f", absoluteAmount)
+        let absoluteAmount = Int64(abs(amount))
+        let formattedNumber = formatter.string(from: NSNumber(value: absoluteAmount)) ?? "\(absoluteAmount)"
 
         if showSign {
             if amount > 0 {
@@ -36,6 +35,10 @@ public final class CurrencyFormatter {
             } else if amount < 0 {
                 return "-\(Self.symbolBDT) \(formattedNumber)"
             }
+        }
+
+        if amount < 0 {
+            return "-\(Self.symbolBDT) \(formattedNumber)"
         }
 
         return "\(Self.symbolBDT) \(formattedNumber)"

@@ -11,14 +11,18 @@ import org.junit.Test
 class CsvAndFormatterTest {
 
     @Test
-    fun testCurrencyFormatterLakhCroreGrouping() {
+    fun testCurrencyFormatterStandardGrouping() {
         assertEquals("৳ 500", CurrencyFormatter.formatBDT(500.0))
         assertEquals("৳ 1,000", CurrencyFormatter.formatBDT(1000.0))
         assertEquals("৳ 20,000", CurrencyFormatter.formatBDT(20000.0))
-        assertEquals("৳ 1,64,000", CurrencyFormatter.formatBDT(164000.0))
-        assertEquals("৳ 16,00,000", CurrencyFormatter.formatBDT(1600000.0))
-        assertEquals("৳ 1,60,00,000", CurrencyFormatter.formatBDT(16000000.0))
-        assertEquals("৳ 2,75,53,508", CurrencyFormatter.formatBDT(27553508.0))
+        assertEquals("৳ 164,000", CurrencyFormatter.formatBDT(164000.0))
+        assertEquals("৳ 1,600,000", CurrencyFormatter.formatBDT(1600000.0))
+        assertEquals("৳ 16,000,000", CurrencyFormatter.formatBDT(16000000.0))
+        assertEquals("৳ 27,553,508", CurrencyFormatter.formatBDT(27553508.0))
+        assertEquals("৳ 8,829,960", CurrencyFormatter.formatBDT(8829960.74))
+        assertEquals("+৳ 1,000", CurrencyFormatter.formatBDT(1000.0, showSign = true))
+        assertEquals("-৳ 1,000", CurrencyFormatter.formatBDT(-1000.0, showSign = true))
+        assertEquals("-৳ 1,000", CurrencyFormatter.formatBDT(-1000.0, showSign = false))
     }
 
     @Test

@@ -752,6 +752,156 @@ impl CentwiseCore {
             })
             .map_err(CentwiseError::from)
     }
+
+    pub fn list_groups(&self) -> Result<Vec<GroupRecord>, CentwiseError> {
+        self.database
+            .list_groups()
+            .map(|groups| groups.into_iter().map(group_record).collect())
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn get_group(&self, group_id: String) -> Result<Option<GroupRecord>, CentwiseError> {
+        self.database
+            .get_group(&group_id)
+            .map(|opt| opt.map(group_record))
+            .map_err(CentwiseError::from)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_group(
+        &self,
+        id: String,
+        name: String,
+        group_type: String,
+        description: String,
+        join_code: String,
+        month_name: String,
+        monthly_target_minor: i64,
+        creator_name: String,
+        creator_avatar: String,
+    ) -> Result<GroupRecord, CentwiseError> {
+        self.database
+            .create_group(
+                &id,
+                &name,
+                &group_type,
+                &description,
+                &join_code,
+                &month_name,
+                monthly_target_minor,
+                &creator_name,
+                &creator_avatar,
+            )
+            .map(group_record)
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn join_group(
+        &self,
+        join_code: String,
+        member_name: String,
+        member_avatar: String,
+    ) -> Result<Option<GroupRecord>, CentwiseError> {
+        self.database
+            .join_group(&join_code, &member_name, &member_avatar)
+            .map(|opt| opt.map(group_record))
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn add_group_expense(
+        &self,
+        group_id: String,
+        spender_id: String,
+        items: Vec<GroupExpenseItemInput>,
+        notes: String,
+        occurred_at_epoch_ms: i64,
+        date_formatted: String,
+    ) -> Result<String, CentwiseError> {
+        let db_items: Vec<centwise_db::queries::groups::NewGroupExpenseItemInput> = items
+            .into_iter()
+            .map(
+                |it| centwise_db::queries::groups::NewGroupExpenseItemInput {
+                    name: it.name,
+                    quantity: it.quantity,
+                    price_minor: it.price_minor,
+                },
+            )
+            .collect();
+        self.database
+            .add_group_expense(
+                &group_id,
+                &spender_id,
+                &db_items,
+                &notes,
+                occurred_at_epoch_ms,
+                &date_formatted,
+            )
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn delete_group_expense(
+        &self,
+        group_id: String,
+        expense_id: String,
+    ) -> Result<bool, CentwiseError> {
+        self.database
+            .delete_group_expense(&group_id, &expense_id)
+            .map_err(CentwiseError::from)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn add_group_deposit(
+        &self,
+        group_id: String,
+        member_id: String,
+        amount_minor: i64,
+        payment_method: String,
+        note: String,
+        occurred_at_epoch_ms: i64,
+        date_formatted: String,
+    ) -> Result<String, CentwiseError> {
+        self.database
+            .add_group_deposit(
+                &group_id,
+                &member_id,
+                amount_minor,
+                &payment_method,
+                &note,
+                occurred_at_epoch_ms,
+                &date_formatted,
+            )
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn group_analytics(
+        &self,
+        group_id: String,
+        start_epoch_ms: i64,
+        end_epoch_ms: i64,
+        months_back: u32,
+        type_filter: String,
+    ) -> Result<GroupAnalyticsRecord, CentwiseError> {
+        let filter = match type_filter.as_str() {
+            "all" | "debit" | "credit" => type_filter.as_str(),
+            _ => "all",
+        };
+        self.database
+            .group_analytics(&group_id, start_epoch_ms, end_epoch_ms, months_back, filter)
+            .map(group_analytics_record)
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn delete_all_groups(&self) -> Result<(), CentwiseError> {
+        self.database
+            .delete_all_groups()
+            .map_err(CentwiseError::from)
+    }
+
+    pub fn seed_demo_groups(&self) -> Result<(), CentwiseError> {
+        self.database
+            .seed_demo_groups()
+            .map_err(CentwiseError::from)
+    }
 }
 
 pub(crate) fn default_account_name(provider: &str) -> &str {

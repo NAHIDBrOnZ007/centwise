@@ -33,13 +33,12 @@ class TransactionsViewModel(
     private val _sortOrder = MutableStateFlow(TransactionSortOrder.DATE_DESC)
     val sortOrder: StateFlow<TransactionSortOrder> = _sortOrder.asStateFlow()
 
-    val filteredTransactions: StateFlow<List<TransactionItem>> = combine(
+    private val baseFilteredTransactions = combine(
         repository.transactions,
         _searchQuery,
         _selectedPeriod,
-        _selectedType,
         _selectedCategory
-    ) { list, query, period, typeFilter, catFilter ->
+    ) { list, query, period, catFilter ->
         val cal = java.util.Calendar.getInstance()
         val now = java.util.Date()
         cal.time = now
@@ -51,6 +50,7 @@ class TransactionsViewModel(
                 cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
                 cal.set(java.util.Calendar.MINUTE, 0)
                 cal.set(java.util.Calendar.SECOND, 0)
+                cal.set(java.util.Calendar.MILLISECOND, 0)
                 val start = cal.time
                 list.filter { it.timestamp >= start.time }
             }
@@ -59,6 +59,7 @@ class TransactionsViewModel(
                 cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
                 cal.set(java.util.Calendar.MINUTE, 0)
                 cal.set(java.util.Calendar.SECOND, 0)
+                cal.set(java.util.Calendar.MILLISECOND, 0)
                 val thisMonthStart = cal.time
                 cal.add(java.util.Calendar.MONTH, -1)
                 val lastMonthStart = cal.time
@@ -69,27 +70,21 @@ class TransactionsViewModel(
                 cal.set(java.util.Calendar.HOUR_OF_DAY, 0)
                 cal.set(java.util.Calendar.MINUTE, 0)
                 cal.set(java.util.Calendar.SECOND, 0)
+                cal.set(java.util.Calendar.MILLISECOND, 0)
                 val start = cal.time
                 list.filter { it.timestamp >= start.time }
             }
             else -> list
         }
 
-        // 2. Type filter
-        val typeFiltered = if (typeFilter == null) {
+        // 2. Category filter
+        val categoryFiltered = if (catFilter.isNullOrBlank()) {
             periodFiltered
         } else {
-            periodFiltered.filter { it.type == typeFilter }
+            periodFiltered.filter { it.category.equals(catFilter, ignoreCase = true) }
         }
 
-        // 3. Category filter
-        val categoryFiltered = if (catFilter.isNullOrBlank()) {
-            typeFiltered
-        } else {
-            typeFiltered.filter { it.category.equals(catFilter, ignoreCase = true) }
-        }
-
-        // 4. Search query
+        // 3. Search query
         if (query.isBlank()) {
             categoryFiltered
         } else {
@@ -101,29 +96,40 @@ class TransactionsViewModel(
                 it.reference?.contains(q, ignoreCase = true) == true
             }
         }
-    }.combine(_sortOrder) { list, sort ->
-        when (sort) {
-            TransactionSortOrder.DATE_DESC -> list.sortedByDescending { it.timestamp }
-            TransactionSortOrder.DATE_ASC -> list.sortedBy { it.timestamp }
-            TransactionSortOrder.AMOUNT_DESC -> list.sortedByDescending { it.amount }
-            TransactionSortOrder.AMOUNT_ASC -> list.sortedBy { it.amount }
-        }
-    }.flowOn(kotlinx.coroutines.Dispatchers.Default)
-    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+    }
 
-    val totalIncome: StateFlow<Double> = filteredTransactions.map { list ->
-        list.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
+    val totalIncome: StateFlow<Double> = baseFilteredTransactions.map { list ->
+        list.filter { it.type == TransactionType.INCOME || it.type == TransactionType.CREDIT }.sumOf { it.amount }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0.0)
 
-    val totalExpense: StateFlow<Double> = filteredTransactions.map { list ->
+    val totalExpense: StateFlow<Double> = baseFilteredTransactions.map { list ->
         list.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0.0)
 
-    val totalNet: StateFlow<Double> = filteredTransactions.map { list ->
-        val inc = list.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
+    val totalNet: StateFlow<Double> = baseFilteredTransactions.map { list ->
+        val inc = list.filter { it.type == TransactionType.INCOME || it.type == TransactionType.CREDIT }.sumOf { it.amount }
         val exp = list.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
         inc - exp
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0.0)
+
+    val filteredTransactions: StateFlow<List<TransactionItem>> = combine(
+        baseFilteredTransactions,
+        _selectedType,
+        _sortOrder
+    ) { list, typeFilter, sort ->
+        val typeFiltered = if (typeFilter == null) {
+            list
+        } else {
+            list.filter { it.type == typeFilter }
+        }
+        when (sort) {
+            TransactionSortOrder.DATE_DESC -> typeFiltered.sortedByDescending { it.timestamp }
+            TransactionSortOrder.DATE_ASC -> typeFiltered.sortedBy { it.timestamp }
+            TransactionSortOrder.AMOUNT_DESC -> typeFiltered.sortedByDescending { it.amount }
+            TransactionSortOrder.AMOUNT_ASC -> typeFiltered.sortedBy { it.amount }
+        }
+    }.flowOn(kotlinx.coroutines.Dispatchers.Default)
+    .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     fun updateSearch(query: String) {
         _searchQuery.value = query

@@ -204,3 +204,146 @@ pub(crate) fn sms_transaction_id(
         .hash(&mut hasher);
     format!("sms-{:016x}", hasher.finish())
 }
+
+pub(crate) fn group_member_record(m: domain::GroupMember) -> GroupMemberRecord {
+    let net = m.net_balance_minor();
+    GroupMemberRecord {
+        id: m.id,
+        group_id: m.group_id,
+        name: m.name,
+        avatar: m.avatar,
+        phone: m.phone,
+        is_admin: m.is_admin,
+        deposit_paid_minor: m.deposit_paid_minor,
+        total_spent_share_minor: m.total_spent_share_minor,
+        net_balance_minor: net,
+    }
+}
+
+pub(crate) fn group_expense_item_record(item: domain::GroupExpenseItem) -> GroupExpenseItemRecord {
+    GroupExpenseItemRecord {
+        id: item.id,
+        expense_id: item.expense_id,
+        group_id: item.group_id,
+        name: item.name,
+        quantity: item.quantity,
+        price_minor: item.price_minor,
+    }
+}
+
+pub(crate) fn group_expense_record(e: domain::GroupExpenseEntry) -> GroupExpenseRecord {
+    GroupExpenseRecord {
+        id: e.id,
+        group_id: e.group_id,
+        spender_id: e.spender_id,
+        spender_name: e.spender_name,
+        spender_avatar: e.spender_avatar,
+        occurred_at_epoch_ms: e.occurred_at_epoch_ms,
+        date_formatted: e.date_formatted,
+        total_amount_minor: e.total_amount_minor,
+        split_per_member_minor: e.split_per_member_minor,
+        notes: e.notes,
+        items: e.items.into_iter().map(group_expense_item_record).collect(),
+    }
+}
+
+pub(crate) fn group_deposit_record(d: domain::GroupDeposit) -> GroupDepositRecord {
+    GroupDepositRecord {
+        id: d.id,
+        group_id: d.group_id,
+        member_id: d.member_id,
+        member_name: d.member_name,
+        member_avatar: d.member_avatar,
+        amount_minor: d.amount_minor,
+        occurred_at_epoch_ms: d.occurred_at_epoch_ms,
+        date_formatted: d.date_formatted,
+        payment_method: d.payment_method,
+        note: d.note,
+    }
+}
+
+pub(crate) fn group_record(g: domain::SharedGroup) -> GroupRecord {
+    let group_type_str = g.group_type.as_str().to_string();
+    GroupRecord {
+        id: g.id,
+        name: g.name,
+        group_type: group_type_str,
+        description: g.description,
+        join_code: g.join_code,
+        month_name: g.month_name,
+        monthly_target_minor: g.monthly_target_minor,
+        members: g.members.into_iter().map(group_member_record).collect(),
+        daily_expenses: g
+            .daily_expenses
+            .into_iter()
+            .map(group_expense_record)
+            .collect(),
+        deposits: g.deposits.into_iter().map(group_deposit_record).collect(),
+        has_new_activity: g.has_new_activity,
+        created_at_epoch_ms: g.created_at_epoch_ms,
+    }
+}
+
+pub(crate) fn group_analytics_record(a: domain::GroupAnalyticsSnapshot) -> GroupAnalyticsRecord {
+    GroupAnalyticsRecord {
+        group_id: a.group_id,
+        group_name: a.group_name,
+        total_deposit_minor: a.total_deposit_minor,
+        total_expense_minor: a.total_expense_minor,
+        remaining_balance_minor: a.remaining_balance_minor,
+        transaction_count: a.transaction_count,
+        expense_count: a.expense_count,
+        deposit_count: a.deposit_count,
+        member_shares: a
+            .member_shares
+            .into_iter()
+            .map(|m| GroupMemberShareRecord {
+                member_id: m.member_id,
+                member_name: m.member_name,
+                member_avatar: m.member_avatar,
+                deposit_paid_minor: m.deposit_paid_minor,
+                total_spent_share_minor: m.total_spent_share_minor,
+                net_balance_minor: m.net_balance_minor,
+            })
+            .collect(),
+        category_breakdown: a
+            .category_breakdown
+            .into_iter()
+            .map(|c| GroupItemCategorySpendRecord {
+                category_name: c.category_name,
+                total_minor: c.total_minor,
+                percentage: c.percentage,
+                item_count: c.item_count,
+            })
+            .collect(),
+        top_spenders: a
+            .top_spenders
+            .into_iter()
+            .map(|m| AnalyticsMerchantRecord {
+                merchant: m.merchant,
+                total_minor: m.total_minor,
+                transaction_count: m.transaction_count,
+            })
+            .collect(),
+        monthly_trends: a
+            .monthly_trends
+            .into_iter()
+            .map(|t| AnalyticsMonthlyRecord {
+                year: t.year,
+                month: t.month,
+                total_expense_minor: t.total_expense_minor,
+            })
+            .collect(),
+        settlements: a
+            .settlements
+            .into_iter()
+            .map(|s| GroupSettlementRecord {
+                from_member_id: s.from_member_id,
+                from_member_name: s.from_member_name,
+                to_member_id: s.to_member_id,
+                to_member_name: s.to_member_name,
+                amount_minor: s.amount_minor,
+            })
+            .collect(),
+    }
+}

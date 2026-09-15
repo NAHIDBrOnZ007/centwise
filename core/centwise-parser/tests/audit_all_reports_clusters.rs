@@ -115,6 +115,7 @@ fn test_audit_all_csv_reports_clustered() {
         "transaction-report-08.csv",
         "transaction-report-09.csv",
         "transaction-report-10.csv",
+        "transaction-report-011.csv",
     ];
 
     let review_reports = [
@@ -122,6 +123,7 @@ fn test_audit_all_csv_reports_clustered() {
         "review-queue-report-02.csv",
         "review-queue-report-03.csv",
         "review-queue-report-04.csv",
+        "review-qeue-report-05.csv",
     ];
 
     let mut clusters: BTreeMap<(String, String), PatternCluster> = BTreeMap::new();

@@ -25,6 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import com.centwise.core.design.components.SeeAllButton
 import com.centwise.core.design.components.iosBounceClick
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -91,7 +92,6 @@ fun GroupScreen(
             GroupEmptyOnboardingState(
                 onCreateClick = { showCreateJoinSheet = true },
                 onJoinClick = { showCreateJoinSheet = true },
-                onRestoreDemo = { viewModel.resetToMockData() },
                 accent = accent,
                 cardBg = cardBg,
                 textPrimary = textPrimary,
@@ -106,10 +106,19 @@ fun GroupScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 20.dp),
-                contentPadding = PaddingValues(top = 16.dp, bottom = 140.dp),
+                contentPadding = PaddingValues(top = 16.dp, bottom = 200.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // 1. Top Header: Group Switcher Chips & Options (Direct on screen without white card)
+                // 1. Screen Title Header (Clean and minimal, matching all app tabs)
+                item {
+                    Text(
+                        text = GroupStrings.tabTitle,
+                        style = CentwiseTypography.LargeTitle,
+                        color = textPrimary
+                    )
+                }
+
+                // 2. Horizontal Group Switcher Chips & Options Button (Clean integrated sub-bar)
                 item {
                     Row(
                         modifier = Modifier
@@ -118,157 +127,118 @@ fun GroupScreen(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                            // Horizontal Group Switcher Chips
-                            LazyRow(
-                                modifier = Modifier.weight(1f),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                contentPadding = PaddingValues(horizontal = 2.dp, vertical = 2.dp)
-                            ) {
-                                items(allGroups) { g ->
-                                    val isActive = g.id == group.id
-                                    GroupChipItem(
-                                        group = g,
-                                        isActive = isActive,
-                                        accent = accent,
-                                        cardBg = cardBg,
-                                        textPrimary = textPrimary,
-                                        textSecondary = textSecondary,
-                                        isDark = isDark,
-                                        onClick = {
-                                            if (!isActive) {
-                                                viewModel.selectGroup(g.id)
-                                                if (AppearancePrefs.hapticsEnabled) {
-                                                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                                }
+                        LazyRow(
+                            modifier = Modifier.weight(1f),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(horizontal = 2.dp, vertical = 2.dp)
+                        ) {
+                            items(allGroups) { g ->
+                                val isActive = g.id == group.id
+                                GroupChipItem(
+                                    group = g,
+                                    isActive = isActive,
+                                    accent = accent,
+                                    cardBg = cardBg,
+                                    textPrimary = textPrimary,
+                                    textSecondary = textSecondary,
+                                    isDark = isDark,
+                                    onClick = {
+                                        if (!isActive) {
+                                            viewModel.selectGroup(g.id)
+                                            if (AppearancePrefs.hapticsEnabled) {
+                                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                                             }
                                         }
+                                    }
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        // Options Menu (Round Three-Dot Button matching chip height 38.dp)
+                        Box {
+                            Surface(
+                                shape = CircleShape,
+                                color = if (isDark) CentwiseColors.DarkSurface else Color.White,
+                                border = BorderStroke(1.dp, if (isDark) Color(0x26FFFFFF) else Color(0x14000000)),
+                                shadowElevation = if (isDark) 2.dp else 1.dp,
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(CircleShape)
+                                    .iosBounceClick {
+                                        if (AppearancePrefs.hapticsEnabled) {
+                                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        }
+                                        showOptionsMenu = true
+                                    }
+                            ) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.MoreHoriz,
+                                        contentDescription = "Menu",
+                                        tint = accent,
+                                        modifier = Modifier.size(20.dp)
                                     )
                                 }
                             }
 
-                            Spacer(modifier = Modifier.width(8.dp))
+                            val menuBg = if (isDark) Color(0xFF2C2C2E) else Color.White
+                            val menuBorder = BorderStroke(1.dp, if (isDark) Color(0x14FFFFFF) else Color(0x0F000000))
 
-                            // Options Menu (Round Three-Dot Button matching chip height)
-                            Box {
-                                Surface(
-                                    shape = CircleShape,
-                                    color = if (isDark) CentwiseColors.DarkSurface else Color.White,
-                                    border = BorderStroke(1.dp, if (isDark) Color(0x26FFFFFF) else Color(0x14000000)),
-                                    shadowElevation = if (isDark) 4.dp else 2.dp,
-                                    modifier = Modifier
-                                        .size(38.dp)
-                                        .clip(CircleShape)
-                                        .iosBounceClick {
-                                            if (AppearancePrefs.hapticsEnabled) {
-                                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                            }
-                                            showOptionsMenu = true
-                                        }
-                                ) {
-                                    Box(
-                                        contentAlignment = Alignment.Center,
-                                        modifier = Modifier.fillMaxSize()
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.MoreHoriz,
-                                            contentDescription = "Menu",
-                                            tint = accent,
-                                            modifier = Modifier.size(20.dp)
+                            DropdownMenu(
+                                expanded = showOptionsMenu,
+                                onDismissRequest = { showOptionsMenu = false },
+                                offset = DpOffset(0.dp, 8.dp),
+                                shape = RoundedCornerShape(18.dp),
+                                containerColor = menuBg,
+                                shadowElevation = 8.dp,
+                                border = menuBorder
+                            ) {
+                                // 1. Group QR Code
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = GroupStrings.groupQrCode,
+                                            style = CentwiseTypography.Body.copy(fontSize = 14.sp),
+                                            color = textPrimary
                                         )
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.QrCode2, contentDescription = null, tint = accent, modifier = Modifier.size(18.dp))
+                                    },
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                                    onClick = {
+                                        showOptionsMenu = false
+                                        showInviteSheet = true
                                     }
-                                }
+                                )
 
-                                val menuBg = if (isDark) Color(0xFF2C2C2E) else Color.White
-                                val menuBorder = BorderStroke(1.dp, if (isDark) Color(0x14FFFFFF) else Color(0x0F000000))
-
-                                DropdownMenu(
-                                    expanded = showOptionsMenu,
-                                    onDismissRequest = { showOptionsMenu = false },
-                                    offset = DpOffset(0.dp, 8.dp),
-                                    shape = RoundedCornerShape(18.dp),
-                                    containerColor = menuBg,
-                                    shadowElevation = 8.dp,
-                                    border = menuBorder
-                                ) {
-                                    // 1. Group QR Code
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                text = GroupStrings.groupQrCode,
-                                                style = CentwiseTypography.Body.copy(fontSize = 14.sp),
-                                                color = textPrimary
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.QrCode2, contentDescription = null, tint = accent, modifier = Modifier.size(18.dp))
-                                        },
-                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-                                        onClick = {
-                                            showOptionsMenu = false
-                                            showInviteSheet = true
-                                        }
-                                    )
-
-                                    // 2. Create or Join Group
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                text = if (LanguagePrefs.isBengali) "নতুন গ্রুপ তৈরি বা জয়েন" else "Create or Join Group",
-                                                style = CentwiseTypography.Body.copy(fontSize = 14.sp),
-                                                color = textPrimary
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.GroupAdd, contentDescription = null, tint = accent, modifier = Modifier.size(18.dp))
-                                        },
-                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-                                        onClick = {
-                                            showOptionsMenu = false
-                                            showCreateJoinSheet = true
-                                        }
-                                    )
-
-                                    // 3. Reset Demo Data
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                text = if (LanguagePrefs.isBengali) "ডেমো ডাটা রিসেট" else "Reset Demo Data",
-                                                style = CentwiseTypography.Body.copy(fontSize = 14.sp),
-                                                color = textPrimary
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            Icon(Icons.Default.Refresh, contentDescription = null, tint = accent, modifier = Modifier.size(18.dp))
-                                        },
-                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-                                        onClick = {
-                                            showOptionsMenu = false
-                                            viewModel.resetToMockData()
-                                        }
-                                    )
-
-                                    // 4. Test Empty State
-                                    DropdownMenuItem(
-                                        text = {
-                                            Text(
-                                                text = if (LanguagePrefs.isBengali) "খালি অবস্থা দেখুন (টেস্ট)" else "View Empty State (Test)",
-                                                style = CentwiseTypography.Body.copy(fontSize = 14.sp),
-                                                color = CentwiseColors.ExpenseRed
-                                            )
-                                        },
-                                        leadingIcon = {
-                                            Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = CentwiseColors.ExpenseRed, modifier = Modifier.size(18.dp))
-                                        },
-                                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-                                        onClick = {
-                                            showOptionsMenu = false
-                                            viewModel.clearGroupForTesting()
-                                        }
-                                    )
-                                }
+                                // 2. Create or Join Group
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = if (LanguagePrefs.isBengali) "নতুন গ্রুপ তৈরি বা জয়েন" else "Create or Join Group",
+                                            style = CentwiseTypography.Body.copy(fontSize = 14.sp),
+                                            color = textPrimary
+                                        )
+                                    },
+                                    leadingIcon = {
+                                        Icon(Icons.Default.GroupAdd, contentDescription = null, tint = accent, modifier = Modifier.size(18.dp))
+                                    },
+                                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                                    onClick = {
+                                        showOptionsMenu = false
+                                        showCreateJoinSheet = true
+                                    }
+                                )
                             }
                         }
                     }
+                }
 
                 // 2. Financial Overview Card
                 item {
@@ -364,7 +334,7 @@ fun GroupScreen(
                     )
                 }
 
-                // 4. Weekly Expenses Section Header with "View all" Button (Matching HomeScreen 1:1, No Leading Icon)
+                // 4. Weekly Expenses Section Header with "See all" Button (Matching HomeScreen 1:1)
                 item {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -377,37 +347,14 @@ fun GroupScreen(
                             color = textPrimary
                         )
 
-                        // "View all" / "সব দেখুন" Action Button
-                        Surface(
-                            shape = CircleShape,
-                            color = accent.copy(alpha = 0.12f),
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .iosBounceClick {
-                                    showAllTransactionsSheet = true
-                                    if (AppearancePrefs.hapticsEnabled) {
-                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                    }
-                                }
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
-                            ) {
-                                Text(
-                                    text = GroupStrings.viewAll,
-                                    style = CentwiseTypography.Caption.copy(fontWeight = FontWeight.Bold),
-                                    color = accent
-                                )
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                    contentDescription = null,
-                                    tint = accent,
-                                    modifier = Modifier.size(14.dp)
-                                )
+                        // "See all" / "সব দেখুন" Action Button
+                        SeeAllButton(
+                            text = GroupStrings.seeAll,
+                            accentColor = accent,
+                            onClick = {
+                                showAllTransactionsSheet = true
                             }
-                        }
+                        )
                     }
                 }
 
@@ -489,7 +436,8 @@ fun GroupScreen(
                 contentColor = Color.White,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(end = 20.dp, bottom = 90.dp)
+                    .navigationBarsPadding()
+                    .padding(end = 20.dp, bottom = 120.dp)
                     .size(56.dp)
             ) {
                 Icon(
@@ -1136,7 +1084,6 @@ fun GroupExpenseRow(
 private fun GroupEmptyOnboardingState(
     onCreateClick: () -> Unit,
     onJoinClick: () -> Unit,
-    onRestoreDemo: () -> Unit,
     accent: Color,
     cardBg: Color,
     textPrimary: Color,
@@ -1228,16 +1175,6 @@ private fun GroupEmptyOnboardingState(
                 text = GroupStrings.scanQrButton,
                 style = CentwiseTypography.Headline.copy(fontSize = 16.sp),
                 color = accent
-            )
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        TextButton(onClick = onRestoreDemo) {
-            Text(
-                text = GroupStrings.loadDemoButton,
-                style = CentwiseTypography.Subheadline.copy(fontWeight = FontWeight.SemiBold),
-                color = textSecondary
             )
         }
     }

@@ -6,7 +6,7 @@ object GroupStrings {
     private val bn: Boolean
         get() = LanguagePrefs.isBengali
 
-    val tabTitle: String get() = if (bn) "গ্রুপ" else "Group"
+    val tabTitle: String get() = if (bn) "গ্রুপ" else "Groups"
 
     // Overview Card
     val totalExpense: String get() = if (bn) "গ্রুপের মোট খরচ" else "Total Group Expense"
@@ -151,7 +151,8 @@ object GroupStrings {
     val weeklyAverage: String get() = if (bn) "সাপ্তাহিক গড়" else "Weekly Avg"
     val perWeek: String get() = if (bn) " / সপ্তাহ" else " / week"
     val weeklyBreakdown: String get() = if (bn) "সাপ্তাহিক খরচের হিসাব" else "Weekly Spending Breakdown"
-    val viewAll: String get() = if (bn) "সব দেখুন" else "View all"
+    val seeAll: String get() = if (bn) "সব দেখুন" else "See all"
+    val viewAll: String get() = seeAll
     val thisWeekExpenses: String get() = if (bn) "এই সপ্তাহের খরচ" else "This Week's Expenses"
     val allTransactionsTitle: String get() = if (bn) "গ্রুপের সব লেনদেন" else "All Group Transactions"
     val allTab: String get() = if (bn) "সব" else "All"

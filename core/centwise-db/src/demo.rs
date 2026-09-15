@@ -150,6 +150,8 @@ pub(crate) fn populate(queries: &Queries<'_>, now_epoch_ms: i64) -> DbResult<Dem
         })?;
     }
 
+    let _ = queries.seed_demo_groups(now_epoch_ms);
+
     Ok(DemoDataSummary {
         accounts: accounts.len() as u32,
         transactions: transaction_count,

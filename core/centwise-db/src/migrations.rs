@@ -170,6 +170,81 @@ CREATE INDEX IF NOT EXISTS idx_transactions_cat_type_occurred
     ON transactions(category_id, transaction_type, occurred_at_epoch_ms);
 "#,
     },
+    Migration {
+        version: 7,
+        name: "shared groups, members, expenses, items, and deposits",
+        sql: r#"
+CREATE TABLE groups (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL,
+    group_type TEXT NOT NULL DEFAULT 'mess',
+    description TEXT NOT NULL DEFAULT '',
+    join_code TEXT NOT NULL UNIQUE,
+    month_name TEXT NOT NULL,
+    monthly_target_minor INTEGER NOT NULL DEFAULT 0,
+    has_new_activity INTEGER NOT NULL DEFAULT 0,
+    created_at_epoch_ms INTEGER NOT NULL
+);
+
+CREATE TABLE group_members (
+    id TEXT PRIMARY KEY NOT NULL,
+    group_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    avatar TEXT NOT NULL DEFAULT 'avatar_1',
+    phone TEXT NOT NULL DEFAULT '',
+    is_admin INTEGER NOT NULL DEFAULT 0,
+    created_at_epoch_ms INTEGER NOT NULL,
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_group_members_group ON group_members(group_id);
+
+CREATE TABLE group_expenses (
+    id TEXT PRIMARY KEY NOT NULL,
+    group_id TEXT NOT NULL,
+    spender_id TEXT NOT NULL,
+    occurred_at_epoch_ms INTEGER NOT NULL,
+    date_formatted TEXT NOT NULL,
+    total_amount_minor INTEGER NOT NULL DEFAULT 0,
+    split_per_member_minor INTEGER NOT NULL DEFAULT 0,
+    notes TEXT NOT NULL DEFAULT '',
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+    FOREIGN KEY (spender_id) REFERENCES group_members(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_group_expenses_group_occurred ON group_expenses(group_id, occurred_at_epoch_ms DESC);
+
+CREATE TABLE group_expense_items (
+    id TEXT PRIMARY KEY NOT NULL,
+    expense_id TEXT NOT NULL,
+    group_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    quantity TEXT NOT NULL DEFAULT '',
+    price_minor INTEGER NOT NULL DEFAULT 0,
+    FOREIGN KEY (expense_id) REFERENCES group_expenses(id) ON DELETE CASCADE,
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_group_expense_items_expense ON group_expense_items(expense_id);
+CREATE INDEX idx_group_expense_items_group ON group_expense_items(group_id);
+
+CREATE TABLE group_deposits (
+    id TEXT PRIMARY KEY NOT NULL,
+    group_id TEXT NOT NULL,
+    member_id TEXT NOT NULL,
+    amount_minor INTEGER NOT NULL,
+    occurred_at_epoch_ms INTEGER NOT NULL,
+    date_formatted TEXT NOT NULL,
+    payment_method TEXT NOT NULL DEFAULT 'Cash',
+    note TEXT NOT NULL DEFAULT '',
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+    FOREIGN KEY (member_id) REFERENCES group_members(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_group_deposits_group ON group_deposits(group_id, occurred_at_epoch_ms DESC);
+CREATE INDEX idx_group_deposits_member ON group_deposits(member_id);
+"#,
+    },
 ];
 
 /// Latest schema version available in this build.
@@ -201,8 +276,20 @@ pub fn run(connection: &Connection) -> DbResult<()> {
     if had_pending || count_rules(connection)? == 0 {
         seed_default_rules(connection)?;
     }
+    if count_groups(connection)? == 0 {
+        crate::queries::groups::seed_default_demo_groups_on_connection(
+            connection,
+            crate::queries::now_epoch_ms(),
+        )?;
+    }
 
     Ok(())
+}
+
+fn count_groups(connection: &Connection) -> DbResult<i64> {
+    connection
+        .query_row("SELECT COUNT(*) FROM groups", [], |row| row.get(0))
+        .map_err(Into::into)
 }
 
 fn count_rules(connection: &Connection) -> DbResult<i64> {

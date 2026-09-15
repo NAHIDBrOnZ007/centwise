@@ -49,13 +49,13 @@ class TransactionRepository private constructor() {
     val isReady: StateFlow<Boolean> = _isReady.asStateFlow()
 
     val totalIncome = _transactions.map { list ->
-        list.filter { it.type == TransactionType.INCOME }.sumOf { it.amount }
+        list.filter { it.type == TransactionType.INCOME || it.type == TransactionType.CREDIT }.sumOf { it.amount }
     }
     val totalExpense = _transactions.map { list ->
         list.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
     }
     val totalNet = _transactions.map { list ->
-        list.filter { it.type == TransactionType.INCOME }.sumOf { it.amount } -
+        list.filter { it.type == TransactionType.INCOME || it.type == TransactionType.CREDIT }.sumOf { it.amount } -
             list.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
     }
 
@@ -160,6 +160,7 @@ class TransactionRepository private constructor() {
         }
         SmartRulesRepository.shared.refresh()
         ReviewQueueRepository.shared.refresh()
+        com.centwise.features.group.GroupRepository.shared.refreshFromRust()
     }
 
     fun addTransaction(tx: TransactionItem): Boolean =
@@ -319,6 +320,7 @@ class TransactionRepository private constructor() {
             refreshMutex.withLock {
                 if (CentwiseRustBackend.resetToEmptyDatabase()) {
                     refreshFromRust()
+                    com.centwise.features.group.GroupRepository.shared.refreshFromRust()
                 }
             }
         }

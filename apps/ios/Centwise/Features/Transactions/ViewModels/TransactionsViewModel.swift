@@ -115,16 +115,27 @@ public final class TransactionsViewModel: ObservableObject {
                 }
             }
 
-            if let type = typeFilter {
-                result = result.filter { $0.type == type }
-            }
-
             if let catId = categoryFilter {
                 result = result.filter { $0.category.id == catId }
             }
 
             if let provider = providerFilter {
                 result = result.filter { $0.provider == provider }
+            }
+
+            // Calculate Totals before typeFilter so selecting "Expense" does not zero out income stat
+            var income = 0.0
+            var expense = 0.0
+            for tx in result {
+                if tx.type == .income || tx.type == .refund {
+                    income += tx.amount
+                } else if tx.type == .expense {
+                    expense += tx.amount
+                }
+            }
+
+            if let type = typeFilter {
+                result = result.filter { $0.type == type }
             }
 
             switch sort {
@@ -136,17 +147,6 @@ public final class TransactionsViewModel: ObservableObject {
                 result.sort { $0.amount > $1.amount }
             case .amountLow:
                 result.sort { $0.amount < $1.amount }
-            }
-
-            // Calculate Totals
-            var income = 0.0
-            var expense = 0.0
-            for tx in result {
-                if tx.type == .income {
-                    income += tx.amount
-                } else if tx.type == .expense {
-                    expense += tx.amount
-                }
             }
 
             // Rebuild month groups off main thread

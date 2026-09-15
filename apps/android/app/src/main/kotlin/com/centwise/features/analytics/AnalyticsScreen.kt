@@ -43,6 +43,16 @@ import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.data.repository.TransactionRepository
 import com.centwise.features.settings.AccentOptions
 import com.centwise.features.settings.AppearancePrefs
+import com.centwise.features.settings.LanguagePrefs
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import com.centwise.core.design.components.ScopeChipItem
+import com.centwise.core.design.components.ScopeTabItem
+import com.centwise.data.models.TransactionItem
+import com.centwise.data.models.TransactionType
+import com.centwise.features.group.GroupRepository
+import com.centwise.features.group.SharedGroup
 
 @Composable
 fun AnalyticsScreen(
@@ -57,8 +67,143 @@ fun AnalyticsScreen(
     val categoryBreakdown by viewModel.categoryBreakdown.collectAsState()
     val topMerchants by viewModel.topMerchants.collectAsState()
     val categories by TransactionRepository.shared.categories.collectAsState()
-
     val trendPoints by viewModel.monthlyTrends.collectAsState()
+
+    val allGroups by GroupRepository.shared.allGroups.collectAsState()
+    var selectedGroupId by remember { mutableStateOf<String?>(null) }
+    val haptic = LocalHapticFeedback.current
+
+    val scopeTabItems: List<ScopeTabItem> = remember(allGroups, LanguagePrefs.isBengali) {
+        val list = mutableListOf<ScopeTabItem>()
+        // 1. Personal scope
+        list.add(ScopeTabItem.Personal(title = if (LanguagePrefs.isBengali) "ব্যক্তিগত" else "Personal"))
+        // 2. Each individual group
+        allGroups.forEach { g ->
+            list.add(ScopeTabItem.SpecificGroup(g))
+        }
+        list
+    }
+
+    val activeSelectedId = remember(selectedGroupId) {
+        if (selectedGroupId == null) {
+            "scope_personal"
+        } else {
+            "scope_group_$selectedGroupId"
+        }
+    }
+
+    val currentSelectedGroup = remember(allGroups, selectedGroupId) {
+        allGroups.find { it.id == selectedGroupId }
+    }
+
+    // Group Analytics Computations (Powered by Rust Core)
+    val groupDailyExpenses = currentSelectedGroup?.dailyExpenses ?: emptyList()
+    val groupDeposits = currentSelectedGroup?.deposits ?: emptyList()
+
+    val (periodStart, periodEnd) = remember(selectedPeriod) {
+        val range = AnalyticsViewModel.getPeriodDateRange(selectedPeriod)
+        range.first.time to range.second.time + 1
+    }
+
+    val typeFilter = remember(selectedType) {
+        when (selectedType) {
+            "Debit" -> "debit"
+            "Credit" -> "credit"
+            else -> "all"
+        }
+    }
+
+    val monthsBack: UInt = if (selectedPeriod == "3 Months") 3u else 6u
+
+    val rustGroupAnalytics = remember(
+        currentSelectedGroup?.id,
+        periodStart,
+        periodEnd,
+        monthsBack,
+        typeFilter,
+        currentSelectedGroup?.dailyExpenses?.size,
+        currentSelectedGroup?.deposits?.size
+    ) {
+        currentSelectedGroup?.let {
+            GroupRepository.shared.getGroupAnalytics(it.id, periodStart, periodEnd, monthsBack, typeFilter)
+        }
+    }
+
+    val filteredGroupExpenses = remember(groupDailyExpenses, periodStart, periodEnd) {
+        val matches = groupDailyExpenses.filter { it.timestamp in periodStart..periodEnd }
+        if (matches.isNotEmpty()) matches else groupDailyExpenses
+    }
+
+    val effectiveExpense = if (currentSelectedGroup != null) {
+        (rustGroupAnalytics?.totalExpenseMinor ?: 0L) / 100.0
+    } else totalExpense
+
+    val effectiveIncome = if (currentSelectedGroup != null) {
+        (rustGroupAnalytics?.totalDepositMinor ?: 0L) / 100.0
+    } else totalIncome
+
+    val effectiveCount = if (currentSelectedGroup != null) {
+        rustGroupAnalytics?.transactionCount?.toInt() ?: 0
+    } else transactionCount
+
+    val effectiveCategoryBreakdown: List<CategorySpendItem> = remember(
+        currentSelectedGroup,
+        rustGroupAnalytics,
+        categoryBreakdown
+    ) {
+        if (currentSelectedGroup != null) {
+            rustGroupAnalytics?.categoryBreakdown?.map { cat ->
+                CategorySpendItem(
+                    category = cat.categoryName,
+                    totalAmount = cat.totalMinor / 100.0,
+                    percentage = cat.percentage,
+                    count = cat.itemCount.toInt()
+                )
+            } ?: emptyList()
+        } else {
+            categoryBreakdown
+        }
+    }
+
+    val effectiveTopMerchants: List<MerchantSpendItem> = remember(
+        currentSelectedGroup,
+        rustGroupAnalytics,
+        topMerchants
+    ) {
+        if (currentSelectedGroup != null) {
+            rustGroupAnalytics?.topSpenders?.map { spender ->
+                MerchantSpendItem(
+                    merchantName = spender.merchant,
+                    totalAmount = spender.totalMinor / 100.0,
+                    transactionCount = spender.transactionCount.toInt()
+                )
+            } ?: emptyList()
+        } else {
+            topMerchants
+        }
+    }
+
+    val effectiveTrendPoints: List<TrendPoint> = remember(
+        currentSelectedGroup,
+        rustGroupAnalytics,
+        trendPoints
+    ) {
+        if (currentSelectedGroup != null) {
+            val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+            val trends = rustGroupAnalytics?.monthlyTrends
+            if (!trends.isNullOrEmpty()) {
+                trends.map {
+                    val monthIdx = (it.month.toInt() - 1).coerceIn(0, 11)
+                    TrendPoint(monthNames[monthIdx], it.totalExpenseMinor / 100.0)
+                }
+            } else {
+                listOf(TrendPoint("Current", (rustGroupAnalytics?.totalExpenseMinor ?: 0L) / 100.0))
+            }
+        } else {
+            trendPoints
+        }
+    }
+
     var drillDownTitle by remember { mutableStateOf<String?>(null) }
     var drillDownTransactions by remember { mutableStateOf<List<com.centwise.data.models.TransactionItem>>(emptyList()) }
     var selectedTransaction by remember { mutableStateOf<com.centwise.data.models.TransactionItem?>(null) }
@@ -86,13 +231,51 @@ fun AnalyticsScreen(
         contentPadding = PaddingValues(top = 16.dp, bottom = 140.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
-        // Header (Matching iOS navigationTitle("Analytics"))
+        // Header
         item {
             Text(
-                text = "Analytics",
+                text = if (LanguagePrefs.isBengali) "বিশ্লেষণ" else "Analytics",
                 style = CentwiseTypography.LargeTitle,
                 color = textPrimary
             )
+        }
+
+        // Scope Switcher Chips (Personal & Individual Groups)
+        if (scopeTabItems.size > 1) {
+            item {
+                LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(horizontal = 2.dp, vertical = 2.dp)
+                ) {
+                    items(scopeTabItems, key = { it.id }) { tabItem ->
+                        val isActive = tabItem.id == activeSelectedId
+                        ScopeChipItem(
+                            item = tabItem,
+                            isActive = isActive,
+                            accent = accent,
+                            isDark = isDark,
+                            onClick = {
+                                if (!isActive) {
+                                    if (AppearancePrefs.hapticsEnabled) {
+                                        haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                    }
+                                    when (tabItem) {
+                                        is ScopeTabItem.Personal -> {
+                                            selectedGroupId = null
+                                        }
+                                        is ScopeTabItem.SpecificGroup -> {
+                                            selectedGroupId = tabItem.group.id
+                                        }
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+            }
         }
 
         // 1. Filter Bar (Matching iOS AnalyticsScreen filterBar 1:1 with iOS tactile physics)
@@ -302,10 +485,10 @@ fun AnalyticsScreen(
         // 2. Period Summary Hero Card (Matching iOS AnalyticsSummaryCard 1:1)
         item {
             AnalyticsSummaryCard(
-                spent = totalExpense,
-                income = totalIncome,
-                transactionCount = transactionCount,
-                topCategoryName = categoryBreakdown.firstOrNull()?.category,
+                spent = effectiveExpense,
+                income = effectiveIncome,
+                transactionCount = effectiveCount,
+                topCategoryName = effectiveCategoryBreakdown.firstOrNull()?.category,
                 periodDays = periodDays,
                 isDark = isDark
             )
@@ -313,13 +496,13 @@ fun AnalyticsScreen(
 
         // 3. Spending Trends (Last 6 Months with Dynamic Accent Bars)
         item {
-            SpendingTrendsChart(points = trendPoints, isDark = isDark)
+            SpendingTrendsChart(points = effectiveTrendPoints, isDark = isDark)
         }
 
         // 4. Category Pie / Donut Chart (Matching iOS CategoryPieChart 1:1)
         item {
-            val slices = remember(categoryBreakdown, categories) {
-                categoryBreakdown.mapIndexed { index, item ->
+            val slices = remember(effectiveCategoryBreakdown, categories) {
+                effectiveCategoryBreakdown.mapIndexed { index, item ->
                     CategorySlice(
                         name = item.category,
                         value = item.totalAmount,
@@ -339,14 +522,14 @@ fun AnalyticsScreen(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
-                    text = "Categories",
+                    text = if (LanguagePrefs.isBengali) "ক্যাটাগরি" else "Categories",
                     style = CentwiseTypography.Headline,
                     color = textPrimary
                 )
 
-                if (categoryBreakdown.isEmpty()) {
+                if (effectiveCategoryBreakdown.isEmpty()) {
                     Text(
-                        "No categories to show",
+                        if (LanguagePrefs.isBengali) "কোনো ক্যাটাগরি পাওয়া যায়নি" else "No categories to show",
                         style = CentwiseTypography.Subheadline,
                         color = textSecondary,
                         modifier = Modifier
@@ -356,7 +539,7 @@ fun AnalyticsScreen(
                     )
                 } else {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        categoryBreakdown.forEach { item ->
+                        effectiveCategoryBreakdown.forEach { item ->
                             val catRecord = categories.firstOrNull { it.name.equals(item.category, ignoreCase = true) }
                             val catIcon = CategoryIconHelper.iconFor(item.category, catRecord?.icon)
 
@@ -367,7 +550,31 @@ fun AnalyticsScreen(
                                     .background(cardBg)
                                     .iosBounceClick {
                                         drillDownTitle = item.category
-                                        drillDownTransactions = viewModel.transactionsForCategory(item.category)
+                                        drillDownTransactions = if (currentSelectedGroup != null) {
+                                            filteredGroupExpenses.filter { entry ->
+                                                if (entry.items.isNotEmpty()) {
+                                                    entry.items.any { categorizeGroupItem(it.name).equals(item.category, ignoreCase = true) }
+                                                } else {
+                                                    item.category.contains("General", ignoreCase = true) || item.category.contains("সাধারণ", ignoreCase = true)
+                                                }
+                                            }.map { entry ->
+                                                TransactionItem(
+                                                    id = entry.id,
+                                                    title = if (entry.items.isNotEmpty()) {
+                                                        entry.items.filter { categorizeGroupItem(it.name).equals(item.category, ignoreCase = true) }
+                                                            .joinToString(", ") { it.displayName }
+                                                    } else entry.displayNotes.ifBlank { "Group Expense" },
+                                                    amount = entry.totalAmount,
+                                                    type = TransactionType.EXPENSE,
+                                                    category = item.category,
+                                                    paymentMethod = "Cash",
+                                                    timestamp = entry.timestamp,
+                                                    note = "Spent by ${entry.spenderName}"
+                                                )
+                                            }
+                                        } else {
+                                            viewModel.transactionsForCategory(item.category)
+                                        }
                                     }
                                     .padding(horizontal = 14.dp, vertical = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically
@@ -397,7 +604,7 @@ fun AnalyticsScreen(
                                     )
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(
-                                        text = "${item.count} transaction${if (item.count == 1) "" else "s"}",
+                                        text = "${item.count} ${if (LanguagePrefs.isBengali) "লেনদেন" else if (item.count == 1) "transaction" else "transactions"}",
                                         style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
                                         color = textSecondary
                                     )
@@ -433,18 +640,22 @@ fun AnalyticsScreen(
             }
         }
 
-        // 6. Top Spending Merchants (Matching iOS TopMerchantsList 1:1 with rank circles)
+        // 6. Top Spending Merchants / Spenders
         item {
-            if (topMerchants.isNotEmpty()) {
+            if (effectiveTopMerchants.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(
-                        text = "Top Merchants",
+                        text = if (currentSelectedGroup != null) {
+                            if (LanguagePrefs.isBengali) "শীর্ষ খরচকারী" else "Top Spenders"
+                        } else {
+                            if (LanguagePrefs.isBengali) "শীর্ষ মার্চেন্ট" else "Top Merchants"
+                        },
                         style = CentwiseTypography.Headline,
                         color = textPrimary
                     )
 
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        topMerchants.take(5).forEachIndexed { index, merchantItem ->
+                        effectiveTopMerchants.take(5).forEachIndexed { index, merchantItem ->
                             val rank = index + 1
                             val isTop3 = rank <= 3
                             val rankBg = if (isTop3) accent.copy(alpha = 0.14f) else (if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
@@ -457,7 +668,24 @@ fun AnalyticsScreen(
                                     .background(cardBg)
                                     .iosBounceClick {
                                         drillDownTitle = merchantItem.merchantName
-                                        drillDownTransactions = viewModel.transactionsForMerchant(merchantItem.merchantName)
+                                        drillDownTransactions = if (currentSelectedGroup != null) {
+                                            filteredGroupExpenses.filter { entry ->
+                                                entry.spenderName.equals(merchantItem.merchantName, ignoreCase = true)
+                                            }.map { entry ->
+                                                TransactionItem(
+                                                    id = entry.id,
+                                                    title = if (entry.items.isNotEmpty()) entry.items.joinToString(", ") { it.displayName } else entry.displayNotes.ifBlank { "Group Expense" },
+                                                    amount = entry.totalAmount,
+                                                    type = TransactionType.EXPENSE,
+                                                    category = "Group Expense",
+                                                    paymentMethod = "Cash",
+                                                    timestamp = entry.timestamp,
+                                                    note = "Spent by ${entry.spenderName}"
+                                                )
+                                            }
+                                        } else {
+                                            viewModel.transactionsForMerchant(merchantItem.merchantName)
+                                        }
                                     }
                                     .padding(horizontal = 14.dp, vertical = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically
@@ -482,7 +710,7 @@ fun AnalyticsScreen(
 
                                 Spacer(modifier = Modifier.width(12.dp))
 
-                                // Merchant Name & Count
+                                // Spender / Merchant Name & Count
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         text = merchantItem.merchantName,
@@ -492,7 +720,7 @@ fun AnalyticsScreen(
                                     )
                                     Spacer(modifier = Modifier.height(2.dp))
                                     Text(
-                                        text = "${merchantItem.transactionCount} transaction${if (merchantItem.transactionCount == 1) "" else "s"}",
+                                        text = "${merchantItem.transactionCount} ${if (LanguagePrefs.isBengali) "লেনদেন" else if (merchantItem.transactionCount == 1) "transaction" else "transactions"}",
                                         style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
                                         color = textSecondary
                                     )
@@ -550,11 +778,32 @@ fun AnalyticsScreen(
                 TransactionRepository.shared.deleteTransaction(txId)
                 selectedTransaction = null
                 drillDownTitle?.let { title ->
-                    val isCategory = categoryBreakdown.any { it.category.equals(title, ignoreCase = true) }
-                    drillDownTransactions = if (isCategory) {
-                        viewModel.transactionsForCategory(title)
+                    val isCategory = effectiveCategoryBreakdown.any { it.category.equals(title, ignoreCase = true) }
+                    drillDownTransactions = if (currentSelectedGroup != null) {
+                        filteredGroupExpenses.filter { entry ->
+                            if (isCategory) {
+                                entry.items.any { categorizeGroupItem(it.name).equals(title, ignoreCase = true) }
+                            } else {
+                                entry.spenderName.equals(title, ignoreCase = true)
+                            }
+                        }.map { entry ->
+                            TransactionItem(
+                                id = entry.id,
+                                title = if (entry.items.isNotEmpty()) entry.items.joinToString(", ") { it.displayName } else entry.displayNotes.ifBlank { "Group Expense" },
+                                amount = entry.totalAmount,
+                                type = TransactionType.EXPENSE,
+                                category = if (isCategory) title else "Group Expense",
+                                paymentMethod = "Cash",
+                                timestamp = entry.timestamp,
+                                note = "Spent by ${entry.spenderName}"
+                            )
+                        }
                     } else {
-                        viewModel.transactionsForMerchant(title)
+                        if (isCategory) {
+                            viewModel.transactionsForCategory(title)
+                        } else {
+                            viewModel.transactionsForMerchant(title)
+                        }
                     }
                 }
             },
@@ -687,4 +936,26 @@ private object CategorySliceColors {
         Color(0xFF007AFF),
         Color(0xFFEF4444)
     )
+}
+
+private fun categorizeGroupItem(name: String): String {
+    val lower = name.trim().lowercase()
+    return when {
+        lower.contains("চাল") || lower.contains("rice") || lower.contains("ডাল") || lower.contains("lentil") || lower.contains("আটা") || lower.contains("ময়দা") ->
+            if (LanguagePrefs.isBengali) "চাল ও ডাল" else "Grains & Lentils"
+        lower.contains("মুরগি") || lower.contains("chicken") || lower.contains("মাংস") || lower.contains("beef") || lower.contains("meat") ||
+        lower.contains("মাছ") || lower.contains("fish") ->
+            if (LanguagePrefs.isBengali) "মাছ ও মাংস" else "Meat & Fish"
+        lower.contains("সবজি") || lower.contains("শাক") || lower.contains("আলু") || lower.contains("পেঁয়াজ") || lower.contains("রসুন") || lower.contains("টমেটো") || lower.contains("মরিচ") ->
+            if (LanguagePrefs.isBengali) "শাকসবজি" else "Vegetables"
+        lower.contains("তেল") || lower.contains("oil") || lower.contains("ঘি") || lower.contains("মশলা") || lower.contains("spice") ->
+            if (LanguagePrefs.isBengali) "তেল ও মশলা" else "Oil & Spices"
+        lower.contains("ডিম") || lower.contains("egg") || lower.contains("দুধ") || lower.contains("milk") ->
+            if (LanguagePrefs.isBengali) "ডিম ও দুধ" else "Dairy & Eggs"
+        lower.contains("বিদ্যুৎ") || lower.contains("electric") || lower.contains("গ্যাস") || lower.contains("gas") || lower.contains("ওয়াইফাই") || lower.contains("wifi") || lower.contains("পানি") || lower.contains("water") ->
+            if (LanguagePrefs.isBengali) "বিল ও ইউটিলিটি" else "Bills & Utilities"
+        lower.contains("বাস") || lower.contains("train") || lower.contains("ভাড়া") || lower.contains("fare") || lower.contains("flight") ->
+            if (LanguagePrefs.isBengali) "যাতায়াত" else "Transport"
+        else -> if (LanguagePrefs.isBengali) "মুদি ও বাজার" else "Groceries"
+    }
 }

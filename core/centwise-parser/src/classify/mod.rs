@@ -113,6 +113,22 @@ pub fn classify_safety(body: &str, sender_hint: Option<&str>) -> Option<RejectRe
         || lower.contains("agent banking account is active and ready")
         || (lower.contains("term loan of") && lower.contains("is payable"))
         || (lower.contains("has been disbursed") && lower.contains("is payable"))
+        || lower.contains("called you for transaction confirmation")
+        || lower.contains("debit card activation")
+        || lower.contains("pin generation is successful")
+        || lower.contains("virtual debit card has been created")
+        || lower.contains("international transaction settings")
+        || (!lower.contains("debited")
+            && !lower.contains("credited")
+            && (lower.contains("balance confirmation")
+                || lower.contains("monthend balance")
+                || (lower.contains("balance of your a/c") && lower.contains("as on "))
+                || (lower.contains("balance of your account") && lower.contains("at the end of "))))
+        || lower.contains("travel wallet linked to your current account")
+        || lower.contains("request for a pac")
+        || lower.contains("asking for this pac code")
+        || (lower.contains("your transaction (ref no:")
+            && lower.contains("beneficiary is credited"))
     {
         return Some(RejectReason::NotATransaction);
     }
@@ -165,6 +181,10 @@ pub fn is_marketing_or_scam_message(text: &str) -> bool {
         || lower.contains("earn daily")
         || lower.contains("daily income")
         || lower.contains("work from home")
+        || ((lower.contains("visa rejection")
+            || lower.contains("study gap")
+            || lower.contains("study & scholarship"))
+            && has_whatsapp_or_tg)
         || (has_whatsapp_or_tg
             && (lower.contains("salary")
                 || lower.contains("daily income")
@@ -173,6 +193,16 @@ pub fn is_marketing_or_scam_message(text: &str) -> bool {
                 || lower.contains("part time")
                 || lower.contains("vacancy")));
     if is_recruitment_scam {
+        return true;
+    }
+
+    // 1b. Crowdfunding / donation appeals
+    let is_donation_appeal = lower.contains("sadqah")
+        || lower.contains("sadqa")
+        || (lower.contains("dini projects") && lower.contains("mashe"))
+        || ((lower.contains("support korun") || lower.contains("support korben"))
+            && (lower.contains("bkash") || lower.contains("nagad")));
+    if is_donation_appeal {
         return true;
     }
 

@@ -1,27 +1,32 @@
 package com.centwise.core.design.formatters
 
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.util.Locale
+
 object CurrencyFormatter {
     fun format(amount: Double): String = formatBDT(amount)
 
     private val bengaliDigits = charArrayOf('০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯')
 
     /**
-     * Formats an amount into standard Bangladeshi Taka format:
-     * Always uses clean traditional Bangladeshi Lakh & Crore grouping:
-     * - 1,000 = 1 Hajar (Thousand)
-     * - 20,000 = 20 Hajar (Thousand)
-     * - 1,64,000 = 1 Lakh 64 Thousand (3 digits at end, 2 digits before that)
-     * - 16,00,000 = 16 Lakh
-     * - 1,60,00,000 = 1 Crore 60 Lakh
+     * Formats an amount into standard Bangladeshi Taka currency format (BDT):
+     * Uses standard 3-digit comma grouping (e.g. 1,000, 20,000, 164,000, 8,829,960).
+     * Displays whole Taka only — no poisha / decimals.
      */
     fun formatBDT(
         amount: Double,
         showSign: Boolean = false,
         compact: Boolean = false,
-        useBengaliNumerals: Boolean = false
+        useBengaliNumerals: Boolean = false,
+        @Suppress("UNUSED_PARAMETER") forceDecimals: Boolean = false
     ): String {
         val absAmount = kotlin.math.abs(amount)
-        val formattedNumber = formatSouthAsianNumber(absAmount.toLong())
+        val wholeNumber = absAmount.toLong()
+
+        val symbols = DecimalFormatSymbols(Locale.US)
+        val formatter = DecimalFormat("#,##0", symbols)
+        val formattedNumber = formatter.format(wholeNumber)
 
         val finalNumber = if (useBengaliNumerals) {
             convertToBengaliDigits(formattedNumber)
@@ -29,41 +34,26 @@ object CurrencyFormatter {
             formattedNumber
         }
 
-        val prefix = if (showSign) {
-            if (amount > 0) "+ " else if (amount < 0) "- " else ""
-        } else ""
+        val prefix = if (amount < 0) {
+            "-৳ "
+        } else if (showSign && amount > 0) {
+            "+৳ "
+        } else {
+            "৳ "
+        }
 
-        return "${prefix}৳ $finalNumber"
+        return "$prefix$finalNumber"
     }
 
     /**
-     * Groups numbers in the traditional Bangladeshi / South Asian Lakh & Crore system:
-     * e.g.:
-     * 1000 -> 1,000
-     * 20000 -> 20,000
-     * 164000 -> 1,64,000 (1 Lakh 64 Thousand)
-     * 1600000 -> 16,00,000 (16 Lakh)
-     * 16000000 -> 1,60,00,000 (1 Crore 60 Lakh)
+     * Groups numbers in standard 3-digit comma format (e.g. 1,000, 164,000, 8,829,960).
      */
     fun formatSouthAsianNumber(wholeNumber: Long): String {
-        val s = wholeNumber.toString()
-        if (s.length <= 3) return s
-        val last3 = s.takeLast(3)
-        val remaining = s.dropLast(3)
-        val sb = StringBuilder()
-        var count = 0
-        for (i in remaining.length - 1 downTo 0) {
-            sb.append(remaining[i])
-            count++
-            if (count == 2 && i != 0) {
-                sb.append(',')
-                count = 0
-            }
-        }
-        return sb.reverse().toString() + "," + last3
+        val symbols = DecimalFormatSymbols(Locale.US)
+        return DecimalFormat("#,##0", symbols).format(wholeNumber)
     }
 
-    private fun convertToBengaliDigits(input: String): String {
+    fun convertToBengaliDigits(input: String): String {
         val sb = StringBuilder()
         for (ch in input) {
             if (ch in '0'..'9') {

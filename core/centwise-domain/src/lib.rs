@@ -267,7 +267,7 @@ pub struct HomeDashboard {
 }
 
 /// Analytics: spending grouped by category for a period (expenses only).
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct CategorySpendSummary {
     pub category_id: String,
     pub category_name: String,
@@ -278,7 +278,7 @@ pub struct CategorySpendSummary {
 }
 
 /// Analytics: spending grouped by transaction title (merchant/counterparty).
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct MerchantSpendSummary {
     pub merchant: String,
     pub total_minor: i64,
@@ -286,7 +286,7 @@ pub struct MerchantSpendSummary {
 }
 
 /// Analytics: total expenses for one calendar month.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct MonthlySpend {
     pub year: i32,
     pub month: u32, // 1..=12
@@ -294,7 +294,7 @@ pub struct MonthlySpend {
 }
 
 /// Everything needed to render Analytics for one period and type filter.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct AnalyticsSnapshot {
     pub total_income_minor: i64,
     pub total_expense_minor: i64,
@@ -365,6 +365,8 @@ pub struct NewSubscription {
 
 pub mod default_categories;
 pub mod default_rules;
+pub mod group;
 
 pub use default_categories::default_categories;
 pub use default_rules::{default_merchant_categories, default_rules, DefaultMerchantCategory};
+pub use group::*;

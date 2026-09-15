@@ -36,6 +36,7 @@ pub fn is_promotional_or_telco_offer(body: &str, sender_hint: Option<&str>) -> b
         || lower.contains("chomok offer")
         || lower.contains("super offer")
         || lower.contains("hot offer")
+        || lower.contains("bonus credit")
     {
         return true;
     }

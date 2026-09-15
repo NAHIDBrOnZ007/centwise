@@ -28,7 +28,7 @@ impl<'a> Queries<'a> {
              LEFT JOIN transactions t
                     ON t.category_id = c.id
                    AND (?3 = 'all' OR (?3 = 'debit' AND t.transaction_type = 'expense')
-                        OR (?3 = 'credit' AND t.transaction_type = 'income'))
+                        OR (?3 = 'credit' AND t.transaction_type IN ('income', 'refund')))
                    AND t.occurred_at_epoch_ms >= ?1
                    AND t.occurred_at_epoch_ms < ?2
              GROUP BY c.id
@@ -72,7 +72,7 @@ impl<'a> Queries<'a> {
             "SELECT title, COALESCE(SUM(amount_minor), 0) AS total, COUNT(id) AS tx_count
              FROM transactions
              WHERE (?4 = 'all' OR (?4 = 'debit' AND transaction_type = 'expense')
-                    OR (?4 = 'credit' AND transaction_type = 'income'))
+                    OR (?4 = 'credit' AND transaction_type IN ('income', 'refund')))
                AND occurred_at_epoch_ms >= ?1
                AND occurred_at_epoch_ms < ?2
              GROUP BY title
@@ -105,10 +105,10 @@ impl<'a> Queries<'a> {
             .connection
             .query_row(
                 "SELECT
-                    COALESCE(SUM(CASE WHEN transaction_type = 'income' THEN amount_minor ELSE 0 END), 0),
+                    COALESCE(SUM(CASE WHEN transaction_type IN ('income', 'refund') THEN amount_minor ELSE 0 END), 0),
                     COALESCE(SUM(CASE WHEN transaction_type = 'expense' THEN amount_minor ELSE 0 END), 0),
                     COALESCE(SUM(CASE WHEN (?3 = 'all' OR (?3 = 'debit' AND transaction_type = 'expense')
-                               OR (?3 = 'credit' AND transaction_type = 'income')) THEN 1 ELSE 0 END), 0)
+                               OR (?3 = 'credit' AND transaction_type IN ('income', 'refund'))) THEN 1 ELSE 0 END), 0)
                  FROM transactions
                  WHERE occurred_at_epoch_ms >= ?1 AND occurred_at_epoch_ms < ?2",
                 params![start_epoch_ms, end_epoch_ms, type_filter],
@@ -183,7 +183,7 @@ impl<'a> Queries<'a> {
 }
 
 /// Extracts UTC (year, month) from an epoch-ms timestamp using pure arithmetic.
-fn epoch_ms_to_year_month(epoch_ms: i64) -> (i32, u32) {
+pub(crate) fn epoch_ms_to_year_month(epoch_ms: i64) -> (i32, u32) {
     // Days since Unix epoch (1970-01-01).
     let total_days = (epoch_ms / 86_400_000) as i32;
     // Civil date from day count using the algorithm from
@@ -202,7 +202,7 @@ fn epoch_ms_to_year_month(epoch_ms: i64) -> (i32, u32) {
 
 /// Returns the epoch-ms of the first millisecond of the month that is
 /// `n` calendar months before the month containing `anchor_epoch_ms`.
-fn month_start_n_months_ago(anchor_epoch_ms: i64, n: u32) -> i64 {
+pub(crate) fn month_start_n_months_ago(anchor_epoch_ms: i64, n: u32) -> i64 {
     let (year, month) = epoch_ms_to_year_month(anchor_epoch_ms);
     let n = n as i32;
     // Subtract n months.

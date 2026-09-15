@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -24,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,6 +38,7 @@ import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.core.scanner.HistoricalSmsScanner
 import com.centwise.data.repository.ReviewQueueRepository
 import com.centwise.data.repository.TransactionRepository
+import com.centwise.features.group.GroupRepository
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -60,6 +63,7 @@ fun DataManagementScreen(
     val accounts by repository.accounts.collectAsState()
     val budgets by repository.budgets.collectAsState()
     val subscriptions by repository.subscriptions.collectAsState()
+    val allGroups by GroupRepository.shared.allGroups.collectAsState()
 
     var showLoadDemoDialog by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
@@ -73,23 +77,21 @@ fun DataManagementScreen(
     val dividerColor = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000)
 
     var dbSizeString by remember { mutableStateOf("Loading…") }
-    LaunchedEffect(refreshCounter, transactions.size, accounts.size, budgets.size, subscriptions.size) {
-        val isEmpty = transactions.isEmpty() && accounts.isEmpty()
+    LaunchedEffect(refreshCounter, transactions.size, accounts.size, budgets.size, subscriptions.size, allGroups.size) {
         dbSizeString = withContext(Dispatchers.IO) {
             val dir = context.noBackupFilesDir
             val totalBytes = listOf("centwise.db", "centwise.db-wal", "centwise.db-shm")
                 .sumOf { name -> dir.resolve(name).takeIf { it.exists() }?.length() ?: 0L }
 
             if (totalBytes == 0L) {
-                "Clean DB"
+                "0 KB"
             } else {
                 val kb = totalBytes / 1024.0
-                val formatted = if (kb < 1024) {
+                if (kb < 1024) {
                     String.format(Locale.US, "%.1f KB", kb)
                 } else {
                     String.format(Locale.US, "%.2f MB", kb / 1024.0)
                 }
-                if (isEmpty) "Clean DB ($formatted)" else formatted
             }
         }
     }
@@ -111,7 +113,10 @@ fun DataManagementScreen(
                         showLoadDemoDialog = false
                         coroutineScope.launch(Dispatchers.IO) {
                             val summary = CentwiseRustBackend.loadDemoData()
-                            if (summary != null) repository.refreshNow()
+                            if (summary != null) {
+                                repository.refreshNow()
+                                GroupRepository.shared.refreshFromRust()
+                            }
                             withContext(Dispatchers.Main) {
                                 refreshCounter++
                                 Toast.makeText(
@@ -142,7 +147,7 @@ fun DataManagementScreen(
             title = { Text("Wipe Database & Reset?", style = CentwiseTypography.Headline, color = textPrimary) },
             text = {
                 Text(
-                    "Are you sure you want to delete all transactions, budgets, and subscriptions? This action cannot be undone.",
+                    "Are you sure you want to delete all transactions, budgets, groups, and subscriptions? This action cannot be undone.",
                     style = CentwiseTypography.Body,
                     color = textSecondary
                 )
@@ -153,7 +158,11 @@ fun DataManagementScreen(
                         showResetDialog = false
                         coroutineScope.launch(Dispatchers.IO) {
                             val succeeded = CentwiseRustBackend.resetToEmptyDatabase()
-                            if (succeeded) repository.refreshNow()
+                            GroupRepository.shared.clearAllGroups()
+                            if (succeeded) {
+                                repository.refreshNow()
+                                GroupRepository.shared.refreshFromRust()
+                            }
                             withContext(Dispatchers.Main) {
                                 refreshCounter++
                                 Toast.makeText(
@@ -211,7 +220,7 @@ fun DataManagementScreen(
             item {
                 Column {
                     Text(
-                        text = "Local Storage",
+                        text = if (LanguagePrefs.isBengali) "লোকাল স্টোরেজ" else "Local Storage",
                         style = CentwiseTypography.Headline.copy(fontSize = 14.sp),
                         color = textSecondary,
                         modifier = Modifier.padding(start = 6.dp, bottom = 8.dp)
@@ -222,48 +231,217 @@ fun DataManagementScreen(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(CentwiseSpacing.CornerRadiusLarge))
                             .background(cardBg)
+                            .padding(16.dp)
                     ) {
-                        // Database Row
+                        // Header: Icon + Title + Private Subtitle on left; Size + Space Used on right
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                            modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "Database",
-                                style = CentwiseTypography.Body,
-                                color = textPrimary
-                            )
-                            Text(
-                                text = dbSizeString,
-                                style = CentwiseTypography.Body.copy(fontWeight = FontWeight.Medium),
-                                color = textSecondary
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(38.dp)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(accent.copy(alpha = 0.12f)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Storage,
+                                        contentDescription = null,
+                                        tint = accent,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+
+                                Column {
+                                    Text(
+                                        text = if (LanguagePrefs.isBengali) "ডিভাইস স্টোরেজ" else "Device Storage",
+                                        style = CentwiseTypography.Headline.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
+                                        color = textPrimary
+                                    )
+                                    Text(
+                                        text = if (LanguagePrefs.isBengali) "শুধুমাত্র ফোনে সংরক্ষিত • এনক্রিপ্ট করা" else "Stored on this phone • Encrypted",
+                                        style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
+                                        color = textSecondary
+                                    )
+                                }
+                            }
+
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    text = dbSizeString,
+                                    style = CentwiseTypography.Headline.copy(fontSize = 16.sp, fontWeight = FontWeight.Bold),
+                                    color = textPrimary
+                                )
+                                Text(
+                                    text = if (LanguagePrefs.isBengali) "ব্যবহৃত স্থান" else "Space Used",
+                                    style = CentwiseTypography.Caption.copy(fontSize = 11.sp),
+                                    color = textSecondary
+                                )
+                            }
                         }
 
-                        HorizontalDivider(color = dividerColor, modifier = Modifier.padding(start = 16.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                        // Encrypted notice row
+                        // Segmented Progress Bar (Mobile Settings style)
+                        val txCount = transactions.size
+                        val grpCount = allGroups.size
+                        val acctBudgetCount = accounts.size + budgets.size + subscriptions.size
+                        val hasUserData = txCount > 0 || grpCount > 0 || acctBudgetCount > 0
+
+                        val txColor = Color(0xFF3B82F6) // Royal Blue
+                        val grpColor = Color(0xFFA855F7) // Violet / Purple
+                        val acctColor = Color(0xFF10B981) // Emerald Green
+                        val rulesColor = if (isDark) Color(0xFF475569) else Color(0xFFCBD5E1) // Slate Gray
+
+                        val activeSegments = remember(txCount, grpCount, acctBudgetCount, hasUserData, isDark) {
+                            if (!hasUserData) {
+                                listOf(
+                                    25f to acctColor,
+                                    75f to rulesColor
+                                )
+                            } else {
+                                buildList {
+                                    if (txCount > 0) add(maxOf(txCount * 1.5f, 12f) to txColor)
+                                    if (grpCount > 0) add(maxOf(grpCount * 2.0f, 10f) to grpColor)
+                                    if (acctBudgetCount > 0) add(maxOf(acctBudgetCount * 1.5f, 10f) to acctColor)
+                                    add(25f to rulesColor)
+                                }
+                            }
+                        }
+
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 14.dp),
+                                .height(10.dp)
+                                .clip(RoundedCornerShape(5.dp))
+                                .background(if (isDark) Color(0xFF2C2C2E) else Color(0xFFE5E5EA))
+                        ) {
+                            activeSegments.forEachIndexed { index, (weight, color) ->
+                                Box(
+                                    modifier = Modifier
+                                        .weight(weight)
+                                        .fillMaxHeight()
+                                        .background(color)
+                                )
+                                if (index < activeSegments.lastIndex) {
+                                    Spacer(modifier = Modifier.width(2.dp))
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+
+                        // Breakdown Legend
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            StorageLegendItem(
+                                color = txColor,
+                                label = if (LanguagePrefs.isBengali) "লেনদেন" else "Transactions",
+                                value = if (txCount == 0) (if (LanguagePrefs.isBengali) "০" else "0") else "$txCount",
+                                textPrimary = textPrimary,
+                                textSecondary = textSecondary,
+                                modifier = Modifier.weight(1f)
+                            )
+                            StorageLegendItem(
+                                color = grpColor,
+                                label = if (LanguagePrefs.isBengali) "গ্রুপ" else "Groups",
+                                value = if (grpCount == 0) (if (LanguagePrefs.isBengali) "০" else "0") else "$grpCount",
+                                textPrimary = textPrimary,
+                                textSecondary = textSecondary,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            StorageLegendItem(
+                                color = acctColor,
+                                label = if (LanguagePrefs.isBengali) "অ্যাকাউন্ট" else "Accounts",
+                                value = if (acctBudgetCount == 0) (if (LanguagePrefs.isBengali) "০" else "0") else "$acctBudgetCount",
+                                textPrimary = textPrimary,
+                                textSecondary = textSecondary,
+                                modifier = Modifier.weight(1f)
+                            )
+                            StorageLegendItem(
+                                color = rulesColor,
+                                label = if (LanguagePrefs.isBengali) "ক্যাটাগরি ও রুলস" else "Categories & Rules",
+                                value = if (LanguagePrefs.isBengali) "বিল্ট-ইন" else "Built-in",
+                                textPrimary = textPrimary,
+                                textSecondary = textSecondary,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(14.dp))
+                        HorizontalDivider(color = dividerColor)
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Private & Offline notice row (no duplicate 100% wording)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Security,
-                                contentDescription = null,
-                                tint = textSecondary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(
-                                text = "Encrypted on this device",
-                                style = CentwiseTypography.Body,
-                                color = textSecondary
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Security,
+                                    contentDescription = null,
+                                    tint = Color(0xFF10B981),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = if (LanguagePrefs.isBengali) "ডিভাইসে সম্পূর্ণ সুরক্ষিত • ক্লাউডে যায় না" else "Encrypted on this device • Zero cloud sync",
+                                    style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
+                                    color = textSecondary,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(Color(0xFF10B981).copy(alpha = 0.12f))
+                                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(5.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xFF10B981))
+                                    )
+                                    Text(
+                                        text = if (LanguagePrefs.isBengali) "১০০% অফলাইন" else "100% Offline",
+                                        style = CentwiseTypography.Caption.copy(
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.SemiBold
+                                        ),
+                                        color = Color(0xFF10B981)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -320,6 +498,16 @@ fun DataManagementScreen(
                             iconColor = accent,
                             title = "Subscriptions",
                             count = subscriptions.size,
+                            showDivider = true,
+                            dividerColor = dividerColor,
+                            textPrimary = textPrimary,
+                            textSecondary = textSecondary
+                        )
+                        RecordRow(
+                            icon = Icons.Default.Groups,
+                            iconColor = accent,
+                            title = if (LanguagePrefs.isBengali) "শেয়ার্ড গ্রুপ" else "Shared Groups",
+                            count = allGroups.size,
                             showDivider = false,
                             dividerColor = dividerColor,
                             textPrimary = textPrimary,
@@ -690,6 +878,42 @@ private fun RecordRow(
         if (showDivider) {
             HorizontalDivider(color = dividerColor, modifier = Modifier.padding(start = 52.dp))
         }
+    }
+}
+
+@Composable
+private fun StorageLegendItem(
+    color: Color,
+    label: String,
+    value: String,
+    textPrimary: Color,
+    textSecondary: Color,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .clip(CircleShape)
+                .background(color)
+        )
+        Text(
+            text = label,
+            style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
+            color = textSecondary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Text(
+            text = value,
+            style = CentwiseTypography.Caption.copy(fontSize = 12.sp, fontWeight = FontWeight.SemiBold),
+            color = textPrimary,
+            maxLines = 1
+        )
     }
 }
 

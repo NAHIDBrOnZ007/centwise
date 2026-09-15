@@ -258,6 +258,127 @@ impl Database {
     pub fn list_review_queue(&self, limit: u32) -> DbResult<Vec<ReviewQueueItem>> {
         self.read(|queries| queries.list_review_queue(limit))
     }
+
+    pub fn list_groups(&self) -> DbResult<Vec<centwise_domain::SharedGroup>> {
+        self.read(|queries| queries.list_groups())
+    }
+
+    pub fn get_group(&self, group_id: &str) -> DbResult<Option<centwise_domain::SharedGroup>> {
+        self.read(|queries| queries.get_group(group_id))
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn create_group(
+        &self,
+        id: &str,
+        name: &str,
+        group_type: &str,
+        description: &str,
+        join_code: &str,
+        month_name: &str,
+        monthly_target_minor: i64,
+        creator_name: &str,
+        creator_avatar: &str,
+    ) -> DbResult<centwise_domain::SharedGroup> {
+        self.write(|queries| {
+            queries.create_group(
+                id,
+                name,
+                group_type,
+                description,
+                join_code,
+                month_name,
+                monthly_target_minor,
+                creator_name,
+                creator_avatar,
+            )
+        })
+    }
+
+    pub fn join_group(
+        &self,
+        join_code: &str,
+        member_name: &str,
+        member_avatar: &str,
+    ) -> DbResult<Option<centwise_domain::SharedGroup>> {
+        self.write(|queries| queries.join_group(join_code, member_name, member_avatar))
+    }
+
+    pub fn add_group_expense(
+        &self,
+        group_id: &str,
+        spender_id: &str,
+        items: &[queries::groups::NewGroupExpenseItemInput],
+        notes: &str,
+        occurred_at_epoch_ms: i64,
+        date_formatted: &str,
+    ) -> DbResult<String> {
+        self.write(|queries| {
+            queries.add_group_expense(
+                group_id,
+                spender_id,
+                items,
+                notes,
+                occurred_at_epoch_ms,
+                date_formatted,
+            )
+        })
+    }
+
+    pub fn delete_group_expense(&self, group_id: &str, expense_id: &str) -> DbResult<bool> {
+        self.write(|queries| queries.delete_group_expense(group_id, expense_id))
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub fn add_group_deposit(
+        &self,
+        group_id: &str,
+        member_id: &str,
+        amount_minor: i64,
+        payment_method: &str,
+        note: &str,
+        occurred_at_epoch_ms: i64,
+        date_formatted: &str,
+    ) -> DbResult<String> {
+        self.write(|queries| {
+            queries.add_group_deposit(
+                group_id,
+                member_id,
+                amount_minor,
+                payment_method,
+                note,
+                occurred_at_epoch_ms,
+                date_formatted,
+            )
+        })
+    }
+
+    pub fn group_analytics(
+        &self,
+        group_id: &str,
+        start_epoch_ms: i64,
+        end_epoch_ms: i64,
+        months_back: u32,
+        type_filter: &str,
+    ) -> DbResult<centwise_domain::GroupAnalyticsSnapshot> {
+        self.read(|queries| {
+            queries.group_analytics(
+                group_id,
+                start_epoch_ms,
+                end_epoch_ms,
+                months_back,
+                type_filter,
+            )
+        })
+    }
+
+    pub fn delete_all_groups(&self) -> DbResult<()> {
+        self.write(|queries| queries.delete_all_groups())
+    }
+
+    pub fn seed_demo_groups(&self) -> DbResult<()> {
+        self.write(|queries| queries.seed_demo_groups(current_epoch_ms()))
+    }
 }
 
 fn current_epoch_ms() -> i64 {
