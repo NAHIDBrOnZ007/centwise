@@ -7,6 +7,7 @@ license.workspace = true
 
 [dependencies]
 centwise-domain = { workspace = true }
+centwise-normalization = { path = "../centwise-normalization" }
 rusqlite = { workspace = true }
 
 [dev-dependencies]

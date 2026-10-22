@@ -18,6 +18,35 @@ impl<'a> Queries<'a> {
         if id_exists != 0 {
             return Ok(false);
         }
+        if item.reference.is_none() {
+            // Older releases used a different no-reference ID; preserve reimport deduplication.
+            let mut statement = self.connection.prepare(
+                "SELECT raw_sms, sender FROM review_queue WHERE received_at_epoch_ms = ?1",
+            )?;
+            let candidates = statement.query_map(params![item.received_at_epoch_ms], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, Option<String>>(1)?))
+            })?;
+            let body = centwise_normalization::normalize_sms_text(&item.raw_sms).to_lowercase();
+            let sender = item
+                .sender
+                .as_deref()
+                .unwrap_or_default()
+                .trim()
+                .to_lowercase();
+            for candidate in candidates {
+                let (stored_body, stored_sender) = candidate?;
+                if centwise_normalization::normalize_sms_text(&stored_body).to_lowercase() == body
+                    && stored_sender
+                        .as_deref()
+                        .unwrap_or_default()
+                        .trim()
+                        .to_lowercase()
+                        == sender
+                {
+                    return Ok(false);
+                }
+            }
+        }
         if let Some(reference) = item.reference.as_deref() {
             if self.reference_exists(reference)? {
                 return Ok(false);

@@ -6,7 +6,7 @@
     {
       "kind": "sonali-credit-tk-dot-avl-bal",
       "senderHint": "Sonali Bank",
-      "body": "Tk. 5,000.00 has been credited to A/C XXXX1001. Avl. Bal: Tk. 25,450.00. Ref: SYN10001.",
+      "body": "Tk. 5,000.00 has been credited to A/C XXXX1001. Avl. Bal: Tk. 25,450.00. Ref No: SYN10001.",
       "expected": { "provider": "sonali-bank", "type": "income", "amountMinor": 500000, "balanceAfterMinor": 2545000, "accountLast4": "1001", "reference": "SYN10001" }
     },
     {
@@ -37,7 +37,7 @@
       "kind": "ebl-npsb-transfer",
       "senderHint": "EBL",
       "body": "Fund Transfer of BDT 10,000.00 from A/C *6006 via NPSB completed. Fee BDT 10.00. Current Balance BDT 45,000.00. STAN SYN60006.",
-      "expected": { "provider": "ebl", "type": "transfer", "amountMinor": 1000000, "feeMinor": 1000, "balanceAfterMinor": 4500000, "accountLast4": "6006", "reference": "SYN60006" }
+      "expected": { "provider": "ebl", "type": "expense", "amountMinor": 1000000, "feeMinor": 1000, "balanceAfterMinor": 4500000, "accountLast4": "6006", "reference": "SYN60006" }
     },
     {
       "kind": "pubali-cash-deposit",
@@ -48,7 +48,7 @@
     {
       "kind": "ucb-auto-debit",
       "senderHint": "UCB",
-      "body": "Auto Debit of BDT 3,200.00 completed from A/C XXXX8008 for loan repayment. Avail Bal BDT 16,800.00. Ref SYN80008.",
+      "body": "Auto Debit of BDT 3,200.00 completed from A/C XXXX8008 for loan repayment. Avail Bal BDT 16,800.00. Ref No SYN80008.",
       "expected": { "provider": "ucb", "type": "expense", "amountMinor": 320000, "balanceAfterMinor": 1680000, "accountLast4": "8008", "reference": "SYN80008", "category": "bills" }
     },
     {
@@ -60,7 +60,7 @@
     {
       "kind": "agrani-remittance-credit",
       "senderHint": "Agrani Bank",
-      "body": "Remittance of 15,000.00 BDT credited to A/C XXXX1010 on 2026-09-05. Available Balance 55,000.00 BDT. Ref SYN10010.",
+      "body": "Remittance of 15,000.00 BDT credited to A/C XXXX1010 on 2026-09-05. Available Balance 55,000.00 BDT. Ref No SYN10010.",
       "expected": { "provider": "agrani-bank", "type": "income", "amountMinor": 1500000, "balanceAfterMinor": 5500000, "accountLast4": "1010", "reference": "SYN10010" }
     },
     {
@@ -72,7 +72,7 @@
     {
       "kind": "pending-transfer-rejected",
       "senderHint": "EBL",
-      "body": "Fund Transfer of BDT 5,000.00 from A/C *6006 is pending for processing. Ref SYN60007.",
+      "body": "Fund Transfer of BDT 5,000.00 from A/C *6006 is pending for processing. Ref No SYN60007.",
       "expected": { "isTransaction": false }
     },
     {

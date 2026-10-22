@@ -188,6 +188,7 @@ pub(crate) fn sms_transaction_id(
     reference: Option<&str>,
     body: &str,
     sender_hint: Option<&str>,
+    occurred_at_epoch_ms: i64,
 ) -> String {
     if let Some(reference) = reference.filter(|value| !value.trim().is_empty()) {
         return format!("sms-{}", reference.trim().to_uppercase());
@@ -202,6 +203,7 @@ pub(crate) fn sms_transaction_id(
     centwise_normalization::normalize_sms_text(body)
         .to_lowercase()
         .hash(&mut hasher);
+    occurred_at_epoch_ms.hash(&mut hasher);
     format!("sms-{:016x}", hasher.finish())
 }
 

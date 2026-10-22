@@ -22,10 +22,14 @@ impl ProviderParser for Parser {
         super::super::detect_provider(sms.sender, sms.body) == PROVIDER_ID
     }
     fn parse(&self, sms: &NormalizedSms<'_>) -> ProviderParse {
-        if is_card_purchase(sms.body) {
-            super::super::generic::parse_with_category(PROVIDER_ID, *sms, "shopping")
-        } else {
-            super::super::generic::parse_common(PROVIDER_ID, *sms, None, None)
+        match super::super::generic::parse_common(PROVIDER_ID, *sms, None, None) {
+            ProviderParse::Parsed(mut tx)
+                if is_card_purchase(sms.body) && tx.category_id.as_deref() == Some("other") =>
+            {
+                tx.category_id = Some("shopping".into());
+                ProviderParse::Parsed(tx)
+            }
+            other => other,
         }
     }
 }

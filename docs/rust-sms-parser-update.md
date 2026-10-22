@@ -1,5 +1,35 @@
 # Centwise: Bangladeshi Financial SMS Parser Specification & Update Plan
 
+## Implementation update — 2026-10-22
+
+The Rust parser safety corrections and the 4,714-message CSV regression audit are
+implemented. See [the current parser contract](architecture/parser-design.md#implemented-safety-contract-2026-10-22)
+for debit/credit direction, loan and offer filtering, pending requests, fees,
+references, review routing, and verification limits. This contract supersedes
+earlier recommendations in this research document where they differ.
+
+Parity: Android and iOS use the same Rust parser and ingestion rules. No new
+fields, native UI changes, permissions, localization strings, or migrations are
+required. Device/native-package verification is still separate from Rust tests.
+
+The audit does not automatically repair historical transactions or claim perfect
+recognition of future bank/telco templates.
+
+Receipt follow-up: Centwise tracks merchant purchases and service charges even
+without bank details. BRTA, DPDC, purchased bundle charges, successful fee payments
+and Ryans purchase confirmations now produce expenses with the correct category.
+The 4,714-row audit yields 4,339 parsed, 375 ignored and no remaining review rows.
+Meter credit never overwrites a financial balance; unknown funding stays in the
+existing generic Primary Account. New formats require fixtures rather than a
+blanket rule that every quoted price means spending. Separate bank and merchant
+receipts still need reconciliation when both describe one purchase.
+
+Public-source follow-up: [research and source links](providers/public-payment-format-research.md)
+cover BREBPrepaid electricity, MetLife premiums, Rocket school-fee receipts,
+19 existing merchant/service names in the wallet payment format, and negative
+COD/payment-link cases. New fixtures distinguish documented SMS families from
+synthetic merchant variations. Biller accounts remain separate from payer wallets.
+
 > **Source Document:** [Google Docs - Complete Bangladeshi Financial SMS Parser Engine Specification & Test Suite](https://docs.google.com/document/d/1okxLu6IibBLTGzBGm7-VEmnwq1ANVdcgXYoQ4T7QAfA/edit?tab=t.0#heading=h.ge821fdp5pxs)  
 > **Target Module:** `core/centwise-parser` (Rust Core)  
 > **Status:** Specification Ingested & Architectural Think-Check Complete  

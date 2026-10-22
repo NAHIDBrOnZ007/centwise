@@ -42,6 +42,10 @@ static BILL_PAYMENT_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?i)\b(?:Bill\s+Pay(?:ment)?|Pay\s+Bill)\s+(?:of\s+)?(?:(?:Tk|BDT)\s*)?[0-9][0-9,]*(?:\.[0-9]{1,2})?\s+to\s+([A-Za-z][A-Za-z\s.-]+?)(?:\s+successful|\s*[.,])")
         .expect("valid bill payment regex")
 });
+static PAID_BILLER_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\byou\s+have\s+paid\s+successfully\s+(?:tk\.?|bdt)\s*[0-9][0-9,.]*\s+to\s+([a-z][a-z0-9 &'.-]+?)\s+bill\s+no\s*:")
+        .expect("valid paid biller regex")
+});
 
 // Reservation payments: "Payment of Tk 420.00 is being reserved for Shohoj Limited-1-RM46212. Balance..."
 static RESERVED_FOR_RE: LazyLock<Regex> = LazyLock::new(|| {
@@ -94,7 +98,7 @@ static MFS_FROM_BANK_RE: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 static MFS_BILLER_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\b(?:Biller|Org):\s*([A-Za-z0-9\s.()-]+?)(?:\s+Amount:|\s+MMYYYY|\s+Fee:|\s+A/C:|\s+Ref:|\s+TrxID:|\n|$)")
+    Regex::new(r"(?i)\b(?:Biller|Org):\s*([A-Za-z0-9\s.()&-]+?)(?:\s+Amount:|\s+MMYYYY|\s+MMYY\b|\s+Contact:|\s+Fee:|\s+A/C:|\s+Ref:|\s+TrxID:|\n|$)")
         .expect("valid mfs biller regex")
 });
 
@@ -105,6 +109,10 @@ static MFS_WALLET_RE: LazyLock<Regex> = LazyLock::new(|| {
 
 pub fn extract_party(text: &str) -> Option<String> {
     let lower = text.to_lowercase();
+
+    if let Some(capture) = PAID_BILLER_RE.captures(text) {
+        return clean_party_candidate(capture.get(1)?.as_str());
+    }
 
     // 0. Explicit MFS field headers (Sender, Receiver, Uddokta, Mobile, From, Biller/Org, Wallet/To)
     if let Some(cap) = MFS_WALLET_RE.captures(text) {
@@ -291,8 +299,9 @@ pub(crate) fn clean_party_candidate(raw: &str) -> Option<String> {
     }
 
     // Strip surrounding quotes if present (e.g. "'Software Shop Ltd'" -> "Software Shop Ltd")
-    if (candidate.starts_with('\'') && candidate.ends_with('\''))
-        || (candidate.starts_with('"') && candidate.ends_with('"'))
+    if candidate.len() >= 2
+        && ((candidate.starts_with('\'') && candidate.ends_with('\''))
+            || (candidate.starts_with('"') && candidate.ends_with('"')))
     {
         candidate = candidate[1..candidate.len() - 1].trim();
     }

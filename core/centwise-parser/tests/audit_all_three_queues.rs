@@ -184,10 +184,8 @@ fn test_all_three_review_queues_deep_audit() {
     }
 
     // Assertions
-    // Two legacy Queue 1 rows are administrative/non-transaction notices;
-    // the remaining 388 posted transactions must parse.
-    assert_eq!(q1.parsed_real_tx, 388);
-    // All 26 unwanted items in Queue 1 must be ignored (0 queued)
+    // Exclude unconfirmed requests and non-cash bundles from posted transactions.
+    assert_eq!(q1.parsed_real_tx, 384);
     assert_eq!(q1.unparsed_queued_for_review.len(), 0);
 
     // All 8 real transactions in Queue 2 must parse
@@ -195,8 +193,7 @@ fn test_all_three_review_queues_deep_audit() {
     // All 7 unwanted items in Queue 2 must be ignored (0 queued)
     assert_eq!(q2.unparsed_queued_for_review.len(), 0);
 
-    // All 385 real transactions in Queue 3 must parse
-    assert_eq!(q3.parsed_real_tx, 385);
-    // All 61 unwanted noise items in Queue 3 must be ignored (0 queued)
+    // Pending recharge requests are not completed debits.
+    assert_eq!(q3.parsed_real_tx, 295);
     assert_eq!(q3.unparsed_queued_for_review.len(), 0);
 }

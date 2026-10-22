@@ -6,8 +6,12 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
     let lower = text.to_lowercase();
 
     // 1. Refunds and Reversals
-    if lower.contains("refund") || lower.contains("reversal") || lower.contains("reversed") {
+    if crate::common::events::posted_refund_clause(text).is_some() {
         return Some(TransactionType::Refund);
+    }
+
+    if lower.contains("between your own accounts") || lower.contains("between own accounts") {
+        return Some(TransactionType::Transfer);
     }
 
     // 2. Incoming Credits via Fund Transfer / RTGS / NPSB / BEFTN / EFT (Inflows = Income)
@@ -29,6 +33,8 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
     if is_account_credit
         && (lower.contains("fund transfer")
             || lower.contains("funds transfer")
+            || lower.contains("account transfer")
+            || lower.contains("mfs transfer")
             || lower.contains("rtgs")
             || lower.contains("npsb")
             || lower.contains("beftn")
@@ -47,10 +53,8 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
         return Some(TransactionType::Income);
     }
 
-    // 3. Transfers between own accounts, wallet transfers, and interbank outflows
-    if lower.contains("between your own accounts")
-        || lower.contains("between own accounts")
-        || lower.contains("fund transfer")
+    // An outgoing transfer does not prove that the recipient account is also owned.
+    if lower.contains("fund transfer")
         || lower.contains("transfer:")
         || lower.contains("transfer of")
         || lower.contains("transfer to")
@@ -66,7 +70,7 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
         || lower.contains("send money nagad")
         || lower.contains("send money to nagad")
     {
-        return Some(TransactionType::Transfer);
+        return Some(TransactionType::Expense);
     }
 
     // 4. Interbank transfers via NPSB/BEFTN/RTGS (explicit signals)
@@ -76,7 +80,7 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
             || lower.contains("to your a/c")
             || lower.contains("debited"))
     {
-        return Some(TransactionType::Transfer);
+        return Some(TransactionType::Expense);
     }
 
     // 4. Emergency balance / loan addition to account (e.g. "Tk15 has been added to your account")
@@ -109,6 +113,14 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
     }
 
     // 6. Standard Income keywords
+    if lower.contains("debited")
+        || lower.contains("rolled back")
+        || lower.contains("payment installment")
+        || (lower.contains("payment") && !lower.contains("received") && !lower.contains("credited"))
+    {
+        return Some(TransactionType::Expense);
+    }
+
     if lower.contains("cash in")
         || lower.contains("cash-in")
         || (lower.contains("received") && !lower.contains("recharge request"))
@@ -145,6 +157,7 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
         || lower.contains("payment")
         || lower.contains("paid to")
         || lower.contains("successfully paid")
+        || lower.contains("you have paid successfully")
         || lower.contains("bill paid")
         || lower.contains("debited")
         || lower.contains("withdrawal")
@@ -240,7 +253,7 @@ mod tests {
         let text = "Fund transfer of BDT 10,000.00 from A/C *1234 via NPSB on 05/09/2026.";
         assert_eq!(
             detect_transaction_type(text),
-            Some(TransactionType::Transfer)
+            Some(TransactionType::Expense)
         );
     }
 
@@ -249,7 +262,7 @@ mod tests {
         let text = "Your A/C debited (Fund Transfer) by Tk-500.00. C/B Tk1,03,973.32.";
         assert_eq!(
             detect_transaction_type(text),
-            Some(TransactionType::Transfer)
+            Some(TransactionType::Expense)
         );
     }
 

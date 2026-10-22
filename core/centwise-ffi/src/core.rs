@@ -169,8 +169,13 @@ impl CentwiseCore {
                 if updated && category_changed && transaction.is_auto_tracked {
                     queries.set_transaction_category_source(&transaction.id, "user_correction")?;
                     if let Some(raw_sms) = transaction.raw_sms.as_deref() {
+                        let provider = queries
+                            .list_accounts()?
+                            .into_iter()
+                            .find(|account| account.id == transaction.account_id)
+                            .map(|account| account.provider);
                         if let centwise_parser::ParseOutcome::Parsed(parsed) =
-                            centwise_parser::parse_sms(raw_sms, None)
+                            centwise_parser::parse_sms(raw_sms, provider.as_deref())
                         {
                             if let Some(merchant) = parsed
                                 .merchant
@@ -406,8 +411,12 @@ impl CentwiseCore {
                     };
 
                     if let Some(account_id) = target_account_id {
-                        let transaction_id =
-                            sms_transaction_id(reference.as_deref(), &body, sender_hint.as_deref());
+                        let transaction_id = sms_transaction_id(
+                            reference.as_deref(),
+                            &body,
+                            sender_hint.as_deref(),
+                            occurred_at_epoch_ms,
+                        );
                         let (title, notes) = build_transaction_title_and_notes(&parsed, &body);
                         let transaction = domain::NewTransaction {
                             id: transaction_id.clone(),
@@ -450,7 +459,12 @@ impl CentwiseCore {
                     } else {
                         let review_id = format!(
                             "review-{}",
-                            sms_transaction_id(reference.as_deref(), &body, sender_hint.as_deref(),)
+                            sms_transaction_id(
+                                reference.as_deref(),
+                                &body,
+                                sender_hint.as_deref(),
+                                occurred_at_epoch_ms
+                            )
                         );
                         let item = domain::ReviewQueueItem {
                             id: review_id.clone(),
@@ -507,7 +521,12 @@ impl CentwiseCore {
 
                     let review_id = format!(
                         "review-{}",
-                        sms_transaction_id(None, &body, sender_hint.as_deref())
+                        sms_transaction_id(
+                            None,
+                            &body,
+                            sender_hint.as_deref(),
+                            occurred_at_epoch_ms
+                        )
                     );
                     let item = domain::ReviewQueueItem {
                         id: review_id.clone(),

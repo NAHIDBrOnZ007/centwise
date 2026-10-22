@@ -13,7 +13,21 @@ static CARD_NUMBER_RE: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 pub fn extract_account_info(text: &str) -> (Option<String>, Option<String>) {
-    if let Some(capture) = CARD_NUMBER_RE.captures(text) {
+    let first_account = BANK_ACCOUNT_RE.captures_iter(text).find_map(|capture| {
+        let full_match = capture.get(0)?;
+        if is_preceded_by_biller(text, full_match.start()) {
+            return None;
+        }
+        let value = capture.get(1)?;
+        if value.as_str().chars().any(|c| c.is_ascii_digit()) {
+            capture.get(0)
+        } else {
+            None
+        }
+    });
+    if let Some(capture) = CARD_NUMBER_RE.captures(text).filter(|capture| {
+        first_account.is_none_or(|account| capture.get(0).unwrap().start() < account.start())
+    }) {
         if let Some(value) = capture.get(1) {
             let digits: String = value
                 .as_str()

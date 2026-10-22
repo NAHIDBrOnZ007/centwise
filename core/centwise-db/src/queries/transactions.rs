@@ -108,14 +108,17 @@ impl<'a> Queries<'a> {
             && transaction.is_auto_tracked
             && transaction.raw_sms.is_some()
         {
-            // Deduplicate auto-tracked transactions that lack an explicit reference (e.g. repeated SMS delivery)
-            let dup_count: i64 = self.connection.query_row(
-                "SELECT COUNT(*) FROM transactions 
+            // Equal amounts alone do not prove that two receipts are the same payment.
+            let mut statement = self.connection.prepare(
+                "SELECT raw_sms FROM transactions
                  WHERE account_id = ?1 
                    AND amount_minor = ?2 
                    AND transaction_type = ?3 
                     AND ABS(occurred_at_epoch_ms - ?4) <= 600000
-                   AND ((balance_after_minor IS NULL AND ?5 IS NULL) OR balance_after_minor = ?5)",
+                   AND ((balance_after_minor IS NULL AND ?5 IS NULL) OR balance_after_minor = ?5)
+                   AND raw_sms IS NOT NULL",
+            )?;
+            let candidates = statement.query_map(
                 params![
                     transaction.account_id,
                     transaction.amount_minor,
@@ -123,13 +126,19 @@ impl<'a> Queries<'a> {
                     transaction.occurred_at_epoch_ms,
                     transaction.balance_after_minor
                 ],
-                |row| row.get(0),
+                |row| row.get::<_, String>(0),
             )?;
-            if dup_count > 0 {
-                return Err(DbError::DuplicateTransaction(format!(
-                    "duplicate auto-tracked transaction within 5 minutes at epoch {}",
-                    transaction.occurred_at_epoch_ms
-                )));
+            let body = centwise_normalization::normalize_sms_text(
+                transaction.raw_sms.as_deref().unwrap_or_default(),
+            )
+            .to_lowercase();
+            for candidate in candidates {
+                if centwise_normalization::normalize_sms_text(&candidate?).to_lowercase() == body {
+                    return Err(DbError::DuplicateTransaction(format!(
+                        "duplicate auto-tracked receipt within 10 minutes at epoch {}",
+                        transaction.occurred_at_epoch_ms
+                    )));
+                }
             }
         }
 

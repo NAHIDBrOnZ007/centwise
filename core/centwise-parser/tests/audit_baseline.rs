@@ -109,17 +109,17 @@ fn all_sixteen_audit_reports_are_loaded_and_parsed() {
         "transaction-report-011.csv",
     ] {
         let expected = match filename {
-            "transaction-report-01.csv" => (664, 12),
-            "transaction-report-02.csv" => (664, 1),
-            "transaction-report-03.csv" => (565, 0),
-            "transaction-report-04.csv" => (118, 2),
-            "transaction-report-05.csv" => (111, 0),
-            "transaction-report-06.csv" => (101, 29),
-            "transaction-report-07.csv" => (131, 1),
-            "transaction-report-08.csv" => (145, 7),
-            "transaction-report-09.csv" => (205, 1),
-            "transaction-report-10.csv" => (147, 0),
-            "transaction-report-011.csv" => (570, 0),
+            "transaction-report-01.csv" => (647, 29),
+            "transaction-report-02.csv" => (647, 18),
+            "transaction-report-03.csv" => (557, 8),
+            "transaction-report-04.csv" => (109, 11),
+            "transaction-report-05.csv" => (102, 9),
+            "transaction-report-06.csv" => (98, 32),
+            "transaction-report-07.csv" => (128, 4),
+            "transaction-report-08.csv" => (143, 9),
+            "transaction-report-09.csv" => (196, 10),
+            "transaction-report-10.csv" => (143, 4),
+            "transaction-report-011.csv" => (565, 5),
             _ => unreachable!(),
         };
         audit_file(
@@ -139,11 +139,11 @@ fn all_sixteen_audit_reports_are_loaded_and_parsed() {
         "review-qeue-report-05.csv",
     ] {
         let expected = match filename {
-            "review-queue-report-01.csv" => (388, 26),
+            "review-queue-report-01.csv" => (384, 30),
             "review-queue-report-02.csv" => (8, 7),
-            "review-queue-report-03.csv" => (385, 61),
+            "review-queue-report-03.csv" => (295, 151),
             "review-queue-report-04.csv" => (6, 4),
-            "review-qeue-report-05.csv" => (323, 32),
+            "review-qeue-report-05.csv" => (311, 44),
             _ => unreachable!(),
         };
         audit_file(

@@ -248,3 +248,8 @@ fn test_mfs_english_fixtures() {
 fn test_telco_fixtures() {
     test_fixture_file("fixtures/sms/telco.json");
 }
+
+#[test]
+fn test_public_bangladesh_payment_fixtures() {
+    test_fixture_file("fixtures/sms/public-bd-payments.json");
+}

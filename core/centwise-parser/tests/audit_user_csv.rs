@@ -138,10 +138,10 @@ fn test_audit_transaction_report_04() {
     assert_eq!(count, 120);
     assert_eq!(diffs, 0, "No amount differences allowed");
     assert_eq!(
-        rejected, 2,
-        "Expected 2 rejected spam/non-transaction messages"
+        rejected, 11,
+        "Exclude spam and non-cash bundles with future repayment"
     );
-    assert_eq!(parsed, 118, "Expected 118 parsed transactions");
+    assert_eq!(parsed, 109, "Expected 109 posted transactions");
 }
 
 #[test]
@@ -164,10 +164,10 @@ fn test_audit_transaction_report_06() {
         "Only 1 difference expected: row 20 account number 20 quadrillion fix"
     );
     assert_eq!(
-        rejected, 29,
-        "29 rejected: 26 loan reminders, 1 FD renewal, 2 promo ads"
+        rejected, 32,
+        "Exclude reminders, rollovers, unconfirmed requests and unsupported sources"
     );
-    assert_eq!(parsed, 101, "101 legitimate transactions parsed");
+    assert_eq!(parsed, 98, "98 supported posted transactions parsed");
 }
 
 #[test]
@@ -177,9 +177,9 @@ fn test_audit_transaction_report_07() {
             .expect("transaction report 07 fixture must exist");
     assert_eq!(count, 132);
     assert_eq!(diffs, 0, "No amount differences allowed");
+    assert_eq!(rejected, 4, "Exclude non-posted notices");
     assert_eq!(
-        rejected, 1,
-        "Expected 1 rejected non-transaction (insurance expiry notice)"
+        parsed, 128,
+        "Expected 128 supported posted transactions parsed"
     );
-    assert_eq!(parsed, 131, "Expected 131 legitimate transactions parsed");
 }

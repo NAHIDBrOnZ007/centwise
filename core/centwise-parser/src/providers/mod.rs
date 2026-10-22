@@ -7,12 +7,20 @@ pub mod banks;
 pub mod contract;
 pub mod generic;
 pub mod mfs;
+mod receipts;
 pub mod telco;
 
 pub mod catalog;
 
 pub use catalog::*;
 pub use contract::{NormalizedSms, ProviderParse, ProviderParser};
+
+static TRACKED_WALLET_RE: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
+    regex::Regex::new(
+        r"(?i)\byour\s+(bkash|nagad|rocket|upay|cellfin|nexuspay)\s+(?:account|wallet|a/c)\b",
+    )
+    .expect("valid tracked wallet regex")
+});
 
 macro_rules! define_common_provider_parser {
     ($provider_id:expr) => {
@@ -64,6 +72,21 @@ pub fn detect_provider(sender_hint: Option<&str>, body: &str) -> String {
 
     // Secondary scan from body keywords and distinctive patterns
     let body_lower = body.to_lowercase();
+
+    if let Some(wallet) = TRACKED_WALLET_RE.captures(&body_lower) {
+        return wallet[1].to_string();
+    }
+
+    // A bank debit naming its destination wallet still belongs to the bank.
+    if (body_lower.contains("debited") || body_lower.contains("credited"))
+        && (body_lower.contains("account")
+            || body_lower.contains("a/c")
+            || body_lower.starts_with("ac "))
+    {
+        if let Some(bank) = detect_bank_from_body(body) {
+            return bank.to_string();
+        }
+    }
 
     // MFS providers (most distinctive)
     if body_lower.contains("bkash") || body_lower.contains("bka.sh") {
@@ -117,61 +140,69 @@ pub fn detect_provider(sender_hint: Option<&str>, body: &str) -> String {
         return PROVIDER_TELETALK.to_string();
     }
 
-    // Bank-specific body signatures live in the bank modules so adding a
-    // provider cannot silently expand a global catch-all detector.
-    if banks::city_bank::matches_body(body) {
-        return PROVIDER_CITY_BANK.to_string();
-    }
-    if banks::brac_bank::matches_body(body) {
-        return PROVIDER_BRAC_BANK.to_string();
-    }
-    if banks::ebl::matches_body(body) {
-        return PROVIDER_EBL.to_string();
-    }
-    if banks::dbbl::matches_body(body) {
-        return PROVIDER_DBBL.to_string();
-    }
-    if banks::islami_bank::matches_body(body) {
-        return PROVIDER_ISLAMI_BANK.to_string();
-    }
-    if banks::mutual_trust_bank::matches_body(body) {
-        return PROVIDER_MUTUAL_TRUST_BANK.to_string();
-    }
-    if banks::standard_chartered::matches_body(body) {
-        return PROVIDER_STANDARD_CHARTERED.to_string();
-    }
-    if banks::bank_asia::matches_body(body) {
-        return PROVIDER_BANK_ASIA.to_string();
-    }
-    if banks::dhaka_bank::matches_body(body) {
-        return PROVIDER_DHAKA_BANK.to_string();
-    }
-    if banks::trust_bank::matches_body(body) {
-        return PROVIDER_TRUST_BANK.to_string();
-    }
-    if banks::sonali_bank::matches_body(body) {
-        return PROVIDER_SONALI_BANK.to_string();
-    }
-    if banks::pubali_bank::matches_body(body) {
-        return PROVIDER_PUBALI_BANK.to_string();
-    }
-    if banks::janata_bank::matches_body(body) {
-        return PROVIDER_JANATA_BANK.to_string();
-    }
-    if banks::rupali_bank::matches_body(body) {
-        return PROVIDER_RUPALI_BANK.to_string();
-    }
-    if banks::prime_bank::matches_body(body) {
-        return PROVIDER_PRIME_BANK.to_string();
-    }
-    if banks::agrani_bank::matches_body(body) {
-        return PROVIDER_AGRANI_BANK.to_string();
-    }
-    if banks::ucb::matches_body(body) {
-        return PROVIDER_UCB.to_string();
+    if let Some(bank) = detect_bank_from_body(body) {
+        return bank.to_string();
     }
 
     PROVIDER_BANKS_GENERIC.to_string()
+}
+
+fn detect_bank_from_body(body: &str) -> Option<&'static str> {
+    // Bank-specific body signatures live in the bank modules so adding a
+    // provider cannot silently expand a global catch-all detector.
+    if banks::city_bank::matches_body(body) {
+        return Some(PROVIDER_CITY_BANK);
+    }
+    if banks::brac_bank::matches_body(body) {
+        return Some(PROVIDER_BRAC_BANK);
+    }
+    if banks::ebl::matches_body(body) {
+        return Some(PROVIDER_EBL);
+    }
+    if banks::dbbl::matches_body(body) {
+        return Some(PROVIDER_DBBL);
+    }
+    if banks::islami_bank::matches_body(body) {
+        return Some(PROVIDER_ISLAMI_BANK);
+    }
+    if banks::mutual_trust_bank::matches_body(body) {
+        return Some(PROVIDER_MUTUAL_TRUST_BANK);
+    }
+    if banks::standard_chartered::matches_body(body) {
+        return Some(PROVIDER_STANDARD_CHARTERED);
+    }
+    if banks::bank_asia::matches_body(body) {
+        return Some(PROVIDER_BANK_ASIA);
+    }
+    if banks::dhaka_bank::matches_body(body) {
+        return Some(PROVIDER_DHAKA_BANK);
+    }
+    if banks::trust_bank::matches_body(body) {
+        return Some(PROVIDER_TRUST_BANK);
+    }
+    if banks::sonali_bank::matches_body(body) {
+        return Some(PROVIDER_SONALI_BANK);
+    }
+    if banks::pubali_bank::matches_body(body) {
+        return Some(PROVIDER_PUBALI_BANK);
+    }
+    if banks::janata_bank::matches_body(body) {
+        return Some(PROVIDER_JANATA_BANK);
+    }
+    if banks::rupali_bank::matches_body(body) {
+        return Some(PROVIDER_RUPALI_BANK);
+    }
+    if banks::prime_bank::matches_body(body) {
+        return Some(PROVIDER_PRIME_BANK);
+    }
+    if banks::agrani_bank::matches_body(body) {
+        return Some(PROVIDER_AGRANI_BANK);
+    }
+    if banks::ucb::matches_body(body) {
+        return Some(PROVIDER_UCB);
+    }
+
+    None
 }
 
 /// Dispatches a normalized message to its provider module.

@@ -401,7 +401,13 @@ const DEFAULT_MERCHANT_CATEGORIES: &[DefaultMerchantCategory] = &[
     DefaultMerchantCategory {
         id: "palli-bidyut",
         name: "Palli Bidyut",
-        keywords: &["palli bidyut", "breb"],
+        keywords: &["palli bidyut", "breb", "brebprepaid"],
+        category_id: "bills",
+    },
+    DefaultMerchantCategory {
+        id: "metlife",
+        name: "MetLife",
+        keywords: &["metlife"],
         category_id: "bills",
     },
     DefaultMerchantCategory {

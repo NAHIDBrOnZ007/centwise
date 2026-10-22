@@ -251,7 +251,7 @@ fn deduplicates_auto_tracked_sms_without_reference() {
         .insert_transaction(&first_sms)
         .expect("first delivery inserted");
 
-    // Second retry delivery of the exact same SMS ~30 seconds later (e.g. telco re-send with different survey link)
+    // A resend with only whitespace differences is the same normalized receipt.
     let mut retry_sms = tx(
         "sms-2",
         101_000,
@@ -259,7 +259,7 @@ fn deduplicates_auto_tracked_sms_without_reference() {
         1_723_650_030_000,
     );
     retry_sms.raw_sms =
-        Some("14-Aug-2024 CITYTOUCH TXN Tk. 1,010 Withdrawal Tk. 74,049 Balance (retry)".into());
+        Some("14-Aug-2024  CITYTOUCH TXN Tk. 1,010 Withdrawal Tk. 74,049 Balance".into());
     retry_sms.balance_after_minor = Some(7_404_900);
     retry_sms.is_auto_tracked = true;
 
@@ -290,7 +290,7 @@ fn deduplicates_auto_tracked_resends_just_over_five_minutes_apart() {
         TransactionType::Expense,
         1_700_000_328_000,
     );
-    retry.raw_sms = Some("Payment Tk 500 successful (retry)".into());
+    retry.raw_sms = Some("payment TK 500 successful".into());
     retry.balance_after_minor = Some(100_000);
     let err = database
         .insert_transaction(&retry)

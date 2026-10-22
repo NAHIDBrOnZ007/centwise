@@ -118,7 +118,7 @@ fn test_grameenphone_all_scenarios() {
     // 8. Balance Transfer
     let tx10 = parse_sms("You have transferred Tk 50.00 to 01711XXXXXX. Transfer fee Tk 2.44. Current balance Tk 120.00.", Some("GP")).transaction().unwrap().clone();
     assert_eq!(tx10.amount_minor, 5000);
-    assert_eq!(tx10.transaction_type, TransactionType::Transfer);
+    assert_eq!(tx10.transaction_type, TransactionType::Expense);
     assert_eq!(tx10.fee_minor, Some(244));
     assert_eq!(tx10.balance_after_minor, Some(12000));
     assert_eq!(tx10.party.as_deref(), Some("01711XXXXXX"));
@@ -228,7 +228,7 @@ fn test_banglalink_all_scenarios() {
 
     let tx8 = parse_sms("You have successfully transferred Tk 50.00 to 019XXXXXXXX. Service charge Tk 2.00. Balance Tk 48.00.", Some("Banglalink")).transaction().unwrap().clone();
     assert_eq!(tx8.amount_minor, 5000);
-    assert_eq!(tx8.transaction_type, TransactionType::Transfer);
+    assert_eq!(tx8.transaction_type, TransactionType::Expense);
     assert_eq!(tx8.fee_minor, Some(200));
     assert_eq!(tx8.balance_after_minor, Some(4800));
 
@@ -322,7 +322,7 @@ fn test_robi_all_scenarios() {
     .unwrap()
     .clone();
     assert_eq!(tx8.amount_minor, 4000);
-    assert_eq!(tx8.transaction_type, TransactionType::Transfer);
+    assert_eq!(tx8.transaction_type, TransactionType::Expense);
     assert_eq!(tx8.fee_minor, Some(200));
     assert_eq!(tx8.balance_after_minor, Some(8000));
 
@@ -402,7 +402,7 @@ fn test_bkash_send_money_transfer_and_savings() {
     // 2. Transfer Money to Bank
     let tx2 = parse_sms("Transfer Money Tk 10,000.00 to BRAC Bank A/C ...001 successful. Fee Tk 100.00. Balance Tk 1,450.00. TrxID 7Y8X9W0V.", Some("bKash")).transaction().unwrap().clone();
     assert_eq!(tx2.amount_minor, 1000000);
-    assert_eq!(tx2.transaction_type, TransactionType::Transfer);
+    assert_eq!(tx2.transaction_type, TransactionType::Expense);
     assert_eq!(tx2.fee_minor, Some(10000));
     assert_eq!(tx2.balance_after_minor, Some(145000));
     assert_eq!(tx2.reference.as_deref(), Some("7Y8X9W0V"));
@@ -523,7 +523,7 @@ fn test_all_commercial_banks_from_spec() {
     let cb_debit = parse_sms("Your A/C 110***901 has been debited for BDT 10,000.00 on 07-Sep-2026 via Citytouch. Ref: FT260907. Avail Bal BDT 42,300.00.", Some("City Bank")).transaction().unwrap().clone();
     assert_eq!(cb_debit.amount_minor, 1000000);
     assert_eq!(cb_debit.transaction_type, TransactionType::Expense);
-    assert_eq!(cb_debit.reference.as_deref(), Some("FT260907"));
+    assert_eq!(cb_debit.reference, None); // Bare Ref is not an authoritative transaction ID.
     assert_eq!(cb_debit.balance_after_minor, Some(4230000));
 
     // City Bank NPSB A/C Credit
@@ -571,7 +571,7 @@ fn test_all_commercial_banks_from_spec() {
     // IBBL Cellfin Transfer
     let cellfin = parse_sms("Cellfin: Tk 2,500.00 has been transferred from your A/C 2050***123 to 017XXXXXXXX. Fee Tk 0.00. Balance Tk 8,900.00. Trx ID: CF2609071234.", Some("IBBL")).transaction().unwrap().clone();
     assert_eq!(cellfin.amount_minor, 250000);
-    assert_eq!(cellfin.transaction_type, TransactionType::Transfer);
+    assert_eq!(cellfin.transaction_type, TransactionType::Expense);
     assert_eq!(cellfin.balance_after_minor, Some(890000));
     assert_eq!(cellfin.reference.as_deref(), Some("CF2609071234"));
 
@@ -742,11 +742,13 @@ fn test_screenshot_issues_all_correctly_handled() {
 
 #[test]
 fn test_audit_fixes_real_user_sms() {
-    // 1. Ryans Computers invoice: Bill number B-2242120 must not be parsed as amount!
-    let ryans = "Thanks for shopping from Ryans. Your purchase bill no is B-2242120, Tk 1,000.\n\nClick to see your invoice copy: https://www.ryanscomputers.com/in-voice/ff985db19e3956359e71dd7f075efe7eysgte\n\nThanks\nRyans Computers Ltd.";
-    let tx_ryans = parse_sms(ryans, None).transaction().unwrap().clone();
-    assert_eq!(tx_ryans.amount_minor, 100_000); // 1,000.00 Taka, NOT 2,242,120!
-    assert_eq!(tx_ryans.transaction_type, TransactionType::Expense);
+    // Purchase confirmations count as spending without identifying a funding bank.
+    let ryans = "Thanks for shopping from Ryans. Your purchase bill no is B-SYN10001, Tk 1,000.\n\nClick to see your invoice copy: https://example.invalid/receipt\n\nThanks\nRyans Computers Ltd.";
+    let outcome = parse_sms(ryans, None);
+    let tx = outcome.transaction().expect("Ryans purchase");
+    assert_eq!(tx.amount_minor, 100_000);
+    assert_eq!(tx.transaction_type, TransactionType::Expense);
+    assert_eq!(tx.merchant.as_deref(), Some("Ryans"));
 
     // 2. Rocket negative amount debit: Tk-500.00 must be parsed as 500.00, NOT closing balance!
     let rocket_neg = "Dear Sir, your A/C ***5543 debited (Fund Transfer) by Tk-500.00 on 02-02-2024 12:08:37 PM C/B Tk1,03,973.32. NexusPay https://bit.ly/nexuspay";
@@ -756,7 +758,7 @@ fn test_audit_fixes_real_user_sms() {
         .clone();
     assert_eq!(tx_rocket.amount_minor, 50_000); // 500.00 Taka, NOT 1,03,973.32!
     assert_eq!(tx_rocket.balance_after_minor, Some(10_397_332));
-    assert_eq!(tx_rocket.transaction_type, TransactionType::Transfer);
+    assert_eq!(tx_rocket.transaction_type, TransactionType::Expense);
 
     // 3. bKash duplicate mobile recharge request notification must be rejected
     let bk_dup_notice = "Your bKash Mobile Recharge request of Tk 40.00 for 01615076000 was successful. Use bKash App for convenience & offers! TCA Download App: https://bKa.sh/5app";
@@ -765,15 +767,13 @@ fn test_audit_fixes_real_user_sms() {
         ParseOutcome::Rejected(RejectReason::NotATransaction)
     );
 
-    // 4. bKash real recharge request receipt: Must be Expense, NOT Income!
+    // A reference and a balance do not make an unconfirmed request a posted debit.
     let bk_recharge_receipt = "Received Recharge request of Tk 20.00 for 01615076000. Fee Tk 0.00. Balance Tk 24.74. TrxID BF27UF7X1L at 02/06/2024 08:56. Wait for confirmation.";
-    let tx_receipt = parse_sms(bk_recharge_receipt, Some("bKash"))
-        .transaction()
-        .unwrap()
-        .clone();
-    assert_eq!(tx_receipt.amount_minor, 2_000);
-    assert_eq!(tx_receipt.transaction_type, TransactionType::Expense);
-    assert_eq!(tx_receipt.reference.as_deref(), Some("BF27UF7X1L"));
+    assert!(!parse_sms(bk_recharge_receipt, Some("bKash")).is_transaction());
+    assert!(!is_likely_financial_review(
+        bk_recharge_receipt,
+        Some("bKash")
+    ));
 
     // 5. Cash Out with Cashback promo footer must be Expense, NOT Cashback Income!
     let bk_cashout_promo = "Cash Out Tk 4,000.00 to 01707376622 successful. Fee Tk 74.00. Balance Tk 4,108.82. TrxID 9DH2BR3JUW at 17/04/2022 19:18. Cashback 50 on 25,000 CashOut";

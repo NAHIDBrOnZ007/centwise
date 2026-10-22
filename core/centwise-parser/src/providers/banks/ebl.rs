@@ -33,7 +33,12 @@ impl ProviderParser for Parser {
         let result = super::super::generic::parse_common(PROVIDER_ID, *sms, None, None);
         match result {
             ProviderParse::Parsed(mut transaction) if is_skybanking_mfs_transfer(sms.body) => {
-                transaction.transaction_type = TransactionType::Transfer;
+                transaction.transaction_type = if sms.body.to_ascii_lowercase().contains("credited")
+                {
+                    TransactionType::Income
+                } else {
+                    TransactionType::Expense
+                };
                 ProviderParse::Parsed(transaction)
             }
             other => other,
@@ -68,7 +73,7 @@ mod tests {
         let ProviderParse::Parsed(transaction) = parse(sms) else {
             panic!("expected EBL transaction");
         };
-        assert_eq!(transaction.transaction_type, TransactionType::Transfer);
+        assert_eq!(transaction.transaction_type, TransactionType::Expense);
         assert_eq!(transaction.amount_minor, 30_000);
     }
 }

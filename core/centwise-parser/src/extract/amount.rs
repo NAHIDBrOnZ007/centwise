@@ -26,14 +26,14 @@ static KEY_VALUE_AMOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
 
 static BALANCE_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)(?:Available\s+Balance|Avail(?:able)?\.?\s*Bal(?:ance)?|Avl\.?\s*Bal(?:ance)?|Closing\s+Balance|\bC/B\b|Ledger\s+Bal(?:ance)?|New\s+(?:main\s+)?Bal(?:ance)?|Main\s+Bal(?:ance)?|\bBal(?:ance)?\b|Current\s+Balance)(?:\s+of\s+(?:your\s+)?(?:A/C|account)[^\s]*)?(?:\s*(?:is\s*)?[:\-]|\s+is)?\s*(?:Tk\.?|BDT)?\s*(\.[0-9]{1,2}|[0-9][0-9,]*(?:\.[0-9]{1,2})?)(?:\s*(?:Tk\.?|BDT))?",
+        r"(?i)(?:Available\s+Balance|Avail(?:able)?\.?\s*Bal(?:ance)?|Avl\.?\s*Bal(?:ance)?|Closing\s+Balance|\bC/B\b|Ledger\s+Bal(?:ance)?|New\s+(?:main\s+)?Bal(?:ance)?|Main\s+Bal(?:ance)?|\bBal(?:ance)?\b|Current\s+Balance)(?:\s+of\s+(?:your\s+)?(?:A/C|account)[^\s]*)?(?:\s*(?:is\s*)?:|\s+is)?\s*(?:Tk\.?|BDT)?\s*([+-]?(?:\.[0-9]{1,2}|[0-9][0-9,]*(?:\.[0-9]{1,2})?))(?:\s*(?:Tk\.?|BDT))?",
     )
     .expect("valid balance regex")
 });
 
 static BALANCE_POSTFIX_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
-        r"(?i)(?:(?:Tk\.?|BDT)\s*-?\s*)?(\.[0-9]{1,2}|[0-9][0-9,]*(?:\.[0-9]{1,2})?)\s*(?:Tk\.?|BDT)?\s*\b(?:Available\s+Balance|Balance|Bal)\b",
+        r"(?i)(?:(?:Tk\.?|BDT)\s*)?([+-]?(?:\.[0-9]{1,2}|[0-9][0-9,]*(?:\.[0-9]{1,2})?))\s*(?:Tk\.?|BDT)?\s*\b(?:Available\s+Balance|Balance|Bal)\b",
     )
     .expect("valid postfix balance regex")
 });
@@ -108,9 +108,12 @@ static DATE_OR_PHONE_RE: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 pub fn extract_fee(text: &str) -> Option<i64> {
-    if let Some(cap) = FEE_RE.captures(text) {
+    for cap in FEE_RE.captures_iter(text) {
         if let Some(m) = cap.get(1) {
-            return parse_minor_units(m.as_str());
+            if is_future_deduction_clause(text, m.start()) {
+                continue;
+            }
+            return parse_amount_match(text, m);
         }
     }
     None
@@ -119,20 +122,59 @@ pub fn extract_fee(text: &str) -> Option<i64> {
 pub fn extract_balance(text: &str) -> Option<i64> {
     if let Some(cap) = BALANCE_RE.captures(text) {
         if let Some(m) = cap.get(1) {
-            return parse_minor_units(m.as_str());
+            return parse_balance_match(text, m);
         }
     }
     if let Some(cap) = BALANCE_POSTFIX_RE.captures(text) {
         if let Some(m) = cap.get(1) {
-            return parse_minor_units(m.as_str());
+            return parse_balance_match(text, m);
         }
     }
     None
 }
 
+fn parse_amount_match(text: &str, value: regex::Match<'_>) -> Option<i64> {
+    // Validate the whole numeric token; a regex prefix must never truncate money.
+    if !is_complete_amount(text, value) {
+        return None;
+    }
+    parse_minor_units(value.as_str())
+}
+
+fn is_complete_amount(text: &str, value: regex::Match<'_>) -> bool {
+    if text[value.end()..].starts_with(|c: char| c.is_ascii_digit())
+        || (text[value.end()..].starts_with('.')
+            && text[value.end() + 1..].starts_with(|c: char| c.is_ascii_digit()))
+    {
+        return false;
+    }
+    true
+}
+
+fn parse_balance_match(text: &str, value: regex::Match<'_>) -> Option<i64> {
+    let negative = value.as_str().starts_with('-');
+    let unsigned = value.as_str().trim_start_matches(['-', '+']);
+    let amount = parse_minor_units(unsigned)?;
+    if !is_complete_amount(text, value) {
+        return None;
+    }
+    if negative {
+        amount.checked_neg()
+    } else {
+        Some(amount)
+    }
+}
+
 pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -> Option<i64> {
+    if CURRENCY_AMOUNT_RE
+        .captures_iter(text)
+        .filter_map(|capture| capture.get(1))
+        .any(|value| !is_complete_amount(text, value))
+    {
+        return None;
+    }
     if let Some(cap) = UTILITY_RECHARGE_RE.captures(text) {
-        if let Some(amount) = cap.get(1).and_then(|m| parse_minor_units(m.as_str())) {
+        if let Some(amount) = cap.get(1).and_then(|m| parse_amount_match(text, m)) {
             if amount > 0 {
                 return Some(amount);
             }
@@ -142,7 +184,7 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
     // 1. Bank debit/credit explicit phrasing (e.g. "debited by 5,000.00", "credited with BDT 2,500.00")
     if let Some(cap) = BANK_DEBIT_CREDIT_RE.captures(text) {
         if let Some(m) = cap.get(1) {
-            if let Some(val) = parse_minor_units(m.as_str()) {
+            if let Some(val) = parse_amount_match(text, m) {
                 if val > 0 && !is_fee_or_balance(val, m.start(), m.end(), text, fee, balance) {
                     return Some(val);
                 }
@@ -153,7 +195,7 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
     // 2. Card usage phrasing (e.g. "used at SWAPNO for BDT 1,500.00")
     if let Some(cap) = CARD_USAGE_RE.captures(text) {
         if let Some(m) = cap.get(1) {
-            if let Some(val) = parse_minor_units(m.as_str()) {
+            if let Some(val) = parse_amount_match(text, m) {
                 if val > 0 && !is_fee_or_balance(val, m.start(), m.end(), text, fee, balance) {
                     return Some(val);
                 }
@@ -164,7 +206,7 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
     // 3. Telco "recharge 50 TAKA"
     if let Some(cap) = RECHARGE_TAKA_RE.captures(text) {
         if let Some(m) = cap.get(1) {
-            if let Some(val) = parse_minor_units(m.as_str()) {
+            if let Some(val) = parse_amount_match(text, m) {
                 if val > 0 && !is_fee_or_balance(val, m.start(), m.end(), text, fee, balance) {
                     return Some(val);
                 }
@@ -175,7 +217,7 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
     // 4. Primary transaction verbs (Cash in, Cash out, Send money, Payment, Bill pay, Fund Transfer, etc.)
     if let Some(cap) = VERB_AMOUNT_RE.captures(text) {
         if let Some(m) = cap.get(1) {
-            if let Some(val) = parse_minor_units(m.as_str()) {
+            if let Some(val) = parse_amount_match(text, m) {
                 if val > 0 && !is_fee_or_balance(val, m.start(), m.end(), text, fee, balance) {
                     return Some(val);
                 }
@@ -186,7 +228,7 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
     // 4b. Postfix transaction verbs (e.g. "Tk. 690 Withdrawal", "Tk. 20,000 Deposit", "Tk 500 Purchased")
     for cap in AMOUNT_POSTFIX_VERB_RE.captures_iter(text) {
         if let Some(m) = cap.get(1) {
-            if let Some(val) = parse_minor_units(m.as_str()) {
+            if let Some(val) = parse_amount_match(text, m) {
                 if val > 0 && !is_fee_or_balance(val, m.start(), m.end(), text, fee, balance) {
                     return Some(val);
                 }
@@ -197,7 +239,7 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
     // 4c. Key-value structured amounts (e.g. "Amount: 1500.00", "AMOUNT: 4010.00", "Amount: Tk 1,488.00")
     if let Some(cap) = KEY_VALUE_AMOUNT_RE.captures(text) {
         if let Some(m) = cap.get(1) {
-            if let Some(val) = parse_minor_units(m.as_str()) {
+            if let Some(val) = parse_amount_match(text, m) {
                 if val > 0 && !is_fee_or_balance(val, m.start(), m.end(), text, fee, balance) {
                     return Some(val);
                 }
@@ -213,7 +255,7 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
             if is_future_deduction_clause(text, start) || is_outstanding_clause(text, start) {
                 continue;
             }
-            if let Some(val) = parse_minor_units(m.as_str()) {
+            if let Some(val) = parse_amount_match(text, m) {
                 if is_fee_or_balance(val, start, end, text, fee, balance) {
                     continue;
                 }
@@ -232,7 +274,7 @@ pub fn extract_main_amount(text: &str, fee: Option<i64>, balance: Option<i64>) -
             if is_future_deduction_clause(text, start) || is_outstanding_clause(text, start) {
                 continue;
             }
-            if let Some(val) = parse_minor_units(m.as_str()) {
+            if let Some(val) = parse_amount_match(text, m) {
                 if is_fee_or_balance(val, start, end, text, fee, balance) {
                     continue;
                 }
@@ -374,8 +416,8 @@ fn is_future_deduction_clause(text: &str, pos: usize) -> bool {
         end -= 1;
     }
     let after_raw = &text[pos..end];
-    // Stop at sentence boundaries
-    let after = if let Some(dot_pos) = after_raw.find('.') {
+    // A decimal point is part of money, not a sentence boundary.
+    let after = if let Some(dot_pos) = after_raw.find(". ") {
         &after_raw[..dot_pos]
     } else {
         after_raw
@@ -384,7 +426,6 @@ fn is_future_deduction_clause(text: &str, pos: usize) -> bool {
     after_lower.contains("will be deducted")
         || after_lower.contains("pay on your next recharge")
         || after_lower.contains("will be charged")
-        || after_lower.contains("to settle your")
 }
 
 /// Checks if an amount token is part of a "total outstanding" informational clause.
@@ -431,7 +472,7 @@ mod tests {
     fn parses_added_emergency_loan_amount_ignoring_future_deduction() {
         let text = "Tk15 has been added to your account. Tk15 + Service fee of Tk2.78 will be deducted from your next recharge.";
         let fee = extract_fee(text);
-        assert_eq!(fee, Some(278));
+        assert_eq!(fee, None);
         let amount = extract_main_amount(text, fee, None);
         assert_eq!(amount, Some(1_500));
     }

@@ -25,7 +25,7 @@
       "kind": "cellfin-bank-transfer",
       "senderHint": "CellFin",
       "body": "CellFin Transfer: Tk 3,500.00 debited from A/C *4004 to Bank 01XXXXXXXXX. Fee Tk 5.00. TrxID SYM40004.",
-      "expected": { "provider": "cellfin", "type": "transfer", "amountMinor": 350000, "feeMinor": 500, "accountLast4": "4004", "reference": "SYM40004" }
+      "expected": { "provider": "cellfin", "type": "expense", "amountMinor": 350000, "feeMinor": 500, "accountLast4": "4004", "reference": "SYM40004" }
     },
     {
       "kind": "upay-merchant-payment",

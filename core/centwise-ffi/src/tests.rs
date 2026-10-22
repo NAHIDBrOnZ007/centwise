@@ -47,11 +47,198 @@ mod ingestion_tests {
     }
 
     #[test]
+    fn public_biller_receipts_debit_the_wallet_without_creating_utility_accounts() {
+        let core = core_with_account();
+        for (index, body) in [
+            "Bill payment is successful. Biller: BREBPrepaid A/C: 12340000 Contact: 017XXXXXXXX Amount: Tk 1200.00 Fee: TK 5.00 TrxID: SYNPUBLIC01",
+            "Bill successfully paid. Biller: MetLife MMYY 102026/Contact: 017XXXXXXXX A/C: 56780000 Amount: TK 2500.00 Fee: Tk 0.00 TrxID: SYNPUBLIC02",
+        ].into_iter().enumerate() {
+            let result = core.ingest_sms(body.into(), Some("bKash".into()),
+                1_700_000_000_000 + index as i64 * 1000).unwrap();
+            assert_eq!(result.status, SmsIngestStatus::Inserted);
+        }
+        assert_eq!(core.account_balance("acct-1".into()).unwrap(), -370_500);
+        assert_eq!(core.list_accounts().unwrap().len(), 1);
+        assert_eq!(core.list_transactions(10).unwrap().len(), 2);
+        assert!(core
+            .list_transactions(10)
+            .unwrap()
+            .iter()
+            .all(|tx| tx.account_id == "acct-1" && tx.balance_after_minor.is_none()));
+    }
+
+    #[test]
+    fn confirmed_receipts_use_an_unknown_source_without_overwriting_a_bank_or_meter_balance() {
+        let core = core_with_account();
+        core.insert_account(AccountInput {
+            id: "bank-1".into(),
+            name: "City Bank".into(),
+            provider: "city-bank".into(),
+            last_four: Some("1234".into()),
+            starting_balance_minor: 500_000,
+            archived: false,
+        })
+        .unwrap();
+        let result = core.ingest_sms(
+            "Dear Customer, Tk. 100 (Details : Energy Cost:95.00,VAT:5.25:Rebate Amount-0.25) is successfully recharged for Meter no 12340000 and Customer no 56780000. Your meter balance is Tk. 80.00 as on 2026-10-22. Thanking You, DPDC.".into(),
+            Some("Primary Account".into()), 1_700_000_000_000,
+        ).unwrap();
+        assert_eq!(result.status, SmsIngestStatus::Inserted);
+        let messages = [
+            "Your payment for BRTA Service Portal (BSP) Tran-No: SYNBRTA01 /BDT 125.50 is successful. Thank you.",
+            "Your fee payment of tk 500.00 is successful.",
+            "Dear valued customer, The fee for minute bundle you purchased is TK 9.00(including SD, VAT & SC).",
+        ].into_iter().enumerate().map(|(i, body)| SmsBatchMessage {
+            body: body.into(), sender_hint: Some("Primary Account".into()),
+            occurred_at_epoch_ms: 1_700_000_001_000 + i as i64 * 1000,
+        }).collect();
+        assert!(core
+            .ingest_sms_batch(messages)
+            .unwrap()
+            .iter()
+            .all(|result| result.status == SmsIngestStatus::Inserted));
+        let accounts = core.list_accounts().unwrap();
+        let unknown = accounts
+            .iter()
+            .find(|account| account.provider == "banks-generic")
+            .unwrap();
+        assert_eq!(unknown.balance_minor, -73_450);
+        assert_eq!(core.account_balance("bank-1".into()).unwrap(), 500_000);
+        assert_eq!(core.account_balance("acct-1".into()).unwrap(), 0);
+        let transactions = core.list_transactions(10).unwrap();
+        assert_eq!(transactions.len(), 4);
+        assert!(transactions
+            .iter()
+            .all(|tx| tx.balance_after_minor.is_none() && tx.fee_minor.is_none()));
+        assert!(transactions.iter().all(|tx| tx.account_id == unknown.id));
+        let invoice = core.ingest_sms(
+            "Thanks for shopping from Ryans. Your purchase bill no is B-SYN10001, Tk 100. Click to see your invoice copy: https://example.invalid/receipt Thanks Ryans Computers Ltd.".into(),
+            Some("Primary Account".into()), 1_700_000_005_000,
+        ).unwrap();
+        assert_eq!(invoice.status, SmsIngestStatus::Inserted);
+        assert_eq!(core.list_transactions(10).unwrap().len(), 5);
+        assert_eq!(core.account_balance(unknown.id.clone()).unwrap(), -83_450);
+    }
+
+    #[test]
+    fn parser_corrections_preserve_the_ledger_and_do_not_drop_repeated_memos() {
+        let core = CentwiseCore::open(":memory:".into()).expect("open core");
+        let fee = core
+            .ingest_sms(
+                "SMS Alert Fee of BDT 230.00 has been debited from your A/C XXXX1234.".into(),
+                Some("City Bank".into()),
+                1_700_000_000_000,
+            )
+            .expect("fee");
+        assert_eq!(fee.status, SmsIngestStatus::Inserted);
+        assert_eq!(core.list_accounts().unwrap()[0].balance_minor, -23_000);
+
+        let wallet = core_with_account();
+        for (i, amount) in [100, 200].iter().enumerate() {
+            let result = wallet
+                .ingest_sms(
+                    format!("Send Money Tk {amount}.00 to 017XXXXXXXX successful. Ref: rent."),
+                    Some("bKash".into()),
+                    1_700_000_000_000 + i as i64 * 86_400_000,
+                )
+                .unwrap();
+            assert_eq!(result.status, SmsIngestStatus::Inserted);
+        }
+        assert_eq!(wallet.list_transactions(10).unwrap().len(), 2);
+        assert_eq!(wallet.account_balance("acct-1".into()).unwrap(), -30_000);
+    }
+
+    #[test]
+    fn batch_ingestion_ignores_offers_and_applies_posted_bank_direction() {
+        let core = CentwiseCore::open(":memory:".into()).unwrap();
+        let messages = [
+            "Your A/C XXXX1234 will be debited by BDT 500.00 tomorrow.",
+            "Your A/C XXXX1234 debited by BDT 500.00 via NPSB. Ref NP10001.",
+            "Your A/C XXXX1234 credited by BDT 200.00 via NPSB. Ref NP10002.",
+        ]
+        .into_iter()
+        .enumerate()
+        .map(|(i, body)| SmsBatchMessage {
+            body: body.into(),
+            sender_hint: Some("EBL".into()),
+            occurred_at_epoch_ms: 1_700_000_000_000 + i as i64 * 1000,
+        })
+        .collect();
+        let results = core.ingest_sms_batch(messages).unwrap();
+        assert_eq!(results[0].status, SmsIngestStatus::Ignored);
+        assert_eq!(results[1].status, SmsIngestStatus::Inserted);
+        assert_eq!(results[2].status, SmsIngestStatus::Inserted);
+        assert_eq!(core.list_accounts().unwrap()[0].balance_minor, -30_000);
+    }
+
+    #[test]
+    fn unicode_before_a_memo_does_not_shift_its_byte_offset() {
+        let core = core_with_account();
+        let body = format!("Payment Tk 10.00 successful. {} Ref: rent.", "İ".repeat(40));
+        let result = core
+            .ingest_sms(body, Some("bKash".into()), 1_700_000_000_000)
+            .unwrap();
+        assert_eq!(result.status, SmsIngestStatus::Inserted);
+        assert_eq!(
+            core.list_transactions(1).unwrap()[0].notes.as_deref(),
+            Some("Memo: rent.")
+        );
+    }
+
+    #[test]
+    fn identical_payments_without_a_transaction_id_can_recur_on_another_day() {
+        let core = core_with_account();
+        let body = "Payment Tk 100.00 to Sample Shop successful. Ref: rent2026.";
+        for timestamp in [1_700_000_000_000, 1_700_086_400_000] {
+            assert_eq!(
+                core.ingest_sms(body.into(), Some("bKash".into()), timestamp)
+                    .unwrap()
+                    .status,
+                SmsIngestStatus::Inserted
+            );
+        }
+        assert_eq!(core.list_transactions(10).unwrap().len(), 2);
+    }
+
+    #[test]
+    fn distinct_receipts_without_authoritative_ids_do_not_collide_within_ten_minutes() {
+        for (sender, bodies) in [
+            (
+                "EBL",
+                [
+                    "Your A/C XXXX1234 debited by BDT 500.00 via NPSB. Ref NP10001.",
+                    "Your A/C XXXX1234 debited by BDT 500.00 via NPSB. Ref NP10002.",
+                ],
+            ),
+            (
+                "bKash",
+                [
+                    "Payment Tk 500.00 to Sample Shop successful. Ref: order1.",
+                    "Payment Tk 500.00 to Sample Shop successful. Ref: order2.",
+                ],
+            ),
+        ] {
+            let core = CentwiseCore::open(":memory:".into()).unwrap();
+            for (index, body) in bodies.into_iter().enumerate() {
+                let result = core
+                    .ingest_sms(
+                        body.into(),
+                        Some(sender.into()),
+                        1_700_000_000_000 + index as i64 * 60_000,
+                    )
+                    .unwrap();
+                assert_eq!(result.status, SmsIngestStatus::Inserted);
+            }
+            assert_eq!(core.list_transactions(10).unwrap().len(), 2);
+        }
+    }
+
+    #[test]
     fn ingest_sms_inserts_when_one_account_matches() {
         let core = core_with_account();
         let result = core
             .ingest_sms(
-                "Payment of Tk 650.00 to Foodpanda successful. Ref: FP8392.".into(),
+                "Payment of Tk 650.00 to Foodpanda successful. TrxID: FP8392.".into(),
                 Some("bKash".into()),
                 1_700_000_000_000,
             )
@@ -72,7 +259,7 @@ mod ingestion_tests {
         for (reference, timestamp) in [("AUTO1", 1_700_000_000_000), ("AUTO2", 1_700_000_000_001)] {
             let result = core
                 .ingest_sms(
-                    format!("Payment of Tk 10.00 to Merchant successful. Ref: {reference}."),
+                    format!("Payment of Tk 10.00 to Merchant successful. TrxID: {reference}."),
                     Some("bKash".into()),
                     timestamp,
                 )
@@ -244,7 +431,7 @@ mod ingestion_tests {
 
         let result = core
             .ingest_sms(
-                "Payment of Tk 650.00 to Foodpanda successful. Ref: FP8393.".into(),
+                "Payment of Tk 650.00 to Foodpanda successful. TrxID: FP8393.".into(),
                 Some("bKash".into()),
                 1_700_000_000_000,
             )
@@ -267,7 +454,7 @@ mod ingestion_tests {
             .expect("otp ingest");
         assert_eq!(otp.status, SmsIngestStatus::Ignored);
 
-        let message = "Payment of Tk 650.00 to Foodpanda successful. Ref: FP8394.";
+        let message = "Payment of Tk 650.00 to Foodpanda successful. TrxID: FP8394.";
         core.ingest_sms(message.into(), Some("bKash".into()), 1_700_000_000_000)
             .expect("first ingest");
         let duplicate = core
@@ -328,7 +515,7 @@ mod ingestion_tests {
 
         let result = core
             .ingest_sms(
-                "Payment of Tk 120.00 to CoffeeHouse successful. Ref: COF1.".into(),
+                "Payment of Tk 120.00 to CoffeeHouse successful. TrxID: COF1.".into(),
                 Some("bKash".into()),
                 1_700_000_000_000,
             )
@@ -417,7 +604,7 @@ mod ingestion_tests {
             let result = core
                 .ingest_sms(
                     format!(
-                        "Your account number {hint} has been debited with BDT 30.00. Ref {reference}."
+                        "Your account number {hint} has been debited with BDT 30.00. Ref No {reference}."
                     ),
                     Some("Janata Bank".into()),
                     1_700_000_000_000,
@@ -442,7 +629,7 @@ mod ingestion_tests {
         let results = core
             .ingest_sms_batch(vec![
                 SmsBatchMessage {
-                    body: "Payment Tk 20.00 to Foodpanda successful. Ref: BATCH1.".into(),
+                    body: "Payment Tk 20.00 to Foodpanda successful. TrxID: BATCH1.".into(),
                     sender_hint: Some("bKash".into()),
                     occurred_at_epoch_ms: 1_700_000_000_000,
                 },
@@ -452,7 +639,7 @@ mod ingestion_tests {
                     occurred_at_epoch_ms: 1_700_000_000_001,
                 },
                 SmsBatchMessage {
-                    body: "Your A/C was credited with Tk 50.00. Ref: BATCH2.".into(),
+                    body: "Your A/C was credited with Tk 50.00. TrxID: BATCH2.".into(),
                     sender_hint: Some("bKash".into()),
                     occurred_at_epoch_ms: 1_700_000_000_002,
                 },
@@ -469,13 +656,13 @@ mod ingestion_tests {
     fn ordinary_credit_uses_income_and_only_salary_signals_use_salary() {
         let core = core_with_account();
         core.ingest_sms(
-            "Your account was credited with Tk 5,000. Ref: CREDIT1.".into(),
+            "Your account was credited with Tk 5,000. TrxID: CREDIT1.".into(),
             Some("bKash".into()),
             1_700_000_000_000,
         )
         .expect("ordinary credit");
         core.ingest_sms(
-            "Monthly salary of Tk 25,000 credited. Ref: SALARY1.".into(),
+            "Monthly salary of Tk 25,000 credited. TrxID: SALARY1.".into(),
             Some("bKash".into()),
             1_700_000_000_001,
         )
@@ -504,7 +691,7 @@ mod ingestion_tests {
     fn correcting_auto_tracked_merchant_teaches_future_transactions_and_preserves_sms_metadata() {
         let core = core_with_account();
         core.ingest_sms(
-            "Payment Tk 120.00 to Cafe Dhaka successful. Fee Tk 2.00. Balance Tk 878.00. Ref: CAFE1.".into(),
+            "Payment Tk 120.00 to Cafe Dhaka successful. Fee Tk 2.00. Balance Tk 878.00. TrxID: CAFE1.".into(),
             Some("bKash".into()),
             1_700_000_000_000,
         )
@@ -536,7 +723,7 @@ mod ingestion_tests {
         assert!(corrected.is_auto_tracked);
 
         core.ingest_sms(
-            "Payment Tk 50.00 to Cafe Dhaka successful. Ref: CAFE2.".into(),
+            "Payment Tk 50.00 to Cafe Dhaka successful. TrxID: CAFE2.".into(),
             Some("bKash".into()),
             1_700_000_000_001,
         )

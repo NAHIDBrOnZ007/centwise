@@ -19,12 +19,35 @@ static PRICE_PACKAGE_RE: LazyLock<Regex> = LazyLock::new(|| {
         .expect("valid price package regex")
 });
 
+static NON_CASH_BUNDLE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\b[0-9]+(?:\.[0-9]+)?\s*(?:gb|mb|min(?:ute)?s?)(?:\b|_)")
+        .expect("valid non-cash bundle regex")
+});
+
+static OFFER_INSTRUCTION_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\b(?:recharge|buy|purchase|pay)\b[^\r\n]*\b(?:and\s+(?:get|enjoy|win)|to\s+(?:get|enjoy|win))\b|\b(?:get|avail|take|apply\s+for)\s+(?:a\s+)?(?:digital\s+)?(?:loan|emergency\s+balance)\b|\b(?:loan\s+(?:offer|limit)|eligible\s+for)\b")
+        .expect("valid offer instruction regex")
+});
+
 /// Checks if an SMS is a telecom promotional message, offer list, loan invitation,
 /// bonus/free-data notice, VAS subscription, congratulations marketing,
 /// or system upsell notice that must be discarded immediately.
 pub fn is_promotional_or_telco_offer(body: &str, sender_hint: Option<&str>) -> bool {
     let lower = body.to_lowercase();
     let sender = sender_hint.unwrap_or_default().to_lowercase();
+    let posted = crate::common::events::has_posted_receipt(body);
+
+    if lower.contains("received an offer") || (!posted && OFFER_INSTRUCTION_RE.is_match(body)) {
+        return true;
+    }
+
+    // Borrowed data/minutes are not cash; the money is charged on a later recharge.
+    if lower.contains("has been added to your account")
+        && lower.contains("will be deducted")
+        && NON_CASH_BUNDLE_RE.is_match(body)
+    {
+        return true;
+    }
 
     // MyGP pack confirmations found in the historical export describe an
     // offer/bonus campaign, not a posted recharge. They can arrive with a
@@ -37,17 +60,22 @@ pub fn is_promotional_or_telco_offer(body: &str, sender_hint: Option<&str>) -> b
     }
 
     // 1. Check for App download or generic marketing notices
-    if lower.contains("app update")
-        || lower.contains("download now")
-        || lower.contains("download mygp")
-        || lower.contains("download mybl")
-        || lower.contains("download myrobi")
-        || lower.contains("special offer")
-        || lower.contains("chomok offer")
-        || lower.contains("super offer")
-        || lower.contains("hot offer")
-        || lower.contains("bonus credit")
+    if !posted
+        && (lower.contains("app update")
+            || lower.contains("download now")
+            || lower.contains("download mygp")
+            || lower.contains("download mybl")
+            || lower.contains("download myrobi")
+            || lower.contains("special offer")
+            || lower.contains("chomok offer")
+            || lower.contains("super offer")
+            || lower.contains("hot offer")
+            || lower.contains("bonus credit"))
     {
+        return true;
+    }
+
+    if lower.contains("bonus credit") && !lower.contains("tk") && !lower.contains("bdt") {
         return true;
     }
 

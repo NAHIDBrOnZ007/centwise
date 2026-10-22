@@ -25,7 +25,16 @@ impl ProviderParser for Parser {
 
     fn parse(&self, sms: &NormalizedSms<'_>) -> ProviderParse {
         let party_override = extract_ibanking_deposit_party(sms.body).map(Some);
-        super::super::generic::parse_common(PROVIDER_ID, *sms, None, party_override)
+        let lower = sms.body.to_ascii_lowercase();
+        // In labeled bill receipts A/C is the utility/policy identifier, not the wallet.
+        let biller_account = lower.contains("biller:")
+            && (lower.contains("bill payment") || lower.contains("bill successfully paid"));
+        super::super::generic::parse_common(
+            PROVIDER_ID,
+            *sms,
+            biller_account.then_some((None, None)),
+            party_override,
+        )
     }
 }
 
@@ -45,7 +54,8 @@ pub(crate) fn extract_ibanking_deposit_party(text: &str) -> Option<String> {
 /// actual bKash confirmation receipt.
 pub fn is_intermediary_recharge_request(text: &str) -> bool {
     let lower = text.to_ascii_lowercase();
-    lower.contains("your bkash mobile recharge request") && lower.contains("use bkash app")
+    lower.contains("your bkash mobile recharge request")
+        && crate::extract::extract_reference(text).is_none()
 }
 
 #[cfg(test)]

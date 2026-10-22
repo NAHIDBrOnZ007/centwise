@@ -107,26 +107,22 @@ fn test_audit_transaction_reports_09_and_10() {
             filename, total, parsed_count, rejected_count, transfer_count, shopping_count, recharge_count);
 
         if filename == &"transaction-report-09.csv" {
-            // Row 174 (KHADIJA absent notice) should now be rejected as NotATransaction!
+            // Pending requests remain excluded; completed utility receipts parse.
             assert_eq!(
-                rejected_count, 1,
-                "Expected exactly 1 rejected row in transaction report 09 (the absent notice)"
+                rejected_count, 10,
+                "Expected non-posted/unsupported rows in transaction report 09"
             );
             assert_eq!(
-                parsed_count, 205,
-                "Expected 205 legitimate transactions parsed in transaction report 09"
+                parsed_count, 196,
+                "Expected supported posted transactions in transaction report 09"
             );
         } else if filename == &"transaction-report-10.csv" {
-            assert_eq!(rejected_count, 0, "All rows in report 3 should parse");
+            assert_eq!(rejected_count, 4, "Unconfirmed requests must not parse");
             assert_eq!(
-                parsed_count, 147,
-                "Expected 147 parsed in transaction report 10"
+                parsed_count, 143,
+                "Expected posted transactions in transaction report 10"
             );
-            // MFS transfers should now be correctly recognized as Transfers!
-            assert!(
-                transfer_count >= 30,
-                "MFS transfers should now be categorized as Transfers"
-            );
+            assert_eq!(transfer_count, 0, "Recipient ownership is not established");
         }
     }
 }
@@ -230,15 +226,14 @@ fn test_audit_review_queue_reports_01_and_02() {
         "Expected exactly 7 rejected non-financial notices in report 2"
     );
 
-    // In Report 1: 388 posted transactions parsed, and 26 non-financial/
-    // administrative notices safely rejected.
+    // Non-cash bundles and unconfirmed requests are excluded from posted money.
     assert_eq!(
-        q1_parsed, 388,
-        "Expected 388 parsed transactions in queue report 1"
+        q1_parsed, 384,
+        "Expected 384 parsed transactions in queue report 1"
     );
     assert_eq!(
-        q1_rejected, 26,
-        "Expected 26 non-financial notices rejected in queue report 1"
+        q1_rejected, 30,
+        "Expected 30 non-posted notices rejected in queue report 1"
     );
     assert_eq!(
         q1_teletalk_count, q1_telecharge_sender_count,

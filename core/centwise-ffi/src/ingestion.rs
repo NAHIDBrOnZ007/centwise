@@ -124,8 +124,12 @@ pub(crate) fn ingest_sms_in_transaction(
             };
 
             if let Some(account_id) = target_account_id {
-                let transaction_id =
-                    sms_transaction_id(reference.as_deref(), &body, sender_hint.as_deref());
+                let transaction_id = sms_transaction_id(
+                    reference.as_deref(),
+                    &body,
+                    sender_hint.as_deref(),
+                    occurred_at_epoch_ms,
+                );
                 let (title, notes) = build_transaction_title_and_notes(&parsed, &body);
                 let transaction = centwise_domain::NewTransaction {
                     id: transaction_id.clone(),
@@ -165,7 +169,12 @@ pub(crate) fn ingest_sms_in_transaction(
 
             let review_id = format!(
                 "review-{}",
-                sms_transaction_id(reference.as_deref(), &body, sender_hint.as_deref())
+                sms_transaction_id(
+                    reference.as_deref(),
+                    &body,
+                    sender_hint.as_deref(),
+                    occurred_at_epoch_ms
+                )
             );
             let item = ReviewQueueItem {
                 id: review_id.clone(),
@@ -214,7 +223,7 @@ pub(crate) fn ingest_sms_in_transaction(
             }
             let review_id = format!(
                 "review-{}",
-                sms_transaction_id(None, &body, sender_hint.as_deref())
+                sms_transaction_id(None, &body, sender_hint.as_deref(), occurred_at_epoch_ms)
             );
             let item = ReviewQueueItem {
                 id: review_id.clone(),
@@ -256,7 +265,7 @@ pub(crate) fn build_transaction_title_and_notes(
     parsed: &centwise_parser::ParsedTransaction,
     body: &str,
 ) -> (String, Option<String>) {
-    let lower = body.to_lowercase();
+    let lower = body.to_ascii_lowercase();
 
     // 1. Build human-readable Title
     let title = if let Some(ref merchant) = parsed.merchant {

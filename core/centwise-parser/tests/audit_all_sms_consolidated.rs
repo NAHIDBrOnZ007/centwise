@@ -4,7 +4,7 @@ use std::path::Path;
 use std::sync::LazyLock;
 
 static REFERENCE_MARKER_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\b(?:trxid|txnid|txn id|ref|rrn|stan)\b").expect("valid reference regex")
+    Regex::new(r"(?i)\b(?:trxid|txnid|txn id|rrn|stan)\b").expect("valid reference regex")
 });
 static BALANCE_MARKER_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?i)\b(?:balance|c/b|avail(?:able)? bal|ledger bal)\b")
@@ -192,12 +192,47 @@ fn every_consolidated_sms_is_accounted_for_without_unsafe_review_leaks() {
     );
     assert!(
         queued_for_review.is_empty(),
-        "unexpected review rows: {queued_for_review:?}"
+        "review row count changed; check the per-row regression snapshot"
     );
-    assert_eq!(parsed + safely_rejected, rows.len() - 1);
+    assert_eq!(
+        parsed + safely_rejected + queued_for_review.len(),
+        rows.len() - 1
+    );
     assert_eq!(rows.len() - 1, 4_714);
-    assert_eq!(parsed, 4_532);
-    assert_eq!(safely_rejected, 182);
+    assert_eq!(parsed, 4_339);
+    assert_eq!(safely_rejected, 375);
+}
+
+#[test]
+fn every_sms_matches_its_reviewed_regression_snapshot() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../fixtures/audits");
+    let rows = parse_csv_rows(&root.join("all-sms-test-input.csv"));
+    let expected = std::fs::read_to_string(root.join("all-sms-expected.csv")).unwrap();
+    let expected: Vec<_> = expected.lines().skip(1).collect();
+    assert_eq!(expected.len(), rows.len() - 1);
+    for (index, (row, expected)) in rows.iter().skip(1).zip(expected).enumerate() {
+        let outcome = parse_sms(&row[4], Some(&row[3]));
+        let actual = match outcome {
+            ParseOutcome::Parsed(tx) => format!(
+                "{},parsed,{},{:?},{},{},{}",
+                index + 2,
+                tx.provider_id,
+                tx.transaction_type,
+                tx.amount_minor,
+                tx.fee_minor.map(|v| v.to_string()).unwrap_or_default(),
+                tx.balance_after_minor.is_some()
+            ),
+            ParseOutcome::Rejected(_) => {
+                let disposition = if is_likely_financial_review(&row[4], Some(&row[3])) {
+                    "review"
+                } else {
+                    "ignored"
+                };
+                format!("{},{disposition},,,,,", index + 2)
+            }
+        };
+        assert_eq!(actual, expected, "SMS row {} changed", index + 2);
+    }
 }
 
 #[test]
@@ -227,6 +262,7 @@ fn direct_text_preserves_main_transaction_fields() {
 
         let balance_expected_for_row = BALANCE_MARKER_RE.is_match(body)
             && !lower.contains("emergency balance")
+            && !lower.contains("meter balance")
             && !lower.contains("balance advances");
         if balance_expected_for_row {
             balance_expected += 1;

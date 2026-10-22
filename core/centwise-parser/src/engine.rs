@@ -83,7 +83,7 @@ mod tests {
 
         assert_eq!(tx.provider_id, "robi");
         assert_eq!(tx.amount_minor, 1_500);
-        assert_eq!(tx.fee_minor, Some(278));
+        assert_eq!(tx.fee_minor, None);
         assert_eq!(tx.transaction_type, TransactionType::Income);
         // Merchant must NOT be "your next recharge"!
         assert_ne!(tx.party.as_deref(), Some("your next recharge"));
@@ -209,7 +209,7 @@ mod tests {
         assert_eq!(tx.amount_minor, 1_000_000);
         assert_eq!(tx.fee_minor, Some(1_000));
         assert_eq!(tx.balance_after_minor, Some(4_500_000));
-        assert_eq!(tx.transaction_type, TransactionType::Transfer);
+        assert_eq!(tx.transaction_type, TransactionType::Expense);
     }
 
     #[test]
@@ -239,7 +239,7 @@ mod tests {
         assert_eq!(tx.provider_id, "cellfin");
         assert_eq!(tx.amount_minor, 250_000);
         assert_eq!(tx.reference.as_deref(), Some("CF12345678"));
-        assert_eq!(tx.transaction_type, TransactionType::Transfer);
+        assert_eq!(tx.transaction_type, TransactionType::Expense);
     }
 
     #[test]

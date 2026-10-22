@@ -13,6 +13,11 @@ static OTP_KEYWORD_RE: LazyLock<Regex> = LazyLock::new(|| {
         .expect("valid otp keyword regex")
 });
 
+static OTP_VALUE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)\b(?:otp|verification code|security code|passcode)\s*(?:is\s*|[:=-]\s*)?[0-9]{4,8}\b|\b(?:otp|verification code|security code|passcode)\b[^\r\n!?]{0,160}?(?:\bis\b|:|=)\s*[0-9]{4,8}\b|\b[0-9]{4,8}\s+is\s+your\s+(?:otp|verification code|security code)\b")
+        .expect("valid explicit OTP value regex")
+});
+
 /// Checks if an SMS is an OTP or security alert that must never become a transaction.
 pub fn is_otp_or_security_message(text: &str) -> bool {
     let lower = text.to_lowercase();
@@ -35,9 +40,15 @@ pub fn is_otp_or_security_message(text: &str) -> bool {
         return false;
     }
 
+    // A supplied security code is authoritative even if its instructions say "successful".
+    if text.split(". ").any(|clause| OTP_VALUE_RE.is_match(clause)) {
+        return true;
+    }
+
     // Guard: Confirmed transaction receipts may have security advisory footers:
     // e.g. "Payment of Tk 500 to Merchant is successful. Do not share your PIN/OTP."
-    let is_confirmed_receipt = lower.contains("is successful")
+    let is_confirmed_receipt = crate::common::events::has_posted_receipt(text)
+        || lower.contains("is successful")
         || lower.contains("was successful")
         || (lower.contains("successful") && !lower.contains("unsuccessful"))
         || lower.contains("has been debited")

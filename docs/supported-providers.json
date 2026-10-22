@@ -2,6 +2,14 @@
   "schemaVersion": 1,
   "country": "BD",
   "currency": "BDT",
+  "merchantReceiptFormats": [
+    {"merchant": "BRTA", "categoryId": "fees", "supportedEvent": "successful portal payment", "fundingProviderId": "banks-generic", "lastReviewed": "2026-10-22"},
+    {"merchant": "DPDC", "categoryId": "bills", "supportedEvent": "completed electricity meter recharge", "fundingProviderId": "banks-generic", "lastReviewed": "2026-10-22"},
+    {"merchant": "Ryans", "categoryId": "shopping", "supportedEvent": "purchase bill confirmation", "fundingProviderId": "banks-generic", "lastReviewed": "2026-10-22"},
+    {"merchant": "BREBPrepaid", "categoryId": "bills", "supportedEvent": "labeled successful bill payment", "fundingProviderId": "bkash", "fixtureFile": "fixtures/sms/public-bd-payments.json", "lastReviewed": "2026-10-22"},
+    {"merchant": "MetLife", "categoryId": "bills", "supportedEvent": "labeled successful premium bill payment", "fundingProviderId": "bkash", "fixtureFile": "fixtures/sms/public-bd-payments.json", "lastReviewed": "2026-10-22"},
+    {"merchant": "School and college billers", "categoryId": "education", "supportedEvent": "paid successfully receipt with Bill No and Txn.Id", "fundingProviderId": "rocket", "fixtureFile": "fixtures/sms/public-bd-payments.json", "lastReviewed": "2026-10-22"}
+  ],
   "providers": [
     {
       "id": "bkash",
@@ -10,7 +18,7 @@
       "senderIds": ["bKash", "bKashNotice", "16247"],
       "parserStatus": "active",
       "fixtureStatus": "collected",
-      "lastReviewed": "2026-09-09"
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "nagad",
@@ -19,7 +27,7 @@
       "senderIds": [],
       "parserStatus": "planned",
       "fixtureStatus": "collected",
-      "lastReviewed": "2026-08-22"
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "rocket",
@@ -28,7 +36,7 @@
       "senderIds": [],
       "parserStatus": "planned",
       "fixtureStatus": "collected",
-      "lastReviewed": "2026-08-22"
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "sonali-bank",
@@ -190,7 +198,7 @@
       "senderIds": [],
       "parserStatus": "active",
       "fixtureStatus": "generic-formats",
-      "lastReviewed": "2026-09-04"
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "upay",
@@ -199,7 +207,7 @@
       "senderIds": [],
       "parserStatus": "active",
       "fixtureStatus": "generic-formats",
-      "lastReviewed": "2026-09-04"
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "robi",
@@ -208,7 +216,7 @@
       "senderIds": ["Robi", "123"],
       "parserStatus": "active",
       "fixtureStatus": "collected",
-      "lastReviewed": "2026-09-04"
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "grameenphone",
@@ -217,7 +225,7 @@
       "senderIds": ["GP", "121", "GPSTAR"],
       "parserStatus": "active",
       "fixtureStatus": "collected",
-      "lastReviewed": "2026-09-04"
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "banglalink",
@@ -226,7 +234,7 @@
       "senderIds": ["Banglalink", "BL", "212"],
       "parserStatus": "active",
       "fixtureStatus": "collected",
-      "lastReviewed": "2026-09-04"
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "airtel",
@@ -235,7 +243,7 @@
       "senderIds": ["Airtel"],
       "parserStatus": "active",
       "fixtureStatus": "collected",
-      "lastReviewed": "2026-09-04"
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "teletalk",
@@ -244,7 +252,7 @@
       "senderIds": ["Teletalk", "Telecharge", "121"],
       "parserStatus": "active",
       "fixtureStatus": "collected",
-      "lastReviewed": "2026-09-09"
+      "lastReviewed": "2026-10-22"
     }
   ]
 }

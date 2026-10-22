@@ -6,5 +6,6 @@
 pub mod account;
 pub mod amount;
 pub mod dates;
+pub mod events;
 pub mod phone;
 pub mod reference;

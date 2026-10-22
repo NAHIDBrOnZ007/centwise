@@ -40,27 +40,11 @@ pub fn categorize_by_type_or_keywords(
 ) -> Option<String> {
     let lower = text.to_lowercase();
 
-    if transaction_type == TransactionType::Transfer
-        || contains_any(
-            &lower,
-            &[
-                "send money",
-                "money sent",
-                "sent money",
-                "transfer to",
-                "fund transfer",
-                "mfs transfer",
-                "account transfer",
-                "trf to",
-            ],
-        )
-    {
+    if transaction_type == TransactionType::Transfer {
         return Some("transfer".to_string());
     }
 
-    if transaction_type == TransactionType::Refund
-        || contains_any(&lower, &["refund", "reversal", "reversed"])
-    {
+    if transaction_type == TransactionType::Refund {
         return Some("refunds".to_string());
     }
 
@@ -80,12 +64,31 @@ pub fn categorize_by_type_or_keywords(
         return Some("income".to_string());
     }
 
+    if contains_any(
+        &lower,
+        &[
+            "send money",
+            "money sent",
+            "sent money",
+            "transfer to",
+            "fund transfer",
+            "mfs transfer",
+            "account transfer",
+            "trf to",
+        ],
+    ) {
+        return Some("transfer".to_string());
+    }
+
     if contains_any(&lower, &["atm", "cash withdrawal", "cash out", "cash wd"])
         || (lower.contains("citytouch txn") && lower.contains("withdrawal"))
     {
         return Some("cash-withdrawal".to_string());
     }
     if lower.contains("recharge")
+        || (lower.contains("the fee for")
+            && lower.contains("you purchased")
+            && (lower.contains("minute bundle") || lower.contains("_at_app_")))
         || ((lower.contains("data pack")
             || lower.contains("internet at")
             || lower.contains("gb at"))
@@ -99,14 +102,8 @@ pub fn categorize_by_type_or_keywords(
     if contains_any(&lower, &["cashback", "cash back"]) {
         return Some("cashback".to_string());
     }
-    if contains_any(&lower, &["interest", "mudaraba profit", "profit credited"]) {
-        return Some("interest-profit".to_string());
-    }
-    if contains_any(&lower, &["dividend"]) {
-        return Some("dividends".to_string());
-    }
-    if contains_any(&lower, &["salary", "payroll", "wages"]) {
-        return Some("salary".to_string());
+    if has_word(&lower, "school") || has_word(&lower, "college") || has_word(&lower, "tuition") {
+        return Some("education".to_string());
     }
     let has_bill = lower.contains("bill")
         && !lower.contains("bill no")

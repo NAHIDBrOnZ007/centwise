@@ -80,6 +80,25 @@ fn review_queue_survives_reopen_and_can_be_dismissed() {
 }
 
 #[test]
+fn reimported_review_items_do_not_duplicate_when_identity_format_changes() {
+    let database = Database::open_in_memory().unwrap();
+    let mut item = review_item();
+    item.reference = None;
+    database
+        .write(|queries| queries.insert_review_queue_item(&item))
+        .unwrap();
+    item.id = "new-identity".into();
+    item.raw_sms = item.raw_sms.to_uppercase().replace(' ', "  ");
+    assert!(!database
+        .write(|queries| queries.insert_review_queue_item(&item))
+        .unwrap());
+    item.received_at_epoch_ms += 86_400_000;
+    assert!(database
+        .write(|queries| queries.insert_review_queue_item(&item))
+        .unwrap());
+}
+
+#[test]
 fn converting_review_item_is_atomic_and_updates_balance() {
     let database = Database::open_in_memory().expect("open");
     database

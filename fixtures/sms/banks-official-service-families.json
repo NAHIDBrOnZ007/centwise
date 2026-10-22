@@ -85,7 +85,7 @@
       "kind": "dhaka-bank-fund-transfer-alert",
       "senderHint": "Dhaka Bank",
       "body": "Dhaka Bank: Fund Transfer BDT 2,500.00 debited from A/C XX4444. Available Balance BDT 7,500.00.",
-      "expected": { "provider": "dhaka-bank", "type": "transfer", "amountMinor": 250000, "balanceAfterMinor": 750000, "accountLast4": "4444" }
+      "expected": { "provider": "dhaka-bank", "type": "expense", "amountMinor": 250000, "balanceAfterMinor": 750000, "accountLast4": "4444" }
     },
     {
       "kind": "trust-bank-atm-alert",

@@ -1,0 +1,59 @@
+{
+  "provider": "mixed",
+  "source": "Official bill-payment guides; identifiers, dates, amounts and balances replaced with synthetic values. Merchant variations separately labeled synthetic.",
+  "sources": [
+    "https://file-dhaka.portal.gov.bd/files/pbs1.gazipur.gov.bd/files/69eb60f6_1127_4b9d_b579_13a77e3f6f20/6d4c0f35d3baf6bf10afeabc28cb339a.pdf",
+    "https://www.metlife.com.bd/content/dam/metlifecom/bd/PDFs/Pay-Premium/bkashup.pdf",
+    "https://www.dpsc.edu.bd/wp-content/uploads/2018/11/DAUD-PUBLIC-SCHOOL-AND-COLLEGE.pdf"
+  ],
+  "messages": [
+    {
+      "kind": "official-breb-prepaid-bkash-confirmation",
+      "senderHint": "bKash",
+      "body": "Bill payment is successful. Biller: BREBPrepaid A/C: SYNUTILITY01 Contact: 017XXXXXXXX Amount: Tk 1200.00 Fee: TK 5.00 TrxID: SYNPUBLIC01 at 22/10/2026 10:00",
+      "expected": {"provider": "bkash", "type": "expense", "amountMinor": 120000, "feeMinor": 500, "reference": "SYNPUBLIC01", "party": "BREBPrepaid", "merchant": "Palli Bidyut", "category": "bills"}
+    },
+    {
+      "kind": "official-metlife-bkash-premium-confirmation",
+      "senderHint": "bKash",
+      "body": "Bill successfully paid. Biller: MetLife MMYY 102026/Contact: 017XXXXXXXX A/C: SYNPOLICY01 Amount: TK 2500.00 Fee: Tk 0.00 TrxID: SYNPUBLIC02 at 22/10/2026 10:01",
+      "expected": {"provider": "bkash", "type": "expense", "amountMinor": 250000, "feeMinor": 0, "reference": "SYNPUBLIC02", "party": "MetLife", "category": "bills"}
+    },
+    {
+      "kind": "official-rocket-school-fee-confirmation",
+      "senderHint": "16216",
+      "body": "You have paid successfully Tk. 750.00 to Daud Public School & College Bill No: SYNSCHOOL01 Txn.Id: SYNPUBLIC03, Bal Tk.2000.00",
+      "expected": {"provider": "rocket", "type": "expense", "amountMinor": 75000, "balanceAfterMinor": 200000, "reference": "SYNPUBLIC03", "party": "Daud Public School & College", "category": "education"}
+    },
+    {
+      "kind": "official-breb-request-not-confirmation",
+      "senderHint": "bKash",
+      "body": "Received pay bill request of Tk 1200 for SYNUTILITY01. Fee Tk 5.00 at 22/10/2026 10:00. Wait for confirmation.",
+      "expected": {"isTransaction": false}
+    },
+    {
+      "kind": "bill-payment-failure",
+      "senderHint": "bKash",
+      "body": "Bill payment was not successful. Biller: BREBPrepaid Amount: Tk 1200.00. Please try again later.",
+      "expected": {"isTransaction": false}
+    },
+    {
+      "kind": "synthetic-pathao-payment-link-before-payment",
+      "senderHint": "Pathao",
+      "body": "Pathao parcel SYNORDER01. Pay Tk 750.00 using your payment link: https://example.invalid/pay. Payment is pending.",
+      "expected": {"isTransaction": false}
+    },
+    {
+      "kind": "synthetic-aarong-cash-on-delivery-order",
+      "senderHint": "Aarong",
+      "body": "Aarong order SYNORDER02 confirmed. Total Tk 1500.00. Cash on delivery. Please pay when you receive your parcel.",
+      "expected": {"isTransaction": false}
+    },
+    {
+      "kind": "synthetic-daraz-order-before-payment",
+      "senderHint": "Daraz",
+      "body": "Daraz order SYNORDER03 placed. Total Tk 900.00. Awaiting payment. Complete payment to confirm your order.",
+      "expected": {"isTransaction": false}
+    }
+  ]
+}

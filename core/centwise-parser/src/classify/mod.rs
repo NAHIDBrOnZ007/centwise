@@ -11,11 +11,6 @@ use crate::types::RejectReason;
 use regex::Regex;
 use std::sync::LazyLock;
 
-static POSTED_REFUND_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\b(?:credited|refunded|completed|successful)\b")
-        .expect("valid posted refund regex")
-});
-
 static UNPOSTED_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?i)\b(?:pending|requested|reminder)\b").expect("valid unposted regex")
 });
@@ -187,6 +182,7 @@ pub fn is_marketing_or_scam_message(text: &str) -> bool {
         || lower.contains("part-time job")
         || lower.contains("earn daily")
         || lower.contains("daily income")
+        || lower.contains("daily salary for working in")
         || lower.contains("work from home")
         || ((lower.contains("visa rejection")
             || lower.contains("study gap")
@@ -262,32 +258,30 @@ fn is_non_posted_financial_message(text: &str) -> bool {
     let lower = text.to_lowercase();
 
     // A posted refund/reversal is a real credit even when it describes an earlier failure.
-    let is_posted_refund = lower.split(". ").any(|clause| {
-        (clause.contains("refund") || clause.contains("reversal") || clause.contains("reversed"))
-            && POSTED_REFUND_RE.is_match(clause)
-            && !clause.contains("not ")
-            && !clause.contains("will be")
-            && !clause.contains("unsuccessful")
-            && !UNPOSTED_RE.is_match(clause)
-    });
+    let is_posted_refund = crate::common::events::posted_refund_clause(text).is_some();
     if is_posted_refund {
         return false;
     }
 
-    let failed = [
-        "declined",
-        "failed",
-        "unsuccessful",
-        "rejected",
-        "cancelled",
-        "canceled",
-        "could not be processed",
-        "not processed",
-        "not been credited",
-        "will be credited",
-    ]
-    .iter()
-    .any(|marker| lower.contains(marker));
+    let failed = crate::common::events::has_negated_completion(text)
+        || [
+            "declined",
+            "failed",
+            "unsuccessful",
+            "rejected",
+            "cancelled",
+            "canceled",
+            "could not be processed",
+            "not processed",
+            "not successful",
+            "not completed",
+            "not reversed",
+            "not refunded",
+            "not been credited",
+            "will be credited",
+        ]
+        .iter()
+        .any(|marker| lower.contains(marker));
 
     let pending = [
         "is pending",
@@ -296,21 +290,30 @@ fn is_non_posted_financial_message(text: &str) -> bool {
         "under process",
         "will be processed",
         "has been initiated",
+        "is being processed",
+        "wait for confirmation",
     ]
     .iter()
     .any(|marker| lower.contains(marker));
 
-    let has_posted_action = [
-        "successful",
-        "completed",
-        "has been debited",
-        "was debited",
-        "has been credited",
-        "was credited",
-        "payment received",
-    ]
-    .iter()
-    .any(|marker| lower.contains(marker));
+    let has_posted_action = crate::common::events::has_posted_receipt(text);
+    let future_or_offer = !has_posted_action
+        && [
+            "will be debited",
+            "will be credited",
+            "will be disbursed",
+            "will be deducted",
+            "will be charged",
+            "can be activated",
+            "you are eligible",
+            "pre-approved",
+            "apply now",
+            "you can get",
+            "to get",
+            "to buy",
+        ]
+        .iter()
+        .any(|marker| lower.contains(marker));
 
     let request_or_reminder = !has_posted_action
         && (UNPOSTED_RE.is_match(&lower)
@@ -347,10 +350,18 @@ fn is_non_posted_financial_message(text: &str) -> bool {
                 || lower.contains("sme")))
             || lower.contains("kindly ignore if you have already made the deposit")
             || lower.contains("will be automatically deducted")
+            || ((lower.contains("loan")
+                || lower.contains("emi")
+                || lower.contains("instalment")
+                || lower.contains("installment"))
+                && (lower.contains("is due")
+                    || lower.contains("is payable")
+                    || lower.contains("has been approved")
+                    || lower.contains("repay by")))
             || lower.contains("will be deducted from your bkash account as loan instalment")
             || lower.contains("if already repaid, please ignore"));
 
-    failed || pending || request_or_reminder || loan_or_payment_reminder
+    failed || pending || request_or_reminder || loan_or_payment_reminder || future_or_offer
 }
 
 fn false_or_none(_text: &str) -> Option<RejectReason> {
@@ -455,6 +466,8 @@ pub fn is_likely_financial_review(body: &str, sender_hint: Option<&str>) -> bool
         "rtgs",
         "excise duty",
         "annual fee",
+        "payment",
+        "purchase",
     ]
     .iter()
     .any(|word| lower.contains(word) || sender.contains(word))

@@ -2,6 +2,110 @@
 
 Status: agreed 2026-08-22. Applies to the future `centwise-parser` crate.
 
+## Implemented safety contract (2026-10-22)
+
+The parser is implemented. The following rules supersede the early keyword-only
+and transfer notes below; they apply identically to Android and iOS through Rust.
+
+- A posted action determines direction. Account debits and outgoing transfers to
+  unspecified recipients are expenses; incoming credits are income. Only an
+  explicitly stated movement between the user's own accounts is neutral Transfer.
+  A minus sign beside a transaction amount is not by itself a refund. Reported
+  account balances retain their positive or negative sign.
+- Loan offers, eligibility, schedules, requests waiting for confirmation, and
+  repayments that will happen later are not transactions. A completed cash loan
+  disbursement is income; an actual repayment/deduction is expense. Data/minutes
+  advanced on credit are not cash income. Future service fees do not reduce a
+  present cash disbursement.
+- Telco offers such as "recharge and get" are instructions, not completed
+  purchases. Completed pack purchases, recharge receipts, and VAS deductions
+  remain supported, including receipts with marketing or security footers.
+- Supplied OTP values are rejected. An advisory mentioning OTP must not capture
+  a balance in a later sentence. Negated or pending refunds are not credits;
+  posted partial refunds use the refund amount, not an earlier failed payment.
+- A standalone fee is its own principal amount, not an additional fee as well.
+  Invalid money precision is rejected instead of silently truncating digits.
+- TrxID/TxnID, Ref No/ID, NPSB/BEFTN Ref, RRN, and STAN are transaction identifiers.
+  Bare Ref/Reference may contain user memos, including numbers, and are not unique
+  transaction identifiers. No-reference identities include the supplied SMS
+  timestamp. The ten-minute account/amount/type/balance resend check additionally
+  requires the same normalized receipt content, preserving different memos and
+  provider references. Existing review items deduplicate by normalized sender,
+  content and original timestamp even when their older IDs differ.
+  Identical-looking genuine payments inside the ten-minute window remain
+  ambiguous without a reference or changed balance; changed-text resends without
+  an authoritative reference can require manual reconciliation.
+- A destination wallet, biller account, or source-bank mention must not replace
+  the tracked account/provider. Bank details are not required for recognized
+  merchant purchases and completed service charges. BRTA payment confirmations,
+  DPDC completed recharges, already-purchased telco bundle charges, successful
+  fee payments, and Ryans purchase-bill confirmations are expenses. Ryans
+  purchase confirmations count as spending under the agreed product policy;
+  quotations, cancellations and explicit unpaid notices do not.
+  Merchant/service names and categories are separate from the funding provider.
+  These receipts use the existing generic Primary Account when funding is unknown,
+  without assigning an arbitrary bank/operator. Meter balance, customer and meter
+  numbers are not financial-account fields. DPDC uses the gross recharge total,
+  not energy cost, VAT, rebate or remaining meter credit. Standalone bundle/fee
+  charges are not counted a second time as an extra fee.
+  Unrecognized receipt formats remain reviewable when financial evidence exists.
+  Add future formats here with positive, negative and ingestion fixture tests;
+  do not accept every message containing a price or invoice link.
+
+Verification uses all 4,714 rows of `fixtures/audits/all-sms-test-input.csv` plus
+the 16 original reports and anonymized adversarial regression cases. The aligned
+`all-sms-expected.csv` freezes disposition, provider, type, amount, fee, and whether
+a reported balance exists, without copying account balances into a second file.
+It is a regression snapshot, not independently labeled production ground truth
+or a guarantee of perfect recognition. Do not regenerate it merely to pass tests;
+review each changed message family first.
+
+Public Bangladesh bill-payment coverage is recorded in
+[the source review](../providers/public-payment-format-research.md).
+Additional fixtures cover BREBPrepaid electricity, MetLife premiums and Rocket
+school fees, with synthetic customer data. Labeled bKash biller A/C fields cannot
+become payer-wallet identifiers. Rocket's dotted Txn.Id and paid-successfully
+wording are supported. The existing wallet format is also tested with 19 common
+merchant/service names; these tests do not claim direct merchant SMS coverage.
+
+Current consolidated result: 4,339 parsed, 375 ignored, 0 queued for review.
+The receipt follow-up recovered all 40 review rows and 10 previously ignored
+DPDC recharge receipts. Only these 50 individually inspected rows changed in the
+regression snapshot. This does not imply that every future message can parse.
+Historical exports' stored amounts and types
+are not authoritative: the audit found date/account numbers previously mistaken
+for money as well as unconfirmed requests labeled as transactions.
+
+Verified on the Windows host: `cargo test --workspace --locked` (306 tests),
+`cargo fmt --all --check`, and
+`cargo clippy --workspace --all-targets --locked -- -D warnings`.
+Cargo reported incremental-cache hard-link fallback warnings; all checks exited
+successfully. The isolated DB-only command required an unavailable `dlltool`;
+the full workspace run executed and passed those DB tests with its unified
+dependency features.
+
+Existing stored transactions are not rewritten or rescanned by these changes.
+Separate merchant and bank SMS for one purchase can still produce two expenses
+without shared authoritative transaction evidence; cross-source reconciliation
+is not implemented. Unknown-source expenses affect the Primary Account, not a
+known bank balance.
+The FFI records, database schema, localization keys, and native UI contracts are
+unchanged. Both platforms share the source behavior; native-library packaging
+and emulator/simulator/device verification are separate checks.
+Android packaging verified on 2026-10-22: release Rust libraries rebuilt for
+arm64-v8a, armeabi-v7a, x86 and x86_64 using NDK 27.2.12479018/API 26; regenerated
+Kotlin bindings matched the checked-in bindings. The repository Gradle wrapper
+passed `:app:testDebugUnitTest` (4 tests) and `:app:assembleDebug`. The debug APK's
+signature, ZIP alignment and packaged Rust-library hashes were verified. The
+missing SDK was restored into ignored `core/target/` folders and the ignored
+Android local SDK path was updated. Phone/emulator SMS ingestion remains
+unverified. iOS native packaging and simulator verification require macOS/Xcode.
+
+Public references checked for semantics, without submitting SMS data:
+[Grameenphone emergency balance](https://www.grameenphone.com/personal/plans-offers/offers/emergency-balance)
+and [bKash loan service](https://www.bkash.com/en/products-services/loan/loan-bkash).
+These explain disbursement and later recovery; they do not validate exact SMS templates.
+
 ## Principle
 
 **Never match templates. Hunt fields.**
