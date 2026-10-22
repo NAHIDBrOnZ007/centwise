@@ -245,6 +245,17 @@ CREATE INDEX idx_group_deposits_group ON group_deposits(group_id, occurred_at_ep
 CREATE INDEX idx_group_deposits_member ON group_deposits(member_id);
 "#,
     },
+    Migration {
+        version: 8,
+        name: "remove shared groups",
+        sql: r#"
+DROP TABLE IF EXISTS group_expense_items;
+DROP TABLE IF EXISTS group_deposits;
+DROP TABLE IF EXISTS group_expenses;
+DROP TABLE IF EXISTS group_members;
+DROP TABLE IF EXISTS groups;
+"#,
+    },
 ];
 
 /// Latest schema version available in this build.
@@ -276,20 +287,7 @@ pub fn run(connection: &Connection) -> DbResult<()> {
     if had_pending || count_rules(connection)? == 0 {
         seed_default_rules(connection)?;
     }
-    if count_groups(connection)? == 0 {
-        crate::queries::groups::seed_default_demo_groups_on_connection(
-            connection,
-            crate::queries::now_epoch_ms(),
-        )?;
-    }
-
     Ok(())
-}
-
-fn count_groups(connection: &Connection) -> DbResult<i64> {
-    connection
-        .query_row("SELECT COUNT(*) FROM groups", [], |row| row.get(0))
-        .map_err(Into::into)
 }
 
 fn count_rules(connection: &Connection) -> DbResult<i64> {

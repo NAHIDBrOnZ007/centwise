@@ -38,7 +38,6 @@ import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.core.scanner.HistoricalSmsScanner
 import com.centwise.data.repository.ReviewQueueRepository
 import com.centwise.data.repository.TransactionRepository
-import com.centwise.features.group.GroupRepository
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -63,7 +62,6 @@ fun DataManagementScreen(
     val accounts by repository.accounts.collectAsState()
     val budgets by repository.budgets.collectAsState()
     val subscriptions by repository.subscriptions.collectAsState()
-    val allGroups by GroupRepository.shared.allGroups.collectAsState()
 
     var showLoadDemoDialog by remember { mutableStateOf(false) }
     var showResetDialog by remember { mutableStateOf(false) }
@@ -77,7 +75,7 @@ fun DataManagementScreen(
     val dividerColor = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000)
 
     var dbSizeString by remember { mutableStateOf("Loading…") }
-    LaunchedEffect(refreshCounter, transactions.size, accounts.size, budgets.size, subscriptions.size, allGroups.size) {
+    LaunchedEffect(refreshCounter, transactions.size, accounts.size, budgets.size, subscriptions.size) {
         dbSizeString = withContext(Dispatchers.IO) {
             val dir = context.noBackupFilesDir
             val totalBytes = listOf("centwise.db", "centwise.db-wal", "centwise.db-shm")
@@ -115,7 +113,6 @@ fun DataManagementScreen(
                             val summary = CentwiseRustBackend.loadDemoData()
                             if (summary != null) {
                                 repository.refreshNow()
-                                GroupRepository.shared.refreshFromRust()
                             }
                             withContext(Dispatchers.Main) {
                                 refreshCounter++
@@ -147,7 +144,7 @@ fun DataManagementScreen(
             title = { Text("Wipe Database & Reset?", style = CentwiseTypography.Headline, color = textPrimary) },
             text = {
                 Text(
-                    "Are you sure you want to delete all transactions, budgets, groups, and subscriptions? This action cannot be undone.",
+                    "Are you sure you want to delete all transactions, budgets, and subscriptions? This action cannot be undone.",
                     style = CentwiseTypography.Body,
                     color = textSecondary
                 )
@@ -158,10 +155,8 @@ fun DataManagementScreen(
                         showResetDialog = false
                         coroutineScope.launch(Dispatchers.IO) {
                             val succeeded = CentwiseRustBackend.resetToEmptyDatabase()
-                            GroupRepository.shared.clearAllGroups()
                             if (succeeded) {
                                 repository.refreshNow()
-                                GroupRepository.shared.refreshFromRust()
                             }
                             withContext(Dispatchers.Main) {
                                 refreshCounter++
@@ -290,16 +285,14 @@ fun DataManagementScreen(
 
                         // Segmented Progress Bar (Mobile Settings style)
                         val txCount = transactions.size
-                        val grpCount = allGroups.size
                         val acctBudgetCount = accounts.size + budgets.size + subscriptions.size
-                        val hasUserData = txCount > 0 || grpCount > 0 || acctBudgetCount > 0
+                        val hasUserData = txCount > 0 || acctBudgetCount > 0
 
                         val txColor = Color(0xFF3B82F6) // Royal Blue
-                        val grpColor = Color(0xFFA855F7) // Violet / Purple
                         val acctColor = Color(0xFF10B981) // Emerald Green
                         val rulesColor = if (isDark) Color(0xFF475569) else Color(0xFFCBD5E1) // Slate Gray
 
-                        val activeSegments = remember(txCount, grpCount, acctBudgetCount, hasUserData, isDark) {
+                        val activeSegments = remember(txCount, acctBudgetCount, hasUserData, isDark) {
                             if (!hasUserData) {
                                 listOf(
                                     25f to acctColor,
@@ -308,7 +301,6 @@ fun DataManagementScreen(
                             } else {
                                 buildList {
                                     if (txCount > 0) add(maxOf(txCount * 1.5f, 12f) to txColor)
-                                    if (grpCount > 0) add(maxOf(grpCount * 2.0f, 10f) to grpColor)
                                     if (acctBudgetCount > 0) add(maxOf(acctBudgetCount * 1.5f, 10f) to acctColor)
                                     add(25f to rulesColor)
                                 }
@@ -346,14 +338,6 @@ fun DataManagementScreen(
                                 color = txColor,
                                 label = if (LanguagePrefs.isBengali) "লেনদেন" else "Transactions",
                                 value = if (txCount == 0) (if (LanguagePrefs.isBengali) "০" else "0") else "$txCount",
-                                textPrimary = textPrimary,
-                                textSecondary = textSecondary,
-                                modifier = Modifier.weight(1f)
-                            )
-                            StorageLegendItem(
-                                color = grpColor,
-                                label = if (LanguagePrefs.isBengali) "গ্রুপ" else "Groups",
-                                value = if (grpCount == 0) (if (LanguagePrefs.isBengali) "০" else "0") else "$grpCount",
                                 textPrimary = textPrimary,
                                 textSecondary = textSecondary,
                                 modifier = Modifier.weight(1f)
@@ -498,16 +482,6 @@ fun DataManagementScreen(
                             iconColor = accent,
                             title = "Subscriptions",
                             count = subscriptions.size,
-                            showDivider = true,
-                            dividerColor = dividerColor,
-                            textPrimary = textPrimary,
-                            textSecondary = textSecondary
-                        )
-                        RecordRow(
-                            icon = Icons.Default.Groups,
-                            iconColor = accent,
-                            title = if (LanguagePrefs.isBengali) "শেয়ার্ড গ্রুপ" else "Shared Groups",
-                            count = allGroups.size,
                             showDivider = false,
                             dividerColor = dividerColor,
                             textPrimary = textPrimary,

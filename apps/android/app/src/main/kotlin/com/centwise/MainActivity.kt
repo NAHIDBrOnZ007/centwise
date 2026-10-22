@@ -49,7 +49,6 @@ import com.centwise.features.settings.SettingsScreen
 import com.centwise.features.settings.ThemeMode
 import com.centwise.features.settings.LanguagePickerScreen
 import com.centwise.features.settings.LanguagePrefs
-import com.centwise.features.group.GroupScreen
 import com.centwise.features.subscriptions.SubscriptionsScreen
 import com.centwise.features.transactions.AddEditTransactionSheet
 import com.centwise.features.transactions.TransactionListScreen
@@ -315,11 +314,6 @@ fun CentwiseApp(
                                     onAddClick = { showAddSheet = true },
                                     onProfileClick = { currentTab = CentwiseTab.SETTINGS },
                                     viewModel = homeViewModel,
-                                    isDark = effectiveDark
-                                )
-                            }
-                            CentwiseTab.GROUP -> {
-                                GroupScreen(
                                     isDark = effectiveDark
                                 )
                             }

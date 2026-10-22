@@ -160,7 +160,6 @@ class TransactionRepository private constructor() {
         }
         SmartRulesRepository.shared.refresh()
         ReviewQueueRepository.shared.refresh()
-        com.centwise.features.group.GroupRepository.shared.refreshFromRust()
     }
 
     fun addTransaction(tx: TransactionItem): Boolean =
@@ -320,7 +319,6 @@ class TransactionRepository private constructor() {
             refreshMutex.withLock {
                 if (CentwiseRustBackend.resetToEmptyDatabase()) {
                     refreshFromRust()
-                    com.centwise.features.group.GroupRepository.shared.refreshFromRust()
                 }
             }
         }

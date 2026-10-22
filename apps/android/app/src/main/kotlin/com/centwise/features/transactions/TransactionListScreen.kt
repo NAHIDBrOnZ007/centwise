@@ -19,7 +19,6 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -36,15 +35,11 @@ import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CreditCard
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -64,9 +59,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
@@ -86,97 +78,15 @@ import com.centwise.core.design.theme.CentwiseTypography
 import com.centwise.data.models.TransactionItem
 import com.centwise.data.models.TransactionType
 import com.centwise.data.repository.TransactionRepository
-import com.centwise.features.group.AddExpenseSheet
-import com.centwise.features.group.DailyExpenseEntry
-import com.centwise.features.group.DayExpenseGroup
-import com.centwise.features.group.GroupExpenseDetailSheet
-import com.centwise.features.group.GroupRepository
-import com.centwise.features.group.GroupType
-import com.centwise.features.group.MemberDeposit
-import com.centwise.features.group.SharedGroup
 import com.centwise.features.settings.AccentOptions
 import com.centwise.features.settings.AppearancePrefs
 import com.centwise.features.settings.LanguagePrefs
 import kotlinx.coroutines.launch
-import com.centwise.core.design.components.ScopeChipItem
-import com.centwise.core.design.components.ScopeTabItem
-
-enum class TransactionScope {
-    ALL,
-    PERSONAL,
-    GROUPS
-}
-
-sealed class UnifiedTransactionItem {
-    abstract val id: String
-    abstract val timestamp: Long
-    abstract val title: String
-    abstract val amount: Double
-    abstract val type: TransactionType
-    abstract val category: String
-
-    data class Personal(
-        val item: TransactionItem
-    ) : UnifiedTransactionItem() {
-        override val id: String get() = item.id
-        override val timestamp: Long get() = item.timestamp
-        override val title: String get() = item.title
-        override val amount: Double get() = item.amount
-        override val type: TransactionType get() = item.type
-        override val category: String get() = item.category
-    }
-
-    data class GroupExpense(
-        val entry: DailyExpenseEntry,
-        val dayGroup: DayExpenseGroup,
-        val group: SharedGroup
-    ) : UnifiedTransactionItem() {
-        override val id: String get() = entry.id
-        override val timestamp: Long = if (entry.timestamp > 0L) entry.timestamp else parseDateToEpochMillis(dayGroup.date)
-        override val title: String = if (entry.items.isNotEmpty()) {
-            entry.items.joinToString(", ") { it.name }
-        } else if (entry.notes.isNotBlank()) {
-            entry.notes
-        } else {
-            dayGroup.smartTitle
-        }
-        override val amount: Double get() = entry.totalAmount
-        override val type: TransactionType get() = TransactionType.EXPENSE
-        override val category: String get() = "group_expense"
-    }
-
-    data class GroupDeposit(
-        val deposit: MemberDeposit,
-        val group: SharedGroup
-    ) : UnifiedTransactionItem() {
-        override val id: String get() = deposit.id
-        override val timestamp: Long = parseDateToEpochMillis(deposit.date)
-        override val title: String = if (deposit.note.isNotBlank()) deposit.note else "Deposit (${deposit.memberName})"
-        override val amount: Double get() = deposit.amount
-        override val type: TransactionType get() = TransactionType.INCOME
-        override val category: String get() = "deposit"
-    }
-}
-
-private fun parseDateToEpochMillis(dateStr: String): Long {
-    return try {
-        val parts = dateStr.trim().split("\\s+".toRegex())
-        if (parts.size >= 3) {
-            val sdf = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.US)
-            sdf.parse("${parts[0]} ${parts[1]} ${parts[2]}")?.time ?: 0L
-        } else 0L
-    } catch (e: Exception) {
-        0L
-    }
-}
 
 @Composable
 fun TransactionListScreen(
     onAddClick: () -> Unit = {},
     viewModel: TransactionsViewModel = viewModel(),
-    initialScope: TransactionScope = TransactionScope.PERSONAL,
-    initialGroupId: String? = null,
-    onScopeChanged: (TransactionScope) -> Unit = {},
     isDark: Boolean = isSystemInDarkTheme()
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -190,31 +100,15 @@ fun TransactionListScreen(
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val sortOrder by viewModel.sortOrder.collectAsState()
 
-    // Scope & Group selection
-    var currentScope by remember(initialScope) { mutableStateOf(initialScope) }
-    var selectedGroupId by remember(initialGroupId) { mutableStateOf(initialGroupId) }
-
-    // Group Repository State
-    val allGroups by GroupRepository.shared.allGroups.collectAsState()
-    val filteredGroups = remember(allGroups, selectedGroupId) {
-        if (selectedGroupId == null) allGroups else allGroups.filter { it.id == selectedGroupId }
-    }
-
     // Detail & edit sheet states
     var selectedTransaction by remember { mutableStateOf<TransactionItem?>(null) }
     var editingTransaction by remember { mutableStateOf<TransactionItem?>(null) }
-    var selectedGroupExpenseForDetail by remember { mutableStateOf<DailyExpenseEntry?>(null) }
-    var selectedGroupForDetail by remember { mutableStateOf<SharedGroup?>(null) }
-    var editingGroupExpense by remember { mutableStateOf<DailyExpenseEntry?>(null) }
-    var showAddGroupExpenseSheet by remember { mutableStateOf(false) }
 
     var showPeriodMenu by remember { mutableStateOf(false) }
     var showTypeMenu by remember { mutableStateOf(false) }
     var showCategoryMenu by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
 
-    val context = LocalContext.current
-    val haptic = LocalHapticFeedback.current
     val accent = AccentOptions.byName(AppearancePrefs.accentName).color
 
     val bg = if (isDark) CentwiseColors.DarkBackground else CentwiseColors.LightBackground
@@ -228,68 +122,15 @@ fun TransactionListScreen(
     val listState = rememberLazyListState()
     DismissKeyboardOnScroll(listState)
 
-    // Dynamic Scope Tabs: [ Personal ] [ Group 1 ] [ Group 2 ]...
-    val scopeTabItems = remember(allGroups, LanguagePrefs.isBengali) {
-        val list = mutableListOf<ScopeTabItem>()
-
-        // 1. Personal
-        list.add(
-            ScopeTabItem.Personal(
-                title = if (LanguagePrefs.isBengali) "ব্যক্তিগত" else "Personal"
-            )
-        )
-
-        // 2. Each individual group
-        allGroups.forEach { g ->
-            list.add(ScopeTabItem.SpecificGroup(g))
-        }
-
-        list
-    }
-
-    val activeSelectedId = remember(currentScope, selectedGroupId) {
-        if (currentScope == TransactionScope.PERSONAL || selectedGroupId == null) {
-            "scope_personal"
-        } else {
-            "scope_group_$selectedGroupId"
-        }
-    }
-
-    // Build raw combined list based on currentScope
-    val rawUnifiedItems: List<UnifiedTransactionItem> = remember(allPersonalTransactions, filteredGroups, currentScope, selectedGroupId) {
-        val list = mutableListOf<UnifiedTransactionItem>()
-
-        // Add personal transactions if scope is PERSONAL or ALL
-        if (currentScope == TransactionScope.PERSONAL || currentScope == TransactionScope.ALL) {
-            allPersonalTransactions.forEach { tx ->
-                list.add(UnifiedTransactionItem.Personal(tx))
-            }
-        }
-
-        // Add group items if scope is GROUPS or ALL
-        if (currentScope == TransactionScope.GROUPS || currentScope == TransactionScope.ALL) {
-            filteredGroups.forEach { g ->
-                g.groupedDailyExpenses.forEach { dayGroup ->
-                    dayGroup.entries.forEach { entry ->
-                        list.add(UnifiedTransactionItem.GroupExpense(entry, dayGroup, g))
-                    }
-                }
-                g.deposits.forEach { dep ->
-                    list.add(UnifiedTransactionItem.GroupDeposit(dep, g))
-                }
-            }
-        }
-
-        list
-    }
+    val rawTransactions = allPersonalTransactions
 
     // Apply Period, Search, and Category filters (base set for financial totals)
-    val periodAndSearchFilteredItems = remember(rawUnifiedItems, searchQuery, selectedPeriod, selectedCategory) {
+    val periodAndSearchFilteredItems = remember(rawTransactions, searchQuery, selectedPeriod, selectedCategory) {
         val cal = java.util.Calendar.getInstance()
         val now = java.util.Date()
         cal.time = now
 
-        var items: List<UnifiedTransactionItem> = rawUnifiedItems
+        var items = rawTransactions
 
         // 1. Period filter
         when (selectedPeriod) {
@@ -328,37 +169,16 @@ fun TransactionListScreen(
         if (searchQuery.isNotBlank()) {
             val q = searchQuery.trim()
             items = items.filter { item ->
-                when (item) {
-                    is UnifiedTransactionItem.Personal -> {
-                        item.item.title.contains(q, ignoreCase = true) ||
-                            item.item.category.contains(q, ignoreCase = true) ||
-                            (item.item.note?.contains(q, ignoreCase = true) == true) ||
-                            item.item.paymentMethod.contains(q, ignoreCase = true)
-                    }
-                    is UnifiedTransactionItem.GroupExpense -> {
-                        item.group.displayName.contains(q, ignoreCase = true) ||
-                            item.entry.spenderName.contains(q, ignoreCase = true) ||
-                            item.entry.notes.contains(q, ignoreCase = true) ||
-                            item.entry.items.any { it.name.contains(q, ignoreCase = true) }
-                    }
-                    is UnifiedTransactionItem.GroupDeposit -> {
-                        item.group.displayName.contains(q, ignoreCase = true) ||
-                            item.deposit.memberName.contains(q, ignoreCase = true) ||
-                            item.deposit.note.contains(q, ignoreCase = true) ||
-                            item.deposit.paymentMethod.contains(q, ignoreCase = true)
-                    }
-                }
+                item.title.contains(q, ignoreCase = true) ||
+                    item.category.contains(q, ignoreCase = true) ||
+                    (item.note?.contains(q, ignoreCase = true) == true) ||
+                    item.paymentMethod.contains(q, ignoreCase = true)
             }
         }
 
         // 3. Category filter
         if (selectedCategory != null) {
-            items = items.filter {
-                when (it) {
-                    is UnifiedTransactionItem.Personal -> it.item.category == selectedCategory
-                    else -> true
-                }
-            }
+            items = items.filter { it.category == selectedCategory }
         }
 
         items
@@ -374,7 +194,7 @@ fun TransactionListScreen(
     val totalNet = totalIncome - totalExpense
 
     // Apply Type filter and Sort order for the transaction list
-    val filteredUnifiedItems = remember(periodAndSearchFilteredItems, selectedType, sortOrder) {
+    val filteredTransactions = remember(periodAndSearchFilteredItems, selectedType, sortOrder) {
         var items = periodAndSearchFilteredItems
         if (selectedType != null) {
             items = items.filter { it.type == selectedType }
@@ -389,17 +209,9 @@ fun TransactionListScreen(
 
     // Month grouping
     val monthFormat = remember { java.text.SimpleDateFormat("MMMM yyyy", java.util.Locale.US) }
-    val groupedItemsByMonth = remember(filteredUnifiedItems) {
-        filteredUnifiedItems.groupBy { item ->
+    val groupedItemsByMonth = remember(filteredTransactions) {
+        filteredTransactions.groupBy { item ->
             monthFormat.format(java.util.Date(item.timestamp)).uppercase()
-        }
-    }
-
-    val targetAddGroup = remember(allGroups, selectedGroupId) {
-        if (selectedGroupId != null) {
-            allGroups.find { it.id == selectedGroupId } ?: allGroups.firstOrNull()
-        } else {
-            allGroups.firstOrNull()
         }
     }
 
@@ -424,48 +236,6 @@ fun TransactionListScreen(
                     style = CentwiseTypography.LargeTitle,
                     color = textPrimary
                 )
-            }
-
-            // 2. Scope Switcher Chips (Personal & Individual Groups)
-            if (scopeTabItems.size > 1) {
-                item {
-                    LazyRow(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 2.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(horizontal = 2.dp, vertical = 2.dp)
-                    ) {
-                        items(scopeTabItems, key = { it.id }) { tabItem ->
-                            val isActive = tabItem.id == activeSelectedId
-                            ScopeChipItem(
-                                item = tabItem,
-                                isActive = isActive,
-                                accent = accent,
-                                isDark = isDark,
-                                onClick = {
-                                    if (!isActive) {
-                                        if (AppearancePrefs.hapticsEnabled) {
-                                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                                        }
-                                        when (tabItem) {
-                                            is ScopeTabItem.Personal -> {
-                                                currentScope = TransactionScope.PERSONAL
-                                                selectedGroupId = null
-                                                onScopeChanged(TransactionScope.PERSONAL)
-                                            }
-                                            is ScopeTabItem.SpecificGroup -> {
-                                                currentScope = TransactionScope.GROUPS
-                                                selectedGroupId = tabItem.group.id
-                                                onScopeChanged(TransactionScope.GROUPS)
-                                            }
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                    }
-                }
             }
 
             // 3. Compact Slim Search Bar (Height: 36.dp, permanently visible)
@@ -817,40 +587,20 @@ fun TransactionListScreen(
                     income = totalIncome,
                     expense = totalExpense,
                     net = totalNet,
-                    incomeLabel = when (currentScope) {
-                        TransactionScope.GROUPS -> if (LanguagePrefs.isBengali) "মোট জমা" else "Total Deposits"
-                        else -> null
-                    },
-                    expenseLabel = when (currentScope) {
-                        TransactionScope.GROUPS -> if (LanguagePrefs.isBengali) "মোট খরচ" else "Group Expenses"
-                        else -> null
-                    },
-                    netLabel = when (currentScope) {
-                        TransactionScope.GROUPS -> if (LanguagePrefs.isBengali) "হাতে নগদ" else "Balance"
-                        else -> null
-                    },
                     isDark = isDark
                 )
             }
 
             // 6. Chronological Transactions List or Empty State
-            if (filteredUnifiedItems.isEmpty()) {
+            if (filteredTransactions.isEmpty()) {
                 item {
                     EmptyStateView(
                         title = if (LanguagePrefs.isBengali) "কোনো লেনদেন পাওয়া যায়নি" else "No Transactions Found",
                         description = if (searchQuery.isNotBlank() || selectedType != null || selectedCategory != null)
                             (if (LanguagePrefs.isBengali) "ফিল্টারের সাথে কোনো লেনদেন মেলেনি।" else "No transactions matched the selected filters.")
                         else (if (LanguagePrefs.isBengali) "ট্র্যাকিং শুরু করতে প্রথম লেনদেন যোগ করুন।" else "Add your first transaction to start tracking your finances."),
-                        buttonText = if (currentScope == TransactionScope.GROUPS)
-                            (if (LanguagePrefs.isBengali) "গ্রুপ খরচ যোগ করুন" else "Add Group Expense")
-                        else (if (LanguagePrefs.isBengali) "লেনদেন যোগ করুন" else "Add Transaction"),
-                        onButtonClick = {
-                            if (currentScope == TransactionScope.GROUPS) {
-                                showAddGroupExpenseSheet = true
-                            } else {
-                                onAddClick()
-                            }
-                        },
+                        buttonText = if (LanguagePrefs.isBengali) "লেনদেন যোগ করুন" else "Add Transaction",
+                        onButtonClick = onAddClick,
                         isDark = isDark
                     )
                 }
@@ -867,22 +617,9 @@ fun TransactionListScreen(
                     }
 
                     items(itemsInMonth, key = { it.id }) { item ->
-                        UnifiedTransactionRow(
+                        TransactionRow(
                             item = item,
-                            onClick = {
-                                when (item) {
-                                    is UnifiedTransactionItem.Personal -> {
-                                        selectedTransaction = item.item
-                                    }
-                                    is UnifiedTransactionItem.GroupExpense -> {
-                                        selectedGroupExpenseForDetail = item.entry
-                                        selectedGroupForDetail = item.group
-                                    }
-                                    is UnifiedTransactionItem.GroupDeposit -> {
-                                        // View deposit detail if needed
-                                    }
-                                }
-                            },
+                            onClick = { selectedTransaction = item },
                             accent = accent,
                             textPrimary = textPrimary,
                             textSecondary = textSecondary,
@@ -926,87 +663,13 @@ fun TransactionListScreen(
             )
         }
 
-        // Group Expense Detail Sheet
-        if (selectedGroupExpenseForDetail != null && selectedGroupForDetail != null) {
-            val expense = selectedGroupExpenseForDetail!!
-            val parentGroup = selectedGroupForDetail!!
-
-            GroupExpenseDetailSheet(
-                expense = expense,
-                memberCount = parentGroup.members.size,
-                onDismiss = {
-                    selectedGroupExpenseForDetail = null
-                    selectedGroupForDetail = null
-                },
-                onDelete = {
-                    GroupRepository.shared.selectGroup(parentGroup.id)
-                    GroupRepository.shared.deleteExpenseEntry(expense.id)
-                    selectedGroupExpenseForDetail = null
-                    selectedGroupForDetail = null
-                },
-                onEdit = {
-                    editingGroupExpense = expense
-                    selectedGroupExpenseForDetail = null
-                },
-                accent = accent,
-                isDark = isDark
-            )
-        }
-
-        // Group Edit Expense Sheet
-        if (editingGroupExpense != null && selectedGroupForDetail != null) {
-            val expense = editingGroupExpense!!
-            val parentGroup = selectedGroupForDetail!!
-
-            AddExpenseSheet(
-                group = parentGroup,
-                initialExpense = expense,
-                onDismiss = {
-                    editingGroupExpense = null
-                    selectedGroupForDetail = null
-                },
-                onSave = { spenderId, items, notes ->
-                    GroupRepository.shared.selectGroup(parentGroup.id)
-                    GroupRepository.shared.updateExpenseEntry(
-                        entryId = expense.id,
-                        spenderId = spenderId,
-                        items = items,
-                        notes = notes
-                    )
-                    editingGroupExpense = null
-                    selectedGroupForDetail = null
-                },
-                accent = accent,
-                isDark = isDark
-            )
-        }
-
-        // Group Add Expense Sheet
-        if (showAddGroupExpenseSheet && targetAddGroup != null) {
-            val addGroup = targetAddGroup
-            AddExpenseSheet(
-                group = addGroup,
-                onDismiss = { showAddGroupExpenseSheet = false },
-                onSave = { spenderId, items, notes ->
-                    GroupRepository.shared.selectGroup(addGroup.id)
-                    GroupRepository.shared.addExpenseEntry(
-                        spenderId = spenderId,
-                        items = items,
-                        notes = notes
-                    )
-                    showAddGroupExpenseSheet = false
-                },
-                accent = accent,
-                isDark = isDark
-            )
-        }
     }
 }
 
 
 @Composable
-private fun UnifiedTransactionRow(
-    item: UnifiedTransactionItem,
+private fun TransactionRow(
+    item: TransactionItem,
     onClick: () -> Unit,
     accent: Color,
     textPrimary: Color,
@@ -1032,27 +695,13 @@ private fun UnifiedTransactionRow(
             modifier = Modifier
                 .size(36.dp)
                 .clip(CircleShape)
-                .background(
-                    when (item) {
-                        is UnifiedTransactionItem.Personal -> accent.copy(alpha = 0.12f)
-                        is UnifiedTransactionItem.GroupExpense -> CentwiseColors.ExpenseRed.copy(alpha = 0.12f)
-                        is UnifiedTransactionItem.GroupDeposit -> CentwiseColors.IncomeGreen.copy(alpha = 0.12f)
-                    }
-                ),
+                .background(accent.copy(alpha = 0.12f)),
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = when (item) {
-                    is UnifiedTransactionItem.Personal -> CategoryIconHelper.iconFor(item.category)
-                    is UnifiedTransactionItem.GroupExpense -> Icons.Default.ShoppingBag
-                    is UnifiedTransactionItem.GroupDeposit -> Icons.Default.Payments
-                },
+                imageVector = CategoryIconHelper.iconFor(item.category),
                 contentDescription = null,
-                tint = when (item) {
-                    is UnifiedTransactionItem.Personal -> accent
-                    is UnifiedTransactionItem.GroupExpense -> CentwiseColors.ExpenseRed
-                    is UnifiedTransactionItem.GroupDeposit -> CentwiseColors.IncomeGreen
-                },
+                tint = accent,
                 modifier = Modifier.size(18.dp)
             )
         }
@@ -1073,65 +722,13 @@ private fun UnifiedTransactionRow(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                when (item) {
-                    is UnifiedTransactionItem.Personal -> {
-                        Text(
-                            text = "${item.item.category} • ${item.item.paymentMethod}",
-                            style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
-                            color = textSecondary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                    is UnifiedTransactionItem.GroupExpense -> {
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = accent.copy(alpha = 0.12f)
-                        ) {
-                            Text(
-                                text = item.group.displayName,
-                                style = CentwiseTypography.Caption.copy(
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = accent,
-                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "• Paid by ${item.entry.spenderName}",
-                            style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
-                            color = textSecondary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                    is UnifiedTransactionItem.GroupDeposit -> {
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = CentwiseColors.IncomeGreen.copy(alpha = 0.12f)
-                        ) {
-                            Text(
-                                text = item.group.displayName,
-                                style = CentwiseTypography.Caption.copy(
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = CentwiseColors.IncomeGreen,
-                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "• From ${item.deposit.memberName}",
-                            style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
-                            color = textSecondary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
+                Text(
+                    text = "${item.category} • ${item.paymentMethod}",
+                    style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
+                    color = textSecondary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
 

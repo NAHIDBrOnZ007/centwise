@@ -365,8 +365,6 @@ pub struct NewSubscription {
 
 pub mod default_categories;
 pub mod default_rules;
-pub mod group;
 
 pub use default_categories::default_categories;
 pub use default_rules::{default_merchant_categories, default_rules, DefaultMerchantCategory};
-pub use group::*;

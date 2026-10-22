@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.BarChart
-import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -52,7 +51,6 @@ import com.centwise.features.settings.LanguagePrefs
 
 enum class CentwiseTab(val icon: ImageVector) {
     HOME(Icons.Default.Home),
-    GROUP(Icons.Default.Groups),
     TRANSACTIONS(Icons.AutoMirrored.Filled.List),
     ANALYTICS(Icons.Default.BarChart),
     SETTINGS(Icons.Default.Settings);
@@ -60,7 +58,6 @@ enum class CentwiseTab(val icon: ImageVector) {
     val title: String
         get() = when (this) {
             HOME -> if (LanguagePrefs.isBengali) "হোম" else "Home"
-            GROUP -> if (LanguagePrefs.isBengali) "গ্রুপ" else "Group"
             TRANSACTIONS -> if (LanguagePrefs.isBengali) "লেনদেন" else "Transactions"
             ANALYTICS -> if (LanguagePrefs.isBengali) "অ্যানালিটিক্স" else "Analytics"
             SETTINGS -> if (LanguagePrefs.isBengali) "সেটিংস" else "Settings"

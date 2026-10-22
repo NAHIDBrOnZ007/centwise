@@ -24,7 +24,7 @@ import com.centwise.features.settings.LanguagePrefs
 
 /**
  * Unified pill-style action button used in section headers across screens
- * (e.g. "See all" on HomeScreen and GroupScreen).
+ * (e.g. "See all" on HomeScreen).
  */
 @Composable
 fun SeeAllButton(

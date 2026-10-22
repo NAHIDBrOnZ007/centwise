@@ -155,6 +155,99 @@ fn version_three_database_gains_internal_sms_intelligence_schema_without_data_lo
 }
 
 #[test]
+fn version_seven_group_data_is_removed_without_touching_personal_financial_records() {
+    let file = tempfile::NamedTempFile::new().expect("temp file");
+    {
+        let connection = rusqlite::Connection::open(file.path()).expect("open legacy database");
+        connection
+            .pragma_update(None, "foreign_keys", "ON")
+            .expect("enable foreign keys");
+        for migration in centwise_db::migrations::MIGRATIONS
+            .iter()
+            .filter(|migration| migration.version <= 7)
+        {
+            connection
+                .execute_batch(migration.sql)
+                .expect("install legacy schema");
+            connection
+                .pragma_update(None, "user_version", migration.version)
+                .expect("mark legacy schema version");
+        }
+        connection
+            .execute_batch(
+                "INSERT INTO categories (id, name, icon, color_hex, is_system, sort_order)
+                 VALUES ('food', 'Food', 'restaurant', '#000000', 1, 0);
+                 INSERT INTO accounts
+                    (id, name, provider, last_four, balance_minor, archived, created_at_epoch_ms)
+                 VALUES ('acct-keep', 'bKash', 'bkash', '1234', 90000, 0, 1);
+                 INSERT INTO transactions
+                    (id, title, amount_minor, currency, transaction_type, category_id,
+                     occurred_at_epoch_ms, account_id, created_at_epoch_ms)
+                 VALUES ('tx-keep', 'Foodpanda order', 10000, 'BDT', 'expense',
+                         'food', 10, 'acct-keep', 10);
+                 INSERT INTO groups
+                    (id, name, group_type, join_code, month_name, created_at_epoch_ms)
+                 VALUES ('group-remove', 'Family', 'family', 'JOIN-1234', 'October', 1);
+                 INSERT INTO group_members
+                    (id, group_id, name, created_at_epoch_ms)
+                 VALUES ('member-remove', 'group-remove', 'Member', 1);
+                 INSERT INTO group_expenses
+                    (id, group_id, spender_id, occurred_at_epoch_ms, date_formatted)
+                 VALUES ('expense-remove', 'group-remove', 'member-remove', 10, 'Oct 1');
+                 INSERT INTO group_expense_items
+                    (id, expense_id, group_id, name)
+                 VALUES ('item-remove', 'expense-remove', 'group-remove', 'Rice');
+                 INSERT INTO group_deposits
+                    (id, group_id, member_id, amount_minor, occurred_at_epoch_ms, date_formatted)
+                 VALUES ('deposit-remove', 'group-remove', 'member-remove', 50000, 10, 'Oct 1');",
+            )
+            .expect("insert legacy financial and group records");
+    }
+
+    let database = Database::open(file.path()).expect("migrate legacy database");
+    let accounts = database.list_accounts().expect("list accounts");
+    assert_eq!(accounts.len(), 1);
+    assert_eq!(accounts[0].id, "acct-keep");
+    let transactions = database.list_transactions(10).expect("list transactions");
+    assert_eq!(transactions.len(), 1);
+    assert_eq!(transactions[0].id, "tx-keep");
+    drop(database);
+
+    let connection = rusqlite::Connection::open(file.path()).expect("inspect migrated database");
+    let remaining_group_tables: i64 = connection
+        .query_row(
+            "SELECT COUNT(*) FROM sqlite_master
+             WHERE type = 'table' AND name IN
+                 ('groups', 'group_members', 'group_expenses', 'group_expense_items', 'group_deposits')",
+            [],
+            |row| row.get(0),
+        )
+        .expect("count group tables");
+    assert_eq!(remaining_group_tables, 0);
+    let version: i64 = connection
+        .query_row("PRAGMA user_version", [], |row| row.get(0))
+        .expect("read schema version");
+    assert_eq!(version, 8);
+}
+
+#[test]
+fn fresh_install_does_not_keep_group_tables() {
+    let connection = rusqlite::Connection::open_in_memory().expect("open memory database");
+    centwise_db::migrations::run(&connection).expect("run migrations");
+
+    let remaining_group_tables: i64 = connection
+        .query_row(
+            "SELECT COUNT(*) FROM sqlite_master
+             WHERE type = 'table' AND name IN
+                 ('groups', 'group_members', 'group_expenses', 'group_expense_items', 'group_deposits')",
+            [],
+            |row| row.get(0),
+        )
+        .expect("count group tables");
+    assert_eq!(remaining_group_tables, 0);
+}
+
+#[test]
 fn migrations_run_once_and_are_idempotent_on_reopen() {
     let file = tempfile::NamedTempFile::new().expect("temp file");
 
