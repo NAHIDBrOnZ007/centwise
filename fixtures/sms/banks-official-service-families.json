@@ -1,0 +1,109 @@
+{
+  "provider": "bangladesh-banks-official-service-families",
+  "source": "official public bank SMS-alert service pages; message bodies are synthetic and anonymized",
+  "notes": "Official pages document alert/event families, not stable raw SMS templates. These fixtures verify safe parsing against anonymized format families and must not be treated as verbatim bank templates.",
+  "messages": [
+    {
+      "kind": "sonali-account-debit-alert",
+      "senderHint": "Sonali Bank",
+      "body": "Transaction Alert: Tk. 2,500.00 debited from A/C XX1001. Avl. Bal: Tk. 12,500.00.",
+      "expected": { "provider": "sonali-bank", "type": "expense", "amountMinor": 250000, "balanceAfterMinor": 1250000, "accountLast4": "1001" }
+    },
+    {
+      "kind": "islami-account-credit-alert",
+      "senderHint": "IBBL",
+      "body": "IBBL SMS Alert: BDT 4,000.00 credited to A/C XX2002. Available Balance BDT 14,000.00.",
+      "expected": { "provider": "islami-bank", "type": "income", "amountMinor": 400000, "balanceAfterMinor": 1400000, "accountLast4": "2002" }
+    },
+    {
+      "kind": "dbbl-atm-alert",
+      "senderHint": "DBBL",
+      "body": "Dutch-Bangla Bank ATM withdrawal BDT 3,000.00 from A/C *3003. Closing Balance BDT 9,000.00.",
+      "expected": { "provider": "dbbl", "type": "expense", "amountMinor": 300000, "balanceAfterMinor": 900000, "accountLast4": "3003", "category": "cash-withdrawal" }
+    },
+    {
+      "kind": "brac-account-credit-alert",
+      "senderHint": "BRAC Bank",
+      "body": "BRAC Bank: Your A/C XX4004 has been credited with BDT 6,500.00. Available Balance BDT 26,500.00.",
+      "expected": { "provider": "brac-bank", "type": "income", "amountMinor": 650000, "balanceAfterMinor": 2650000, "accountLast4": "4004" }
+    },
+    {
+      "kind": "city-card-pos-alert",
+      "senderHint": "City Bank",
+      "body": "City Bank Card *5005 used at Demo Mart for BDT 875.50. Avl. Bal BDT 9,124.50.",
+      "expected": { "provider": "city-bank", "type": "expense", "amountMinor": 87550, "balanceAfterMinor": 912450, "accountLast4": "5005", "party": "Demo Mart" }
+    },
+    {
+      "kind": "ebl-account-transfer-alert",
+      "senderHint": "EBL",
+      "body": "EBL: A/C *6006 credited with BDT 10,000.00 as NPSB Fund Transfer. Balance BDT 45,000.00.",
+      "expected": { "provider": "ebl", "type": "income", "amountMinor": 1000000, "balanceAfterMinor": 4500000, "accountLast4": "6006" }
+    },
+    {
+      "kind": "pubali-clearing-credit-alert",
+      "senderHint": "Pubali Bank",
+      "body": "Pubali Bank Account Alert: Clearing cheque amount BDT 7,500.00 credited to A/C XX7007. Ledger Balance BDT 32,000.00.",
+      "expected": { "provider": "pubali-bank", "type": "income", "amountMinor": 750000, "balanceAfterMinor": 3200000, "accountLast4": "7007" }
+    },
+    {
+      "kind": "ucb-auto-debit-alert",
+      "senderHint": "UCB",
+      "body": "UCB Alert: Auto Debit BDT 3,200.00 from A/C XX8008 for loan repayment. Avail Bal BDT 16,800.00.",
+      "expected": { "provider": "ucb", "type": "expense", "amountMinor": 320000, "balanceAfterMinor": 1680000, "accountLast4": "8008", "category": "bills" }
+    },
+    {
+      "kind": "prime-card-fee-alert",
+      "senderHint": "Prime Bank",
+      "body": "Prime Bank: Excise Duty BDT 500.00 debited from Card ending 9009. Available Limit BDT 24,500.00.",
+      "expected": { "provider": "prime-bank", "type": "expense", "amountMinor": 50000, "accountLast4": "9009", "category": "fees" }
+    },
+    {
+      "kind": "agrani-atm-debit-alert",
+      "senderHint": "Agrani Bank",
+      "body": "Agrani Bank SMS Alert: ATM withdrawal BDT 2,000.00 from A/C XX1010. Available Balance BDT 8,000.00.",
+      "expected": { "provider": "agrani-bank", "type": "expense", "amountMinor": 200000, "balanceAfterMinor": 800000, "accountLast4": "1010", "category": "cash-withdrawal" }
+    },
+    {
+      "kind": "mtb-account-debit-alert",
+      "senderHint": "MTB",
+      "body": "MTB SMS Alert: A/C XX1111 debited BDT 1,250.00. Available Balance BDT 8,750.00.",
+      "expected": { "provider": "mutual-trust-bank", "type": "expense", "amountMinor": 125000, "balanceAfterMinor": 875000, "accountLast4": "1111" }
+    },
+    {
+      "kind": "scb-pos-alert",
+      "senderHint": "SCB",
+      "body": "Standard Chartered Alert: Card ending 2222 used at Demo Store for BDT 1,100.00. Available Balance BDT 8,900.00.",
+      "expected": { "provider": "standard-chartered", "type": "expense", "amountMinor": 110000, "balanceAfterMinor": 890000, "accountLast4": "2222", "party": "Demo Store" }
+    },
+    {
+      "kind": "bank-asia-account-credit-alert",
+      "senderHint": "Bank Asia",
+      "body": "Bank Asia Alert: BDT 5,000.00 credited to A/C XX3333. Available Balance BDT 15,000.00.",
+      "expected": { "provider": "bank-asia", "type": "income", "amountMinor": 500000, "balanceAfterMinor": 1500000, "accountLast4": "3333" }
+    },
+    {
+      "kind": "dhaka-bank-fund-transfer-alert",
+      "senderHint": "Dhaka Bank",
+      "body": "Dhaka Bank: Fund Transfer BDT 2,500.00 debited from A/C XX4444. Available Balance BDT 7,500.00.",
+      "expected": { "provider": "dhaka-bank", "type": "transfer", "amountMinor": 250000, "balanceAfterMinor": 750000, "accountLast4": "4444" }
+    },
+    {
+      "kind": "trust-bank-atm-alert",
+      "senderHint": "Trust Bank",
+      "body": "Trust Bank ATM Alert: Cash withdrawal BDT 4,000.00 from A/C XX5555. Available Balance BDT 6,000.00.",
+      "expected": { "provider": "trust-bank", "type": "expense", "amountMinor": 400000, "balanceAfterMinor": 600000, "accountLast4": "5555", "category": "cash-withdrawal" }
+    },
+    {
+      "kind": "janata-ibft-credit-alert",
+      "senderHint": "Janata Bank",
+      "body": "Your Janata Bank account *6666 has been credited with BDT 12,000.00 through IBFT. Current balance is BDT 22,000.00.",
+      "expected": { "provider": "janata-bank", "type": "income", "amountMinor": 1200000, "balanceAfterMinor": 2200000, "accountLast4": "6666" }
+    },
+    {
+      "kind": "rupali-pos-debit-alert",
+      "senderHint": "Rupali Bank",
+      "body": "Rupali Bank Card ending 7777 used at Demo Cafe for BDT 650.00. Available Balance BDT 9,350.00.",
+      "expected": { "provider": "rupali-bank", "type": "expense", "amountMinor": 65000, "balanceAfterMinor": 935000, "accountLast4": "7777", "party": "Demo Cafe" }
+    }
+  ]
+}

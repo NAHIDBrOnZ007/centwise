@@ -49,6 +49,24 @@ cd apps/android
 ./gradlew :app:installDebug
 ```
 
+### Windows verification record (2026-10-22)
+
+The debug APK was built successfully on the Windows development machine with
+Android Studio's JDK at `D:\android-studio\jbr` and the SDK at
+`D:\android-sdk`:
+
+```powershell
+$env:JAVA_HOME = 'D:\android-studio\jbr'
+.\gradlew.bat :app:assembleDebug --no-daemon --console=plain
+```
+
+The output is `app/build/outputs/apk/debug/app-debug.apk` (`com.centwise`,
+version `0.1.0`, target SDK 35). At the time of this check, no Android device
+was attached to ADB, and the checked-out app had no Rust `.so` files under
+`app/src/main/jniLibs`; this verifies APK compilation/package resources, not
+full Rust-backed device behavior. Build the Android Rust libraries first for
+parser/database runtime verification.
+
 ### What to check
 
 - Light + dark theme (Settings → Appearance actually switches)

@@ -50,11 +50,6 @@ static RESERVED_FOR_RE: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 // bKash deposit from bank iBanking: "You have received deposit from iBanking of Tk 2,500.00 from City Bank. Fee..."
-static IBANKING_DEPOSIT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\bdeposit\s+from\s+iBanking\s+of\s+(?:(?:Tk\.?|BDT)\s*)?[0-9][0-9,]*(?:\.[0-9]{1,2})?\s+from\s+([0-9A-Za-z\s'.-]+?)(?:\s+Fee|\s*[.,])")
-        .expect("valid ibanking deposit regex")
-});
-
 // CellFin/Upay transfer: "to bKash 017XXXXXXXX" or "to Bank 017XXXXXXXX"
 static TRANSFER_TO_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?i)\bto\s+(?:bKash|Nagad|Rocket|Bank)\s+(01[3-9][0-9X]{8})\b")
@@ -75,17 +70,17 @@ static EFT_BY_RE: LazyLock<Regex> = LazyLock::new(|| {
 
 // MFS explicit counterparty fields (Sender, Receiver, Uddokta, Mobile, From Bank, Biller/Org)
 static MFS_SENDER_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\bSender:\s*(01[3-9][0-9]{8}|[A-Za-z0-9\s.-]+?)(?:\s+Ref:|\s+TxnID:|\s+Fee:|\s+Balance:|\n|$)")
+    Regex::new(r"(?i)\bSender:\s*(01[3-9][0-9]{8}|[A-Za-z0-9\s.-]+?)(?:\s+Ref\b|\s+TxnID\b|\s+Fee\b|\s+Balance\b|\n|$)")
         .expect("valid mfs sender regex")
 });
 
 static MFS_RECEIVER_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\bReceiver:\s*(01[3-9][0-9]{8}|[A-Za-z0-9\s.-]+?)(?:\s+Ref:|\s+TxnID:|\s+Fee:|\s+Balance:|\n|$)")
+    Regex::new(r"(?i)\bReceiver:\s*(01[3-9][0-9]{8}|[A-Za-z0-9\s.-]+?)(?:\s+Ref\b|\s+TxnID\b|\s+Fee\b|\s+Balance\b|\n|$)")
         .expect("valid mfs receiver regex")
 });
 
 static MFS_UDDOKTA_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\bUddokta:\s*(01[3-9][0-9]{8}|[A-Za-z0-9\s.-]+?)(?:\s+TxnID:|\s+Fee:|\s+Balance:|\n|$)")
+    Regex::new(r"(?i)\bUddokta:\s*(01[3-9][0-9]{8}|[A-Za-z0-9\s.-]+?)(?:\s+TxnID\b|\s+Fee\b|\s+Balance\b|\n|$)")
         .expect("valid mfs uddokta regex")
 });
 
@@ -201,17 +196,6 @@ pub fn extract_party(text: &str) -> Option<String> {
         }
     }
 
-    // 1c. bKash deposit from bank iBanking: "You have received deposit from iBanking of Tk ... from City Bank."
-    if lower.contains("deposit from ibanking") {
-        if let Some(cap) = IBANKING_DEPOSIT_RE.captures(text) {
-            if let Some(m) = cap.get(1) {
-                if let Some(clean) = clean_party_candidate(m.as_str()) {
-                    return Some(clean);
-                }
-            }
-        }
-    }
-
     // 2. Check for card merchant: "used at <Merchant> for ..."
     if let Some(cap) = AT_MERCHANT_RE.captures(text) {
         if let Some(m) = cap.get(1) {
@@ -283,7 +267,7 @@ pub fn extract_party(text: &str) -> Option<String> {
 }
 
 /// Cleans and validates candidate merchant strings, discarding verbs and sentence fragments.
-fn clean_party_candidate(raw: &str) -> Option<String> {
+pub(crate) fn clean_party_candidate(raw: &str) -> Option<String> {
     let mut candidate = raw.trim();
 
     // Strip trailing auxiliary words first (e.g. "'Software Shop Ltd' is" -> "'Software Shop Ltd'")
@@ -464,6 +448,16 @@ mod tests {
     }
 
     #[test]
+    fn extracts_nagad_sender_when_field_separators_are_omitted() {
+        let money_received =
+            "Money Received. Amount: Tk 20000.00 Sender: 01XXXXXXXXX Ref SYNREF Balance: Tk 20005.47";
+        assert_eq!(
+            extract_party(money_received),
+            Some("01XXXXXXXXX".to_string())
+        );
+    }
+
+    #[test]
     fn extracts_reservation_payment_party() {
         let text = "Payment of Tk 420.00 is being reserved for Shohoj Limited-1-RM46212. Balance Tk 184.94. TrxID DGP0P76EOO at 25/07/2026 11:24";
         assert_eq!(
@@ -475,9 +469,15 @@ mod tests {
     #[test]
     fn extracts_ibanking_deposit_bank_party() {
         let text = "You have received deposit from iBanking of Tk 2,500.00 from City Bank. Fee Tk 0.00. Balance Tk 2,609.13. TrxID DID4FTCC10 at 13/09/2026 06:14";
-        assert_eq!(extract_party(text), Some("City Bank".to_string()));
+        assert_eq!(
+            crate::providers::mfs::bkash::extract_ibanking_deposit_party(text),
+            Some("City Bank".to_string())
+        );
 
         let text2 = "You have received deposit from iBanking of Tk 7,400.00 from The Premier Bank. Fee Tk 0.00. Balance Tk 7,897.54. TrxID BG70VD4OKI at 07/07/2024 18:28";
-        assert_eq!(extract_party(text2), Some("The Premier Bank".to_string()));
+        assert_eq!(
+            crate::providers::mfs::bkash::extract_ibanking_deposit_party(text2),
+            Some("The Premier Bank".to_string())
+        );
     }
 }

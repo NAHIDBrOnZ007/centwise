@@ -5,7 +5,7 @@
 //! - Stage 2 (Provider): Resolves canonical Bank, MFS, or Telco provider.
 //! - Stage 3 (Extract): Hunts amount, fee, balance, type, reference, party, account, and date.
 
-use crate::types::{ParseOutcome, ParsedTransaction, RejectReason};
+use crate::types::{ParseOutcome, RejectReason};
 use centwise_normalization::normalize_sms_text;
 
 /// Parses an SMS body with an optional sender hint into a structured transaction or rejection.
@@ -26,44 +26,21 @@ pub fn parse_sms(body: &str, sender_hint: Option<&str>) -> ParseOutcome {
     let provider = crate::providers::detect_provider(sender_hint, trimmed);
 
     // -----------------------------------------------------------------------
-    // Stage 3: Field Extraction
+    // Stage 3: Provider parser with explicit generic fallback
     // -----------------------------------------------------------------------
-    let reference = crate::extract::extract_reference(trimmed);
-    let fee_minor = crate::extract::extract_fee(trimmed);
-    let balance_after_minor = crate::extract::extract_balance(trimmed);
-
-    let amount_minor =
-        match crate::extract::extract_main_amount(trimmed, fee_minor, balance_after_minor) {
-            Some(amt) => amt,
-            None => return ParseOutcome::Rejected(RejectReason::NoAmountFound),
-        };
-
-    let transaction_type = match crate::extract::detect_transaction_type(trimmed) {
-        Some(t) => t,
-        None => return ParseOutcome::Rejected(RejectReason::NotATransaction),
-    };
-
-    let party = crate::extract::extract_party(trimmed);
-    let (account_last4, account_hint) = crate::extract::extract_account_info(trimmed);
-    let raw_date = crate::extract::extract_date_time(trimmed);
-
-    let (merchant, category_id) =
-        crate::extract::resolve_categorization(party.as_deref(), trimmed, transaction_type);
-
-    ParseOutcome::Parsed(Box::new(ParsedTransaction {
-        provider_id: provider,
-        transaction_type,
-        amount_minor,
-        fee_minor,
-        balance_after_minor,
-        reference,
-        party,
-        merchant,
-        category_id,
-        account_last4,
-        account_hint,
-        raw_date,
-    }))
+    match crate::providers::parse_provider(
+        &provider,
+        crate::providers::NormalizedSms {
+            body: trimmed,
+            sender: sender_hint,
+        },
+    ) {
+        crate::providers::ProviderParse::Parsed(transaction) => ParseOutcome::Parsed(transaction),
+        crate::providers::ProviderParse::Rejected(reason) => ParseOutcome::Rejected(reason),
+        crate::providers::ProviderParse::NotThisFormat => {
+            ParseOutcome::Rejected(RejectReason::UnsupportedProvider)
+        }
+    }
 }
 
 #[cfg(test)]

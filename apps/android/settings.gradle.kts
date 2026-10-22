@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Centwise"
 include(":app")
+include(":app")

@@ -235,6 +235,11 @@ fn test_banks_english_fixtures() {
 }
 
 #[test]
+fn test_banks_official_service_family_fixtures() {
+    test_fixture_file("fixtures/sms/banks-official-service-families.json");
+}
+
+#[test]
 fn test_mfs_english_fixtures() {
     test_fixture_file("fixtures/sms/mfs-english.json");
 }

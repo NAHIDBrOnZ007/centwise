@@ -6,6 +6,7 @@
 //! 3. Stage 3: Field Extraction (Amounts, types, merchants, references, accounts, dates)
 
 pub mod classify;
+pub mod common;
 pub mod engine;
 pub mod extract;
 pub mod providers;

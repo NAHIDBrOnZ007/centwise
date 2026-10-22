@@ -26,6 +26,16 @@ pub fn is_promotional_or_telco_offer(body: &str, sender_hint: Option<&str>) -> b
     let lower = body.to_lowercase();
     let sender = sender_hint.unwrap_or_default().to_lowercase();
 
+    // MyGP pack confirmations found in the historical export describe an
+    // offer/bonus campaign, not a posted recharge. They can arrive with a
+    // generic account label instead of a GP sender, so the message signature
+    // must be sufficient to keep them out of the financial review queue.
+    if lower.contains("mygp.li/pack")
+        && (lower.contains("internet pack") || lower.contains("bonus"))
+    {
+        return true;
+    }
+
     // 1. Check for App download or generic marketing notices
     if lower.contains("app update")
         || lower.contains("download now")

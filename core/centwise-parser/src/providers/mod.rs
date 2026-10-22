@@ -3,9 +3,48 @@
 //! Resolves canonical provider identifiers for Bangladeshi Banks, MFS, and Telcos
 //! from sender hints and body signatures.
 
+pub mod banks;
+pub mod contract;
+pub mod generic;
+pub mod mfs;
+pub mod telco;
+
 pub mod catalog;
 
 pub use catalog::*;
+pub use contract::{NormalizedSms, ProviderParse, ProviderParser};
+
+macro_rules! define_common_provider_parser {
+    ($provider_id:expr) => {
+        pub struct Parser;
+        pub static PARSER: Parser = Parser;
+
+        impl $crate::providers::ProviderParser for Parser {
+            fn id(&self) -> &'static str {
+                $provider_id
+            }
+
+            fn can_handle(&self, sms: &$crate::providers::NormalizedSms<'_>) -> bool {
+                $crate::providers::detect_provider(sms.sender, sms.body) == $provider_id
+            }
+
+            fn parse(
+                &self,
+                sms: &$crate::providers::NormalizedSms<'_>,
+            ) -> $crate::providers::ProviderParse {
+                $crate::providers::generic::parse_common($provider_id, *sms, None, None)
+            }
+        }
+
+        pub fn parse(
+            sms: $crate::providers::NormalizedSms<'_>,
+        ) -> $crate::providers::ProviderParse {
+            $crate::providers::ProviderParser::parse(&PARSER, &sms)
+        }
+    };
+}
+
+pub(crate) use define_common_provider_parser;
 
 /// Detects the canonical provider identifier from sender hint and message body.
 pub fn detect_provider(sender_hint: Option<&str>, body: &str) -> String {
@@ -78,67 +117,96 @@ pub fn detect_provider(sender_hint: Option<&str>, body: &str) -> String {
         return PROVIDER_TELETALK.to_string();
     }
 
-    // Specific bank signatures in body
-    if body_lower.contains("city touch")
-        || body_lower.contains("city bank")
-        || body_lower.contains("amex")
-    {
+    // Bank-specific body signatures live in the bank modules so adding a
+    // provider cannot silently expand a global catch-all detector.
+    if banks::city_bank::matches_body(body) {
         return PROVIDER_CITY_BANK.to_string();
     }
-    if body_lower.contains("brac bank") || body_lower.contains("astallion") {
+    if banks::brac_bank::matches_body(body) {
         return PROVIDER_BRAC_BANK.to_string();
     }
-    if body_lower.contains("eastern bank") || body_lower.contains("ebl connect") {
+    if banks::ebl::matches_body(body) {
         return PROVIDER_EBL.to_string();
     }
-    if body_lower.contains("dutch-bangla") || body_lower.contains("dutch bangla") {
+    if banks::dbbl::matches_body(body) {
         return PROVIDER_DBBL.to_string();
     }
-    if body_lower.contains("islami bank")
-        || body_lower.contains("mudaraba")
-        || body_lower.contains("ibbplc")
-        || body_lower.contains("ibbl")
-    {
+    if banks::islami_bank::matches_body(body) {
         return PROVIDER_ISLAMI_BANK.to_string();
     }
-    if body_lower.contains("mutual trust bank") || body_lower.contains("mtb ") {
+    if banks::mutual_trust_bank::matches_body(body) {
         return PROVIDER_MUTUAL_TRUST_BANK.to_string();
     }
-    if body_lower.contains("standard chartered") {
+    if banks::standard_chartered::matches_body(body) {
         return PROVIDER_STANDARD_CHARTERED.to_string();
     }
-    if body_lower.contains("bank asia") {
+    if banks::bank_asia::matches_body(body) {
         return PROVIDER_BANK_ASIA.to_string();
     }
-    if body_lower.contains("dhaka bank") {
+    if banks::dhaka_bank::matches_body(body) {
         return PROVIDER_DHAKA_BANK.to_string();
     }
-    if body_lower.contains("trust bank") {
+    if banks::trust_bank::matches_body(body) {
         return PROVIDER_TRUST_BANK.to_string();
     }
-    if body_lower.contains("sonali bank") {
+    if banks::sonali_bank::matches_body(body) {
         return PROVIDER_SONALI_BANK.to_string();
     }
-    if body_lower.contains("pubali bank") {
+    if banks::pubali_bank::matches_body(body) {
         return PROVIDER_PUBALI_BANK.to_string();
     }
-    if body_lower.contains("janata bank") {
+    if banks::janata_bank::matches_body(body) {
         return PROVIDER_JANATA_BANK.to_string();
     }
-    if body_lower.contains("rupali bank") {
+    if banks::rupali_bank::matches_body(body) {
         return PROVIDER_RUPALI_BANK.to_string();
     }
-    if body_lower.contains("prime bank") {
+    if banks::prime_bank::matches_body(body) {
         return PROVIDER_PRIME_BANK.to_string();
     }
-    if body_lower.contains("agrani bank") {
+    if banks::agrani_bank::matches_body(body) {
         return PROVIDER_AGRANI_BANK.to_string();
     }
-    if body_lower.contains("ucb ") || body_lower.contains("united commercial") {
+    if banks::ucb::matches_body(body) {
         return PROVIDER_UCB.to_string();
     }
 
     PROVIDER_BANKS_GENERIC.to_string()
+}
+
+/// Dispatches a normalized message to its provider module.
+pub fn parse_provider(provider_id: &str, sms: NormalizedSms<'_>) -> ProviderParse {
+    match provider_id {
+        PROVIDER_BKASH => mfs::bkash::parse(sms),
+        PROVIDER_NAGAD => mfs::nagad::parse(sms),
+        PROVIDER_ROCKET => mfs::rocket::parse(sms),
+        PROVIDER_UPAY => mfs::upay::parse(sms),
+        PROVIDER_CELLFIN => mfs::cellfin::parse(sms),
+        PROVIDER_NEXUSPAY => mfs::nexuspay::parse(sms),
+        PROVIDER_ROBI => telco::robi::parse(sms),
+        PROVIDER_GRAMEENPHONE => telco::grameenphone::parse(sms),
+        PROVIDER_BANGLALINK => telco::banglalink::parse(sms),
+        PROVIDER_AIRTEL => telco::airtel::parse(sms),
+        PROVIDER_TELETALK => telco::teletalk::parse(sms),
+        PROVIDER_CITY_BANK => banks::city_bank::parse(sms),
+        PROVIDER_BRAC_BANK => banks::brac_bank::parse(sms),
+        PROVIDER_EBL => banks::ebl::parse(sms),
+        PROVIDER_DBBL => banks::dbbl::parse(sms),
+        PROVIDER_ISLAMI_BANK => banks::islami_bank::parse(sms),
+        PROVIDER_SONALI_BANK => banks::sonali_bank::parse(sms),
+        PROVIDER_PUBALI_BANK => banks::pubali_bank::parse(sms),
+        PROVIDER_UCB => banks::ucb::parse(sms),
+        PROVIDER_PRIME_BANK => banks::prime_bank::parse(sms),
+        PROVIDER_AGRANI_BANK => banks::agrani_bank::parse(sms),
+        PROVIDER_MUTUAL_TRUST_BANK => banks::mutual_trust_bank::parse(sms),
+        PROVIDER_STANDARD_CHARTERED => banks::standard_chartered::parse(sms),
+        PROVIDER_BANK_ASIA => banks::bank_asia::parse(sms),
+        PROVIDER_DHAKA_BANK => banks::dhaka_bank::parse(sms),
+        PROVIDER_TRUST_BANK => banks::trust_bank::parse(sms),
+        PROVIDER_JANATA_BANK => banks::janata_bank::parse(sms),
+        PROVIDER_RUPALI_BANK => banks::rupali_bank::parse(sms),
+        _ => generic::parse_common(PROVIDER_BANKS_GENERIC, sms, None, None),
+    }
 }
 
 fn normalize_sender(sender: &str) -> String {
@@ -229,5 +297,61 @@ mod tests {
             detect_provider(None, "Upay Cash In Tk 1,000 successful"),
             PROVIDER_UPAY
         );
+    }
+
+    #[test]
+    fn every_catalog_provider_dispatches_to_a_dedicated_parser() {
+        let sms = NormalizedSms {
+            body: "Payment of Tk 100 successful",
+            sender: None,
+        };
+        let provider_ids = [
+            PROVIDER_BKASH,
+            PROVIDER_NAGAD,
+            PROVIDER_ROCKET,
+            PROVIDER_UPAY,
+            PROVIDER_CELLFIN,
+            PROVIDER_NEXUSPAY,
+            PROVIDER_ROBI,
+            PROVIDER_GRAMEENPHONE,
+            PROVIDER_BANGLALINK,
+            PROVIDER_AIRTEL,
+            PROVIDER_TELETALK,
+            PROVIDER_CITY_BANK,
+            PROVIDER_BRAC_BANK,
+            PROVIDER_EBL,
+            PROVIDER_DBBL,
+            PROVIDER_ISLAMI_BANK,
+            PROVIDER_SONALI_BANK,
+            PROVIDER_PUBALI_BANK,
+            PROVIDER_UCB,
+            PROVIDER_PRIME_BANK,
+            PROVIDER_AGRANI_BANK,
+            PROVIDER_MUTUAL_TRUST_BANK,
+            PROVIDER_STANDARD_CHARTERED,
+            PROVIDER_BANK_ASIA,
+            PROVIDER_DHAKA_BANK,
+            PROVIDER_TRUST_BANK,
+            PROVIDER_JANATA_BANK,
+            PROVIDER_RUPALI_BANK,
+        ];
+
+        for provider_id in provider_ids {
+            let result = parse_provider(provider_id, sms);
+            assert!(
+                !matches!(result, ProviderParse::NotThisFormat),
+                "provider {provider_id} was not dispatched"
+            );
+        }
+    }
+
+    #[test]
+    fn provider_parser_contract_reports_its_canonical_id() {
+        let sms = NormalizedSms {
+            body: "",
+            sender: Some("BRAC-BANK"),
+        };
+        assert_eq!(banks::brac_bank::PARSER.id(), PROVIDER_BRAC_BANK);
+        assert!(banks::brac_bank::PARSER.can_handle(&sms));
     }
 }

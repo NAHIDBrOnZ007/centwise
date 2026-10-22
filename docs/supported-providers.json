@@ -35,90 +35,153 @@
       "name": "Sonali Bank",
       "type": "bank",
       "senderIds": [],
-      "parserStatus": "planned",
-      "fixtureStatus": "generic-formats",
-      "lastReviewed": "2026-08-22"
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "islami-bank",
       "name": "Islami Bank Bangladesh",
       "type": "bank",
       "senderIds": [],
-      "parserStatus": "planned",
-      "fixtureStatus": "generic-formats",
-      "lastReviewed": "2026-08-22"
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "dbbl",
       "name": "Dutch-Bangla Bank",
       "type": "bank",
       "senderIds": [],
-      "parserStatus": "planned",
-      "fixtureStatus": "generic-formats",
-      "lastReviewed": "2026-08-22"
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "brac-bank",
       "name": "BRAC Bank",
       "type": "bank",
       "senderIds": [],
-      "parserStatus": "planned",
-      "fixtureStatus": "generic-formats",
-      "lastReviewed": "2026-08-22"
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "city-bank",
       "name": "The City Bank",
       "type": "bank",
       "senderIds": [],
-      "parserStatus": "planned",
-      "fixtureStatus": "generic-formats",
-      "lastReviewed": "2026-08-22"
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "ebl",
       "name": "Eastern Bank",
       "type": "bank",
       "senderIds": [],
-      "parserStatus": "planned",
-      "fixtureStatus": "generic-formats",
-      "lastReviewed": "2026-08-22"
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "pubali-bank",
       "name": "Pubali Bank",
       "type": "bank",
       "senderIds": [],
-      "parserStatus": "planned",
-      "fixtureStatus": "generic-formats",
-      "lastReviewed": "2026-08-22"
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "ucb",
       "name": "United Commercial Bank",
       "type": "bank",
       "senderIds": [],
-      "parserStatus": "planned",
-      "fixtureStatus": "generic-formats",
-      "lastReviewed": "2026-08-22"
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "prime-bank",
       "name": "Prime Bank",
       "type": "bank",
       "senderIds": [],
-      "parserStatus": "planned",
-      "fixtureStatus": "generic-formats",
-      "lastReviewed": "2026-08-22"
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "agrani-bank",
       "name": "Agrani Bank",
       "type": "bank",
       "senderIds": [],
-      "parserStatus": "planned",
-      "fixtureStatus": "generic-formats",
-      "lastReviewed": "2026-08-22"
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
+    },
+    {
+      "id": "mutual-trust-bank",
+      "name": "Mutual Trust Bank",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
+    },
+    {
+      "id": "standard-chartered",
+      "name": "Standard Chartered Bangladesh",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
+    },
+    {
+      "id": "bank-asia",
+      "name": "Bank Asia",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
+    },
+    {
+      "id": "dhaka-bank",
+      "name": "Dhaka Bank",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
+    },
+    {
+      "id": "trust-bank",
+      "name": "Trust Bank",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
+    },
+    {
+      "id": "janata-bank",
+      "name": "Janata Bank",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
+    },
+    {
+      "id": "rupali-bank",
+      "name": "Rupali Bank",
+      "type": "bank",
+      "senderIds": [],
+      "parserStatus": "active",
+      "fixtureStatus": "official-service-family-anonymized",
+      "lastReviewed": "2026-10-22"
     },
     {
       "id": "cellfin",

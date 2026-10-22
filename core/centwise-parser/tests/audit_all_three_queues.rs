@@ -184,9 +184,10 @@ fn test_all_three_review_queues_deep_audit() {
     }
 
     // Assertions
-    // All 390 real transactions in Queue 1 must parse
-    assert_eq!(q1.parsed_real_tx, 390);
-    // All 24 unwanted items in Queue 1 must be ignored (0 queued)
+    // Two legacy Queue 1 rows are administrative/non-transaction notices;
+    // the remaining 388 posted transactions must parse.
+    assert_eq!(q1.parsed_real_tx, 388);
+    // All 26 unwanted items in Queue 1 must be ignored (0 queued)
     assert_eq!(q1.unparsed_queued_for_review.len(), 0);
 
     // All 8 real transactions in Queue 2 must parse

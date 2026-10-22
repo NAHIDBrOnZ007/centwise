@@ -63,19 +63,7 @@ fn categorize_mobile_recharge_by_prefix(
     }
 
     let phone = party?.trim();
-    if phone.starts_with("013") || phone.starts_with("017") {
-        Some(("Grameenphone", "recharge"))
-    } else if phone.starts_with("014") || phone.starts_with("019") {
-        Some(("Banglalink", "recharge"))
-    } else if phone.starts_with("015") {
-        Some(("Teletalk", "recharge"))
-    } else if phone.starts_with("016") {
-        Some(("Airtel", "recharge"))
-    } else if phone.starts_with("018") {
-        Some(("Robi", "recharge"))
-    } else {
-        None
-    }
+    crate::common::phone::recharge_operator(phone).map(|operator| (operator, "recharge"))
 }
 
 #[cfg(test)]

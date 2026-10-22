@@ -1,88 +1,36 @@
-//! Field extraction: Transaction Reference Numbers & TrxIDs.
+//! Compatibility facade for the shared reference primitive.
 
-use regex::Regex;
-use std::sync::LazyLock;
-
-static TXN_ID_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r"(?i)\b(?:Trx\s*ID|Txn\s*ID|Transaction\s*(?:ID|number|no\.?|num)|NPSB\s*Ref|BEFTN\s*Ref|Trx\s*No\.?|Txn\s*No\.?|Ref\s*No\.?|Ref\s*ID|RRN|STAN|Auth(?:orization)?\s+Code)[\s:#]+([A-Za-z0-9.-]+)",
-    )
-    .expect("valid txn id regex")
-});
-
-static GENERIC_REF_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)\b(?:Ref|Reference)[\s:#]+([A-Za-z0-9.-]+)").expect("valid generic ref regex")
-});
-
-pub fn extract_reference(text: &str) -> Option<String> {
-    // 1. Prioritize authoritative transaction IDs
-    for cap in TXN_ID_RE.captures_iter(text) {
-        if let Some(m) = cap.get(1) {
-            let val = m.as_str().trim().trim_end_matches('.');
-            if is_valid_ref_val(val) {
-                return Some(val.to_string());
-            }
-        }
-    }
-
-    // 2. Fallback to generic Reference / Ref headers
-    for cap in GENERIC_REF_RE.captures_iter(text) {
-        if let Some(m) = cap.get(1) {
-            let val = m.as_str().trim().trim_end_matches('.');
-            if is_valid_ref_val(val) {
-                return Some(val.to_string());
-            }
-        }
-    }
-    None
-}
-
-fn is_valid_ref_val(val: &str) -> bool {
-    if val.eq_ignore_ascii_case("not")
-        || val.eq_ignore_ascii_case("na")
-        || val.eq_ignore_ascii_case("none")
-        || val.eq_ignore_ascii_case("applicable")
-    {
-        return false;
-    }
-    val.len() >= 4
-}
+pub use crate::common::reference::extract_reference;
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn extracts_standard_trxid() {
+    fn preserves_standard_reference_cases() {
         assert_eq!(
             extract_reference("Payment successful. TrxID: 9J8K7L6M"),
             Some("9J8K7L6M".to_string())
         );
         assert_eq!(
-            extract_reference("TxnID ABC12345678 on 12/05/2026"),
-            Some("ABC12345678".to_string())
+            extract_reference("Transfer via NPSB. Ref No. NP987654321."),
+            Some("NP987654321".to_string())
         );
+        assert_eq!(extract_reference("TrxID not applicable"), None);
     }
 
     #[test]
     fn extracts_robi_transaction_number() {
-        let text = "Transaction number R250917.1531.34003b to recharge 50 TAKA from 1847662920 is successful";
         assert_eq!(
-            extract_reference(text),
+            extract_reference(
+                "Transaction number R250917.1531.34003b to recharge 50 TAKA from 1847662920"
+            ),
             Some("R250917.1531.34003b".to_string())
         );
     }
 
     #[test]
-    fn extracts_ref_no_format() {
-        assert_eq!(
-            extract_reference("Transfer via NPSB. Ref No. NP987654321. Fee: BDT 10.00"),
-            Some("NP987654321".to_string())
-        );
-    }
-
-    #[test]
-    fn extracts_npsb_beftn_ref() {
+    fn extracts_npsb_beftn_reference() {
         assert_eq!(
             extract_reference("Fund transfer via BEFTN. BEFTN Ref: BF12345678"),
             Some("BF12345678".to_string())
@@ -98,6 +46,14 @@ mod tests {
         assert_eq!(
             extract_reference("Trx No: TX12345678 completed on 22/08/2026"),
             Some("TX12345678".to_string())
+        );
+    }
+
+    #[test]
+    fn extracts_ref_no_format() {
+        assert_eq!(
+            extract_reference("Transfer via NPSB. Ref No. NP987654321. Fee: BDT 10.00"),
+            Some("NP987654321".to_string())
         );
     }
 

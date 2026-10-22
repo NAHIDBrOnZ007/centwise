@@ -230,14 +230,15 @@ fn test_audit_review_queue_reports_01_and_02() {
         "Expected exactly 7 rejected non-financial notices in report 2"
     );
 
-    // In Report 1: 390 real transactions parsed, and exactly 24 non-financial notices rejected!
+    // In Report 1: 388 posted transactions parsed, and 26 non-financial/
+    // administrative notices safely rejected.
     assert_eq!(
-        q1_parsed, 390,
-        "Expected 390 parsed transactions in queue report 1"
+        q1_parsed, 388,
+        "Expected 388 parsed transactions in queue report 1"
     );
     assert_eq!(
-        q1_rejected, 24,
-        "Expected 24 non-financial notices rejected in queue report 1"
+        q1_rejected, 26,
+        "Expected 26 non-financial notices rejected in queue report 1"
     );
     assert_eq!(
         q1_teletalk_count, q1_telecharge_sender_count,

@@ -1,52 +1,6 @@
-//! Field extraction: Date and Time stamps.
+//! Compatibility facade for the shared date primitive.
 
-use regex::Regex;
-use std::sync::LazyLock;
-
-// DD/MM/YY, DD/MM/YYYY, DD-MM-YY, DD-MM-YYYY (with optional time HH:MM or HH:MM:SS and optional AM/PM)
-static DATE_DMY_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"([0-9]{2}[/-][0-9]{2}[/-][0-9]{2,4}(?:\s+[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s+[APap][Mm])?)?)")
-        .expect("valid date dmy regex")
-});
-
-// YYYY-MM-DD (ISO format, with optional time)
-static DATE_ISO_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r"([0-9]{4}-[0-9]{2}-[0-9]{2}(?:\s+[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s+[APap][Mm])?)?)",
-    )
-    .expect("valid date iso regex")
-});
-
-// DD MMM YYYY or DD-MMM-YY (e.g. "05 Sep 2026", "05-Sep-26", "29-APR-26 12:47 AM")
-static DATE_NAMED_MONTH_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?i)([0-9]{2}[\s-](?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\s-][0-9]{2,4}(?:\s+[0-9]{1,2}:[0-9]{2}(?::[0-9]{2})?(?:\s+[APap][Mm])?)?)")
-        .expect("valid date named month regex")
-});
-
-pub fn extract_date_time(text: &str) -> Option<String> {
-    // 1. Try ISO YYYY-MM-DD first (must be checked before DMY to prevent partial match)
-    if let Some(cap) = DATE_ISO_RE.captures(text) {
-        if let Some(m) = cap.get(1) {
-            return Some(m.as_str().trim().to_string());
-        }
-    }
-
-    // 2. Try standard DD/MM/YYYY or DD-MM-YYYY (most common in BD SMS)
-    if let Some(cap) = DATE_DMY_RE.captures(text) {
-        if let Some(m) = cap.get(1) {
-            return Some(m.as_str().trim().to_string());
-        }
-    }
-
-    // 3. Try named month DD MMM YYYY (used by some international banks like SCB)
-    if let Some(cap) = DATE_NAMED_MONTH_RE.captures(text) {
-        if let Some(m) = cap.get(1) {
-            return Some(m.as_str().trim().to_string());
-        }
-    }
-
-    None
-}
+pub use crate::common::dates::extract_date_time;
 
 #[cfg(test)]
 mod tests {

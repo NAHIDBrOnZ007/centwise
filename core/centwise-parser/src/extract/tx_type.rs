@@ -37,6 +37,16 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
         return Some(TransactionType::Income);
     }
 
+    // Posted investment/loan disbursements are incoming money. A future
+    // promise such as "will be disbursed" must not create a transaction.
+    if lower.contains("has been disbursed")
+        && (lower.contains("to your investment account")
+            || lower.contains("to your account")
+            || lower.contains("to an investment account"))
+    {
+        return Some(TransactionType::Income);
+    }
+
     // 3. Transfers between own accounts, wallet transfers, and interbank outflows
     if lower.contains("between your own accounts")
         || lower.contains("between own accounts")
@@ -252,6 +262,12 @@ mod tests {
     #[test]
     fn classifies_rtgs_credit_as_income() {
         let text = "Dear Sir, your A/C ***5543 credited (RTGS Funds Transfer - Credit) by Tk5,00,000.00 on 28-08-2023 11:45:57 AM C/B Tk5,00,766.82. NexusPay https://bit.ly/nexuspay";
+        assert_eq!(detect_transaction_type(text), Some(TransactionType::Income));
+    }
+
+    #[test]
+    fn classifies_posted_investment_disbursement_as_income() {
+        let text = "Dear Sir, an amount of BDT 2700000.00 has been disbursed to your investment account today as per your request.";
         assert_eq!(detect_transaction_type(text), Some(TransactionType::Income));
     }
 

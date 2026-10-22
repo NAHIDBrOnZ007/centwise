@@ -47,9 +47,9 @@ pub fn classify_safety(body: &str, sender_hint: Option<&str>) -> Option<RejectRe
     }
 
     let lower = trimmed.to_lowercase();
-    // bKash intermediate recharge request notices without TrxID (e.g. "Your bKash Mobile Recharge request of Tk 40.00 for ... was successful. Use bKash App...").
-    // Discard notice so only the authoritative confirmation receipt with TrxID and balance is parsed.
-    if lower.contains("your bkash mobile recharge request") && lower.contains("use bkash app") {
+    // Discard the bKash intermediate notice so only the authoritative
+    // confirmation receipt with TrxID and balance is parsed.
+    if crate::providers::mfs::bkash::is_intermediary_recharge_request(trimmed) {
         return Some(RejectReason::NotATransaction);
     }
 
@@ -61,10 +61,8 @@ pub fn classify_safety(body: &str, sender_hint: Option<&str>) -> Option<RejectRe
         return Some(RejectReason::NotATransaction);
     }
 
-    // Fixed Deposit (FD) rollover / renewal advice (not cash-flow or checking transaction)
-    if lower.contains("has been renewed at an interest rate")
-        || (lower.contains("fd a/c") && lower.contains("has been renewed"))
-    {
+    // Provider-owned fixed-deposit rollover rule (not cash-flow).
+    if crate::providers::banks::brac_bank::is_fd_renewal_notice(trimmed) {
         return Some(RejectReason::NotATransaction);
     }
 
@@ -94,6 +92,7 @@ pub fn classify_safety(body: &str, sender_hint: Option<&str>) -> Option<RejectRe
         || lower.contains("debit card request")
         || lower.contains("uncollected debit card has been destroyed")
         || lower.contains("please collect your debit card")
+        || (lower.contains("debit card") && lower.contains("ready") && lower.contains("collect"))
         || lower.contains("yearly loan outstanding certificate")
         || lower.contains("half-yearly loan outstanding certificate")
         || lower.contains("sms alert fee has been revised")
@@ -129,6 +128,14 @@ pub fn classify_safety(body: &str, sender_hint: Option<&str>) -> Option<RejectRe
         || lower.contains("asking for this pac code")
         || (lower.contains("your transaction (ref no:")
             && lower.contains("beneficiary is credited"))
+        || (lower.contains("transaction")
+            && lower.contains("beneficiary is credited")
+            && !lower.contains("tk ")
+            && !lower.contains("bdt "))
+        || (lower.contains("current balance")
+            && lower.contains("required amount")
+            && !lower.contains("debited")
+            && !lower.contains("credited"))
     {
         return Some(RejectReason::NotATransaction);
     }
@@ -545,5 +552,40 @@ mod tests {
             Some(RejectReason::NotATransaction)
         );
         assert!(!is_likely_financial_review(template_sms, Some("16216")));
+    }
+
+    #[test]
+    fn rejects_generic_sender_mygp_pack_campaigns() {
+        let text = "Account Ref SYNREF TK 50. Transaction ID:BD123. Click mygp.li/pack to get 10% bonus on your favorite internet packs from MyGP APP.";
+        assert_eq!(
+            classify_safety(text, Some("Primary Account")),
+            Some(RejectReason::PromotionOrSpam)
+        );
+        assert!(!is_likely_financial_review(text, Some("Primary Account")));
+    }
+
+    #[test]
+    fn rejects_non_transaction_bank_and_balance_notices() {
+        let beneficiary = "Your transaction (Ref SYNREF) has been successfully completed and the beneficiary is credited.";
+        assert_eq!(
+            classify_safety(beneficiary, Some("SonaliPay")),
+            Some(RejectReason::NotATransaction)
+        );
+        assert!(!is_likely_financial_review(beneficiary, Some("SonaliPay")));
+
+        let insufficient = "Sorry! Your current balance is Tk.21.5 but required amount is Tk.223. Please try again.";
+        assert_eq!(
+            classify_safety(insufficient, Some("16222")),
+            Some(RejectReason::NotATransaction)
+        );
+        assert!(!is_likely_financial_review(insufficient, Some("16222")));
+
+        let collection =
+            "Your Debit Card with Ref SYNREF is ready, please collect it from your branch.";
+        assert_eq!(
+            classify_safety(collection, Some("BRAC BANK")),
+            Some(RejectReason::NotATransaction)
+        );
+        assert!(!is_likely_financial_review(collection, Some("BRAC BANK")));
     }
 }
