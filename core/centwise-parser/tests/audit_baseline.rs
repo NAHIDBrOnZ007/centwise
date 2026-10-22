@@ -106,7 +106,7 @@ fn all_sixteen_audit_reports_are_loaded_and_parsed() {
         "transaction-report-08.csv",
         "transaction-report-09.csv",
         "transaction-report-10.csv",
-        "transaction-report-011.csv",
+        "transaction-report-11.csv",
     ] {
         let expected = match filename {
             "transaction-report-01.csv" => (647, 29),
@@ -119,7 +119,7 @@ fn all_sixteen_audit_reports_are_loaded_and_parsed() {
             "transaction-report-08.csv" => (143, 9),
             "transaction-report-09.csv" => (196, 10),
             "transaction-report-10.csv" => (143, 4),
-            "transaction-report-011.csv" => (565, 5),
+            "transaction-report-11.csv" => (565, 5),
             _ => unreachable!(),
         };
         audit_file(
@@ -136,14 +136,14 @@ fn all_sixteen_audit_reports_are_loaded_and_parsed() {
         "review-queue-report-02.csv",
         "review-queue-report-03.csv",
         "review-queue-report-04.csv",
-        "review-qeue-report-05.csv",
+        "review-queue-report-05.csv",
     ] {
         let expected = match filename {
             "review-queue-report-01.csv" => (384, 30),
             "review-queue-report-02.csv" => (8, 7),
             "review-queue-report-03.csv" => (295, 151),
             "review-queue-report-04.csv" => (6, 4),
-            "review-qeue-report-05.csv" => (311, 44),
+            "review-queue-report-05.csv" => (311, 44),
             _ => unreachable!(),
         };
         audit_file(

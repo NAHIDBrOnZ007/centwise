@@ -20,8 +20,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.centwise.core.design.components.DismissKeyboardOnScroll
 import com.centwise.core.design.components.TopBarBackButton
 import com.centwise.core.design.components.clearFocusOnTapOutside
@@ -167,20 +169,32 @@ fun CurrencyPickerScreen(
                         }
                         .padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    Text(
-                        text = currency.symbol,
-                        style = CentwiseTypography.Title2,
-                        color = accent,
+                    Box(
                         modifier = Modifier
-                            .size(40.dp)
+                            .size(42.dp)
                             .clip(CircleShape)
                             .background(accent.copy(alpha = 0.12f)),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
+                        contentAlignment = Alignment.Center
+                    ) {
+                        val fontSize = when {
+                            currency.symbol.length > 2 -> 12.sp
+                            currency.symbol.length == 2 -> 14.sp
+                            else -> 19.sp
+                        }
+                        Text(
+                            text = currency.symbol,
+                            style = CentwiseTypography.Headline.copy(
+                                fontSize = fontSize,
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            color = accent,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(currency.code, style = CentwiseTypography.Body, color = textPrimary)
+                        Text(currency.code, style = CentwiseTypography.Body.copy(fontWeight = FontWeight.SemiBold), color = textPrimary)
                         Text(currency.name, style = CentwiseTypography.Caption, color = textSecondary)
                     }
                     if (isSelected) {

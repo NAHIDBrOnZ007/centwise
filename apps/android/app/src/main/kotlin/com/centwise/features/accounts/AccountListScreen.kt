@@ -185,9 +185,10 @@ fun AccountListScreen(
                         Text(account.name, style = CentwiseTypography.Headline.copy(fontSize = 14.sp, fontWeight = FontWeight.SemiBold), color = textPrimary)
                         Spacer(modifier = Modifier.height(2.dp))
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            if (account.accountNumber.isNotBlank()) {
+                            val lastFour = account.accountNumber.takeLast(4).filter { it.isDigit() }
+                            if (lastFour.isNotEmpty()) {
                                 Text(
-                                    text = "••${account.accountNumber.takeLast(4)}",
+                                    text = "••$lastFour",
                                     style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
                                     color = textSecondary
                                 )

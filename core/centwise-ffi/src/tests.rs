@@ -275,6 +275,85 @@ mod ingestion_tests {
     }
 
     #[test]
+    fn ingest_sms_links_card_and_account_sms_to_single_bank_account() {
+        let core = CentwiseCore::open(":memory:".into()).expect("open core");
+
+        // 1. Ingest account-based SMS from EBL (e.g. SkyBanking transfer with masked account 109***386)
+        let res1 = core
+            .ingest_sms(
+                "AC 109***386 is debited with BDT 300 as EBL Skybanking MFS Transfer-bKash on 08-SEP-26 02:59:58 AM Balance is BDT 15318.5 Thanks. EBL Helpline 16230".into(),
+                Some("EBL".into()),
+                1_700_000_000_000,
+            )
+            .expect("ingest account sms");
+        assert_eq!(res1.status, SmsIngestStatus::Inserted);
+
+        // Verify Eastern Bank account was created
+        let accounts = core.list_accounts().expect("accounts");
+        assert_eq!(accounts.len(), 1);
+        assert_eq!(accounts[0].name, "Eastern Bank");
+        assert_eq!(accounts[0].provider, "ebl");
+        let ebl_account_id = accounts[0].id.clone();
+
+        // 2. Ingest card-based SMS from EBL (e.g. ATM withdrawal with Card 1549)
+        let res2 = core
+            .ingest_sms(
+                "Cash WD BDT3000 from EBL DEMRA STAFF QUAR. Card 452017**1549 on 05-Sep-26 07:46:06 PM BST.Your A/C 109**0386 Balance BDT 16638.5. Thank You. EBL Helpline 16230".into(),
+                Some("EBL".into()),
+                1_700_000_060_000,
+            )
+            .expect("ingest card sms");
+        assert_eq!(res2.status, SmsIngestStatus::Inserted);
+
+        // 3. Verify STILL only 1 account exists, linked seamlessly!
+        let accounts_after = core.list_accounts().expect("accounts");
+        assert_eq!(accounts_after.len(), 1, "Should NOT create duplicate account for card");
+        assert_eq!(accounts_after[0].id, ebl_account_id);
+
+        // 4. Verify both transactions are attached to the same account and preserve card/ac instruments
+        let txs = core.list_transactions(10).expect("transactions");
+        assert_eq!(txs.len(), 2);
+        assert_eq!(txs[0].account_id, ebl_account_id);
+        assert_eq!(txs[1].account_id, ebl_account_id);
+
+        let notes_0 = txs[0].notes.as_deref().unwrap_or_default();
+        let notes_1 = txs[1].notes.as_deref().unwrap_or_default();
+        assert!(notes_0.contains("Card") || notes_1.contains("Card"), "Card transaction notes must identify card");
+    }
+
+    #[test]
+    fn ingest_sms_uses_official_names_for_banks_mfs_and_telcos() {
+        let core = CentwiseCore::open(":memory:".into()).expect("open core");
+
+        // Sonali Bank
+        core.ingest_sms(
+            "Tk. 5,000.00 has been credited to A/C XXXX1001. Avl. Bal: Tk. 12,000.00. Ref: SYN1001.".into(),
+            Some("Sonali Bank".into()),
+            1_700_000_000_000,
+        ).expect("sonali");
+
+        // City Bank
+        core.ingest_sms(
+            "15-Aug-2024 CITYTOUCH TXN Tk. 35,000 Withdrawal Tk. 29 Balance A/C: XX0001 NPSB Fee: Tk 10".into(),
+            Some("City Bank".into()),
+            1_700_000_000_001,
+        ).expect("city");
+
+        // Robi
+        core.ingest_sms(
+            "TK 8.0 has been added to your account. TK 8.0 + Service fee of TK 2.78 will be deducted from your next recharge. Your total outstanding is Tk 10.78. For Details, dial *8#".into(),
+            Some("Robi".into()),
+            1_700_000_000_002,
+        ).expect("robi");
+
+        let accounts = core.list_accounts().expect("accounts");
+        let names: Vec<_> = accounts.into_iter().map(|a| a.name).collect();
+        assert!(names.contains(&"Sonali Bank".to_string()));
+        assert!(names.contains(&"City Bank".to_string()));
+        assert!(names.contains(&"Robi".to_string()));
+    }
+
+    #[test]
     fn manual_accountless_insert_creates_and_reuses_system_cash() {
         let core = CentwiseCore::open(":memory:".into()).expect("open core");
 

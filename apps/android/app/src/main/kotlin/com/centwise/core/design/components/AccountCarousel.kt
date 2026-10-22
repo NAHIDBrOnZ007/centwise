@@ -74,7 +74,7 @@ private fun AccountCarouselCard(
     onClick: () -> Unit,
     isDark: Boolean
 ) {
-    var isAmountHidden by remember { mutableStateOf(true) }
+    var isAmountHidden by remember { mutableStateOf(false) }
 
     val cardBg = if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface
     val textPrimary = if (isDark) CentwiseColors.DarkTextPrimary else CentwiseColors.LightTextPrimary
@@ -134,10 +134,10 @@ private fun AccountCarouselCard(
                     maxLines = 1
                 )
 
-                if (account.accountNumber.isNotEmpty()) {
-                    val masked = if (account.accountNumber.length > 4) "••" + account.accountNumber.takeLast(4) else account.accountNumber
+                val lastFour = account.accountNumber.takeLast(4).filter { it.isDigit() }
+                if (lastFour.isNotEmpty()) {
                     Text(
-                        text = masked,
+                        text = "••$lastFour",
                         style = CentwiseTypography.Caption,
                         color = textSecondary,
                         fontSize = 11.sp
@@ -145,36 +145,45 @@ private fun AccountCarouselCard(
                 }
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                AnimatedContent(
-                    targetState = isAmountHidden,
-                    transitionSpec = { fadeIn() togetherWith fadeOut() },
-                    label = "amountAnimation"
-                ) { hidden ->
-                    Text(
-                        text = if (hidden) "••••••" else CurrencyFormatter.format(account.balance),
-                        style = CentwiseTypography.Headline,
-                        fontWeight = FontWeight.Bold,
-                        color = textPrimary,
-                        fontSize = 14.sp,
-                        maxLines = 1
-                    )
-                }
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = "Balance",
+                    style = CentwiseTypography.Caption,
+                    color = textSecondary,
+                    fontSize = 10.sp
+                )
 
-                IconButton(
-                    onClick = { isAmountHidden = !isAmountHidden },
-                    modifier = Modifier.size(24.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Icon(
-                        imageVector = if (isAmountHidden) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                        contentDescription = "Toggle Balance",
-                        tint = textSecondary,
-                        modifier = Modifier.size(14.dp)
-                    )
+                    AnimatedContent(
+                        targetState = isAmountHidden,
+                        transitionSpec = { fadeIn() togetherWith fadeOut() },
+                        label = "amountAnimation"
+                    ) { hidden ->
+                        Text(
+                            text = if (hidden) "••••••" else CurrencyFormatter.format(account.balance),
+                            style = CentwiseTypography.Headline,
+                            fontWeight = FontWeight.Bold,
+                            color = textPrimary,
+                            fontSize = 14.sp,
+                            maxLines = 1
+                        )
+                    }
+
+                    IconButton(
+                        onClick = { isAmountHidden = !isAmountHidden },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = if (isAmountHidden) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                            contentDescription = "Toggle Balance",
+                            tint = textSecondary,
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
                 }
             }
         }

@@ -5,15 +5,19 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -63,6 +67,37 @@ fun AccountDetailScreen(
         transactions.filter {
             it.paymentMethod.equals(currentAccount.providerName, ignoreCase = true) ||
                 it.paymentMethod.equals(currentAccount.name, ignoreCase = true)
+        }
+    }
+
+    val cardTransactionsCount = remember(accountTransactions) {
+        accountTransactions.count {
+            val note = it.note?.lowercase() ?: ""
+            val raw = it.rawSms?.lowercase() ?: ""
+            note.contains("card") || raw.contains("card")
+        }
+    }
+    val acTransactionsCount = remember(accountTransactions) {
+        accountTransactions.size - cardTransactionsCount
+    }
+    val hasCardTransactions = remember(cardTransactionsCount) {
+        cardTransactionsCount > 0
+    }
+    var selectedInstrumentFilter by remember { mutableStateOf("All") }
+
+    val displayedTransactions = remember(accountTransactions, selectedInstrumentFilter) {
+        when (selectedInstrumentFilter) {
+            "Cards" -> accountTransactions.filter {
+                val note = it.note?.lowercase() ?: ""
+                val raw = it.rawSms?.lowercase() ?: ""
+                note.contains("card") || raw.contains("card")
+            }
+            "Account" -> accountTransactions.filter {
+                val note = it.note?.lowercase() ?: ""
+                val raw = it.rawSms?.lowercase() ?: ""
+                !note.contains("card") && !raw.contains("card")
+            }
+            else -> accountTransactions
         }
     }
 
@@ -194,8 +229,14 @@ fun AccountDetailScreen(
 
                         Column(modifier = Modifier.weight(1f)) {
                             Text(currentAccount.name, style = CentwiseTypography.Headline, color = textPrimary)
+                            val lastFour = currentAccount.accountNumber.takeLast(4).filter { it.isDigit() }
+                            val subtitleText = if (lastFour.isNotEmpty()) {
+                                "${currentAccount.type} • ••$lastFour"
+                            } else {
+                                currentAccount.type
+                            }
                             Text(
-                                text = "${currentAccount.type} • •• ${currentAccount.accountNumber.takeLast(4)}",
+                                text = subtitleText,
                                 style = CentwiseTypography.Caption,
                                 color = textSecondary
                             )
@@ -217,13 +258,14 @@ fun AccountDetailScreen(
                     HorizontalDivider(color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
 
                     // 3-Column Stats Row
+                    val net = moneyIn - moneyOut
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         StatColumn(
-                            title = "Money In",
+                            title = "Income",
                             value = CurrencyFormatter.formatBDT(moneyIn, compact = true),
                             color = CentwiseColors.IncomeGreen,
                             modifier = Modifier.weight(1f)
@@ -235,7 +277,7 @@ fun AccountDetailScreen(
                                 .background(if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
                         )
                         StatColumn(
-                            title = "Money Out",
+                            title = "Expense",
                             value = CurrencyFormatter.formatBDT(moneyOut, compact = true),
                             color = CentwiseColors.ExpenseRed,
                             modifier = Modifier.weight(1f)
@@ -247,28 +289,78 @@ fun AccountDetailScreen(
                                 .background(if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
                         )
                         StatColumn(
-                            title = "Transactions",
-                            value = "${accountTransactions.size}",
-                            color = accent,
+                            title = "Net",
+                            value = CurrencyFormatter.formatBDT(net, compact = true),
+                            color = if (net >= 0) CentwiseColors.IncomeGreen else CentwiseColors.ExpenseRed,
                             modifier = Modifier.weight(1f)
                         )
                     }
                 }
             }
 
-            // 2. Transactions Section Header
+            // 2. Transactions Section Header & Instrument Filters
             item {
-                Text(
-                    text = "Transactions (${accountTransactions.size})",
-                    style = CentwiseTypography.Headline.copy(fontSize = 14.sp),
-                    color = textSecondary
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = "Transactions (${accountTransactions.size})",
+                        style = CentwiseTypography.Headline.copy(fontSize = 14.sp),
+                        color = textSecondary
+                    )
+
+                    if (hasCardTransactions && accountTransactions.isNotEmpty()) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            val filterOptions = listOf(
+                                Triple("All", "All (${accountTransactions.size})", null as ImageVector?),
+                                Triple("Cards", "Card ($cardTransactionsCount)", Icons.Default.CreditCard),
+                                Triple("Account", "A/C ($acTransactionsCount)", Icons.Default.AccountBalance)
+                            )
+                            filterOptions.forEach { (filterKey, label, icon) ->
+                                val isSelected = selectedInstrumentFilter == filterKey
+                                Surface(
+                                    shape = RoundedCornerShape(20.dp),
+                                    color = if (isSelected) accent else if (isDark) CentwiseColors.DarkSurface else CentwiseColors.LightSurface,
+                                    border = if (!isSelected) BorderStroke(1.dp, if (isDark) Color(0x14FFFFFF) else Color(0x0A000000)) else null,
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(20.dp))
+                                        .iosBounceClick { selectedInstrumentFilter = filterKey }
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        if (icon != null) {
+                                            Icon(
+                                                imageVector = icon,
+                                                contentDescription = null,
+                                                tint = if (isSelected) Color.White else textSecondary,
+                                                modifier = Modifier.size(13.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(5.dp))
+                                        }
+                                        Text(
+                                            text = label,
+                                            style = CentwiseTypography.Caption.copy(
+                                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                                fontSize = 12.sp
+                                            ),
+                                            color = if (isSelected) Color.White else textSecondary
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
-            if (accountTransactions.isEmpty()) {
+            if (displayedTransactions.isEmpty()) {
                 item {
                     Text(
-                        text = "No transactions recorded for this account.",
+                        text = if (accountTransactions.isEmpty()) "No transactions recorded for this account." else "No transactions match this filter.",
                         style = CentwiseTypography.Subheadline,
                         color = textSecondary,
                         modifier = Modifier
@@ -278,7 +370,7 @@ fun AccountDetailScreen(
                     )
                 }
             } else {
-                items(accountTransactions, key = { it.id }) { transaction ->
+                items(displayedTransactions, key = { it.id }) { transaction ->
                     TransactionRow(
                         transaction = transaction,
                         onClick = { selectedTransaction = transaction },

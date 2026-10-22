@@ -61,7 +61,7 @@ fun AddEditTransactionSheet(
     var selectedType by remember { mutableStateOf(initialTransaction?.type ?: TransactionType.EXPENSE) }
     var selectedCategory by remember { mutableStateOf(initialTransaction?.category ?: "") }
     var selectedPaymentMethod by remember { mutableStateOf(initialTransaction?.paymentMethod ?: "Cash") }
-    var notes by remember { mutableStateOf(initialTransaction?.note ?: initialTransaction?.rawSms ?: "") }
+    var notes by remember { mutableStateOf(initialTransaction?.note ?: "") }
 
     var showCategoryMenu by remember { mutableStateOf(false) }
     var showAccountMenu by remember { mutableStateOf(false) }

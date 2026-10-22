@@ -110,10 +110,15 @@ class TransactionRepository private constructor() {
         )
         val accounts = CentwiseRustBackend.listAccounts()
         _accounts.value = accounts.map { account ->
+            val readableType = when (account.provider.lowercase()) {
+                "bkash", "nagad", "rocket", "upay", "cellfin", "nexuspay" -> "Savings"
+                "cash" -> "Cash"
+                else -> "Bank"
+            }
             AccountItem(
                 id = account.id,
                 name = account.name,
-                type = account.provider,
+                type = readableType,
                 balance = account.balanceMinor / 100.0,
                 providerName = account.provider,
                 accountNumber = account.lastFour?.let { "****$it" } ?: "",

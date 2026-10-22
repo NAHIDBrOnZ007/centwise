@@ -73,12 +73,6 @@ pub(crate) fn ingest_sms_in_transaction(
 ) -> centwise_db::DbResult<SmsIngestResult> {
     match outcome {
         centwise_parser::ParseOutcome::Parsed(parsed) => {
-            let matches = if parsed.account_last4.is_none() && parsed.account_hint.is_some() {
-                Vec::new()
-            } else {
-                queries
-                    .find_matching_accounts(&parsed.provider_id, parsed.account_last4.as_deref())?
-            };
             let reference = parsed.reference.clone();
             let merchant_or_party = parsed
                 .merchant
@@ -112,16 +106,14 @@ pub(crate) fn ingest_sms_in_transaction(
                     }
                 });
 
-            let target_account_id = match matches.as_slice() {
-                [account] => Some(account.id.clone()),
-                [] => Some(queries.resolve_or_create_account(
+            let target_account_id = queries
+                .resolve_or_create_account(
                     &parsed.provider_id,
                     parsed.account_last4.as_deref(),
                     parsed.account_hint.as_deref(),
                     default_account_name(&parsed.provider_id),
-                )?),
-                _ => None,
-            };
+                )
+                .ok();
 
             if let Some(account_id) = target_account_id {
                 let transaction_id = sms_transaction_id(
@@ -348,6 +340,17 @@ pub(crate) fn build_transaction_title_and_notes(
         {
             notes_parts.push(format!("Memo: {}", memo));
         }
+    }
+
+    // Extract payment instrument (Card or Account identifier)
+    if let Some(ref hint) = parsed.account_hint {
+        if hint.to_ascii_lowercase().starts_with("card") {
+            notes_parts.push(hint.clone());
+        } else {
+            notes_parts.push(format!("A/C {hint}"));
+        }
+    } else if let Some(ref last4) = parsed.account_last4 {
+        notes_parts.push(format!("A/C *{last4}"));
     }
 
     let notes = if !notes_parts.is_empty() {

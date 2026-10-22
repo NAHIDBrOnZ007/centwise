@@ -73,9 +73,9 @@ public struct CurrencyPickerScreen: View {
         } label: {
             HStack(spacing: CentwiseSpacing.md) {
                 Text(currency.symbol)
-                    .font(CentwiseTypography.title3)
+                    .font(currency.symbol.count > 2 ? .system(size: 13, weight: .semibold, design: .rounded) : (currency.symbol.count == 2 ? .system(size: 15, weight: .semibold, design: .rounded) : .system(size: 19, weight: .semibold, design: .rounded)))
                     .foregroundColor(themeManager.accentColor)
-                    .frame(width: 44, height: 44)
+                    .frame(width: 42, height: 42)
                     .background(
                         Circle().fill(themeManager.accentColor.opacity(0.12))
                     )

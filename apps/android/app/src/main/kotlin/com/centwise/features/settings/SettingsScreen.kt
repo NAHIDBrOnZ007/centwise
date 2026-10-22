@@ -185,7 +185,11 @@ fun SettingsScreen(
                         icon = Icons.Default.Language,
                         iconColor = accent,
                         title = if (LanguagePrefs.isBengali) "ভাষা" else "Language",
-                        subtitle = "${LanguagePrefs.selectedLanguage.flag} ${LanguagePrefs.selectedLanguage.titleNative} (${LanguagePrefs.selectedLanguage.titleEnglish})",
+                        subtitle = if (LanguagePrefs.selectedLanguage == AppLanguage.ENGLISH) {
+                            "${LanguagePrefs.selectedLanguage.flag} English"
+                        } else {
+                            "${LanguagePrefs.selectedLanguage.flag} ${LanguagePrefs.selectedLanguage.titleNative} (${LanguagePrefs.selectedLanguage.titleEnglish})"
+                        },
                         onClick = onLanguageClick,
                         showDivider = false,
                         isDark = isDark

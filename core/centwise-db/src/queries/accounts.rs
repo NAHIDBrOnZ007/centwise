@@ -95,9 +95,21 @@ impl<'a> Queries<'a> {
             .map(normalize_account_component)
             .filter(|value| !value.is_empty());
 
-        if last_four.is_none() {
-            if let Some(hint) = hint.as_deref() {
-                let id = format!("auto-{provider}-hint-{hint}");
+        let is_card = hint
+            .as_deref()
+            .is_some_and(|h| h.to_ascii_lowercase().starts_with("card"));
+
+        // If this transaction is from a Card, it links to an existing active account for this provider
+        if is_card {
+            let provider_matches = self.find_matching_accounts(&provider, None)?;
+            if let Some(account) = provider_matches.first() {
+                return Ok(account.id.clone());
+            }
+        }
+
+        if last_four.is_none() && !is_card {
+            if let Some(hint_str) = hint.as_deref() {
+                let id = format!("auto-{provider}-hint-{hint_str}");
                 if self.account_exists(&id)? {
                     self.connection.execute(
                         "UPDATE accounts SET archived = 0 WHERE id = ?1",
@@ -116,6 +128,7 @@ impl<'a> Queries<'a> {
                 return Ok(id);
             }
         }
+
         let matches = self.find_matching_accounts(&provider, last_four.as_deref())?;
 
         match matches.as_slice() {
@@ -130,6 +143,8 @@ impl<'a> Queries<'a> {
 
         let id = if provider == "cash" && last_four.is_none() {
             "system-cash".to_string()
+        } else if is_card {
+            format!("auto-{provider}")
         } else {
             format!(
                 "auto-{provider}-{}",
@@ -205,6 +220,37 @@ impl<'a> Queries<'a> {
         })?;
 
         collect(rows)
+    }
+
+    /// Returns an active account matching a specific provider and account hint.
+    pub fn find_hint_account(
+        &self,
+        provider_id: &str,
+        hint: &str,
+    ) -> DbResult<Option<AccountSummary>> {
+        let provider = normalize_account_component(provider_id);
+        let normalized_hint = normalize_account_component(hint);
+        let id = format!("auto-{provider}-hint-{normalized_hint}");
+        let mut statement = self.connection.prepare(
+            "SELECT id, name, provider, last_four, balance_minor, archived
+             FROM accounts
+             WHERE archived = 0 AND id = ?1",
+        )?;
+        let mut rows = statement.query_map(params![id], |row| {
+            Ok(AccountSummary {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                provider: row.get(2)?,
+                last_four: row.get(3)?,
+                balance_minor: row.get(4)?,
+                archived: row.get::<_, i64>(5)? != 0,
+            })
+        })?;
+        if let Some(row) = rows.next() {
+            Ok(Some(row?))
+        } else {
+            Ok(None)
+        }
     }
 }
 

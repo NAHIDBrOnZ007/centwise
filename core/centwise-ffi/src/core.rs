@@ -356,9 +356,24 @@ impl CentwiseCore {
         self.database
             .write(|queries| match outcome {
                 centwise_parser::ParseOutcome::Parsed(parsed) => {
-                    let matches = if parsed.account_last4.is_none() && parsed.account_hint.is_some()
-                    {
-                        Vec::new()
+                    let is_card = parsed
+                        .account_hint
+                        .as_deref()
+                        .is_some_and(|hint| hint.to_ascii_lowercase().starts_with("card"));
+
+                    let matches = if parsed.account_last4.is_none() && parsed.account_hint.is_some() {
+                        if !is_card {
+                            if let Some(account) = queries.find_hint_account(
+                                &parsed.provider_id,
+                                parsed.account_hint.as_deref().unwrap_or_default(),
+                            )? {
+                                vec![account]
+                            } else {
+                                Vec::new()
+                            }
+                        } else {
+                            Vec::new()
+                        }
                     } else {
                         queries.find_matching_accounts(
                             &parsed.provider_id,
@@ -397,15 +412,44 @@ impl CentwiseCore {
                             }
                         });
 
-                    let target_account_id = if matches.len() == 1 {
+                    let provider_accounts = queries.find_matching_accounts(&parsed.provider_id, None)?;
+                    let target_account_id = if is_card {
+                        if provider_accounts.len() == 1 {
+                            Some(provider_accounts[0].id.clone())
+                        } else if provider_accounts.is_empty() {
+                            Some(queries.resolve_or_create_account(
+                                &parsed.provider_id,
+                                parsed.account_last4.as_deref(),
+                                parsed.account_hint.as_deref(),
+                                default_account_name(&parsed.provider_id),
+                            )?)
+                        } else {
+                            None
+                        }
+                    } else if matches.len() == 1 {
                         Some(matches[0].id.clone())
                     } else if matches.is_empty() {
-                        Some(queries.resolve_or_create_account(
-                            &parsed.provider_id,
-                            parsed.account_last4.as_deref(),
-                            parsed.account_hint.as_deref(),
-                            default_account_name(&parsed.provider_id),
-                        )?)
+                        if parsed.account_last4.is_none() && parsed.account_hint.is_none() {
+                            if provider_accounts.len() == 1 {
+                                Some(provider_accounts[0].id.clone())
+                            } else if provider_accounts.is_empty() {
+                                Some(queries.resolve_or_create_account(
+                                    &parsed.provider_id,
+                                    None,
+                                    None,
+                                    default_account_name(&parsed.provider_id),
+                                )?)
+                            } else {
+                                None
+                            }
+                        } else {
+                            Some(queries.resolve_or_create_account(
+                                &parsed.provider_id,
+                                parsed.account_last4.as_deref(),
+                                parsed.account_hint.as_deref(),
+                                default_account_name(&parsed.provider_id),
+                            )?)
+                        }
                     } else {
                         None
                     };
@@ -775,15 +819,40 @@ impl CentwiseCore {
 
 pub(crate) fn default_account_name(provider: &str) -> &str {
     match provider {
+        // MFS
         "bkash" => "bKash",
         "nagad" => "Nagad",
         "rocket" => "Rocket",
         "upay" => "Upay",
         "cellfin" => "CellFin",
+        "nexuspay" => "NexusPay",
+
+        // Banks
         "dbbl" => "Dutch-Bangla Bank",
         "city-bank" => "City Bank",
         "brac-bank" => "BRAC Bank",
         "ebl" => "Eastern Bank",
+        "islami-bank" => "Islami Bank",
+        "sonali-bank" => "Sonali Bank",
+        "pubali-bank" => "Pubali Bank",
+        "ucb" => "UCB",
+        "prime-bank" => "Prime Bank",
+        "agrani-bank" => "Agrani Bank",
+        "mutual-trust-bank" => "Mutual Trust Bank",
+        "standard-chartered" => "Standard Chartered",
+        "bank-asia" => "Bank Asia",
+        "dhaka-bank" => "Dhaka Bank",
+        "trust-bank" => "Trust Bank",
+        "janata-bank" => "Janata Bank",
+        "rupali-bank" => "Rupali Bank",
+
+        // Telcos
+        "grameenphone" => "Grameenphone",
+        "robi" => "Robi",
+        "banglalink" => "Banglalink",
+        "airtel" => "Airtel",
+        "teletalk" => "Teletalk",
+
         "cash" => "Cash / Unassigned",
         _ => "Primary Account",
     }

@@ -46,14 +46,14 @@ public struct SpendingSummaryCard: View {
                 // 2. Expenses Column
                 statColumn(
                     amount: monthlyExpense,
-                    label: "Expenses",
+                    label: "Expense",
                     stripeColor: Color(red: 1.0, green: 0.23, blue: 0.19) // Red
                 )
 
                 // 3. Saved / Net Column
                 statColumn(
                     amount: monthlySaved,
-                    label: "Saved",
+                    label: "Net",
                     stripeColor: Color(red: 0.19, green: 0.69, blue: 0.78) // Teal
                 )
             }

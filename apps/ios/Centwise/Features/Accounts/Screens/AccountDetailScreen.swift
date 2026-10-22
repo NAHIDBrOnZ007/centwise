@@ -22,10 +22,51 @@ public struct AccountDetailScreen: View {
         repository.accounts.first { $0.id == accountId }
     }
 
+    @State private var selectedFilter: String = "All"
+
     private var accountTransactions: [CentwiseTransaction] {
         repository.transactions
             .filter { $0.accountId == accountId }
             .sorted { $0.date > $1.date }
+    }
+
+    private var hasCardTransactions: Bool {
+        accountTransactions.contains { tx in
+            let note = (tx.notes ?? "").lowercased()
+            let raw = (tx.rawSmsBody ?? "").lowercased()
+            return note.contains("card") || raw.contains("card")
+        }
+    }
+
+    private var cardTransactionsCount: Int {
+        accountTransactions.filter { tx in
+            let note = (tx.notes ?? "").lowercased()
+            let raw = (tx.rawSmsBody ?? "").lowercased()
+            return note.contains("card") || raw.contains("card")
+        }.count
+    }
+
+    private var acTransactionsCount: Int {
+        accountTransactions.count - cardTransactionsCount
+    }
+
+    private var displayedTransactions: [CentwiseTransaction] {
+        switch selectedFilter {
+        case "Cards":
+            return accountTransactions.filter { tx in
+                let note = (tx.notes ?? "").lowercased()
+                let raw = (tx.rawSmsBody ?? "").lowercased()
+                return note.contains("card") || raw.contains("card")
+            }
+        case "Account":
+            return accountTransactions.filter { tx in
+                let note = (tx.notes ?? "").lowercased()
+                let raw = (tx.rawSmsBody ?? "").lowercased()
+                return !note.contains("card") && !raw.contains("card")
+            }
+        default:
+            return accountTransactions
+        }
     }
 
     public var body: some View {
@@ -39,7 +80,18 @@ public struct AccountDetailScreen: View {
 
             // 2. Transactions Section
             Section {
-                if accountTransactions.isEmpty {
+                if hasCardTransactions && !accountTransactions.isEmpty {
+                    Picker("Instrument Filter", selection: $selectedFilter) {
+                        Text("All (\(accountTransactions.count))").tag("All")
+                        Label("Card (\(cardTransactionsCount))", systemImage: "creditcard").tag("Cards")
+                        Label("A/C (\(acTransactionsCount))", systemImage: "building.columns").tag("Account")
+                    }
+                    .pickerStyle(.segmented)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 8, trailing: 0))
+                }
+
+                if displayedTransactions.isEmpty {
                     VStack(spacing: 12) {
                         Image(systemName: "tray")
                             .font(.system(size: 36))
@@ -50,7 +102,7 @@ public struct AccountDetailScreen: View {
                             .font(.headline)
                             .foregroundColor(.primary)
 
-                        Text("Transactions associated with this account will appear here.")
+                        Text("Transactions associated with this filter will appear here.")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
@@ -59,7 +111,7 @@ public struct AccountDetailScreen: View {
                     .padding(.vertical, 28)
                     .listRowBackground(Color.clear)
                 } else {
-                    ForEach(accountTransactions) { transaction in
+                    ForEach(displayedTransactions) { transaction in
                         TransactionRow(
                             transaction: transaction,
                             showChevron: true,
@@ -213,9 +265,10 @@ public struct AccountDetailScreen: View {
             Divider()
 
             // 3-Column Stats Row
+            let net = moneyIn - moneyOut
             HStack(spacing: 0) {
                 statColumn(
-                    title: "Money In",
+                    title: "Income",
                     value: CurrencyFormatter.shared.formatBDT(moneyIn, compact: true),
                     color: CentwiseColors.incomeGreen,
                     icon: "arrow.down.left"
@@ -226,7 +279,7 @@ public struct AccountDetailScreen: View {
                     .frame(width: 1, height: 32)
 
                 statColumn(
-                    title: "Money Out",
+                    title: "Expense",
                     value: CurrencyFormatter.shared.formatBDT(moneyOut, compact: true),
                     color: CentwiseColors.expenseRed,
                     icon: "arrow.up.right"
@@ -237,10 +290,10 @@ public struct AccountDetailScreen: View {
                     .frame(width: 1, height: 32)
 
                 statColumn(
-                    title: "Transactions",
-                    value: "\(transactions.count)",
-                    color: themeManager.accentColor,
-                    icon: "list.bullet"
+                    title: "Net",
+                    value: CurrencyFormatter.shared.formatBDT(net, compact: true),
+                    color: net >= 0 ? CentwiseColors.incomeGreen : CentwiseColors.expenseRed,
+                    icon: "equal.circle"
                 )
             }
         }

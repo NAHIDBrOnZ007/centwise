@@ -227,7 +227,7 @@ fn version_seven_group_data_is_removed_without_touching_personal_financial_recor
     let version: i64 = connection
         .query_row("PRAGMA user_version", [], |row| row.get(0))
         .expect("read schema version");
-    assert_eq!(version, 8);
+    assert_eq!(version, centwise_db::migrations::latest_version());
 }
 
 #[test]

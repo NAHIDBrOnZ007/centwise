@@ -52,8 +52,17 @@ public struct TransactionDetailSheet: View {
                     LabeledContent("Bank", value: transaction.provider.rawValue)
                     LabeledContent("Account", value: "••\(transaction.accountId.suffix(4))")
 
-                    if let notes = transaction.notes, !notes.isEmpty {
+                    if let notes = transaction.notes, !notes.isEmpty, notes != transaction.rawSmsBody {
                         LabeledContent("Notes", value: notes)
+                    }
+                }
+
+                if let rawSms = transaction.rawSmsBody, !rawSms.isEmpty {
+                    Section("Original SMS") {
+                        Text(rawSms)
+                            .font(.system(size: 14))
+                            .foregroundColor(.primary)
+                            .textSelection(.enabled)
                     }
                 }
 

@@ -217,10 +217,36 @@ fun TransactionDetailSheet(
                             DetailRowItem(label = "Reference", value = ref, textPrimary = textPrimary, textSecondary = textSecondary)
                         }
 
-                        val notes = transaction.note ?: transaction.rawSms
-                        if (!notes.isNullOrBlank()) {
+                        val note = transaction.note
+                        val sms = transaction.rawSms
+
+                        if (!note.isNullOrBlank() && note != sms) {
                             HorizontalDivider(color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
-                            DetailRowItem(label = "Notes", value = notes, textPrimary = textPrimary, textSecondary = textSecondary)
+                            DetailRowItem(label = "Notes", value = note, textPrimary = textPrimary, textSecondary = textSecondary)
+                        }
+
+                        if (!sms.isNullOrBlank()) {
+                            HorizontalDivider(color = if (isDark) Color(0x14FFFFFF) else Color(0x0A000000))
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 12.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(
+                                    text = "Original SMS",
+                                    style = CentwiseTypography.Caption,
+                                    color = textSecondary,
+                                    fontSize = 13.sp
+                                )
+                                Text(
+                                    text = sms,
+                                    style = CentwiseTypography.Body,
+                                    color = textPrimary,
+                                    fontSize = 14.sp,
+                                    lineHeight = 20.sp
+                                )
+                            }
                         }
                     }
                 }

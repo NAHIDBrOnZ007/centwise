@@ -244,3 +244,25 @@ fn test_audit_review_queue_reports_01_and_02() {
         "Exact 236 Telecharge SMS in queue report 1"
     );
 }
+
+#[test]
+fn test_audit_transaction_report_12() {
+    let path = audit_fixture("transaction-reports", "transaction-report-12.csv");
+    let rows = parse_csv_rows(&path);
+    for (idx, row) in rows.iter().enumerate().skip(1) {
+        let raw_sms = &row[8];
+        let method = &row[5];
+        let outcome = parse_sms(raw_sms, Some(method.as_str()));
+        match outcome {
+            ParseOutcome::Parsed(tx) => {
+                println!(
+                    "ROW {}: type={:?}, amount={}, cat={:?}, last4={:?}, hint={:?}",
+                    idx, tx.transaction_type, tx.amount_minor, tx.category_id, tx.account_last4, tx.account_hint
+                );
+            }
+            ParseOutcome::Rejected(r) => {
+                println!("ROW {} REJECTED: {:?}", idx, r);
+            }
+        }
+    }
+}

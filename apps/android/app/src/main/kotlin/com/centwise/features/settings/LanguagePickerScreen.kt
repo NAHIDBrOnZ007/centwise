@@ -103,12 +103,14 @@ fun LanguagePickerScreen(
                             style = CentwiseTypography.Headline.copy(fontSize = 16.sp),
                             color = textPrimary
                         )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = lang.titleEnglish,
-                            style = CentwiseTypography.Caption,
-                            color = textSecondary
-                        )
+                        if (lang != AppLanguage.ENGLISH) {
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = lang.titleEnglish,
+                                style = CentwiseTypography.Caption,
+                                color = textSecondary
+                            )
+                        }
                     }
 
                     if (isSelected) {

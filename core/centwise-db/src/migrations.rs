@@ -256,6 +256,25 @@ DROP TABLE IF EXISTS group_members;
 DROP TABLE IF EXISTS groups;
 "#,
     },
+    Migration {
+        version: 9,
+        name: "unify provider accounts and normalize transfer debits",
+        sql: r#"
+UPDATE transactions
+SET account_id = (SELECT id FROM accounts WHERE provider = 'ebl' AND id != 'auto-ebl-5478' ORDER BY id ASC LIMIT 1)
+WHERE account_id = 'auto-ebl-5478'
+  AND EXISTS (SELECT 1 FROM accounts WHERE provider = 'ebl' AND id != 'auto-ebl-5478');
+
+DELETE FROM accounts
+WHERE id = 'auto-ebl-5478'
+  AND EXISTS (SELECT 1 FROM accounts WHERE provider = 'ebl' AND id != 'auto-ebl-5478');
+
+UPDATE transactions
+SET transaction_type = 'expense'
+WHERE transaction_type = 'transfer'
+  AND (raw_sms LIKE '%MFS Transfer%' OR raw_sms LIKE '%debited%MFS%');
+"#,
+    },
 ];
 
 /// Latest schema version available in this build.

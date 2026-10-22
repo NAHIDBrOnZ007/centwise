@@ -35,7 +35,7 @@ public struct AccountCarousel: View {
 private struct AccountCarouselCard: View {
     let account: FinancialAccount
     var onSelect: (() -> Void)? = nil
-    @State private var isAmountHidden = true
+    @State private var isAmountHidden = false
     @Environment(\.colorScheme) private var colorScheme
     @ObservedObject private var themeManager = ThemeManager.shared
 
@@ -86,26 +86,32 @@ private struct AccountCarouselCard: View {
 
                 Spacer(minLength: 8)
 
-                HStack(spacing: 6) {
-                    Text(isAmountHidden
-                        ? "••••••"
-                        : CurrencyFormatter.shared.formatBDT(account.currentBalance, showSign: false, compact: true))
-                        .font(CentwiseTypography.amountSmall)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-                        .lineLimit(1)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Balance")
+                        .font(.system(size: 10, weight: .regular))
+                        .foregroundColor(.secondary)
 
-                    Button {
-                        themeManager.triggerHapticFeedback(.light)
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            isAmountHidden.toggle()
+                    HStack(spacing: 6) {
+                        Text(isAmountHidden
+                            ? "••••••"
+                            : CurrencyFormatter.shared.formatBDT(account.currentBalance, showSign: false, compact: true))
+                            .font(CentwiseTypography.amountSmall)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.primary)
+                            .lineLimit(1)
+
+                        Button {
+                            themeManager.triggerHapticFeedback(.light)
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                isAmountHidden.toggle()
+                            }
+                        } label: {
+                            Image(systemName: isAmountHidden ? "eye.slash.fill" : "eye.fill")
+                                .font(.system(size: 11))
+                                .foregroundColor(.secondary)
                         }
-                    } label: {
-                        Image(systemName: isAmountHidden ? "eye.slash.fill" : "eye.fill")
-                            .font(.system(size: 11))
-                            .foregroundColor(.secondary)
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
             .padding(CentwiseSpacing.md)

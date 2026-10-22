@@ -72,9 +72,9 @@ fun SpendingSummaryCard(
                 modifier = Modifier.weight(1f)
             )
 
-            // 2. Expenses
+            // 2. Expense
             StatColumn(
-                label = "Expenses",
+                label = "Expense",
                 amount = monthlyExpense,
                 stripeColor = CentwiseColors.ExpenseRed,
                 textPrimary = textPrimary,
@@ -82,9 +82,9 @@ fun SpendingSummaryCard(
                 modifier = Modifier.weight(1f)
             )
 
-            // 3. Saved
+            // 3. Net
             StatColumn(
-                label = "Saved",
+                label = "Net",
                 amount = monthlySaved,
                 stripeColor = CentwiseColors.SavedTeal,
                 textPrimary = textPrimary,

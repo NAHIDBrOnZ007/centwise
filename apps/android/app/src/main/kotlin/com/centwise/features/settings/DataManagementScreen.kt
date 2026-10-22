@@ -235,6 +235,7 @@ fun DataManagementScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(
+                                modifier = Modifier.weight(1f),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
@@ -253,30 +254,36 @@ fun DataManagementScreen(
                                     )
                                 }
 
-                                Column {
+                                Column(modifier = Modifier.weight(1f, fill = false)) {
                                     Text(
                                         text = if (LanguagePrefs.isBengali) "ডিভাইস স্টোরেজ" else "Device Storage",
                                         style = CentwiseTypography.Headline.copy(fontSize = 15.sp, fontWeight = FontWeight.SemiBold),
-                                        color = textPrimary
+                                        color = textPrimary,
+                                        maxLines = 1
                                     )
                                     Text(
-                                        text = if (LanguagePrefs.isBengali) "শুধুমাত্র ফোনে সংরক্ষিত • এনক্রিপ্ট করা" else "Stored on this phone • Encrypted",
+                                        text = if (LanguagePrefs.isBengali) "লোকাল ও এনক্রিপ্ট করা" else "Local & Encrypted",
                                         style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
-                                        color = textSecondary
+                                        color = textSecondary,
+                                        maxLines = 1
                                     )
                                 }
                             }
+
+                            Spacer(modifier = Modifier.width(12.dp))
 
                             Column(horizontalAlignment = Alignment.End) {
                                 Text(
                                     text = dbSizeString,
                                     style = CentwiseTypography.Headline.copy(fontSize = 16.sp, fontWeight = FontWeight.Bold),
-                                    color = textPrimary
+                                    color = textPrimary,
+                                    maxLines = 1
                                 )
                                 Text(
                                     text = if (LanguagePrefs.isBengali) "ব্যবহৃত স্থান" else "Space Used",
                                     style = CentwiseTypography.Caption.copy(fontSize = 11.sp),
-                                    color = textSecondary
+                                    color = textSecondary,
+                                    maxLines = 1
                                 )
                             }
                         }
@@ -342,14 +349,6 @@ fun DataManagementScreen(
                                 textSecondary = textSecondary,
                                 modifier = Modifier.weight(1f)
                             )
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
                             StorageLegendItem(
                                 color = acctColor,
                                 label = if (LanguagePrefs.isBengali) "অ্যাকাউন্ট" else "Accounts",
@@ -358,13 +357,20 @@ fun DataManagementScreen(
                                 textSecondary = textSecondary,
                                 modifier = Modifier.weight(1f)
                             )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Start
+                        ) {
                             StorageLegendItem(
                                 color = rulesColor,
-                                label = if (LanguagePrefs.isBengali) "ক্যাটাগরি ও রুলস" else "Categories & Rules",
+                                label = if (LanguagePrefs.isBengali) "ক্যাটাগরি" else "Categories",
                                 value = if (LanguagePrefs.isBengali) "বিল্ট-ইন" else "Built-in",
                                 textPrimary = textPrimary,
-                                textSecondary = textSecondary,
-                                modifier = Modifier.weight(1f)
+                                textSecondary = textSecondary
                             )
                         }
 
@@ -372,7 +378,7 @@ fun DataManagementScreen(
                         HorizontalDivider(color = dividerColor)
                         Spacer(modifier = Modifier.height(12.dp))
 
-                        // Private & Offline notice row (no duplicate 100% wording)
+                        // Private & Offline notice row
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -390,11 +396,10 @@ fun DataManagementScreen(
                                     modifier = Modifier.size(16.dp)
                                 )
                                 Text(
-                                    text = if (LanguagePrefs.isBengali) "ডিভাইসে সম্পূর্ণ সুরক্ষিত • ক্লাউডে যায় না" else "Encrypted on this device • Zero cloud sync",
+                                    text = if (LanguagePrefs.isBengali) "ডিভাইসে সুরক্ষিত" else "On-device encrypted",
                                     style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
                                     color = textSecondary,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    maxLines = 1
                                 )
                             }
 
@@ -404,27 +409,16 @@ fun DataManagementScreen(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(6.dp))
                                     .background(Color(0xFF10B981).copy(alpha = 0.12f))
-                                    .padding(horizontal = 8.dp, vertical = 3.dp)
+                                    .padding(horizontal = 8.dp, vertical = 4.dp)
                             ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(5.dp)
-                                            .clip(CircleShape)
-                                            .background(Color(0xFF10B981))
-                                    )
-                                    Text(
-                                        text = if (LanguagePrefs.isBengali) "১০০% অফলাইন" else "100% Offline",
-                                        style = CentwiseTypography.Caption.copy(
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.SemiBold
-                                        ),
-                                        color = Color(0xFF10B981)
-                                    )
-                                }
+                                Text(
+                                    text = if (LanguagePrefs.isBengali) "১০০% অফলাইন" else "100% Offline",
+                                    style = CentwiseTypography.Caption.copy(
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    ),
+                                    color = Color(0xFF10B981)
+                                )
                             }
                         }
                     }
