@@ -339,7 +339,11 @@ mod ingestion_tests {
 
         // 3. Verify STILL only 1 account exists, linked seamlessly!
         let accounts_after = core.list_accounts().expect("accounts");
-        assert_eq!(accounts_after.len(), 1, "Should NOT create duplicate account for card");
+        assert_eq!(
+            accounts_after.len(),
+            1,
+            "Should NOT create duplicate account for card"
+        );
         assert_eq!(accounts_after[0].id, ebl_account_id);
 
         // 4. Verify both transactions are attached to the same account and preserve card/ac instruments
@@ -350,7 +354,10 @@ mod ingestion_tests {
 
         let notes_0 = txs[0].notes.as_deref().unwrap_or_default();
         let notes_1 = txs[1].notes.as_deref().unwrap_or_default();
-        assert!(notes_0.contains("Card") || notes_1.contains("Card"), "Card transaction notes must identify card");
+        assert!(
+            notes_0.contains("Card") || notes_1.contains("Card"),
+            "Card transaction notes must identify card"
+        );
     }
 
     #[test]

@@ -361,7 +361,8 @@ impl CentwiseCore {
                         .as_deref()
                         .is_some_and(|hint| hint.to_ascii_lowercase().starts_with("card"));
 
-                    let matches = if parsed.account_last4.is_none() && parsed.account_hint.is_some() {
+                    let matches = if parsed.account_last4.is_none() && parsed.account_hint.is_some()
+                    {
                         if !is_card {
                             if let Some(account) = queries.find_hint_account(
                                 &parsed.provider_id,
@@ -412,7 +413,8 @@ impl CentwiseCore {
                             }
                         });
 
-                    let provider_accounts = queries.find_matching_accounts(&parsed.provider_id, None)?;
+                    let provider_accounts =
+                        queries.find_matching_accounts(&parsed.provider_id, None)?;
                     let target_account_id = if is_card {
                         if provider_accounts.len() == 1 {
                             Some(provider_accounts[0].id.clone())

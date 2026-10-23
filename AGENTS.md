@@ -308,7 +308,8 @@ Use the exact commands defined by the final project scripts once they exist.
 
 ## Git and Review Rules
 
-- Use `.gitmessage` and clear conventional commits.
+- **NEVER COMMIT OR PUSH**: Agents must never run `git commit` or `git push`. All committing and pushing is strictly reserved for the human developer. Agents only modify and verify files in the working tree.
+- Use `.gitmessage` and clear conventional commits when recommending commit messages to the developer.
 - Keep commits focused on one feature or setup concern.
 - Do not mix formatting-only rewrites with behavior changes.
 - Review generated schema changes carefully.
