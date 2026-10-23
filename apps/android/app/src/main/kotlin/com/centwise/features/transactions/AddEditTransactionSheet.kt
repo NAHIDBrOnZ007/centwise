@@ -94,7 +94,7 @@ fun AddEditTransactionSheet(
     val menuBorder = BorderStroke(1.dp, if (isDark) Color(0x26FFFFFF) else Color(0x0F000000))
 
     val parsedAmount = amountText.toDoubleOrNull() ?: 0.0
-    val isValid = title.trim().isNotBlank() && parsedAmount > 0
+    val isValid = title.trim().isNotBlank() && parsedAmount.isFinite() && parsedAmount > 0
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()

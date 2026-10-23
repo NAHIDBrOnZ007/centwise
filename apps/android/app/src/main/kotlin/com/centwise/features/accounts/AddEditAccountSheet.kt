@@ -50,7 +50,7 @@ fun AddEditAccountSheet(
     var accountNumber by remember { mutableStateOf(initialAccount?.accountNumber ?: "") }
     var balanceText by remember {
         mutableStateOf(
-            if (initialAccount != null && initialAccount.balance > 0)
+            if (initialAccount != null)
                 if (initialAccount.balance % 1.0 == 0.0) initialAccount.balance.toLong().toString() else initialAccount.balance.toString()
             else ""
         )
@@ -67,7 +67,8 @@ fun AddEditAccountSheet(
     val menuBg = if (isDark) Color(0xFF2C2C2E) else Color.White
     val menuBorder = BorderStroke(1.dp, if (isDark) Color(0x26FFFFFF) else Color(0x0F000000))
 
-    val parsedBalance = balanceText.toDoubleOrNull() ?: 0.0
+    val parsedBalance = if (balanceText.isBlank()) 0.0
+        else balanceText.toDoubleOrNull()?.takeIf { it.isFinite() }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
 
@@ -108,21 +109,23 @@ fun AddEditAccountSheet(
             com.centwise.core.design.components.ModalSheetTopBar(
                 title = if (initialAccount == null) "New Account" else "Edit Account",
                 onCancel = { dismissWithAnimation {} },
-                onSave = {
+                onSave = save@ {
+                    val balance = parsedBalance ?: return@save
                     val finalName = if (name.trim().isBlank()) selectedProvider else name.trim()
                     val newAcct = AccountItem(
                         id = initialAccount?.id ?: java.util.UUID.randomUUID().toString(),
                         name = finalName,
                         type = selectedType,
-                        balance = parsedBalance,
+                        balance = balance,
                         providerName = selectedProvider,
-                        accountNumber = accountNumber.trim().ifBlank { "0000" }
+                        accountNumber = accountNumber.trim().ifBlank { "0000" },
+                        archived = initialAccount?.archived ?: false
                     )
                     dismissWithAnimation {
                         onSave(newAcct)
                     }
                 },
-                saveEnabled = true,
+                saveEnabled = parsedBalance != null,
                 accent = accent,
                 textPrimary = textPrimary,
                 textSecondary = textSecondary,

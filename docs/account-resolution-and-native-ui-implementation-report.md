@@ -380,7 +380,22 @@ Windows cannot provide final iOS acceptance. On macOS, run and verify:
 - `apps/android/app/src/main/kotlin/com/centwise/features/transactions/ReviewQueueScreen.kt`
 - `apps/android/app/src/main/kotlin/com/centwise/features/transactions/TransactionListScreen.kt`
 
-## 15. Related approved specifications and plans
+## 15. Android account-editor fixes, 2026-10-23
+
+Editing an account now preserves a negative or zero balance and its archived
+status. Invalid/non-finite balance input disables Save rather than becoming zero;
+an intentionally blank balance retains the existing zero default. Transaction
+Save also rejects non-finite amounts. These are form-state fixes with no layout,
+localization-key, database-schema, or FFI changes.
+
+Parity intent: account edits on both platforms must preserve balances and archive
+status unless explicitly changed, and money inputs must be finite. This pass
+changes Android only; iOS form behavior was not verified. Compose regression
+tests cover overdrawn/archived account saving and invalid balance input. Simulator
+or device execution and light/dark/small-screen visual checks remain separate
+acceptance steps.
+
+## 16. Related approved specifications and plans
 
 - `docs/superpowers/specs/2026-08-28-automatic-account-resolution-design.md`
 - `docs/superpowers/specs/2026-08-28-ios-native-ui-redesign.md`
