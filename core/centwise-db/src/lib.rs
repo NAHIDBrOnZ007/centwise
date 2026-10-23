@@ -33,7 +33,7 @@ pub struct Database {
 
 impl Database {
     /// Opens (creating if needed) the database at `path`, applies migrations,
-    /// enables WAL and foreign keys, and installs the change hook.
+    /// enables WAL and foreign keys, and prepares change notifications.
     pub fn open(path: impl AsRef<Path>) -> DbResult<Database> {
         let connection = Connection::open(path)?;
         Self::initialize(connection)
@@ -54,14 +54,6 @@ impl Database {
         migrations::run(&connection)?;
 
         let registry = Arc::new(ObserverRegistry::new());
-        let hook_registry = Arc::clone(&registry);
-        connection.update_hook(Some(
-            move |_action: rusqlite::hooks::Action, _database: &str, table: &str, _row_id: i64| {
-                if !table.starts_with("sqlite_") {
-                    hook_registry.notify_all();
-                }
-            },
-        ));
 
         Ok(Database {
             connection: Mutex::new(connection),
@@ -81,15 +73,19 @@ impl Database {
         operation(&queries)
     }
 
-    /// Runs a write on the connection inside a transaction. Note the SQLite
-    /// update hook fires as statements execute; listeners must re-query, never
-    /// assume a specific write completed.
+    /// Runs an atomic write and notifies listeners after commit and lock release.
     pub fn write<T>(&self, operation: impl FnOnce(&Queries<'_>) -> DbResult<T>) -> DbResult<T> {
         let guard = self.lock();
+        let changes_before = guard.total_changes();
         let transaction = guard.unchecked_transaction()?;
         let queries = Queries::new(&transaction);
         let result = operation(&queries)?;
         transaction.commit()?;
+        let changed = guard.total_changes() != changes_before;
+        drop(guard);
+        if changed {
+            self.registry.notify_all();
+        }
         Ok(result)
     }
 

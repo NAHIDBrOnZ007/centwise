@@ -2,6 +2,11 @@
   "schemaVersion": 1,
   "country": "BD",
   "currency": "BDT",
+  "sharedParserValidation": {
+    "lastReviewed": "2026-10-23",
+    "regressionTest": "core/centwise-parser/tests/maturity_regressions.rs",
+    "scope": "Incoming transfer direction and explicit security-code aliases; no new sender IDs or providers"
+  },
   "merchantReceiptFormats": [
     {"merchant": "BRTA", "categoryId": "fees", "supportedEvent": "successful portal payment", "fundingProviderId": "banks-generic", "lastReviewed": "2026-10-22"},
     {"merchant": "DPDC", "categoryId": "bills", "supportedEvent": "completed electricity meter recharge", "fundingProviderId": "banks-generic", "lastReviewed": "2026-10-22"},

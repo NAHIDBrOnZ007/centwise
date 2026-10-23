@@ -53,6 +53,16 @@ pub fn detect_transaction_type(text: &str) -> Option<TransactionType> {
         return Some(TransactionType::Income);
     }
 
+    // Explicit recipient wording takes precedence over the generic transfer keyword.
+    if !lower.contains("debited")
+        && (((lower.contains("you have received") || lower.contains("you received"))
+            && (lower.contains("fund transfer") || lower.contains("funds transfer")))
+            || lower.contains("transferred to your account")
+            || lower.contains("transferred to your a/c"))
+    {
+        return Some(TransactionType::Income);
+    }
+
     // An outgoing transfer does not prove that the recipient account is also owned.
     if lower.contains("fund transfer")
         || lower.contains("transfer:")

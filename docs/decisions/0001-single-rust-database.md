@@ -49,6 +49,28 @@ Problems with shared ViewModels (Rust or KMP):
 
 ## Consequences
 
+### Backend hardening, 2026-10-23
+
+- Database writes notify observers once after a successful commit and after
+  releasing the connection lock. Rollbacks do not emit committed-data events.
+  Observer callbacks run without holding the observer-list lock and may re-query.
+- Migration startup rejects a database newer than this build before running
+  migrations or seeding. The schema remains v8; no stored fields or serialized
+  backup contracts change. A SQLite snapshot/reopen regression checks preservation
+  of transaction amounts and account balances, including committed WAL data.
+- Card receipts require exactly one active provider account for automatic
+  association. Batch scans queue ambiguous receipts just as single-message
+  ingestion does. Storage errors propagate rather than becoming review entries.
+- Android/iOS parity: these guarantees live in shared Rust. Device scans and
+  native packaging still require platform verification.
+
+Read-only follow-up findings: the Android scanner catches inbox-read exceptions
+and can persist scan progress after a partial read; it also collects the inbox
+in memory before batching. Cross-provider recharge deduplication still relies on
+amount/time proximity and merits stronger recipient evidence. Those paths are
+not certified by these fixes. Native backup/export workflows were not exercised;
+the snapshot test verifies SQLite data compatibility only.
+
 - Schema and migration work is single-sourced; cross-platform backup
   compatibility holds by construction.
 - We build and maintain the change-notification seam ourselves (a bounded,

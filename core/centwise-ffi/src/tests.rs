@@ -47,6 +47,38 @@ mod ingestion_tests {
     }
 
     #[test]
+    fn batch_card_receipts_do_not_guess_between_bank_accounts() {
+        let core = CentwiseCore::open(":memory:".into()).unwrap();
+        for suffix in ["1111", "2222"] {
+            core.insert_account(AccountInput {
+                id: format!("bank-{suffix}"),
+                name: format!("Bank {suffix}"),
+                provider: "ebl".into(),
+                last_four: Some(suffix.into()),
+                starting_balance_minor: 0,
+                archived: false,
+            })
+            .unwrap();
+        }
+        let body = "Card ending 3333 was used at Demo Shop for BDT 250.00. TrxID SYNBATCH01";
+        let results = core
+            .ingest_sms_batch(vec![SmsBatchMessage {
+                body: body.into(),
+                sender_hint: Some("EBL".into()),
+                occurred_at_epoch_ms: 1_700_000_000_000,
+            }])
+            .unwrap();
+        assert_eq!(results[0].status, SmsIngestStatus::QueuedForReview);
+        assert!(core.list_transactions(10).unwrap().is_empty());
+        assert_eq!(core.list_review_queue(10).unwrap().len(), 1);
+        assert!(core
+            .list_accounts()
+            .unwrap()
+            .iter()
+            .all(|a| a.balance_minor == 0));
+    }
+
+    #[test]
     fn public_biller_receipts_debit_the_wallet_without_creating_utility_accounts() {
         let core = core_with_account();
         for (index, body) in [

@@ -6,7 +6,7 @@ pub trait DataObserver: Send + Sync {
     fn data_changed(&self);
 }
 
-/// Thread-safe observer registry shared with the SQLite update hook.
+/// Thread-safe observer registry for committed database writes.
 pub struct ObserverRegistry {
     observers: Mutex<Vec<Arc<dyn DataObserver>>>,
 }
@@ -22,10 +22,11 @@ impl ObserverRegistry {
         self.lock().push(observer);
     }
 
-    /// Called from the update hook on the writing thread. Listener panics are
+    /// Called after commit on the writing thread. Listener panics are
     /// contained so one bad listener cannot poison the write path.
     pub fn notify_all(&self) {
-        for observer in self.lock().iter() {
+        let observers = self.lock().clone();
+        for observer in observers {
             let _ = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 observer.data_changed();
             }));

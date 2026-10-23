@@ -102,8 +102,14 @@ impl<'a> Queries<'a> {
         // If this transaction is from a Card, it links to an existing active account for this provider
         if is_card {
             let provider_matches = self.find_matching_accounts(&provider, None)?;
-            if let Some(account) = provider_matches.first() {
-                return Ok(account.id.clone());
+            match provider_matches.as_slice() {
+                [account] => return Ok(account.id.clone()),
+                [] => {}
+                _ => {
+                    return Err(DbError::Invalid(format!(
+                        "multiple active {provider} accounts require an explicit account"
+                    )))
+                }
             }
         }
 

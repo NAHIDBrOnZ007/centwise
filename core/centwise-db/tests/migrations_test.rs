@@ -28,6 +28,112 @@ const EXPECTED_SYSTEM_CATEGORY_IDS: &[&str] = &[
     "other",
 ];
 
+#[test]
+fn newer_database_versions_are_rejected_without_seeding_or_downgrading() {
+    let connection = rusqlite::Connection::open_in_memory().unwrap();
+    centwise_db::migrations::run(&connection).unwrap();
+    connection.execute("DELETE FROM rules", []).unwrap();
+    let future = centwise_db::migrations::latest_version() + 1;
+    connection
+        .pragma_update(None, "user_version", future)
+        .unwrap();
+    assert!(centwise_db::migrations::run(&connection).is_err());
+    let version: i64 = connection
+        .query_row("PRAGMA user_version", [], |r| r.get(0))
+        .unwrap();
+    let rules: i64 = connection
+        .query_row("SELECT COUNT(*) FROM rules", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(version, future);
+    assert_eq!(rules, 0);
+}
+
+#[test]
+fn sqlite_backup_reopens_with_transactions_and_balances_intact() {
+    let directory = tempfile::tempdir().unwrap();
+    let source = directory.path().join("source.sqlite");
+    let backup = directory.path().join("backup.sqlite");
+    let database = Database::open(&source).unwrap();
+    database
+        .write(|q| {
+            q.insert_account(&test_account())?;
+            q.insert_transaction(&test_transaction(
+                "backup-tx",
+                12_500,
+                TransactionType::Expense,
+            ))
+        })
+        .unwrap();
+    let expected_balance = database.account_balance("acct-1").unwrap();
+    // SQLite's snapshot includes committed WAL data; copying the main file may not.
+    let connection = rusqlite::Connection::open(&source).unwrap();
+    connection
+        .execute("VACUUM INTO ?1", [backup.to_str().unwrap()])
+        .unwrap();
+    let restored = Database::open(&backup).unwrap();
+    assert_eq!(
+        restored.account_balance("acct-1").unwrap(),
+        expected_balance
+    );
+    let transaction = restored.get_transaction("backup-tx").unwrap().unwrap();
+    assert_eq!(transaction.amount_minor, 12_500);
+    assert_eq!(transaction.account_id, "acct-1");
+}
+
+#[test]
+fn rolled_back_writes_do_not_notify_observers() {
+    let database = Database::open_in_memory().unwrap();
+    let observer = Arc::new(CountingObserver {
+        count: AtomicUsize::new(0),
+    });
+    database.add_observer(observer.clone());
+    let result: centwise_db::DbResult<()> = database.write(|q| {
+        q.insert_account(&test_account())?;
+        Err(centwise_db::DbError::Invalid("synthetic failure".into()))
+    });
+    assert!(result.is_err());
+    assert!(database.list_accounts().unwrap().is_empty());
+    assert_eq!(observer.count.load(Ordering::SeqCst), 0);
+}
+
+#[test]
+fn observers_can_read_committed_data_without_deadlock() {
+    struct ReadingObserver {
+        database: std::sync::Weak<Database>,
+        sender: std::sync::mpsc::Sender<usize>,
+    }
+    impl DataObserver for ReadingObserver {
+        fn data_changed(&self) {
+            let count = self
+                .database
+                .upgrade()
+                .unwrap()
+                .list_accounts()
+                .unwrap()
+                .len();
+            self.sender.send(count).unwrap();
+        }
+    }
+    let database = Arc::new(Database::open_in_memory().unwrap());
+    let (sender, receiver) = std::sync::mpsc::channel();
+    database.add_observer(Arc::new(ReadingObserver {
+        database: Arc::downgrade(&database),
+        sender,
+    }));
+    let writer = std::thread::spawn(move || {
+        database
+            .write(|q| q.insert_account(&test_account()))
+            .unwrap()
+    });
+    assert_eq!(
+        receiver
+            .recv_timeout(std::time::Duration::from_secs(2))
+            .unwrap(),
+        1
+    );
+    writer.join().unwrap();
+}
+
 struct CountingObserver {
     count: AtomicUsize,
 }
@@ -343,9 +449,10 @@ fn change_notification_fires_on_write() {
         })
         .expect("writes");
 
-    assert!(
-        observer.count.load(Ordering::SeqCst) >= 1,
-        "listener must fire"
+    assert_eq!(
+        observer.count.load(Ordering::SeqCst),
+        1,
+        "one notification per committed write"
     );
 }
 

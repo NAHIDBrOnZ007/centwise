@@ -18,6 +18,11 @@ static OTP_VALUE_RE: LazyLock<Regex> = LazyLock::new(|| {
         .expect("valid explicit OTP value regex")
 });
 
+static DIRECT_SECURITY_VALUE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?i)^\s*(?:is\s*|[:=-]\s*)?[0-9]{4,8}\b")
+        .expect("valid direct security value regex")
+});
+
 /// Checks if an SMS is an OTP or security alert that must never become a transaction.
 pub fn is_otp_or_security_message(text: &str) -> bool {
     let lower = text.to_lowercase();
@@ -41,7 +46,11 @@ pub fn is_otp_or_security_message(text: &str) -> bool {
     }
 
     // A supplied security code is authoritative even if its instructions say "successful".
-    if text.split(". ").any(|clause| OTP_VALUE_RE.is_match(clause)) {
+    if text.split(". ").any(|clause| OTP_VALUE_RE.is_match(clause))
+        || OTP_KEYWORD_RE
+            .find_iter(text)
+            .any(|keyword| DIRECT_SECURITY_VALUE_RE.is_match(&text[keyword.end()..]))
+    {
         return true;
     }
 

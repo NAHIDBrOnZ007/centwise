@@ -106,14 +106,16 @@ pub(crate) fn ingest_sms_in_transaction(
                     }
                 });
 
-            let target_account_id = queries
-                .resolve_or_create_account(
-                    &parsed.provider_id,
-                    parsed.account_last4.as_deref(),
-                    parsed.account_hint.as_deref(),
-                    default_account_name(&parsed.provider_id),
-                )
-                .ok();
+            let target_account_id = match queries.resolve_or_create_account(
+                &parsed.provider_id,
+                parsed.account_last4.as_deref(),
+                parsed.account_hint.as_deref(),
+                default_account_name(&parsed.provider_id),
+            ) {
+                Ok(id) => Some(id),
+                Err(centwise_db::DbError::Invalid(_)) => None,
+                Err(error) => return Err(error),
+            };
 
             if let Some(account_id) = target_account_id {
                 let transaction_id = sms_transaction_id(

@@ -52,6 +52,21 @@ and transfer notes below; they apply identically to Android and iOS through Rust
   Add future formats here with positive, negative and ingestion fixture tests;
   do not accept every message containing a price or invoice link.
 
+The 2026-10-23 hardening pass adds explicit incoming-transfer direction checks
+and security-code alias rejection even when instructions mention a successful
+payment. Synthetic regressions cover bank and wallet senders, outgoing transfers,
+and six security-code labels. Report 12 now asserts all 17 rows, exact amounts,
+and reviewed directions instead of only printing results. Existing CSV snapshots
+remain unchanged. These are deterministic parser fixes, not model training.
+
+Android/iOS parity: both platforms consume these same Rust outcomes; there are
+no FFI or database changes. Native library packaging and device testing remain
+separate checks before release.
+
+Public-source check: [bKash checkout terms](https://www.bkash.com/en/page/terms-of-use-checkout)
+distinguish held payments from returned funds and notifications, but do not supply
+an exact SMS-template contract. No unverified web template or sender ID was added.
+
 Verification uses all 4,714 rows of `fixtures/audits/all-sms-test-input.csv` plus
 the 16 original reports and anonymized adversarial regression cases. The aligned
 `all-sms-expected.csv` freezes disposition, provider, type, amount, fee, and whether

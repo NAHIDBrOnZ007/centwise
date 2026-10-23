@@ -249,19 +249,29 @@ fn test_audit_review_queue_reports_01_and_02() {
 fn test_audit_transaction_report_12() {
     let path = audit_fixture("transaction-reports", "transaction-report-12.csv");
     let rows = parse_csv_rows(&path);
+    assert_eq!(rows.len(), 18, "report 12 must contain all 17 SMS rows");
     for (idx, row) in rows.iter().enumerate().skip(1) {
+        assert_eq!(row.len(), 9, "malformed report 12 row {idx}");
         let raw_sms = &row[8];
         let method = &row[5];
         let outcome = parse_sms(raw_sms, Some(method.as_str()));
         match outcome {
             ParseOutcome::Parsed(tx) => {
-                println!(
-                    "ROW {}: type={:?}, amount={}, cat={:?}, last4={:?}, hint={:?}",
-                    idx, tx.transaction_type, tx.amount_minor, tx.category_id, tx.account_last4, tx.account_hint
+                assert_eq!(
+                    Some(tx.amount_minor),
+                    centwise_normalization::parse_amount_minor(&row[2]),
+                    "amount mismatch in report 12 row {idx}"
                 );
+                // Exported Transfer labels do not establish ownership of both accounts.
+                let expected_type = if [2, 11, 12, 13, 16].contains(&idx) {
+                    centwise_domain::TransactionType::Income
+                } else {
+                    centwise_domain::TransactionType::Expense
+                };
+                assert_eq!(tx.transaction_type, expected_type, "report 12 row {idx}");
             }
             ParseOutcome::Rejected(r) => {
-                println!("ROW {} REJECTED: {:?}", idx, r);
+                panic!("report 12 row {idx} unexpectedly rejected: {r:?}");
             }
         }
     }

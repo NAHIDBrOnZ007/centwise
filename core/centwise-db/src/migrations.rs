@@ -288,6 +288,12 @@ pub fn latest_version() -> i64 {
 /// Runs pending migrations and seeds system data on fresh installs.
 pub fn run(connection: &Connection) -> DbResult<()> {
     let current: i64 = connection.query_row("PRAGMA user_version", [], |row| row.get(0))?;
+    if current > latest_version() {
+        return Err(DbError::Invalid(format!(
+            "database version {current} is newer than supported version {}",
+            latest_version()
+        )));
+    }
     let had_pending = current < latest_version();
 
     for migration in MIGRATIONS
