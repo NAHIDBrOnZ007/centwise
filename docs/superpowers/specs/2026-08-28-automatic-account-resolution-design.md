@@ -29,6 +29,15 @@ Centwise uses these account-resolution rules on Android and iOS:
 
 Review is for ambiguity or uncertainty, not merely for a missing account.
 
+### Telecom SMS account grouping (2026-11-02)
+
+On both Android and iOS, incoming and batch-imported telecom SMS use one automatic
+account named `SIM` (provider `sim`, default ID `auto-sim-wallet`), regardless of
+the detected operator or parsed account suffix. Operator detection and parsing
+remain unchanged. Bank/MFS and manual account selection rules remain unchanged.
+Existing operator accounts and their saved transactions are preserved; this
+change does not merge or delete history. Multiple SIMs share this account.
+
 ## Rust-owned account resolution
 
 Rust remains the only owner of account creation and transaction writes. Add one

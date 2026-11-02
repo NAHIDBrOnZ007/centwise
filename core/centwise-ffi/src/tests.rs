@@ -339,7 +339,11 @@ mod ingestion_tests {
 
         // 3. Verify STILL only 1 account exists, linked seamlessly!
         let accounts_after = core.list_accounts().expect("accounts");
-        assert_eq!(accounts_after.len(), 1, "Should NOT create duplicate account for card");
+        assert_eq!(
+            accounts_after.len(),
+            1,
+            "Should NOT create duplicate account for card"
+        );
         assert_eq!(accounts_after[0].id, ebl_account_id);
 
         // 4. Verify both transactions are attached to the same account and preserve card/ac instruments
@@ -350,7 +354,10 @@ mod ingestion_tests {
 
         let notes_0 = txs[0].notes.as_deref().unwrap_or_default();
         let notes_1 = txs[1].notes.as_deref().unwrap_or_default();
-        assert!(notes_0.contains("Card") || notes_1.contains("Card"), "Card transaction notes must identify card");
+        assert!(
+            notes_0.contains("Card") || notes_1.contains("Card"),
+            "Card transaction notes must identify card"
+        );
     }
 
     #[test]
@@ -382,7 +389,74 @@ mod ingestion_tests {
         let names: Vec<_> = accounts.into_iter().map(|a| a.name).collect();
         assert!(names.contains(&"Sonali Bank".to_string()));
         assert!(names.contains(&"City Bank".to_string()));
-        assert!(names.contains(&"Robi".to_string()));
+        assert!(names.contains(&"SIM".to_string()));
+    }
+
+    #[test]
+    fn telecom_sms_reuses_one_sim_account_for_live_and_batch_imports() {
+        for batch in [false, true] {
+            let core = CentwiseCore::open(":memory:".into()).expect("open core");
+            core.insert_account(AccountInput {
+                id: "auto-robi-wallet".into(),
+                name: "Robi".into(),
+                provider: "robi".into(),
+                last_four: None,
+                starting_balance_minor: 123,
+                archived: false,
+            })
+            .expect("existing account");
+            let messages: Vec<_> = ["Robi", "Airtel", "GP", "Banglalink", "Teletalk", "bKash"]
+                .into_iter()
+                .enumerate()
+                .map(|(index, sender)| SmsBatchMessage {
+                    body: format!("Your account has been credited with Tk 20.00. Balance Tk 50.00. Ref: SYN-SIM-{index}"),
+                    sender_hint: Some(sender.into()),
+                    occurred_at_epoch_ms: 1_700_000_000_000 + index as i64,
+                })
+                .collect();
+            let results = if batch {
+                core.ingest_sms_batch(messages).expect("batch import")
+            } else {
+                messages
+                    .into_iter()
+                    .map(|message| {
+                        core.ingest_sms(
+                            message.body,
+                            message.sender_hint,
+                            message.occurred_at_epoch_ms,
+                        )
+                        .expect("live import")
+                    })
+                    .collect()
+            };
+            assert!(results
+                .iter()
+                .all(|result| result.status == SmsIngestStatus::Inserted));
+            let accounts = core.list_accounts().expect("accounts");
+            assert_eq!(accounts.len(), 3);
+            let sim = accounts
+                .iter()
+                .find(|account| account.name == "SIM")
+                .expect("SIM account");
+            assert_eq!(sim.provider, "sim");
+            let transactions = core.list_transactions(10).expect("transactions");
+            assert_eq!(
+                transactions
+                    .iter()
+                    .filter(|tx| tx.account_id == sim.id)
+                    .count(),
+                5
+            );
+            assert_eq!(
+                accounts
+                    .iter()
+                    .find(|account| account.id == "auto-robi-wallet")
+                    .unwrap()
+                    .name,
+                "Robi"
+            );
+            assert!(accounts.iter().any(|account| account.provider == "bkash"));
+        }
     }
 
     #[test]
@@ -799,7 +873,81 @@ mod ingestion_tests {
     }
 
     #[test]
-    fn correcting_auto_tracked_merchant_teaches_future_transactions_and_preserves_sms_metadata() {
+    fn category_defaults_and_evidence_match_for_live_and_batch_imports() {
+        for batch in [false, true] {
+            let core = core_with_account();
+            let cases = [
+                (
+                    "Your account was credited with Tk 500,000",
+                    "income",
+                    TransactionKind::Income,
+                ),
+                (
+                    "Tk 50,000 credited to your salary account",
+                    "income",
+                    TransactionKind::Income,
+                ),
+                (
+                    "Tk 500 received from Foodpanda",
+                    "income",
+                    TransactionKind::Income,
+                ),
+                (
+                    "Payment Tk 500 successful. Get cashback at Foodpanda",
+                    "other",
+                    TransactionKind::Expense,
+                ),
+                (
+                    "Refund of Tk 500 from Bata credited",
+                    "refunds",
+                    TransactionKind::Refund,
+                ),
+                (
+                    "Send Money Tk 500 to Airtel successful",
+                    "other",
+                    TransactionKind::Expense,
+                ),
+                (
+                    "Monthly salary of Tk 25,000 credited",
+                    "salary",
+                    TransactionKind::Income,
+                ),
+            ];
+            for (index, (body, category, kind)) in cases.into_iter().enumerate() {
+                let message = SmsBatchMessage {
+                    body: format!("{body}. TrxID: SYN-CATEGORY-{index}."),
+                    sender_hint: Some("bKash".into()),
+                    occurred_at_epoch_ms: 1_700_000_000_000 + index as i64,
+                };
+                let result = if batch {
+                    core.ingest_sms_batch(vec![message])
+                        .expect("batch")
+                        .remove(0)
+                } else {
+                    core.ingest_sms(
+                        message.body,
+                        message.sender_hint,
+                        message.occurred_at_epoch_ms,
+                    )
+                    .expect("live")
+                };
+                assert_eq!(result.status, SmsIngestStatus::Inserted, "{body}");
+                let transaction = core
+                    .get_transaction(result.transaction_id.unwrap())
+                    .unwrap()
+                    .unwrap();
+                assert_eq!(transaction.category_id, category, "{body}");
+                assert_eq!(
+                    std::mem::discriminant(&transaction.kind),
+                    std::mem::discriminant(&kind),
+                    "{body}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn category_correction_only_changes_selected_transaction_and_preserves_sms_metadata() {
         let core = core_with_account();
         core.ingest_sms(
             "Payment Tk 120.00 to Cafe Dhaka successful. Fee Tk 2.00. Balance Tk 878.00. TrxID: CAFE1.".into(),
@@ -845,7 +993,8 @@ mod ingestion_tests {
             .into_iter()
             .find(|item| item.reference.as_deref() == Some("CAFE2"))
             .expect("learned transaction");
-        assert_eq!(learned.category_id, "food");
+        assert_eq!(corrected.category_id, "food");
+        assert_eq!(learned.category_id, "other");
     }
 
     #[test]

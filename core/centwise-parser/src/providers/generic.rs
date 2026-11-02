@@ -59,7 +59,8 @@ pub fn parse_common(
         Some(transaction_type) => transaction_type,
         None => return ProviderParse::Rejected(RejectReason::NotATransaction),
     };
-    let party = party_override.unwrap_or_else(|| crate::extract::extract_party(sms.body));
+    let category_body = centwise_categorization::category_description(sms.body);
+    let party = party_override.unwrap_or_else(|| crate::extract::extract_party(&category_body));
     let (account_last4, account_hint) =
         account_override.unwrap_or_else(|| crate::extract::extract_account_info(sms.body));
     let raw_date = crate::extract::extract_date_time(sms.body);

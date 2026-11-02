@@ -12,6 +12,27 @@ pub struct CategorizationResult {
     pub matched_merchant: Option<String>,
 }
 
+/// Promotional clauses are not evidence of the purpose of a posted transaction.
+pub fn category_description(text: &str) -> String {
+    text.split(". ")
+        .flat_map(|clause| clause.split(['\n', ';']))
+        .filter(|clause| {
+            let lower = clause.to_lowercase();
+            ![
+                "offer", "offers", "get", "earn", "enjoy", "download", "visit", "dial", "eligible",
+                "will", "can", "could", "would",
+            ]
+            .iter()
+            .any(|word| has_word(&lower, word))
+                && !contains_any(
+                    &lower,
+                    &["terms and conditions", "next payment", "next purchase"],
+                )
+        })
+        .collect::<Vec<_>>()
+        .join(". ")
+}
+
 /// Attempt to categorize by looking for known merchant keywords in text.
 pub fn categorize_by_merchant(party_or_merchant: &str) -> Option<CategorizationResult> {
     let lower = party_or_merchant.to_lowercase();
@@ -38,7 +59,7 @@ pub fn categorize_by_type_or_keywords(
     text: &str,
     transaction_type: TransactionType,
 ) -> Option<String> {
-    let lower = text.to_lowercase();
+    let lower = category_description(text).to_lowercase();
 
     if transaction_type == TransactionType::Transfer {
         return Some("transfer".to_string());
@@ -49,17 +70,40 @@ pub fn categorize_by_type_or_keywords(
     }
 
     if transaction_type == TransactionType::Income {
-        if contains_any(&lower, &["salary", "payroll", "wages"]) {
-            return Some("salary".to_string());
-        }
-        if contains_any(&lower, &["interest", "mudaraba profit", "profit credited"]) {
-            return Some("interest-profit".to_string());
-        }
-        if contains_any(&lower, &["dividend"]) {
-            return Some("dividends".to_string());
-        }
-        if contains_any(&lower, &["cashback", "cash back"]) {
-            return Some("cashback".to_string());
+        for lower in lower.split(". ").filter(|clause| {
+            ["credited", "received", "deposited", "paid"]
+                .iter()
+                .any(|word| has_word(clause, word))
+                && !["not", "pending", "failed", "unsuccessful"]
+                    .iter()
+                    .any(|word| has_word(clause, word))
+        }) {
+            if ["salary", "payroll", "wages"]
+                .iter()
+                .any(|word| has_word(lower, word))
+                && !contains_any(
+                    lower,
+                    &[
+                        "salary account",
+                        "payroll account",
+                        "salary banking",
+                        "payroll banking",
+                    ],
+                )
+            {
+                return Some("salary".to_string());
+            }
+            if has_word(lower, "interest")
+                || contains_any(lower, &["mudaraba profit", "profit credited"])
+            {
+                return Some("interest-profit".to_string());
+            }
+            if has_word(lower, "dividend") || has_word(lower, "dividends") {
+                return Some("dividends".to_string());
+            }
+            if contains_any(lower, &["cashback", "cash back"]) {
+                return Some("cashback".to_string());
+            }
         }
         return Some("income".to_string());
     }
@@ -77,7 +121,7 @@ pub fn categorize_by_type_or_keywords(
             "trf to",
         ],
     ) {
-        return Some("transfer".to_string());
+        return Some("other".to_string());
     }
 
     if contains_any(&lower, &["atm", "cash withdrawal", "cash out", "cash wd"])
@@ -99,17 +143,21 @@ pub fn categorize_by_type_or_keywords(
     {
         return Some("recharge".to_string());
     }
-    if contains_any(&lower, &["cashback", "cash back"]) {
-        return Some("cashback".to_string());
-    }
     if has_word(&lower, "school") || has_word(&lower, "college") || has_word(&lower, "tuition") {
         return Some("education".to_string());
     }
-    let has_bill = lower.contains("bill")
-        && !lower.contains("bill no")
-        && !lower.contains("bill number")
-        && !lower.contains("purchase bill");
-    if has_word(&lower, "emi") || has_word(&lower, "loan") || has_bill {
+    if has_word(&lower, "emi")
+        || contains_any(
+            &lower,
+            &[
+                "bill payment",
+                "pay bill",
+                "bill paid",
+                "loan repayment",
+                "loan installment",
+            ],
+        )
+    {
         return Some("bills".to_string());
     }
     if is_fee_transaction(&lower) {
@@ -166,6 +214,35 @@ fn is_fee_transaction(text: &str) -> bool {
 mod tests {
     use super::*;
     use centwise_domain::TransactionType;
+
+    #[test]
+    fn unclear_purposes_and_promotional_keywords_use_general_categories() {
+        for text in [
+            "Tk 500,000 credited to your account",
+            "Tk 50,000 credited to your salary account",
+            "Tk 50,000 credited. Get salary banking benefits today",
+            "Tk 50,000 credited. Earn interest on your savings",
+            "Tk 50,000 credited. Contact payroll support for assistance",
+            "Tk 50,000 credited. Salary has not been credited",
+        ] {
+            assert_eq!(
+                categorize_by_type_or_keywords(text, TransactionType::Income).as_deref(),
+                Some("income"),
+                "{text}"
+            );
+        }
+        for text in [
+            "Payment Tk 500 successful. Get cashback on your next payment",
+            "Tk 500 debited from your loan account",
+            "Send Money Tk 500 to another person successful",
+        ] {
+            assert_eq!(
+                categorize_by_type_or_keywords(text, TransactionType::Expense).as_deref(),
+                Some("other"),
+                "{text}"
+            );
+        }
+    }
 
     #[test]
     fn categorizes_known_merchants() {

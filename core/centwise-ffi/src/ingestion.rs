@@ -2,7 +2,7 @@ use centwise_db::queries::Queries;
 use centwise_domain::{ReviewQueueItem, SmartRule};
 
 use crate::conversions::sms_transaction_id;
-use crate::core::default_account_name;
+use crate::core::{default_account_name, sms_account_provider};
 use crate::types::{SmsIngestResult, SmsIngestStatus, TransactionKind};
 
 /// Result of parsing an incoming SMS across the FFI boundary.
@@ -79,19 +79,10 @@ pub(crate) fn ingest_sms_in_transaction(
                 .as_deref()
                 .or(parsed.party.as_deref())
                 .unwrap_or_default();
-            let mapped_category =
-                queries.matching_merchant_category(merchant_or_party, parsed.transaction_type)?;
-            let rule_category = rules
-                .iter()
-                .find(|rule| {
-                    rule.is_enabled
-                        && rule.transaction_type == parsed.transaction_type
-                        && rule.match_type.matches(merchant_or_party, &rule.keyword)
-                })
-                .map(|rule| rule.category_id.clone());
-            let (category_id, category_source) = mapped_category
-                .map(|category| (category, "learned_mapping"))
-                .or_else(|| rule_category.map(|category| (category, "smart_rule")))
+            let rule_category =
+                explicit_category_rule(rules, merchant_or_party, parsed.transaction_type);
+            let (category_id, category_source) = rule_category
+                .map(|category| (category, "smart_rule"))
                 .or_else(|| {
                     parsed
                         .category_id
@@ -106,11 +97,18 @@ pub(crate) fn ingest_sms_in_transaction(
                     }
                 });
 
+            let account_provider = sms_account_provider(&parsed.provider_id);
             let target_account_id = match queries.resolve_or_create_account(
-                &parsed.provider_id,
-                parsed.account_last4.as_deref(),
-                parsed.account_hint.as_deref(),
-                default_account_name(&parsed.provider_id),
+                account_provider,
+                parsed
+                    .account_last4
+                    .as_deref()
+                    .filter(|_| account_provider != "sim"),
+                parsed
+                    .account_hint
+                    .as_deref()
+                    .filter(|_| account_provider != "sim"),
+                default_account_name(account_provider),
             ) {
                 Ok(id) => Some(id),
                 Err(centwise_db::DbError::Invalid(_)) => None,
@@ -253,6 +251,26 @@ pub(crate) fn ingest_sms_in_transaction(
             })
         }
     }
+}
+
+pub(crate) fn explicit_category_rule(
+    rules: &[SmartRule],
+    merchant: &str,
+    kind: centwise_domain::TransactionType,
+) -> Option<String> {
+    rules
+        .iter()
+        .find(|rule| {
+            rule.is_enabled && rule.transaction_type == kind
+            && rule.match_type.matches(merchant, &rule.keyword)
+            // Unedited seeded rules duplicate the merchant dictionary, not user intent.
+            && !centwise_domain::default_rules().iter().any(|seed| {
+                seed.id == rule.id && seed.keyword == rule.keyword
+                    && seed.match_type == rule.match_type && seed.category_id == rule.category_id
+                    && seed.transaction_type == rule.transaction_type
+            })
+        })
+        .map(|rule| rule.category_id.clone())
 }
 
 pub(crate) fn build_transaction_title_and_notes(

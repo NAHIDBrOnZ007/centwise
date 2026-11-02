@@ -5,7 +5,7 @@ use centwise_domain as domain;
 
 use crate::conversions::*;
 use crate::error::{CentwiseError, ChangeListener, ForeignObserver};
-use crate::ingestion::build_transaction_title_and_notes;
+use crate::ingestion::{build_transaction_title_and_notes, explicit_category_rule};
 use crate::types::*;
 
 /// The Centwise core handle shared with both platforms.
@@ -168,31 +168,6 @@ impl CentwiseCore {
                 let updated = queries.update_transaction(&transaction)?;
                 if updated && category_changed && transaction.is_auto_tracked {
                     queries.set_transaction_category_source(&transaction.id, "user_correction")?;
-                    if let Some(raw_sms) = transaction.raw_sms.as_deref() {
-                        let provider = queries
-                            .list_accounts()?
-                            .into_iter()
-                            .find(|account| account.id == transaction.account_id)
-                            .map(|account| account.provider);
-                        if let centwise_parser::ParseOutcome::Parsed(parsed) =
-                            centwise_parser::parse_sms(raw_sms, provider.as_deref())
-                        {
-                            if let Some(merchant) = parsed
-                                .merchant
-                                .as_deref()
-                                .or(parsed.party.as_deref())
-                                .filter(|merchant| {
-                                    is_learnable_merchant(merchant, &parsed.provider_id)
-                                })
-                            {
-                                queries.upsert_merchant_category_mapping(
-                                    merchant,
-                                    transaction.transaction_type,
-                                    &transaction.category_id,
-                                )?;
-                            }
-                        }
-                    }
                 }
                 Ok(updated)
             })
@@ -361,7 +336,8 @@ impl CentwiseCore {
                         .as_deref()
                         .is_some_and(|hint| hint.to_ascii_lowercase().starts_with("card"));
 
-                    let matches = if parsed.account_last4.is_none() && parsed.account_hint.is_some() {
+                    let matches = if parsed.account_last4.is_none() && parsed.account_hint.is_some()
+                    {
                         if !is_card {
                             if let Some(account) = queries.find_hint_account(
                                 &parsed.provider_id,
@@ -386,18 +362,13 @@ impl CentwiseCore {
                         .as_deref()
                         .or(parsed.party.as_deref())
                         .unwrap_or_default();
-                    let mapped_category_id = queries
-                        .matching_merchant_category(merchant_or_party, parsed.transaction_type)?;
-                    let rule_category_id = queries
-                        .matching_rule(merchant_or_party, parsed.transaction_type)?
-                        .map(|rule| rule.category_id);
-                    let (category_id, category_source) = mapped_category_id
-                        .map(|category| (category, "learned_mapping"))
-                        .or_else(|| {
-                            rule_category_id
-                                .clone()
-                                .map(|category| (category, "smart_rule"))
-                        })
+                    let rule_category_id = explicit_category_rule(
+                        &queries.list_rules()?,
+                        merchant_or_party,
+                        parsed.transaction_type,
+                    );
+                    let (category_id, category_source) = rule_category_id
+                        .map(|category| (category, "smart_rule"))
                         .or_else(|| {
                             parsed
                                 .category_id
@@ -412,8 +383,11 @@ impl CentwiseCore {
                             }
                         });
 
-                    let provider_accounts = queries.find_matching_accounts(&parsed.provider_id, None)?;
-                    let target_account_id = if is_card {
+                    let provider_accounts =
+                        queries.find_matching_accounts(&parsed.provider_id, None)?;
+                    let target_account_id = if sms_account_provider(&parsed.provider_id) == "sim" {
+                        Some(queries.resolve_or_create_account("sim", None, None, "SIM")?)
+                    } else if is_card {
                         if provider_accounts.len() == 1 {
                             Some(provider_accounts[0].id.clone())
                         } else if provider_accounts.is_empty() {
@@ -817,6 +791,13 @@ impl CentwiseCore {
     }
 }
 
+pub(crate) fn sms_account_provider(provider: &str) -> &str {
+    match provider {
+        "grameenphone" | "robi" | "banglalink" | "airtel" | "teletalk" => "sim",
+        _ => provider,
+    }
+}
+
 pub(crate) fn default_account_name(provider: &str) -> &str {
     match provider {
         // MFS
@@ -847,6 +828,7 @@ pub(crate) fn default_account_name(provider: &str) -> &str {
         "rupali-bank" => "Rupali Bank",
 
         // Telcos
+        "sim" => "SIM",
         "grameenphone" => "Grameenphone",
         "robi" => "Robi",
         "banglalink" => "Banglalink",
@@ -856,24 +838,4 @@ pub(crate) fn default_account_name(provider: &str) -> &str {
         "cash" => "Cash / Unassigned",
         _ => "Primary Account",
     }
-}
-
-fn is_learnable_merchant(merchant: &str, provider_id: &str) -> bool {
-    let normalized: String = merchant
-        .trim()
-        .to_lowercase()
-        .chars()
-        .filter(|character| character.is_alphanumeric())
-        .collect();
-    let provider: String = provider_id
-        .chars()
-        .filter(|character| character.is_alphanumeric())
-        .collect();
-    normalized.len() >= 3
-        && normalized.chars().any(char::is_alphabetic)
-        && normalized != provider
-        && !matches!(
-            normalized.as_str(),
-            "bkash" | "nagad" | "rocket" | "upay" | "cellfin" | "merchant"
-        )
 }
