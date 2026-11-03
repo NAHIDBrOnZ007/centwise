@@ -49,14 +49,14 @@ class TransactionRepository private constructor() {
     val isReady: StateFlow<Boolean> = _isReady.asStateFlow()
 
     val totalIncome = _transactions.map { list ->
-        list.filter { it.type == TransactionType.INCOME || it.type == TransactionType.CREDIT }.sumOf { it.amount }
+        list.filter { !it.isLoanMovement && (it.type == TransactionType.INCOME || it.type == TransactionType.CREDIT) }.sumOf { it.amount }
     }
     val totalExpense = _transactions.map { list ->
-        list.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+        list.filter { !it.isLoanMovement && it.type == TransactionType.EXPENSE }.sumOf { it.amount }
     }
     val totalNet = _transactions.map { list ->
-        list.filter { it.type == TransactionType.INCOME || it.type == TransactionType.CREDIT }.sumOf { it.amount } -
-            list.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+        list.filter { !it.isLoanMovement && (it.type == TransactionType.INCOME || it.type == TransactionType.CREDIT) }.sumOf { it.amount } -
+            list.filter { !it.isLoanMovement && it.type == TransactionType.EXPENSE }.sumOf { it.amount }
     }
 
     fun init(context: Context) {
@@ -125,6 +125,7 @@ class TransactionRepository private constructor() {
                 archived = account.archived
             )
         }
+        val loanTransactionIds = CentwiseRustBackend.requireCore().loanTransactionIds().toSet()
         _transactions.value = CentwiseRustBackend.listTransactions().map { transaction ->
             TransactionItem(
                 id = transaction.id,
@@ -137,7 +138,8 @@ class TransactionRepository private constructor() {
                 timestamp = transaction.occurredAtEpochMs,
                 note = transaction.notes,
                 rawSms = transaction.rawSms,
-                reference = transaction.reference
+                reference = transaction.reference,
+                isLoanMovement = transaction.id in loanTransactionIds
             )
         }
         _budgets.value = CentwiseRustBackend.listBudgets().map { budget ->

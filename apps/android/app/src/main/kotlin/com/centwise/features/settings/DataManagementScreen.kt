@@ -144,7 +144,7 @@ fun DataManagementScreen(
             title = { Text("Wipe Database & Reset?", style = CentwiseTypography.Headline, color = textPrimary) },
             text = {
                 Text(
-                    "Are you sure you want to delete all transactions, budgets, and subscriptions? This action cannot be undone.",
+                    "Are you sure you want to delete all transactions, loans, budgets, and subscriptions? This action cannot be undone.",
                     style = CentwiseTypography.Body,
                     color = textSecondary
                 )
@@ -789,7 +789,7 @@ fun DataManagementScreen(
                     Spacer(modifier = Modifier.height(6.dp))
 
                     Text(
-                        text = "Reset permanently deletes all transactions, budgets, and subscriptions from this device.",
+                        text = "Reset permanently deletes all transactions, loans, budgets, and subscriptions from this device.",
                         style = CentwiseTypography.Caption,
                         color = textSecondary,
                         modifier = Modifier.padding(horizontal = 6.dp)

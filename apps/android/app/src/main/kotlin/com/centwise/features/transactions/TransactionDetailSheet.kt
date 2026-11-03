@@ -117,7 +117,7 @@ fun TransactionDetailSheet(
                     color = textPrimary
                 )
 
-                if (onEdit != null) {
+                if (onEdit != null && !transaction.isLoanMovement) {
                     // Edit Solid Accent Action Pill Button
                     Surface(
                         shape = CircleShape,
@@ -253,7 +253,7 @@ fun TransactionDetailSheet(
             }
 
             // 4. Destructive Delete Transaction Button
-            Surface(
+            if (!transaction.isLoanMovement) Surface(
                 shape = RoundedCornerShape(14.dp),
                 color = cardBg,
                 shadowElevation = if (isDark) 4.dp else 1.dp,

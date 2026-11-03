@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loans_title">Loans &amp; Reminders</string>
+    <string name="loans_settings_description">Track money lent, borrowed and repaid</string>
+    <string name="loan_add">Add loan</string>
+    <string name="loan_lent">Lent</string>
+    <string name="loan_borrowed">Borrowed</string>
+    <string name="loan_received">Repayment received</string>
+    <string name="loan_paid">Repayment sent</string>
+    <string name="loan_record_received">Record money received</string>
+    <string name="loan_record_paid">Record money repaid</string>
+    <string name="loan_remaining_receivable">Still to receive</string>
+    <string name="loan_remaining_payable">Still to repay</string>
+    <string name="loan_complete">Completed</string>
+    <string name="loan_empty">No loans yet</string>
+    <string name="loan_load_failed">Could not load loans. Try again.</string>
+    <string name="loan_save_failed">Could not save. Check the details and try again.</string>
+    <string name="loan_person">Person</string>
+    <string name="loan_note">Note (optional)</string>
+    <string name="loan_amount">Amount (BDT)</string>
+    <string name="loan_account">Account</string>
+    <string name="loan_date">Transaction date</string>
+    <string name="loan_due_date">Reminder date</string>
+    <string name="loan_no_due">No reminder</string>
+    <string name="loan_update_due">Change reminder</string>
+    <string name="loan_history">Payment history</string>
+    <string name="loan_months">Monthly loan cash flow</string>
+    <string name="loan_month_amounts">In %1$s · Out %2$s</string>
+    <string name="loan_link">Link an existing transaction</string>
+    <string name="loan_new_payment">Record a new transaction</string>
+    <string name="loan_no_candidates">No matching transactions</string>
+    <string name="loan_full_amount">Use remaining amount</string>
+    <string name="loan_reminder_channel">Loan reminders</string>
+    <string name="loan_reminder_message">A loan payment is due. Open Centwise to see the details.</string>
+    <string name="loan_notifications_disabled">Enable notifications for loan reminders</string>
+    <string name="loan_retry">Retry</string>
+    <string name="loan_save">Save</string>
+    <string name="loan_cancel">Cancel</string>
+    <string name="loan_select">Select</string>
+    <string name="loan_remove_reminder">Remove reminder</string>
+    <string name="loan_summary_line">%1$s · %2$s</string>
+    <string name="loan_cash_out">Loan outflow</string>
+    <string name="loan_cash_in">Loan inflow</string>
+</resources>

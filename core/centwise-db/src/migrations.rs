@@ -275,6 +275,11 @@ WHERE transaction_type = 'transfer'
   AND (raw_sms LIKE '%MFS Transfer%' OR raw_sms LIKE '%debited%MFS%');
 "#,
     },
+    Migration {
+        version: 10,
+        name: "loan tracking",
+        sql: include_str!("../schemas/loans.sql"),
+    },
 ];
 
 /// Latest schema version available in this build.

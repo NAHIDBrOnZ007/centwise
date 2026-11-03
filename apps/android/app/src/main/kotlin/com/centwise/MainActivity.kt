@@ -63,6 +63,7 @@ sealed class SubScreen {
     data object Budgets : SubScreen()
     data object Accounts : SubScreen()
     data object Subscriptions : SubScreen()
+    data class Loans(val id: String? = null) : SubScreen()
     data object FAQ : SubScreen()
     data object About : SubScreen()
     data object ReviewQueue : SubScreen()
@@ -97,12 +98,20 @@ class MainActivity : FragmentActivity() {
         }
     }
 
+    private var requestedLoanId by mutableStateOf<String?>(null)
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        requestedLoanId = intent.getStringExtra(com.centwise.features.loans.LoanReminderWorker.EXTRA_LOAN_ID)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         com.centwise.data.repository.TransactionRepository.shared.init(this)
+        requestedLoanId = intent.getStringExtra(com.centwise.features.loans.LoanReminderWorker.EXTRA_LOAN_ID)
         enableEdgeToEdge()
         setContent {
-            CentwiseApp()
+            CentwiseApp(loanRoute = requestedLoanId, onLoanRouteHandled = { requestedLoanId = null })
         }
     }
 
@@ -112,7 +121,9 @@ private const val ONBOARDING_PERMISSION_REQUEST_CODE = 4201
 
 @Composable
 fun CentwiseApp(
-    isDark: Boolean = isSystemInDarkTheme()
+    isDark: Boolean = isSystemInDarkTheme(),
+    loanRoute: String? = null,
+    onLoanRouteHandled: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val activity = context as? FragmentActivity
@@ -151,6 +162,13 @@ fun CentwiseApp(
     var currentTab by remember { mutableStateOf(CentwiseTab.HOME) }
     val saveableStateHolder = rememberSaveableStateHolder()
     var subScreen by remember { mutableStateOf<SubScreen?>(null) }
+    LaunchedEffect(loanRoute) {
+        if (loanRoute != null) {
+            currentTab = CentwiseTab.SETTINGS
+            subScreen = SubScreen.Loans(loanRoute)
+            onLoanRouteHandled()
+        }
+    }
     var showAddSheet by remember { mutableStateOf(false) }
     var showOnboarding by remember {
         mutableStateOf(!com.centwise.features.onboarding.OnboardingPrefs.isCompleted(context))
@@ -278,6 +296,11 @@ fun CentwiseApp(
                             onBackClick = { subScreen = SubScreen.Accounts },
                             isDark = effectiveDark
                         )
+                        is SubScreen.Loans -> com.centwise.features.loans.LoansScreen(
+                            initialLoanId = activeSubScreen.id,
+                            onBackClick = { subScreen = null },
+                            isDark = effectiveDark
+                        )
                         is SubScreen.Subscriptions -> SubscriptionsScreen(
                             onBackClick = { subScreen = null },
                             isDark = effectiveDark
@@ -341,6 +364,7 @@ fun CentwiseApp(
                                     onBudgetsClick = { subScreen = SubScreen.Budgets },
                                     onAccountsClick = { subScreen = SubScreen.Accounts },
                                     onSubscriptionsClick = { subScreen = SubScreen.Subscriptions },
+                                    onLoansClick = { subScreen = SubScreen.Loans() },
                                     onSmartRulesClick = { subScreen = SubScreen.Rules },
                                     onReviewQueueClick = { subScreen = SubScreen.ReviewQueue },
                                     onDataManagementClick = { subScreen = SubScreen.DataManagement },

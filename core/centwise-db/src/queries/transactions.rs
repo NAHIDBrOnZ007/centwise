@@ -337,6 +337,19 @@ impl<'a> Queries<'a> {
         Ok(transactions)
     }
 
+    pub fn loan_transaction_candidates(&self, kind: TransactionType) -> DbResult<Vec<Transaction>> {
+        let mut statement = self.connection.prepare(
+            "SELECT id, title, amount_minor, currency, transaction_type, category_id,
+                    occurred_at_epoch_ms, account_id, reference, balance_after_minor,
+                    notes, raw_sms, fee_minor, is_auto_tracked
+             FROM ordinary_transactions
+             WHERE transaction_type = ?1 AND currency = 'BDT' AND amount_minor > 0
+             ORDER BY occurred_at_epoch_ms DESC, id LIMIT 200",
+        )?;
+        let rows = statement.query_map([kind.as_str()], map_full_row)?;
+        super::collect(rows)
+    }
+
     /// Returns one transaction by its stable id without scanning the inbox.
     pub fn get_transaction(&self, id: &str) -> DbResult<Option<Transaction>> {
         self.connection
@@ -363,7 +376,7 @@ impl<'a> Queries<'a> {
             "SELECT
                 COALESCE(SUM(CASE WHEN transaction_type = 'expense' THEN amount_minor ELSE 0 END), 0),
                 COALESCE(SUM(CASE WHEN transaction_type IN ('income', 'refund') THEN amount_minor ELSE 0 END), 0)
-             FROM transactions
+             FROM ordinary_transactions
              WHERE occurred_at_epoch_ms >= ?1 AND occurred_at_epoch_ms < ?2",
             params![start_epoch_ms, end_epoch_ms],
             |row| Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?)),

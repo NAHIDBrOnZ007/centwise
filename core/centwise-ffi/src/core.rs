@@ -11,7 +11,7 @@ use crate::types::*;
 /// The Centwise core handle shared with both platforms.
 #[derive(uniffi::Object)]
 pub struct CentwiseCore {
-    database: Database,
+    pub(crate) database: Database,
 }
 
 #[uniffi::export]

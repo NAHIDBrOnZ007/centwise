@@ -99,16 +99,16 @@ class TransactionsViewModel(
     }
 
     val totalIncome: StateFlow<Double> = baseFilteredTransactions.map { list ->
-        list.filter { it.type == TransactionType.INCOME || it.type == TransactionType.CREDIT }.sumOf { it.amount }
+        list.filter { !it.isLoanMovement && (it.type == TransactionType.INCOME || it.type == TransactionType.CREDIT) }.sumOf { it.amount }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0.0)
 
     val totalExpense: StateFlow<Double> = baseFilteredTransactions.map { list ->
-        list.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+        list.filter { !it.isLoanMovement && it.type == TransactionType.EXPENSE }.sumOf { it.amount }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0.0)
 
     val totalNet: StateFlow<Double> = baseFilteredTransactions.map { list ->
-        val inc = list.filter { it.type == TransactionType.INCOME || it.type == TransactionType.CREDIT }.sumOf { it.amount }
-        val exp = list.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+        val inc = list.filter { !it.isLoanMovement && (it.type == TransactionType.INCOME || it.type == TransactionType.CREDIT) }.sumOf { it.amount }
+        val exp = list.filter { !it.isLoanMovement && it.type == TransactionType.EXPENSE }.sumOf { it.amount }
         inc - exp
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0.0)
 

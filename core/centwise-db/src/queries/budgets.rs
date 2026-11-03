@@ -59,7 +59,7 @@ impl<'a> Queries<'a> {
             "SELECT b.id, b.category_id, c.name, c.icon, c.color_hex,
                     b.limit_minor, b.period, b.start_epoch_ms, b.end_epoch_ms,
                     COALESCE((
-                        SELECT SUM(t.amount_minor) FROM transactions t
+                        SELECT SUM(t.amount_minor) FROM ordinary_transactions t
                         WHERE t.category_id = b.category_id
                           AND t.transaction_type = 'expense'
                           AND t.occurred_at_epoch_ms >= b.start_epoch_ms

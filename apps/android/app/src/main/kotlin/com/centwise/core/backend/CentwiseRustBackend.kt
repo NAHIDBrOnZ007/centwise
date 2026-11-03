@@ -50,6 +50,8 @@ object CentwiseRustBackend {
 
     fun isAvailable(): Boolean = core != null
 
+    internal fun requireCore(): CentwiseCore = checkNotNull(core)
+
     fun ingestSms(sender: String?, body: String, timestamp: Long): SmsIngestResult? {
         val rustCore = core
         return if (rustCore != null) {

@@ -532,6 +532,8 @@ public protocol CentwiseCoreProtocol : AnyObject {
 
     func convertReviewQueueItem(id: String, input: TransactionInput) throws  -> Bool
 
+    func createLoan(id: String, person: String, lent: Bool, dueAtEpochMs: Int64?, note: String, payment: LoanPaymentInput) throws  -> LoanRecord
+
     func deleteAccount(id: String) throws  -> Bool
 
     func deleteBudget(id: String) throws  -> Bool
@@ -584,6 +586,8 @@ public protocol CentwiseCoreProtocol : AnyObject {
 
     func listCategories() throws  -> [CategoryRecord]
 
+    func listLoans() throws  -> [LoanRecord]
+
     func listReviewQueue(limit: UInt32) throws  -> [ReviewQueueRecord]
 
     func listRules() throws  -> [SmartRuleRecord]
@@ -598,12 +602,24 @@ public protocol CentwiseCoreProtocol : AnyObject {
      */
     func loadDemoData() throws  -> DemoDataSummaryRecord
 
+    func loanMonths() throws  -> [LoanMonthRecord]
+
+    func loanMovements(id: String) throws  -> [LoanMovementRecord]
+
+    func loanTransactionCandidates(incoming: Bool) throws  -> [TransactionRecord]
+
+    func loanTransactionIds() throws  -> [String]
+
+    func repayLoan(id: String, payment: LoanPaymentInput) throws  -> LoanRecord
+
     /**
      * Clears user records and preserves Rust's system categories.
      */
     func resetToEmptyDatabase() throws
 
     func restoreDefaultRules() throws
+
+    func setLoanDueDate(id: String, dueAtEpochMs: Int64?) throws  -> LoanRecord
 
     func updateAccount(account: AccountInput) throws  -> Bool
 
@@ -722,6 +738,19 @@ open func convertReviewQueueItem(id: String, input: TransactionInput)throws  -> 
     uniffi_centwise_ffi_fn_method_centwisecore_convert_review_queue_item(self.uniffiClonePointer(),
         FfiConverterString.lower(id),
         FfiConverterTypeTransactionInput.lower(input),$0
+    )
+})
+}
+
+open func createLoan(id: String, person: String, lent: Bool, dueAtEpochMs: Int64?, note: String, payment: LoanPaymentInput)throws  -> LoanRecord {
+    return try  FfiConverterTypeLoanRecord.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
+    uniffi_centwise_ffi_fn_method_centwisecore_create_loan(self.uniffiClonePointer(),
+        FfiConverterString.lower(id),
+        FfiConverterString.lower(person),
+        FfiConverterBool.lower(lent),
+        FfiConverterOptionInt64.lower(dueAtEpochMs),
+        FfiConverterString.lower(note),
+        FfiConverterTypeLoanPaymentInput.lower(payment),$0
     )
 })
 }
@@ -893,6 +922,13 @@ open func listCategories()throws  -> [CategoryRecord] {
 })
 }
 
+open func listLoans()throws  -> [LoanRecord] {
+    return try  FfiConverterSequenceTypeLoanRecord.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
+    uniffi_centwise_ffi_fn_method_centwisecore_list_loans(self.uniffiClonePointer(),$0
+    )
+})
+}
+
 open func listReviewQueue(limit: UInt32)throws  -> [ReviewQueueRecord] {
     return try  FfiConverterSequenceTypeReviewQueueRecord.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
     uniffi_centwise_ffi_fn_method_centwisecore_list_review_queue(self.uniffiClonePointer(),
@@ -934,6 +970,45 @@ open func loadDemoData()throws  -> DemoDataSummaryRecord {
 })
 }
 
+open func loanMonths()throws  -> [LoanMonthRecord] {
+    return try  FfiConverterSequenceTypeLoanMonthRecord.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
+    uniffi_centwise_ffi_fn_method_centwisecore_loan_months(self.uniffiClonePointer(),$0
+    )
+})
+}
+
+open func loanMovements(id: String)throws  -> [LoanMovementRecord] {
+    return try  FfiConverterSequenceTypeLoanMovementRecord.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
+    uniffi_centwise_ffi_fn_method_centwisecore_loan_movements(self.uniffiClonePointer(),
+        FfiConverterString.lower(id),$0
+    )
+})
+}
+
+open func loanTransactionCandidates(incoming: Bool)throws  -> [TransactionRecord] {
+    return try  FfiConverterSequenceTypeTransactionRecord.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
+    uniffi_centwise_ffi_fn_method_centwisecore_loan_transaction_candidates(self.uniffiClonePointer(),
+        FfiConverterBool.lower(incoming),$0
+    )
+})
+}
+
+open func loanTransactionIds()throws  -> [String] {
+    return try  FfiConverterSequenceString.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
+    uniffi_centwise_ffi_fn_method_centwisecore_loan_transaction_ids(self.uniffiClonePointer(),$0
+    )
+})
+}
+
+open func repayLoan(id: String, payment: LoanPaymentInput)throws  -> LoanRecord {
+    return try  FfiConverterTypeLoanRecord.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
+    uniffi_centwise_ffi_fn_method_centwisecore_repay_loan(self.uniffiClonePointer(),
+        FfiConverterString.lower(id),
+        FfiConverterTypeLoanPaymentInput.lower(payment),$0
+    )
+})
+}
+
     /**
      * Clears user records and preserves Rust's system categories.
      */
@@ -947,6 +1022,15 @@ open func restoreDefaultRules()throws  {try rustCallWithError(FfiConverterTypeCe
     uniffi_centwise_ffi_fn_method_centwisecore_restore_default_rules(self.uniffiClonePointer(),$0
     )
 }
+}
+
+open func setLoanDueDate(id: String, dueAtEpochMs: Int64?)throws  -> LoanRecord {
+    return try  FfiConverterTypeLoanRecord.lift(try rustCallWithError(FfiConverterTypeCentwiseError.lift) {
+    uniffi_centwise_ffi_fn_method_centwisecore_set_loan_due_date(self.uniffiClonePointer(),
+        FfiConverterString.lower(id),
+        FfiConverterOptionInt64.lower(dueAtEpochMs),$0
+    )
+})
 }
 
 open func updateAccount(account: AccountInput)throws  -> Bool {
@@ -2156,6 +2240,390 @@ public func FfiConverterTypeHomeDashboardRecord_lift(_ buf: RustBuffer) throws -
 #endif
 public func FfiConverterTypeHomeDashboardRecord_lower(_ value: HomeDashboardRecord) -> RustBuffer {
     return FfiConverterTypeHomeDashboardRecord.lower(value)
+}
+
+
+public struct LoanMonthRecord {
+    public let month: String
+    public let incomingMinor: Int64
+    public let outgoingMinor: Int64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(month: String, incomingMinor: Int64, outgoingMinor: Int64) {
+        self.month = month
+        self.incomingMinor = incomingMinor
+        self.outgoingMinor = outgoingMinor
+    }
+}
+
+
+
+extension LoanMonthRecord: Equatable, Hashable {
+    public static func ==(lhs: LoanMonthRecord, rhs: LoanMonthRecord) -> Bool {
+        if lhs.month != rhs.month {
+            return false
+        }
+        if lhs.incomingMinor != rhs.incomingMinor {
+            return false
+        }
+        if lhs.outgoingMinor != rhs.outgoingMinor {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(month)
+        hasher.combine(incomingMinor)
+        hasher.combine(outgoingMinor)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLoanMonthRecord: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LoanMonthRecord {
+        return
+            try LoanMonthRecord(
+                month: FfiConverterString.read(from: &buf),
+                incomingMinor: FfiConverterInt64.read(from: &buf),
+                outgoingMinor: FfiConverterInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: LoanMonthRecord, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.month, into: &buf)
+        FfiConverterInt64.write(value.incomingMinor, into: &buf)
+        FfiConverterInt64.write(value.outgoingMinor, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLoanMonthRecord_lift(_ buf: RustBuffer) throws -> LoanMonthRecord {
+    return try FfiConverterTypeLoanMonthRecord.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLoanMonthRecord_lower(_ value: LoanMonthRecord) -> RustBuffer {
+    return FfiConverterTypeLoanMonthRecord.lower(value)
+}
+
+
+public struct LoanMovementRecord {
+    public let transactionId: String
+    public let repayment: Bool
+    public let accountName: String
+    public let amountMinor: Int64
+    public let occurredAtEpochMs: Int64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(transactionId: String, repayment: Bool, accountName: String, amountMinor: Int64, occurredAtEpochMs: Int64) {
+        self.transactionId = transactionId
+        self.repayment = repayment
+        self.accountName = accountName
+        self.amountMinor = amountMinor
+        self.occurredAtEpochMs = occurredAtEpochMs
+    }
+}
+
+
+
+extension LoanMovementRecord: Equatable, Hashable {
+    public static func ==(lhs: LoanMovementRecord, rhs: LoanMovementRecord) -> Bool {
+        if lhs.transactionId != rhs.transactionId {
+            return false
+        }
+        if lhs.repayment != rhs.repayment {
+            return false
+        }
+        if lhs.accountName != rhs.accountName {
+            return false
+        }
+        if lhs.amountMinor != rhs.amountMinor {
+            return false
+        }
+        if lhs.occurredAtEpochMs != rhs.occurredAtEpochMs {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(transactionId)
+        hasher.combine(repayment)
+        hasher.combine(accountName)
+        hasher.combine(amountMinor)
+        hasher.combine(occurredAtEpochMs)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLoanMovementRecord: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LoanMovementRecord {
+        return
+            try LoanMovementRecord(
+                transactionId: FfiConverterString.read(from: &buf),
+                repayment: FfiConverterBool.read(from: &buf),
+                accountName: FfiConverterString.read(from: &buf),
+                amountMinor: FfiConverterInt64.read(from: &buf),
+                occurredAtEpochMs: FfiConverterInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: LoanMovementRecord, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.transactionId, into: &buf)
+        FfiConverterBool.write(value.repayment, into: &buf)
+        FfiConverterString.write(value.accountName, into: &buf)
+        FfiConverterInt64.write(value.amountMinor, into: &buf)
+        FfiConverterInt64.write(value.occurredAtEpochMs, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLoanMovementRecord_lift(_ buf: RustBuffer) throws -> LoanMovementRecord {
+    return try FfiConverterTypeLoanMovementRecord.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLoanMovementRecord_lower(_ value: LoanMovementRecord) -> RustBuffer {
+    return FfiConverterTypeLoanMovementRecord.lower(value)
+}
+
+
+public struct LoanPaymentInput {
+    public let id: String
+    public let accountId: String
+    public let amount: String
+    public let occurredAtEpochMs: Int64
+    public let existingTransactionId: String?
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: String, accountId: String, amount: String, occurredAtEpochMs: Int64, existingTransactionId: String?) {
+        self.id = id
+        self.accountId = accountId
+        self.amount = amount
+        self.occurredAtEpochMs = occurredAtEpochMs
+        self.existingTransactionId = existingTransactionId
+    }
+}
+
+
+
+extension LoanPaymentInput: Equatable, Hashable {
+    public static func ==(lhs: LoanPaymentInput, rhs: LoanPaymentInput) -> Bool {
+        if lhs.id != rhs.id {
+            return false
+        }
+        if lhs.accountId != rhs.accountId {
+            return false
+        }
+        if lhs.amount != rhs.amount {
+            return false
+        }
+        if lhs.occurredAtEpochMs != rhs.occurredAtEpochMs {
+            return false
+        }
+        if lhs.existingTransactionId != rhs.existingTransactionId {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(accountId)
+        hasher.combine(amount)
+        hasher.combine(occurredAtEpochMs)
+        hasher.combine(existingTransactionId)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLoanPaymentInput: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LoanPaymentInput {
+        return
+            try LoanPaymentInput(
+                id: FfiConverterString.read(from: &buf),
+                accountId: FfiConverterString.read(from: &buf),
+                amount: FfiConverterString.read(from: &buf),
+                occurredAtEpochMs: FfiConverterInt64.read(from: &buf),
+                existingTransactionId: FfiConverterOptionString.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: LoanPaymentInput, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.accountId, into: &buf)
+        FfiConverterString.write(value.amount, into: &buf)
+        FfiConverterInt64.write(value.occurredAtEpochMs, into: &buf)
+        FfiConverterOptionString.write(value.existingTransactionId, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLoanPaymentInput_lift(_ buf: RustBuffer) throws -> LoanPaymentInput {
+    return try FfiConverterTypeLoanPaymentInput.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLoanPaymentInput_lower(_ value: LoanPaymentInput) -> RustBuffer {
+    return FfiConverterTypeLoanPaymentInput.lower(value)
+}
+
+
+public struct LoanRecord {
+    public let id: String
+    public let person: String
+    public let lent: Bool
+    public let note: String
+    public let dueAtEpochMs: Int64?
+    public let principalMinor: Int64
+    public let repaidMinor: Int64
+    public let remainingMinor: Int64
+    public let accountId: String
+    public let openedAtEpochMs: Int64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: String, person: String, lent: Bool, note: String, dueAtEpochMs: Int64?, principalMinor: Int64, repaidMinor: Int64, remainingMinor: Int64, accountId: String, openedAtEpochMs: Int64) {
+        self.id = id
+        self.person = person
+        self.lent = lent
+        self.note = note
+        self.dueAtEpochMs = dueAtEpochMs
+        self.principalMinor = principalMinor
+        self.repaidMinor = repaidMinor
+        self.remainingMinor = remainingMinor
+        self.accountId = accountId
+        self.openedAtEpochMs = openedAtEpochMs
+    }
+}
+
+
+
+extension LoanRecord: Equatable, Hashable {
+    public static func ==(lhs: LoanRecord, rhs: LoanRecord) -> Bool {
+        if lhs.id != rhs.id {
+            return false
+        }
+        if lhs.person != rhs.person {
+            return false
+        }
+        if lhs.lent != rhs.lent {
+            return false
+        }
+        if lhs.note != rhs.note {
+            return false
+        }
+        if lhs.dueAtEpochMs != rhs.dueAtEpochMs {
+            return false
+        }
+        if lhs.principalMinor != rhs.principalMinor {
+            return false
+        }
+        if lhs.repaidMinor != rhs.repaidMinor {
+            return false
+        }
+        if lhs.remainingMinor != rhs.remainingMinor {
+            return false
+        }
+        if lhs.accountId != rhs.accountId {
+            return false
+        }
+        if lhs.openedAtEpochMs != rhs.openedAtEpochMs {
+            return false
+        }
+        return true
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(person)
+        hasher.combine(lent)
+        hasher.combine(note)
+        hasher.combine(dueAtEpochMs)
+        hasher.combine(principalMinor)
+        hasher.combine(repaidMinor)
+        hasher.combine(remainingMinor)
+        hasher.combine(accountId)
+        hasher.combine(openedAtEpochMs)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeLoanRecord: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> LoanRecord {
+        return
+            try LoanRecord(
+                id: FfiConverterString.read(from: &buf),
+                person: FfiConverterString.read(from: &buf),
+                lent: FfiConverterBool.read(from: &buf),
+                note: FfiConverterString.read(from: &buf),
+                dueAtEpochMs: FfiConverterOptionInt64.read(from: &buf),
+                principalMinor: FfiConverterInt64.read(from: &buf),
+                repaidMinor: FfiConverterInt64.read(from: &buf),
+                remainingMinor: FfiConverterInt64.read(from: &buf),
+                accountId: FfiConverterString.read(from: &buf),
+                openedAtEpochMs: FfiConverterInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: LoanRecord, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.person, into: &buf)
+        FfiConverterBool.write(value.lent, into: &buf)
+        FfiConverterString.write(value.note, into: &buf)
+        FfiConverterOptionInt64.write(value.dueAtEpochMs, into: &buf)
+        FfiConverterInt64.write(value.principalMinor, into: &buf)
+        FfiConverterInt64.write(value.repaidMinor, into: &buf)
+        FfiConverterInt64.write(value.remainingMinor, into: &buf)
+        FfiConverterString.write(value.accountId, into: &buf)
+        FfiConverterInt64.write(value.openedAtEpochMs, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLoanRecord_lift(_ buf: RustBuffer) throws -> LoanRecord {
+    return try FfiConverterTypeLoanRecord.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeLoanRecord_lower(_ value: LoanRecord) -> RustBuffer {
+    return FfiConverterTypeLoanRecord.lower(value)
 }
 
 
@@ -3999,6 +4467,31 @@ fileprivate struct FfiConverterOptionTypeTransactionKind: FfiConverterRustBuffer
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceString: FfiConverterRustBuffer {
+    typealias SwiftType = [String]
+
+    public static func write(_ value: [String], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterString.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [String] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [String]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterString.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeAccountRecord: FfiConverterRustBuffer {
     typealias SwiftType = [AccountRecord]
 
@@ -4141,6 +4634,81 @@ fileprivate struct FfiConverterSequenceTypeCategoryRecord: FfiConverterRustBuffe
         seq.reserveCapacity(Int(len))
         for _ in 0 ..< len {
             seq.append(try FfiConverterTypeCategoryRecord.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeLoanMonthRecord: FfiConverterRustBuffer {
+    typealias SwiftType = [LoanMonthRecord]
+
+    public static func write(_ value: [LoanMonthRecord], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeLoanMonthRecord.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [LoanMonthRecord] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [LoanMonthRecord]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeLoanMonthRecord.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeLoanMovementRecord: FfiConverterRustBuffer {
+    typealias SwiftType = [LoanMovementRecord]
+
+    public static func write(_ value: [LoanMovementRecord], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeLoanMovementRecord.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [LoanMovementRecord] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [LoanMovementRecord]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeLoanMovementRecord.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeLoanRecord: FfiConverterRustBuffer {
+    typealias SwiftType = [LoanRecord]
+
+    public static func write(_ value: [LoanRecord], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeLoanRecord.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [LoanRecord] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [LoanRecord]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeLoanRecord.read(from: &buf))
         }
         return seq
     }
@@ -4362,6 +4930,9 @@ private var initializationResult: InitializationResult = {
     if (uniffi_centwise_ffi_checksum_method_centwisecore_convert_review_queue_item() != 3208) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_centwise_ffi_checksum_method_centwisecore_create_loan() != 62935) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_centwise_ffi_checksum_method_centwisecore_delete_account() != 31782) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -4422,6 +4993,9 @@ private var initializationResult: InitializationResult = {
     if (uniffi_centwise_ffi_checksum_method_centwisecore_list_categories() != 53519) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_centwise_ffi_checksum_method_centwisecore_list_loans() != 20109) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_centwise_ffi_checksum_method_centwisecore_list_review_queue() != 11731) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -4437,10 +5011,28 @@ private var initializationResult: InitializationResult = {
     if (uniffi_centwise_ffi_checksum_method_centwisecore_load_demo_data() != 3828) {
         return InitializationResult.apiChecksumMismatch
     }
+    if (uniffi_centwise_ffi_checksum_method_centwisecore_loan_months() != 1375) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_centwise_ffi_checksum_method_centwisecore_loan_movements() != 43446) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_centwise_ffi_checksum_method_centwisecore_loan_transaction_candidates() != 22857) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_centwise_ffi_checksum_method_centwisecore_loan_transaction_ids() != 55722) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_centwise_ffi_checksum_method_centwisecore_repay_loan() != 60982) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_centwise_ffi_checksum_method_centwisecore_reset_to_empty_database() != 12546) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_centwise_ffi_checksum_method_centwisecore_restore_default_rules() != 36615) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_centwise_ffi_checksum_method_centwisecore_set_loan_due_date() != 2050) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_centwise_ffi_checksum_method_centwisecore_update_account() != 59265) {

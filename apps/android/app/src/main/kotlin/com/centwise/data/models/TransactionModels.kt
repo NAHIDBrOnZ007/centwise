@@ -19,7 +19,8 @@ data class TransactionItem(
     val timestamp: Long = System.currentTimeMillis(),
     val note: String? = null,
     val rawSms: String? = null,
-    val reference: String? = null
+    val reference: String? = null,
+    val isLoanMovement: Boolean = false
 ) {
     val date: java.util.Date
         get() = java.util.Date(timestamp)

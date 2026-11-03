@@ -46,6 +46,11 @@ fun TransactionRow(
 
     val isIncome = transaction.type == TransactionType.INCOME || transaction.type == TransactionType.CREDIT
     val isTransfer = transaction.type == TransactionType.TRANSFER
+    val categoryLabel = if (transaction.isLoanMovement) {
+        androidx.compose.ui.res.stringResource(
+            if (isIncome) com.centwise.R.string.loan_cash_in else com.centwise.R.string.loan_cash_out
+        )
+    } else transaction.category
     val amountColor = when {
         isIncome -> CentwiseColors.IncomeGreen
         isTransfer -> CentwiseColors.TransferBlue
@@ -82,7 +87,7 @@ fun TransactionRow(
         ) {
             Icon(
                 imageVector = CategoryIconHelper.iconFor(transaction.category),
-                contentDescription = transaction.category,
+                contentDescription = categoryLabel,
                 tint = accent,
                 modifier = Modifier.size(20.dp)
             )
@@ -101,7 +106,7 @@ fun TransactionRow(
             Spacer(modifier = Modifier.height(3.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = transaction.category,
+                    text = categoryLabel,
                     style = CentwiseTypography.Caption.copy(fontSize = 12.sp),
                     color = textSecondary,
                     maxLines = 1

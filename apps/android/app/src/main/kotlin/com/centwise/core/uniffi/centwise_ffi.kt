@@ -815,6 +815,22 @@ internal open class UniffiVTableCallbackInterfaceChangeListener(
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // A JNA Library to expose the extern-C FFI definitions.
 // This is an implementation detail which will be called internally by the public API.
 
@@ -849,6 +865,8 @@ internal interface UniffiLib : Library {
     ): RustBuffer.ByValue
     fun uniffi_centwise_ffi_fn_method_centwisecore_convert_review_queue_item(`ptr`: Pointer,`id`: RustBuffer.ByValue,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
     ): Byte
+    fun uniffi_centwise_ffi_fn_method_centwisecore_create_loan(`ptr`: Pointer,`id`: RustBuffer.ByValue,`person`: RustBuffer.ByValue,`lent`: Byte,`dueAtEpochMs`: RustBuffer.ByValue,`note`: RustBuffer.ByValue,`payment`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
     fun uniffi_centwise_ffi_fn_method_centwisecore_delete_account(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
     ): Byte
     fun uniffi_centwise_ffi_fn_method_centwisecore_delete_budget(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
@@ -889,6 +907,8 @@ internal interface UniffiLib : Library {
     ): RustBuffer.ByValue
     fun uniffi_centwise_ffi_fn_method_centwisecore_list_categories(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
     ): RustBuffer.ByValue
+    fun uniffi_centwise_ffi_fn_method_centwisecore_list_loans(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
     fun uniffi_centwise_ffi_fn_method_centwisecore_list_review_queue(`ptr`: Pointer,`limit`: Int,uniffi_out_err: UniffiRustCallStatus,
     ): RustBuffer.ByValue
     fun uniffi_centwise_ffi_fn_method_centwisecore_list_rules(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
@@ -899,10 +919,22 @@ internal interface UniffiLib : Library {
     ): RustBuffer.ByValue
     fun uniffi_centwise_ffi_fn_method_centwisecore_load_demo_data(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
     ): RustBuffer.ByValue
+    fun uniffi_centwise_ffi_fn_method_centwisecore_loan_months(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
+    fun uniffi_centwise_ffi_fn_method_centwisecore_loan_movements(`ptr`: Pointer,`id`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
+    fun uniffi_centwise_ffi_fn_method_centwisecore_loan_transaction_candidates(`ptr`: Pointer,`incoming`: Byte,uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
+    fun uniffi_centwise_ffi_fn_method_centwisecore_loan_transaction_ids(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
+    fun uniffi_centwise_ffi_fn_method_centwisecore_repay_loan(`ptr`: Pointer,`id`: RustBuffer.ByValue,`payment`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
     fun uniffi_centwise_ffi_fn_method_centwisecore_reset_to_empty_database(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
     ): Unit
     fun uniffi_centwise_ffi_fn_method_centwisecore_restore_default_rules(`ptr`: Pointer,uniffi_out_err: UniffiRustCallStatus,
     ): Unit
+    fun uniffi_centwise_ffi_fn_method_centwisecore_set_loan_due_date(`ptr`: Pointer,`id`: RustBuffer.ByValue,`dueAtEpochMs`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
+    ): RustBuffer.ByValue
     fun uniffi_centwise_ffi_fn_method_centwisecore_update_account(`ptr`: Pointer,`account`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
     ): Byte
     fun uniffi_centwise_ffi_fn_method_centwisecore_update_budget(`ptr`: Pointer,`input`: RustBuffer.ByValue,uniffi_out_err: UniffiRustCallStatus,
@@ -1041,6 +1073,8 @@ internal interface UniffiLib : Library {
     ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_convert_review_queue_item(
     ): Short
+    fun uniffi_centwise_ffi_checksum_method_centwisecore_create_loan(
+    ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_delete_account(
     ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_delete_budget(
@@ -1081,6 +1115,8 @@ internal interface UniffiLib : Library {
     ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_list_categories(
     ): Short
+    fun uniffi_centwise_ffi_checksum_method_centwisecore_list_loans(
+    ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_list_review_queue(
     ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_list_rules(
@@ -1091,9 +1127,21 @@ internal interface UniffiLib : Library {
     ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_load_demo_data(
     ): Short
+    fun uniffi_centwise_ffi_checksum_method_centwisecore_loan_months(
+    ): Short
+    fun uniffi_centwise_ffi_checksum_method_centwisecore_loan_movements(
+    ): Short
+    fun uniffi_centwise_ffi_checksum_method_centwisecore_loan_transaction_candidates(
+    ): Short
+    fun uniffi_centwise_ffi_checksum_method_centwisecore_loan_transaction_ids(
+    ): Short
+    fun uniffi_centwise_ffi_checksum_method_centwisecore_repay_loan(
+    ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_reset_to_empty_database(
     ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_restore_default_rules(
+    ): Short
+    fun uniffi_centwise_ffi_checksum_method_centwisecore_set_loan_due_date(
     ): Short
     fun uniffi_centwise_ffi_checksum_method_centwisecore_update_account(
     ): Short
@@ -1141,6 +1189,9 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_convert_review_queue_item() != 3208.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_create_loan() != 62935.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_delete_account() != 31782.toShort()) {
@@ -1203,6 +1254,9 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_list_categories() != 53519.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_list_loans() != 20109.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_list_review_queue() != 11731.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
@@ -1218,10 +1272,28 @@ private fun uniffiCheckApiChecksums(lib: UniffiLib) {
     if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_load_demo_data() != 3828.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
+    if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_loan_months() != 1375.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_loan_movements() != 43446.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_loan_transaction_candidates() != 22857.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_loan_transaction_ids() != 55722.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_repay_loan() != 60982.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
     if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_reset_to_empty_database() != 12546.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_restore_default_rules() != 36615.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_set_loan_due_date() != 2050.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_centwise_ffi_checksum_method_centwisecore_update_account() != 59265.toShort()) {
@@ -1626,6 +1698,8 @@ public interface CentwiseCoreInterface {
 
     fun `convertReviewQueueItem`(`id`: kotlin.String, `input`: TransactionInput): kotlin.Boolean
 
+    fun `createLoan`(`id`: kotlin.String, `person`: kotlin.String, `lent`: kotlin.Boolean, `dueAtEpochMs`: kotlin.Long?, `note`: kotlin.String, `payment`: LoanPaymentInput): LoanRecord
+
     fun `deleteAccount`(`id`: kotlin.String): kotlin.Boolean
 
     fun `deleteBudget`(`id`: kotlin.String): kotlin.Boolean
@@ -1678,6 +1752,8 @@ public interface CentwiseCoreInterface {
 
     fun `listCategories`(): List<CategoryRecord>
 
+    fun `listLoans`(): List<LoanRecord>
+
     fun `listReviewQueue`(`limit`: kotlin.UInt): List<ReviewQueueRecord>
 
     fun `listRules`(): List<SmartRuleRecord>
@@ -1692,12 +1768,24 @@ public interface CentwiseCoreInterface {
      */
     fun `loadDemoData`(): DemoDataSummaryRecord
 
+    fun `loanMonths`(): List<LoanMonthRecord>
+
+    fun `loanMovements`(`id`: kotlin.String): List<LoanMovementRecord>
+
+    fun `loanTransactionCandidates`(`incoming`: kotlin.Boolean): List<TransactionRecord>
+
+    fun `loanTransactionIds`(): List<kotlin.String>
+
+    fun `repayLoan`(`id`: kotlin.String, `payment`: LoanPaymentInput): LoanRecord
+
     /**
      * Clears user records and preserves Rust's system categories.
      */
     fun `resetToEmptyDatabase`()
 
     fun `restoreDefaultRules`()
+
+    fun `setLoanDueDate`(`id`: kotlin.String, `dueAtEpochMs`: kotlin.Long?): LoanRecord
 
     fun `updateAccount`(`account`: AccountInput): kotlin.Boolean
 
@@ -1849,6 +1937,19 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
     uniffiRustCallWithError(CentwiseException) { _status ->
     UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_convert_review_queue_item(
         it, FfiConverterString.lower(`id`),FfiConverterTypeTransactionInput.lower(`input`),_status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CentwiseException::class)override fun `createLoan`(`id`: kotlin.String, `person`: kotlin.String, `lent`: kotlin.Boolean, `dueAtEpochMs`: kotlin.Long?, `note`: kotlin.String, `payment`: LoanPaymentInput): LoanRecord {
+            return FfiConverterTypeLoanRecord.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CentwiseException) { _status ->
+    UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_create_loan(
+        it, FfiConverterString.lower(`id`),FfiConverterString.lower(`person`),FfiConverterBoolean.lower(`lent`),FfiConverterOptionalLong.lower(`dueAtEpochMs`),FfiConverterString.lower(`note`),FfiConverterTypeLoanPaymentInput.lower(`payment`),_status)
 }
     }
     )
@@ -2122,6 +2223,19 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
 
 
 
+    @Throws(CentwiseException::class)override fun `listLoans`(): List<LoanRecord> {
+            return FfiConverterSequenceTypeLoanRecord.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CentwiseException) { _status ->
+    UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_list_loans(
+        it, _status)
+}
+    }
+    )
+    }
+
+
+
     @Throws(CentwiseException::class)override fun `listReviewQueue`(`limit`: kotlin.UInt): List<ReviewQueueRecord> {
             return FfiConverterSequenceTypeReviewQueueRecord.lift(
     callWithPointer {
@@ -2191,6 +2305,71 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
 
 
 
+    @Throws(CentwiseException::class)override fun `loanMonths`(): List<LoanMonthRecord> {
+            return FfiConverterSequenceTypeLoanMonthRecord.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CentwiseException) { _status ->
+    UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_loan_months(
+        it, _status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CentwiseException::class)override fun `loanMovements`(`id`: kotlin.String): List<LoanMovementRecord> {
+            return FfiConverterSequenceTypeLoanMovementRecord.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CentwiseException) { _status ->
+    UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_loan_movements(
+        it, FfiConverterString.lower(`id`),_status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CentwiseException::class)override fun `loanTransactionCandidates`(`incoming`: kotlin.Boolean): List<TransactionRecord> {
+            return FfiConverterSequenceTypeTransactionRecord.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CentwiseException) { _status ->
+    UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_loan_transaction_candidates(
+        it, FfiConverterBoolean.lower(`incoming`),_status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CentwiseException::class)override fun `loanTransactionIds`(): List<kotlin.String> {
+            return FfiConverterSequenceString.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CentwiseException) { _status ->
+    UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_loan_transaction_ids(
+        it, _status)
+}
+    }
+    )
+    }
+
+
+
+    @Throws(CentwiseException::class)override fun `repayLoan`(`id`: kotlin.String, `payment`: LoanPaymentInput): LoanRecord {
+            return FfiConverterTypeLoanRecord.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CentwiseException) { _status ->
+    UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_repay_loan(
+        it, FfiConverterString.lower(`id`),FfiConverterTypeLoanPaymentInput.lower(`payment`),_status)
+}
+    }
+    )
+    }
+
+
+
     /**
      * Clears user records and preserves Rust's system categories.
      */
@@ -2215,6 +2394,19 @@ open class CentwiseCore: Disposable, AutoCloseable, CentwiseCoreInterface {
 }
     }
 
+
+
+
+    @Throws(CentwiseException::class)override fun `setLoanDueDate`(`id`: kotlin.String, `dueAtEpochMs`: kotlin.Long?): LoanRecord {
+            return FfiConverterTypeLoanRecord.lift(
+    callWithPointer {
+    uniffiRustCallWithError(CentwiseException) { _status ->
+    UniffiLib.INSTANCE.uniffi_centwise_ffi_fn_method_centwisecore_set_loan_due_date(
+        it, FfiConverterString.lower(`id`),FfiConverterOptionalLong.lower(`dueAtEpochMs`),_status)
+}
+    }
+    )
+    }
 
 
 
@@ -2895,6 +3087,194 @@ public object FfiConverterTypeHomeDashboardRecord: FfiConverterRustBuffer<HomeDa
             FfiConverterLong.write(value.`periodExpenseMinor`, buf)
             FfiConverterLong.write(value.`periodIncomeMinor`, buf)
             FfiConverterSequenceTypeTransactionSummaryRecord.write(value.`recentTransactions`, buf)
+    }
+}
+
+
+
+data class LoanMonthRecord (
+    val `month`: kotlin.String,
+    val `incomingMinor`: kotlin.Long,
+    val `outgoingMinor`: kotlin.Long
+) {
+
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeLoanMonthRecord: FfiConverterRustBuffer<LoanMonthRecord> {
+    override fun read(buf: ByteBuffer): LoanMonthRecord {
+        return LoanMonthRecord(
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: LoanMonthRecord) = (
+            FfiConverterString.allocationSize(value.`month`) +
+            FfiConverterLong.allocationSize(value.`incomingMinor`) +
+            FfiConverterLong.allocationSize(value.`outgoingMinor`)
+    )
+
+    override fun write(value: LoanMonthRecord, buf: ByteBuffer) {
+            FfiConverterString.write(value.`month`, buf)
+            FfiConverterLong.write(value.`incomingMinor`, buf)
+            FfiConverterLong.write(value.`outgoingMinor`, buf)
+    }
+}
+
+
+
+data class LoanMovementRecord (
+    val `transactionId`: kotlin.String,
+    val `repayment`: kotlin.Boolean,
+    val `accountName`: kotlin.String,
+    val `amountMinor`: kotlin.Long,
+    val `occurredAtEpochMs`: kotlin.Long
+) {
+
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeLoanMovementRecord: FfiConverterRustBuffer<LoanMovementRecord> {
+    override fun read(buf: ByteBuffer): LoanMovementRecord {
+        return LoanMovementRecord(
+            FfiConverterString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: LoanMovementRecord) = (
+            FfiConverterString.allocationSize(value.`transactionId`) +
+            FfiConverterBoolean.allocationSize(value.`repayment`) +
+            FfiConverterString.allocationSize(value.`accountName`) +
+            FfiConverterLong.allocationSize(value.`amountMinor`) +
+            FfiConverterLong.allocationSize(value.`occurredAtEpochMs`)
+    )
+
+    override fun write(value: LoanMovementRecord, buf: ByteBuffer) {
+            FfiConverterString.write(value.`transactionId`, buf)
+            FfiConverterBoolean.write(value.`repayment`, buf)
+            FfiConverterString.write(value.`accountName`, buf)
+            FfiConverterLong.write(value.`amountMinor`, buf)
+            FfiConverterLong.write(value.`occurredAtEpochMs`, buf)
+    }
+}
+
+
+
+data class LoanPaymentInput (
+    val `id`: kotlin.String,
+    val `accountId`: kotlin.String,
+    val `amount`: kotlin.String,
+    val `occurredAtEpochMs`: kotlin.Long,
+    val `existingTransactionId`: kotlin.String?
+) {
+
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeLoanPaymentInput: FfiConverterRustBuffer<LoanPaymentInput> {
+    override fun read(buf: ByteBuffer): LoanPaymentInput {
+        return LoanPaymentInput(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterOptionalString.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: LoanPaymentInput) = (
+            FfiConverterString.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`accountId`) +
+            FfiConverterString.allocationSize(value.`amount`) +
+            FfiConverterLong.allocationSize(value.`occurredAtEpochMs`) +
+            FfiConverterOptionalString.allocationSize(value.`existingTransactionId`)
+    )
+
+    override fun write(value: LoanPaymentInput, buf: ByteBuffer) {
+            FfiConverterString.write(value.`id`, buf)
+            FfiConverterString.write(value.`accountId`, buf)
+            FfiConverterString.write(value.`amount`, buf)
+            FfiConverterLong.write(value.`occurredAtEpochMs`, buf)
+            FfiConverterOptionalString.write(value.`existingTransactionId`, buf)
+    }
+}
+
+
+
+data class LoanRecord (
+    val `id`: kotlin.String,
+    val `person`: kotlin.String,
+    val `lent`: kotlin.Boolean,
+    val `note`: kotlin.String,
+    val `dueAtEpochMs`: kotlin.Long?,
+    val `principalMinor`: kotlin.Long,
+    val `repaidMinor`: kotlin.Long,
+    val `remainingMinor`: kotlin.Long,
+    val `accountId`: kotlin.String,
+    val `openedAtEpochMs`: kotlin.Long
+) {
+
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeLoanRecord: FfiConverterRustBuffer<LoanRecord> {
+    override fun read(buf: ByteBuffer): LoanRecord {
+        return LoanRecord(
+            FfiConverterString.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterBoolean.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterOptionalLong.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterLong.read(buf),
+            FfiConverterString.read(buf),
+            FfiConverterLong.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: LoanRecord) = (
+            FfiConverterString.allocationSize(value.`id`) +
+            FfiConverterString.allocationSize(value.`person`) +
+            FfiConverterBoolean.allocationSize(value.`lent`) +
+            FfiConverterString.allocationSize(value.`note`) +
+            FfiConverterOptionalLong.allocationSize(value.`dueAtEpochMs`) +
+            FfiConverterLong.allocationSize(value.`principalMinor`) +
+            FfiConverterLong.allocationSize(value.`repaidMinor`) +
+            FfiConverterLong.allocationSize(value.`remainingMinor`) +
+            FfiConverterString.allocationSize(value.`accountId`) +
+            FfiConverterLong.allocationSize(value.`openedAtEpochMs`)
+    )
+
+    override fun write(value: LoanRecord, buf: ByteBuffer) {
+            FfiConverterString.write(value.`id`, buf)
+            FfiConverterString.write(value.`person`, buf)
+            FfiConverterBoolean.write(value.`lent`, buf)
+            FfiConverterString.write(value.`note`, buf)
+            FfiConverterOptionalLong.write(value.`dueAtEpochMs`, buf)
+            FfiConverterLong.write(value.`principalMinor`, buf)
+            FfiConverterLong.write(value.`repaidMinor`, buf)
+            FfiConverterLong.write(value.`remainingMinor`, buf)
+            FfiConverterString.write(value.`accountId`, buf)
+            FfiConverterLong.write(value.`openedAtEpochMs`, buf)
     }
 }
 
@@ -3975,6 +4355,34 @@ public object FfiConverterOptionalTypeTransactionKind: FfiConverterRustBuffer<Tr
 /**
  * @suppress
  */
+public object FfiConverterSequenceString: FfiConverterRustBuffer<List<kotlin.String>> {
+    override fun read(buf: ByteBuffer): List<kotlin.String> {
+        val len = buf.getInt()
+        return List<kotlin.String>(len) {
+            FfiConverterString.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<kotlin.String>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterString.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<kotlin.String>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterString.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
 public object FfiConverterSequenceTypeAccountRecord: FfiConverterRustBuffer<List<AccountRecord>> {
     override fun read(buf: ByteBuffer): List<AccountRecord> {
         val len = buf.getInt()
@@ -4133,6 +4541,90 @@ public object FfiConverterSequenceTypeCategoryRecord: FfiConverterRustBuffer<Lis
         buf.putInt(value.size)
         value.iterator().forEach {
             FfiConverterTypeCategoryRecord.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeLoanMonthRecord: FfiConverterRustBuffer<List<LoanMonthRecord>> {
+    override fun read(buf: ByteBuffer): List<LoanMonthRecord> {
+        val len = buf.getInt()
+        return List<LoanMonthRecord>(len) {
+            FfiConverterTypeLoanMonthRecord.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<LoanMonthRecord>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeLoanMonthRecord.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<LoanMonthRecord>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeLoanMonthRecord.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeLoanMovementRecord: FfiConverterRustBuffer<List<LoanMovementRecord>> {
+    override fun read(buf: ByteBuffer): List<LoanMovementRecord> {
+        val len = buf.getInt()
+        return List<LoanMovementRecord>(len) {
+            FfiConverterTypeLoanMovementRecord.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<LoanMovementRecord>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeLoanMovementRecord.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<LoanMovementRecord>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeLoanMovementRecord.write(it, buf)
+        }
+    }
+}
+
+
+
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeLoanRecord: FfiConverterRustBuffer<List<LoanRecord>> {
+    override fun read(buf: ByteBuffer): List<LoanRecord> {
+        val len = buf.getInt()
+        return List<LoanRecord>(len) {
+            FfiConverterTypeLoanRecord.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<LoanRecord>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeLoanRecord.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(value: List<LoanRecord>, buf: ByteBuffer) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeLoanRecord.write(it, buf)
         }
     }
 }

@@ -25,7 +25,7 @@ impl<'a> Queries<'a> {
                     COALESCE(SUM(t.amount_minor), 0) AS total,
                     COUNT(t.id) AS tx_count
              FROM categories c
-             LEFT JOIN transactions t
+             LEFT JOIN ordinary_transactions t
                     ON t.category_id = c.id
                    AND (?3 = 'all' OR (?3 = 'debit' AND t.transaction_type = 'expense')
                         OR (?3 = 'credit' AND t.transaction_type IN ('income', 'refund')))
@@ -70,7 +70,7 @@ impl<'a> Queries<'a> {
     ) -> DbResult<Vec<MerchantSpendSummary>> {
         let mut statement = self.connection.prepare(
             "SELECT title, COALESCE(SUM(amount_minor), 0) AS total, COUNT(id) AS tx_count
-             FROM transactions
+             FROM ordinary_transactions
              WHERE (?4 = 'all' OR (?4 = 'debit' AND transaction_type = 'expense')
                     OR (?4 = 'credit' AND transaction_type IN ('income', 'refund')))
                AND occurred_at_epoch_ms >= ?1
@@ -109,7 +109,7 @@ impl<'a> Queries<'a> {
                     COALESCE(SUM(CASE WHEN transaction_type = 'expense' THEN amount_minor ELSE 0 END), 0),
                     COALESCE(SUM(CASE WHEN (?3 = 'all' OR (?3 = 'debit' AND transaction_type = 'expense')
                                OR (?3 = 'credit' AND transaction_type IN ('income', 'refund'))) THEN 1 ELSE 0 END), 0)
-                 FROM transactions
+                 FROM ordinary_transactions
                  WHERE occurred_at_epoch_ms >= ?1 AND occurred_at_epoch_ms < ?2",
                 params![start_epoch_ms, end_epoch_ms, type_filter],
                 |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?),),
@@ -154,7 +154,7 @@ impl<'a> Queries<'a> {
 
         let mut statement = self.connection.prepare(
             "SELECT occurred_at_epoch_ms, amount_minor
-             FROM transactions
+             FROM ordinary_transactions
              WHERE transaction_type = 'expense'
                AND occurred_at_epoch_ms >= ?1
              ORDER BY occurred_at_epoch_ms ASC",

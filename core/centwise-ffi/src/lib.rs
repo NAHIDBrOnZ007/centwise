@@ -7,6 +7,7 @@ mod conversions;
 mod core;
 mod error;
 mod ingestion;
+mod loans;
 mod types;
 
 uniffi::setup_scaffolding!();
@@ -14,6 +15,7 @@ uniffi::setup_scaffolding!();
 pub use core::CentwiseCore;
 pub use error::{CentwiseError, ChangeListener};
 pub use ingestion::{parse_sms_message, ParsedSmsRecord};
+pub use loans::*;
 pub use types::*;
 
 #[cfg(test)]

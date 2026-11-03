@@ -186,10 +186,10 @@ fun TransactionListScreen(
 
     // Totals calculations (Income includes both INCOME and CREDIT / refunds)
     val totalIncome = remember(periodAndSearchFilteredItems) {
-        periodAndSearchFilteredItems.filter { it.type == TransactionType.INCOME || it.type == TransactionType.CREDIT }.sumOf { it.amount }
+        periodAndSearchFilteredItems.filter { !it.isLoanMovement && (it.type == TransactionType.INCOME || it.type == TransactionType.CREDIT) }.sumOf { it.amount }
     }
     val totalExpense = remember(periodAndSearchFilteredItems) {
-        periodAndSearchFilteredItems.filter { it.type == TransactionType.EXPENSE }.sumOf { it.amount }
+        periodAndSearchFilteredItems.filter { !it.isLoanMovement && it.type == TransactionType.EXPENSE }.sumOf { it.amount }
     }
     val totalNet = totalIncome - totalExpense
 

@@ -40,6 +40,7 @@ fun SettingsScreen(
     onBudgetsClick: () -> Unit = {},
     onAccountsClick: () -> Unit = {},
     onSubscriptionsClick: () -> Unit = {},
+    onLoansClick: () -> Unit = {},
     onSmartRulesClick: () -> Unit = {},
     onReviewQueueClick: () -> Unit = {},
     onDataManagementClick: () -> Unit = {},
@@ -247,6 +248,15 @@ fun SettingsScreen(
                         title = "Subscriptions",
                         subtitle = "Recurring payments",
                         onClick = onSubscriptionsClick,
+                        showDivider = true,
+                        isDark = isDark
+                    )
+                    SettingsRow(
+                        icon = Icons.Default.AccountBalanceWallet,
+                        iconColor = accent,
+                        title = androidx.compose.ui.res.stringResource(com.centwise.R.string.loans_title),
+                        subtitle = androidx.compose.ui.res.stringResource(com.centwise.R.string.loans_settings_description),
+                        onClick = onLoansClick,
                         showDivider = true,
                         isDark = isDark
                     )
