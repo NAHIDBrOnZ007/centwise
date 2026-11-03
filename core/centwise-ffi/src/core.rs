@@ -338,6 +338,8 @@ impl CentwiseCore {
 
                     let matches = if parsed.account_last4.is_none() && parsed.account_hint.is_some()
                     {
+                    let matches = if parsed.account_last4.is_none() && parsed.account_hint.is_some()
+                    {
                         if !is_card {
                             if let Some(account) = queries.find_hint_account(
                                 &parsed.provider_id,
