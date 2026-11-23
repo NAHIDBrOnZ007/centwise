@@ -142,13 +142,9 @@ fn parse_amount_match(text: &str, value: regex::Match<'_>) -> Option<i64> {
 }
 
 fn is_complete_amount(text: &str, value: regex::Match<'_>) -> bool {
-    if text[value.end()..].starts_with(|c: char| c.is_ascii_digit())
+    !(text[value.end()..].starts_with(|c: char| c.is_ascii_digit())
         || (text[value.end()..].starts_with('.')
-            && text[value.end() + 1..].starts_with(|c: char| c.is_ascii_digit()))
-    {
-        return false;
-    }
-    true
+            && text[value.end() + 1..].starts_with(|c: char| c.is_ascii_digit())))
 }
 
 fn parse_balance_match(text: &str, value: regex::Match<'_>) -> Option<i64> {

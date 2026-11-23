@@ -168,11 +168,7 @@ pub fn is_promotional_or_telco_offer(body: &str, sender_hint: Option<&str>) -> b
     // Note: If a message is a confirmed recharge or added balance,
     // a trailing advisory code like "For best offers dial *0#" or "For Details dial *123*600#" is just a footer.
     let has_confirmed_transaction = is_confirmed_transaction_text(&lower);
-    if !has_confirmed_transaction && USSD_DIAL_RE.is_match(body) {
-        return true;
-    }
-
-    false
+    !has_confirmed_transaction && USSD_DIAL_RE.is_match(body)
 }
 
 /// Detects telco bundle offer lists such as Banglalink Ghechang or Robi/GP bundle menus.
@@ -215,11 +211,7 @@ pub fn is_telco_bundle_menu(lower: &str, sender: &str) -> bool {
     let has_bundle_units = (lower.contains("gb") || lower.contains("mb"))
         && (lower.contains("mins") || lower.contains("min"))
         && (lower.contains("days") || lower.contains("din"));
-    if has_bundle_units && (lower.contains("dial") || lower.contains("@")) {
-        return true;
-    }
-
-    false
+    has_bundle_units && (lower.contains("dial") || lower.contains("@"))
 }
 
 /// Detects bonus, free data, or free minutes notifications that are NOT debits.

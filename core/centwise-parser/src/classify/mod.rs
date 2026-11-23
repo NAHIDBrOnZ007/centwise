@@ -235,11 +235,7 @@ pub fn is_marketing_or_scam_message(text: &str) -> bool {
         || (lower.contains("a/c") && lower.contains("credited"))
         || (lower.contains("successful") && (lower.contains("trxid") || lower.contains("txnid")));
 
-    if has_shopping_ad_marker && !has_confirmed_bank_action {
-        return true;
-    }
-
-    false
+    has_shopping_ad_marker && !has_confirmed_bank_action
 }
 
 /// Detects registration invites and non-account holder claim notifications

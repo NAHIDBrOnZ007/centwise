@@ -73,11 +73,7 @@ pub fn is_otp_or_security_message(text: &str) -> bool {
         || lower.contains("withdrawn")
         || lower.contains("cash deposit");
 
-    if is_confirmed_receipt {
-        return false;
-    }
-
-    true
+    !is_confirmed_receipt
 }
 
 #[cfg(test)]
