@@ -325,6 +325,7 @@ fn is_non_posted_financial_message(text: &str) -> bool {
                 "minimum amount due",
                 "min amount due",
                 "payment is due",
+                "is due for",
                 "payment of",
                 "please pay",
             ]

@@ -74,6 +74,19 @@ mod tests {
     }
 
     #[test]
+    fn rejects_school_fee_due_notices_as_unpaid_reminders() {
+        for text in [
+            "TMMKM: Dear Parent/Guardian, A total of Tk. 5,250/- is due for Khadija Kobra against Annual Exam and other fees. Please make the payment through CellFin or SSLCOMMERZ by 14-11-2026. For details: tmd.edu.bd",
+            "TMMKM: Dear Parent/Guardian, A total of Tk. 5,250/- is due for Afsana Habiba against Annual Exam and other fees. Please make the payment through CellFin or SSLCOMMERZ by 14-11-2026. For details: tmd.edu.bd",
+        ] {
+            assert_eq!(
+                parse_sms(text, Some("CellFin")),
+                ParseOutcome::Rejected(RejectReason::NotATransaction)
+            );
+        }
+    }
+
+    #[test]
     fn parses_image_3_robi_emergency_balance_as_income_and_clean_merchant() {
         let text = "Tk15 has been added to your account. Tk15 + Service fee of Tk2.78 will be deducted from your next recharge. Your total outstanding is Tk 17.78. For Details dial *123*600#";
         let outcome = parse_sms(text, Some("123"));
